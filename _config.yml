@@ -1,37 +1,10 @@
-title: "Lahav Padan"
-
-tagline: "Technical notes, derivations, and experiments"
-
-description: >-
-  Technical notes on mathematics, machine learning, cryptography,
-  signal processing, cybersecurity, physics, and electrical engineering.
-
+title: lahavpadan.github.io
+description: Notes on machine learning, cyber, cryptography, physics, and electrical engineering.
 url: "https://lahavpadan.github.io"
 baseurl: ""
-lang: en
-
-author:
-  name: "Lahav Padan"
-  url: "https://lahavpadan.github.io/"
-
-social:
-  name: "Lahav Padan"
-  links:
-    - "https://github.com/LahavPadan"
-
 profile_image: "/assets/images/whoami/me.png"
-logo: "/assets/images/whoami/me.png"
-
-# After Google Search Console gives you the token from its HTML verification tag,
-# replace the placeholder below with that token only.
-google_site_verification: "PASTE_GOOGLE_VERIFICATION_TOKEN_HERE"
-
-plugins:
-  - jekyll-sitemap
-  - jekyll-seo-tag
 
 markdown: kramdown
-
 kramdown:
   input: Kramdown
   math_engine: mathjax

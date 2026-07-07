@@ -7,24 +7,13 @@ description: Notes on machine learning, cyber, cryptography, physics, and electr
 {% capture tag_stream %}{% for post in posts %}{% for tag in post.tags %}{{ tag }}||{% endfor %}{% endfor %}{% endcapture %}
 {% assign all_tags = tag_stream | split: "||" | uniq | sort %}
 
-<section class="home-intro" aria-labelledby="home-title">
-  <div class="home-intro__greeting">
-    <pre class="home-intro__ascii" aria-hidden="true">+---+
-| o |
-+---+
-  |</pre>
-    <p>hi,</p>
-  </div>
-
-  <h1 id="home-title" class="home-intro__name">
-    I’m Lahav Padan
-    <span class="home-intro__hebrew" lang="he" dir="rtl">להב פדן</span>
-  </h1>
-
-  <p class="home-intro__tagline">It is as good a time as any to show what I am working on.</p>
+<section class="shell home-intro" aria-labelledby="home-title">
+  <p class="home-intro__eyebrow">notes / experiments / derivations</p>
+  <h1 id="home-title">Hi, I’m Lahav Padan <span class="hebrew-name" lang="he" dir="rtl">(להב פדן)</span>.</h1>
+  <p>It is as good a time as any to show what I am working on :)</p>
 </section>
 
-<section class="post-index" aria-labelledby="posts-heading">
+<section class="shell post-index" aria-labelledby="posts-heading">
   <div class="post-index__heading">
     <h2 id="posts-heading">posts</h2>
     <p id="post-count" aria-live="polite">{{ posts.size }} posts</p>
@@ -33,84 +22,187 @@ description: Notes on machine learning, cyber, cryptography, physics, and electr
   <div class="post-tools">
     <label class="search-panel" for="post-search">
       <span class="search-panel__label">search</span>
-      <input
-        id="post-search"
-        type="search"
-        placeholder="title, tag, or topic"
-        autocomplete="off"
-        data-post-search
-      >
+      <input id="post-search" class="blog-search" type="search" autocomplete="off" placeholder="title, tag, or topic">
       <kbd aria-hidden="true">/</kbd>
     </label>
 
     <div class="filter-region" aria-label="Filter posts by tag">
-      <span class="filter-region__label">filter</span>
-      <div class="tag-filters">
-        <button class="tag-filter tag-button" type="button" data-tag-filter data-tag="all" aria-pressed="true">all</button>
+      <span class="filter-region__label">filter:</span>
+      <div class="tag-filters" id="blog-tag-filters">
+        <button class="tag-filter" type="button" data-blog-filter="all" aria-pressed="true">all</button>
         {% for tag in all_tags %}
           {% unless tag == "" %}
-            <button class="tag-filter tag-button tag--{{ tag | slugify }}" type="button" data-tag-filter data-tag="{{ tag | escape }}" aria-pressed="false">{{ tag }}</button>
+            <button class="tag-filter tag--{{ tag | slugify }}" type="button" data-blog-filter="{{ tag }}" aria-pressed="false">{{ tag }}</button>
           {% endunless %}
         {% endfor %}
       </div>
     </div>
   </div>
 
-  <div class="timeline" data-post-list>
+  <div class="timeline" id="blog-post-list">
     {% for post in posts %}
-      {% assign post_accent = post.accent %}
-      {% if post_accent == nil or post_accent == "" %}
-        {% if post.tags contains "cyber" %}
-          {% assign post_accent = "cyber" %}
-        {% elsif post.tags contains "machine-learning" %}
-          {% assign post_accent = "machine-learning" %}
-        {% elsif post.tags contains "cryptography" %}
-          {% assign post_accent = "cryptography" %}
-        {% elsif post.tags contains "physics" %}
-          {% assign post_accent = "physics" %}
-        {% elsif post.tags contains "electrical-engineering" %}
-          {% assign post_accent = "electrical-engineering" %}
-        {% elsif post.tags contains "signal-processing" %}
-          {% assign post_accent = "signal-processing" %}
-        {% elsif post.tags contains "math" or post.tags contains "mathematics" %}
-          {% assign post_accent = "mathematics" %}
-        {% else %}
-          {% assign post_accent = "default" %}
-        {% endif %}
+      {% assign is_cyber = false %}
+      {% if post.tags contains "cyber" %}
+        {% assign is_cyber = true %}
       {% endif %}
       {% assign entry_type = post.entry_type | default: "comprehensive" %}
-
-      <article
-        class="post-row"
-        data-post-card
-        data-accent="{{ post_accent | escape }}"
-        data-title="{{ post.title | escape }}"
-        data-description="{{ post.description | escape }}"
-        data-tags="{{ post.tags | join: '||' | escape }}"
-      >
-        <div class="post-row__date" aria-label="Published {{ post.date | date: '%B %-d, %Y' }}">
-          <span>{{ post.date | date: "%Y" }}</span>
-          <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%b %-d" }}</time>
+      <article class="post-row blog-card{% if is_cyber %} post-row--cyber{% endif %}"
+        data-blog-title="{{ post.title | escape }}"
+        data-blog-description="{{ post.description | escape }}"
+        data-blog-tags="{{ post.tags | join: '|' | escape }}">
+        <div class="post-row__date">
+          <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y" }}</time>
+          <span>{{ post.date | date: "%b %-d" }}</span>
         </div>
-
         <div class="post-card">
           <div class="post-card__meta">
             <span class="entry-type entry-type--{{ entry_type | slugify }}">{{ entry_type }}</span>
             <span aria-hidden="true">·</span>
-            <div class="tag-list" aria-label="Tags">
+            <div class="tag-list">
               {% for tag in post.tags %}
-                <a class="tag tag--{{ tag | slugify }}" data-post-tag="{{ tag | escape }}" href="{{ '/' | relative_url }}?tag={{ tag | url_encode }}#posts-heading">{{ tag }}</a>
+                <button class="tag tag--{{ tag | slugify }} tag-button" type="button" data-blog-tag="{{ tag }}">{{ tag }}</button>
               {% endfor %}
             </div>
           </div>
-
           <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
           <p>{{ post.description }}</p>
-          <a class="read-link" href="{{ post.url | relative_url }}">open entry <span aria-hidden="true">→</span></a>
+          <a class="read-link" href="{{ post.url | relative_url }}">Open entry <span aria-hidden="true">→</span></a>
         </div>
       </article>
     {% endfor %}
   </div>
-
-  <p class="empty-state" data-empty-state hidden>No posts match that search yet.</p>
+  <p class="empty-state" hidden id="blog-empty-state">No posts match that search yet.</p>
 </section>
+
+<script>
+(function () {
+  'use strict';
+
+  /* This interaction script lives in index.html deliberately. It avoids an
+     extra JavaScript-file cache, and it owns only the blog-search controls. */
+  var search = document.getElementById('post-search');
+  var list = document.getElementById('blog-post-list');
+  var filterBar = document.getElementById('blog-tag-filters');
+  var cards = list ? Array.prototype.slice.call(list.getElementsByClassName('blog-card')) : [];
+  var count = document.getElementById('post-count');
+  var empty = document.getElementById('blog-empty-state');
+
+  if (!search || !list || !filterBar || !cards.length) return;
+
+  function normalize(value) {
+    return String(value || '').replace(/^\s+|\s+$/g, '').toLowerCase();
+  }
+
+  function getCardTags(card) {
+    return String(card.getAttribute('data-blog-tags') || '')
+      .split('|')
+      .map(normalize)
+      .filter(function (tag) { return tag.length > 0; });
+  }
+
+  function readTagFromUrl() {
+    var match = window.location.search.match(/(?:\?|&)tag=([^&]*)/);
+    if (!match) return 'all';
+    try {
+      return decodeURIComponent(match[1].replace(/\+/g, ' '));
+    } catch (error) {
+      return 'all';
+    }
+  }
+
+  function hasFilter(tag) {
+    var buttons = filterBar.querySelectorAll('[data-blog-filter]');
+    var wanted = normalize(tag);
+    for (var index = 0; index < buttons.length; index += 1) {
+      if (normalize(buttons[index].getAttribute('data-blog-filter')) === wanted) return true;
+    }
+    return false;
+  }
+
+  var activeTag = hasFilter(readTagFromUrl()) ? readTagFromUrl() : 'all';
+
+  function writeTagToUrl() {
+    if (!window.history || !window.history.replaceState) return;
+    var url = window.location.pathname;
+    if (normalize(activeTag) !== 'all') url += '?tag=' + encodeURIComponent(activeTag);
+    try {
+      window.history.replaceState(null, '', url + window.location.hash);
+    } catch (error) {
+      /* Filtering still works in previews with an opaque origin. */
+    }
+  }
+
+  function updateButtons() {
+    var buttons = filterBar.querySelectorAll('[data-blog-filter]');
+    for (var index = 0; index < buttons.length; index += 1) {
+      var selected = normalize(buttons[index].getAttribute('data-blog-filter')) === normalize(activeTag);
+      buttons[index].setAttribute('aria-pressed', selected ? 'true' : 'false');
+    }
+  }
+
+  function applyFilters() {
+    var query = normalize(search.value);
+    var selectedTag = normalize(activeTag);
+    var visible = 0;
+
+    for (var index = 0; index < cards.length; index += 1) {
+      var card = cards[index];
+      var tags = getCardTags(card);
+      var searchable = normalize(
+        card.getAttribute('data-blog-title') + ' ' +
+        card.getAttribute('data-blog-description') + ' ' +
+        card.getAttribute('data-blog-tags')
+      );
+      var tagMatches = selectedTag === 'all' || tags.indexOf(selectedTag) !== -1;
+      var queryMatches = !query || searchable.indexOf(query) !== -1;
+      var show = tagMatches && queryMatches;
+
+      card.hidden = !show;
+      if (show) visible += 1;
+    }
+
+    updateButtons();
+    if (count) count.textContent = visible + (visible === 1 ? ' post' : ' posts');
+    if (empty) empty.hidden = visible !== 0;
+  }
+
+  function selectTag(tag, updateUrl) {
+    activeTag = hasFilter(tag) ? tag : 'all';
+    if (updateUrl) writeTagToUrl();
+    applyFilters();
+  }
+
+  filterBar.addEventListener('click', function (event) {
+    var node = event.target;
+    while (node && node !== filterBar && !node.getAttribute('data-blog-filter')) node = node.parentNode;
+    if (!node || node === filterBar) return;
+    selectTag(node.getAttribute('data-blog-filter'), true);
+  });
+
+  list.addEventListener('click', function (event) {
+    var node = event.target;
+    while (node && node !== list && !node.getAttribute('data-blog-tag')) node = node.parentNode;
+    if (!node || node === list) return;
+    event.preventDefault();
+    selectTag(node.getAttribute('data-blog-tag'), true);
+    document.getElementById('posts-heading').scrollIntoView({ block: 'start' });
+  });
+
+  search.addEventListener('input', applyFilters);
+
+  window.addEventListener('keydown', function (event) {
+    var target = event.target;
+    var typing = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+    if (event.key === '/' && !typing) {
+      event.preventDefault();
+      search.focus();
+    }
+  });
+
+  window.addEventListener('popstate', function () {
+    selectTag(readTagFromUrl(), false);
+  });
+
+  applyFilters();
+}());
+</script>

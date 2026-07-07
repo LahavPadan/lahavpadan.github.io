@@ -2,64 +2,33 @@
 layout: default
 ---
 {% assign is_cyber = false %}
-{% if page.tags contains "cyber" %}{% assign is_cyber = true %}{% endif %}
+{% if page.tags contains "cyber" %}
+  {% assign is_cyber = true %}
+{% endif %}
 {% assign entry_type = page.entry_type | default: "comprehensive" %}
 {% assign post_accent = page.accent %}
-{% if post_accent == nil or post_accent == "" %}
-  {% if page.tags contains "cyber" %}
-    {% assign post_accent = "cyber" %}
-  {% elsif page.tags contains "machine-learning" %}
-    {% assign post_accent = "machine-learning" %}
-  {% elsif page.tags contains "cryptography" %}
-    {% assign post_accent = "cryptography" %}
-  {% elsif page.tags contains "physics" %}
-    {% assign post_accent = "physics" %}
-  {% elsif page.tags contains "electrical-engineering" %}
-    {% assign post_accent = "electrical-engineering" %}
-  {% elsif page.tags contains "signal-processing" %}
-    {% assign post_accent = "signal-processing" %}
-  {% elsif page.tags contains "math" or page.tags contains "mathematics" %}
-    {% assign post_accent = "mathematics" %}
-  {% else %}
-    {% assign post_accent = "default" %}
-  {% endif %}
-{% endif %}
-
-<article class="post-page{% if is_cyber %} post-page--cyber{% endif %}{% if entry_type == 'comprehensive' %} post-page--with-toc{% endif %}" data-accent="{{ post_accent | escape }}">
+{% unless post_accent %}
+  {% assign post_accent = page.tags | first %}
+{% endunless %}
+<article class="post-page shell{% if is_cyber %} post-page--cyber{% endif %}{% if post_accent %} post-page--accent-{{ post_accent | slugify }}{% endif %}">
   <header class="post-page__header">
     <div class="post-page__meta">
       <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%B %-d, %Y" }}</time>
       <span aria-hidden="true">·</span>
-      <span>{{ entry_type }}</span>
+      <span class="entry-type entry-type--{{ entry_type | slugify }}">{{ entry_type }}</span>
     </div>
-
     <h1>{{ page.title }}</h1>
-
-    {% if page.description %}
-      <p class="post-page__lede">{{ page.description }}</p>
-    {% endif %}
-
+    {% if page.description %}<p class="post-page__lede">{{ page.description }}</p>{% endif %}
     {% if page.tags %}
-      <div class="tag-list post-page__tags" aria-label="Tags">
+      <div class="tag-list" aria-label="Post tags">
         {% for tag in page.tags %}
-          <a class="tag tag--{{ tag | slugify }}" href="{{ '/' | relative_url }}?tag={{ tag | url_encode }}#posts-heading">{{ tag }}</a>
+          <a class="tag tag--{{ tag | slugify }}" href="{{ '/' | relative_url }}?tag={{ tag | url_encode }}">{{ tag }}</a>
         {% endfor %}
       </div>
     {% endif %}
   </header>
-
   <div class="post-page__rule" aria-hidden="true"></div>
-
-  <div class="post-page__body">
-    {% if entry_type == "comprehensive" %}
-      <aside class="post-toc" data-post-toc hidden aria-label="Table of contents">
-        <p class="post-toc__title">on this page</p>
-        <ol class="post-toc__list" data-post-toc-list></ol>
-      </aside>
-    {% endif %}
-
-    <div class="article-prose{% if is_cyber %} article-prose--cyber{% endif %}" data-article-prose>
-      {{ content }}
-    </div>
+  <div class="article-prose{% if is_cyber %} article-prose--cyber{% endif %}">
+    {{ content }}
   </div>
 </article>
