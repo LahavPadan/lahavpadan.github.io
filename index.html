@@ -4,27 +4,28 @@ title: Posts
 description: Notes on machine learning, cyber, cryptography, physics, and electrical engineering.
 ---
 {% assign posts = site.pages | where: "layout", "post" | sort: "date" | reverse %}
-<section class="shell home-hero" aria-labelledby="home-title">
-  <h1 id="home-title">Hi, I’m Lahav Padan <span class="home-hero__hebrew">(להב פדן)</span>.</h1>
-  <p class="home-hero__lede">It is as good a time as any to show what I am working on :)</p>
-
-  <div class="search-panel">
-    <label class="sr-only" for="post-search">Search posts</label>
-    <svg class="search-panel__glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.6"></circle><path d="m16 16 4.4 4.4"></path></svg>
-    <input id="post-search" type="search" autocomplete="off" placeholder="Search posts, tags, and topics" data-post-search>
-    <kbd aria-hidden="true">/</kbd>
-  </div>
-
-  <div class="filter-region" aria-label="Filter posts by tag">
-    <div class="filter-region__label">filter by tag</div>
-    <div class="tag-filters" data-tag-filters></div>
-  </div>
+<section class="shell home-intro" aria-label="Introduction">
+  <p class="home-intro__greeting">Hi, I’m Lahav Padan <span lang="he" dir="rtl">(להב פדן)</span>.</p>
+  <p class="home-intro__line">It is as good a time as any to show what I am working on :)</p>
 </section>
 
 <section class="shell post-index" aria-labelledby="posts-heading">
   <div class="post-index__heading">
-    <h2 id="posts-heading">Posts</h2>
+    <h1 id="posts-heading"><span aria-hidden="true"># </span>posts</h1>
     <p id="post-count" aria-live="polite">{{ posts.size }} posts</p>
+  </div>
+
+  <div class="post-tools">
+    <div class="search-panel">
+      <label class="search-panel__label" for="post-search">search</label>
+      <input id="post-search" type="search" autocomplete="off" placeholder="title, tag, or topic" data-post-search>
+      <kbd aria-hidden="true">/</kbd>
+    </div>
+
+    <div class="filter-region" aria-label="Filter posts by tag">
+      <div class="filter-region__label">tags:</div>
+      <div class="tag-filters" data-tag-filters></div>
+    </div>
   </div>
 
   <div class="timeline" data-post-list>
@@ -49,9 +50,9 @@ description: Notes on machine learning, cyber, cryptography, physics, and electr
               {% endfor %}
             </div>
           </div>
-          <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
+          <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
           <p>{{ post.description }}</p>
-          <a class="read-link" href="{{ post.url | relative_url }}">Read entry <span aria-hidden="true">→</span></a>
+          <a class="read-link" href="{{ post.url | relative_url }}">Open entry <span aria-hidden="true">→</span></a>
         </div>
       </article>
     {% endfor %}

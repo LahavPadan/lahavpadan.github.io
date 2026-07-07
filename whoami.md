@@ -6,6 +6,11 @@ permalink: /whoami/
 ---
 {% assign profile = site.data.whoami %}
 <section class="shell whoami" aria-labelledby="whoami-title">
+  <div class="terminal-heading">
+    <p class="terminal-heading__path">~/lahavpadan.github.io/</p>
+    <h1 id="whoami-title"><span aria-hidden="true">$ </span>whoami</h1>
+  </div>
+
   <div class="whoami__grid">
     <div class="portrait-frame">
       <div class="portrait-frame__corner portrait-frame__corner--one" aria-hidden="true"></div>
@@ -15,10 +20,11 @@ permalink: /whoami/
     </div>
 
     <div class="whoami__copy">
-      <h1 id="whoami-title">whoami</h1>
-      <p>I am curious about many things: how they truly work, and how they explain ordinary parts of life that we rarely stop to question.</p>
-      <p>I try to build an understanding that is clean enough to explain to a layperson without losing what makes it true. I like to start with the central idea and the connections across fields, then zoom in until the small technical details make sense too.</p>
-      <p>I opened this blog because other people’s notes made a real difference when I was taking my first steps. This is my attempt to pass that on: to share the excitement of learning, leave the intermediate steps visible, and make technical ideas feel less gated by jargon or assumed background.</p>
+      <p class="whoami__eyebrow">A little about how I learn</p>
+      <p class="whoami__lead">I am drawn to questions that reveal how things truly work — especially the ordinary things we rarely stop to question.</p>
+      <p>I try to reach an understanding that is clean enough to explain without assumed background, but precise enough not to hide the machinery. I like to begin with the central idea and its connections across fields, then keep zooming in until the smaller technical details have a place and a reason.</p>
+      <p>I started this blog because other people’s notes made a real difference when I was taking my first steps. This is my attempt to pass that on: to share the excitement of learning, leave intermediate steps visible, and make technical ideas feel less gated by jargon.</p>
+      <div class="whoami__note"><span aria-hidden="true">→</span> Notes are kept as a record of thinking, not as a claim that the thinking is finished.</div>
     </div>
   </div>
 
@@ -26,7 +32,7 @@ permalink: /whoami/
 
   <div class="whoami__resources">
     <section class="whoami-panel" aria-labelledby="areas-title">
-      <h2 id="areas-title">Areas of focus</h2>
+      <h2 id="areas-title"><span aria-hidden="true"># </span>areas of focus</h2>
       <ul class="area-list">
         {% for area in profile.areas_of_expertise %}
           <li>
@@ -38,7 +44,7 @@ permalink: /whoami/
     </section>
 
     <section class="whoami-panel" aria-labelledby="reading-title">
-      <h2 id="reading-title">Notes worth visiting</h2>
+      <h2 id="reading-title"><span aria-hidden="true"># </span>notes worth visiting</h2>
       <ul class="reading-list">
         {% for blog in profile.recommended_blogs %}
           <li>

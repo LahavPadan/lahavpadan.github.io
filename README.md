@@ -161,3 +161,10 @@ git push
 ```
 
 GitHub Actions publishes the update automatically.
+
+## Visual structure
+
+- The home page uses a compact terminal-style header and post index.
+- `~/lahavpadan.github.io/` in the navigation is static text: there is deliberately no blinking cursor.
+- The `◐` button is a plain light/dark toggle. It stores your choice in the browser.
+- Posts whose `tags:` include `cyber` automatically use the cyber article layout.
