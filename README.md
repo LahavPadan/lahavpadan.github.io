@@ -168,3 +168,10 @@ GitHub Actions publishes the update automatically.
 - `~/lahavpadan.github.io/` in the navigation is one exact text string: there is deliberately no blinking cursor or inserted character.
 - The `◐` button is a plain light/dark toggle. It stores your choice in the browser.
 - Posts whose `tags:` include `cyber` automatically use the cyber article layout.
+
+## v5 interaction fix
+
+The homepage search and tag filter script is now embedded in the root `index.html`.
+That is intentional: it avoids depending on a separately cached JavaScript file.
+
+To apply this update, replace the **root** `index.html` in your repository with the v5 `index.html`, commit it, and push it. Do not place the extracted `lahavpadan.github.io` folder inside another folder of the same name.
