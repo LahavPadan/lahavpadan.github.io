@@ -284,3 +284,115 @@ kbd { padding: 0 4px; border: 1px solid var(--border); background: var(--surface
   cursor: pointer;
   font: inherit;
 }
+
+/* Post-level colour system -------------------------------------------------
+   One `accent:` field in a post's front matter selects a palette. The page
+   stays readable: colour marks structure, links, equation panels, and code;
+   body text remains the normal reading colour. */
+.post-page {
+  --post-accent: var(--accent);
+  --post-accent-soft: var(--accent-soft);
+  --post-accent-border: var(--border-strong);
+  --post-accent-ink: var(--accent);
+}
+.post-page--accent-machine-learning {
+  --post-accent: #5f3f9c; --post-accent-soft: #f4effd;
+  --post-accent-border: #cdbce7; --post-accent-ink: #4c327f;
+}
+.post-page--accent-cyber {
+  --post-accent: #006a61; --post-accent-soft: #eaf9f6;
+  --post-accent-border: #9edbd5; --post-accent-ink: #00574f;
+}
+.post-page--accent-cryptography {
+  --post-accent: #9e4b1b; --post-accent-soft: #fff2e9;
+  --post-accent-border: #efc39e; --post-accent-ink: #813b12;
+}
+.post-page--accent-physics {
+  --post-accent: #85295e; --post-accent-soft: #fdeef6;
+  --post-accent-border: #e8b2d1; --post-accent-ink: #70204d;
+}
+.post-page--accent-electrical-engineering,
+.post-page--accent-signal-processing {
+  --post-accent: #796000; --post-accent-soft: #fff9df;
+  --post-accent-border: #e5d28d; --post-accent-ink: #645000;
+}
+.post-page--accent-mathematics,
+.post-page--accent-math {
+  --post-accent: #1d61a6; --post-accent-soft: #edf6fe;
+  --post-accent-border: #a9cbed; --post-accent-ink: #174f87;
+}
+
+:root[data-theme="dark"] .post-page--accent-machine-learning {
+  --post-accent: #dcc8ff; --post-accent-soft: #2e2341;
+  --post-accent-border: #765aa8; --post-accent-ink: #dcc8ff;
+}
+:root[data-theme="dark"] .post-page--accent-cyber {
+  --post-accent: #97f0e5; --post-accent-soft: #123b37;
+  --post-accent-border: #34837a; --post-accent-ink: #97f0e5;
+}
+:root[data-theme="dark"] .post-page--accent-cryptography {
+  --post-accent: #ffcb9f; --post-accent-soft: #40291f;
+  --post-accent-border: #955833; --post-accent-ink: #ffcb9f;
+}
+:root[data-theme="dark"] .post-page--accent-physics {
+  --post-accent: #ffb9df; --post-accent-soft: #3f2033;
+  --post-accent-border: #914f75; --post-accent-ink: #ffb9df;
+}
+:root[data-theme="dark"] .post-page--accent-electrical-engineering,
+:root[data-theme="dark"] .post-page--accent-signal-processing {
+  --post-accent: #f9e492; --post-accent-soft: #3d351a;
+  --post-accent-border: #87743a; --post-accent-ink: #f9e492;
+}
+:root[data-theme="dark"] .post-page--accent-mathematics,
+:root[data-theme="dark"] .post-page--accent-math {
+  --post-accent: #add9ff; --post-accent-soft: #18354e;
+  --post-accent-border: #4a79a4; --post-accent-ink: #add9ff;
+}
+
+/* Missing aliases: current posts use `math` and `signal-processing`. */
+.tag--math { color: #1d61a6; border-color: #a9cbed; background: #edf6fe; }
+.tag--signal-processing { color: #796000; border-color: #e5d28d; background: #fff9df; }
+:root[data-theme="dark"] .tag--math { color: #add9ff; border-color: #4a79a4; background: #18354e; }
+:root[data-theme="dark"] .tag--signal-processing { color: #f9e492; border-color: #87743a; background: #3d351a; }
+
+.post-page .post-page__meta time,
+.post-page .entry-type--brief,
+.post-page .tag:hover { color: var(--post-accent); }
+.post-page .post-page__rule { background: var(--post-accent-border); }
+.article-prose a { color: var(--post-accent-ink); text-decoration-color: var(--post-accent-border); text-decoration-thickness: 1.5px; }
+.article-prose a:hover { color: var(--post-accent); text-decoration-color: currentColor; }
+.article-prose h2 {
+  padding: .52em .74em .47em;
+  border-left: 4px solid var(--post-accent);
+  background: linear-gradient(90deg, var(--post-accent-soft), transparent 78%);
+  color: var(--post-accent-ink);
+}
+.article-prose h3 {
+  padding-bottom: .32em;
+  border-bottom: 1px dashed var(--post-accent-border);
+  color: var(--post-accent-ink);
+}
+.article-prose strong { color: var(--post-accent-ink); }
+.article-prose code { color: var(--post-accent-ink); background: var(--post-accent-soft); }
+.article-prose pre { border-left-color: var(--post-accent); background: var(--post-accent-soft); }
+.article-prose blockquote { border-left-color: var(--post-accent); }
+.article-prose th { background: var(--post-accent-soft); color: var(--post-accent-ink); }
+.article-prose hr { border: 0; border-top: 1px solid var(--post-accent-border); margin: 2.5em 0; }
+
+/* Kramdown emits MathJax's \(...\) and \[...\] delimiters. MathJax turns
+   display equations into mjx-container[display="true"]. */
+.article-prose mjx-container[display="true"] {
+  display: block !important;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 1.7em 0 !important;
+  padding: 1em 1.15em;
+  border: 1px solid var(--post-accent-border);
+  border-left: 4px solid var(--post-accent);
+  background: var(--post-accent-soft);
+}
+.article-prose mjx-container:not([display="true"]) { color: var(--post-accent-ink); }
+.article-prose--cyber h2,
+.article-prose--cyber h3 { color: var(--post-accent-ink); }
+.article-prose--cyber h2::before { color: var(--post-accent); }
+

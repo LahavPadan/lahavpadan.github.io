@@ -6,7 +6,11 @@ layout: default
   {% assign is_cyber = true %}
 {% endif %}
 {% assign entry_type = page.entry_type | default: "comprehensive" %}
-<article class="post-page shell{% if is_cyber %} post-page--cyber{% endif %}">
+{% assign post_accent = page.accent %}
+{% unless post_accent %}
+  {% assign post_accent = page.tags | first %}
+{% endunless %}
+<article class="post-page shell{% if is_cyber %} post-page--cyber{% endif %}{% if post_accent %} post-page--accent-{{ post_accent | slugify }}{% endif %}">
   <header class="post-page__header">
     <div class="post-page__meta">
       <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%B %-d, %Y" }}</time>

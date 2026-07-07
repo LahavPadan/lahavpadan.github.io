@@ -166,9 +166,9 @@ The two rules together give you a simple reconstruction algorithm: walk the Stor
 
 When `mstsc.exe` (or any RDP client) runs, a client-side bitmap cache is written to disk. Location:
 
-```
+~~~
 %localappdata%\Microsoft\Terminal Server Client\Cache\
-```
+~~~
 
 ## What it contains
 

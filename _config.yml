@@ -6,15 +6,6 @@ profile_image: "/assets/images/whoami/me.png"
 
 markdown: kramdown
 kramdown:
-  input: GFM
+  input: Kramdown
+  math_engine: mathjax
   syntax_highlighter: rouge
-
-permalink: /:categories/:title/
-
-exclude:
-  - Gemfile
-  - Gemfile.lock
-  - README.md
-  - templates
-  - vendor
-  - node_modules

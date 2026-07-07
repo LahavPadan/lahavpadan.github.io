@@ -8,6 +8,7 @@ tags:
 entry_type: comprehensive
 math: false
 article: "article.md"
+accent: cyber
 ---
 
 {% include_relative article.md %}

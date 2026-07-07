@@ -61,15 +61,15 @@ This is why Prefetch speeds up **cold** launches but has essentially no effect o
 
 Enable/disable:
 
-```
+~~~
 HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters\EnablePrefetcher
   0 = disabled, 1 = app only, 2 = boot only, 3 = both
-```
+~~~
 
 ### Contents of a .pf file
 
 1. Full path to the executable, size of the executable.
-2. Since Windows 8: internal timestamps for the last **8 executions**, stored *inside* the .pf file. Parsers also lift `$STANDARD_INFORMATION` and `$FILE_NAME` timestamps from the file's MFT record.
+2. Since Windows 8: internal timestamps for the last **8 executions**, stored *inside* the .pf file. Parsers also lift `\$STANDARD_INFORMATION` and `\$FILE_NAME` timestamps from the file's MFT record.
 3. Filesystem timestamps of the .pf file itself. Under normal operation:
    - Create time = first ever execution (the .pf is created on first run and stays).
    - Last-modified time = most recent execution.
@@ -111,13 +111,13 @@ Windows 7 auto-disabled Prefetch on SSDs (random-read cost negligible → trace 
 
 Attackers routinely wipe Prefetch:
 
-```
+~~~
 del /F /Q C:\Windows\Prefetch\*.pf
-```
+~~~
 
 Detection: deletion events on `%SystemRoot%\Prefetch\` from anything other than `SYSTEM`/`TrustedInstaller` are anomalous. Even after deletion, folder cardinality vs baseline is diagnostic — a nearly-empty Prefetch folder on a machine with weeks of uptime is a strong signal.
 
-Timestomping is harder than for most artifacts *because* the eight internal run timestamps live inside the file — spoofing them requires a proper rewrite, not the usual `SetFileTime`. Most timestomping tools only touch `$STANDARD_INFORMATION`, leaving the internal timestamps intact.
+Timestomping is harder than for most artifacts *because* the eight internal run timestamps live inside the file — spoofing them requires a proper rewrite, not the usual `SetFileTime`. Most timestomping tools only touch `\$STANDARD_INFORMATION`, leaving the internal timestamps intact.
 
 ### Bonus: compressed .pf in the wild
 
@@ -221,9 +221,9 @@ Uses a USB flash drive, SD card, or other removable device as a cache tier for m
 
 Installs a single file at the device root:
 
-```
+~~~
 \ReadyBoost.sfcache
-```
+~~~
 
 - Encrypted with **AES-128** operating on chunks of cached data.
 - Key is machine-specific, stored under `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\EMDMgmt`, DPAPI-protected.
@@ -249,9 +249,9 @@ Uses a **RAM-resident** cache during boot to accelerate the boot process. Despit
 
 Its action plan is stored as a binary blob in the registry:
 
-```
+~~~
 HKLM\SYSTEM\CurrentControlSet\Services\rdyboost\Parameters\BootPlan
-```
+~~~
 
 **What's inside a BootPlan.** An ordered list of file regions predicted to be read during the boot sequence, derived from past boot traces (the `.fx` files below). At boot, `RdyBoost` reads the plan and issues those reads *ahead of* when the boot code demands them, populating a RAM cache that boot-time reads then hit.
 
@@ -299,7 +299,7 @@ Execution history from Sysmain artifacts, ordered by reliability:
 
 1. **Internal Prefetch timestamps (last 8 runs)** — most reliable; hard to spoof without full-file rewrite.
 2. **`AgAppLaunch.db`** — per-user, timestamped, but format is version-dependent — validate against known-good samples for the target OS build.
-3. **Prefetch file `$STANDARD_INFORMATION`** — coarse (first-run + most-recent-run only), easy to timestomp.
+3. **Prefetch file `\$STANDARD_INFORMATION`** — coarse (first-run + most-recent-run only), easy to timestomp.
 4. **`layout.ini` age** — indirect: gives a lower bound on "system has been in use since ~this time."
 
 Anti-forensic and attacker patterns worth watching for:

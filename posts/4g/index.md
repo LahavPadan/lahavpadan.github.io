@@ -9,6 +9,7 @@ tags:
 entry_type: comprehensive
 math: true
 article: "article.md"
+accent: signal-processing
 ---
 
 {% include_relative article.md %}

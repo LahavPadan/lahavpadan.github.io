@@ -9,6 +9,7 @@ tags:
 entry_type: brief
 math: true
 article: "article.md"
+accent: machine-learning
 ---
 
 {% include_relative article.md %}

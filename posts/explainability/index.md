@@ -9,6 +9,7 @@ tags:
 entry_type: comprehensive
 math: true
 article: "article.md"
+accent: machine-learning
 ---
 
 {% include_relative article.md %}
