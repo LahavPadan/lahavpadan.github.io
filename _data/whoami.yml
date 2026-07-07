@@ -1,15 +1,5 @@
-# Edit this file to update the two lists on /whoami/.
-# These are examples only: remove, rename, or add entries freely.
-
-areas_of_expertise:
-  - name: Machine learning
-    note: Models, optimization, and the assumptions behind them.
-  - name: Cyber and systems
-    note: How software behaves close to the machine.
-  - name: Cryptography
-    note: The mathematics behind secure systems.
-  - name: Physics and electrical engineering
-    note: Signals, waves, fields, and the hardware that carries them.
+# Edit this file to update the recommendations list on /whoami/.
+# Add, rename, or remove entries freely — the page renders whatever is here.
 
 recommended_blogs:
   - name: Lil'Log — Lilian Weng

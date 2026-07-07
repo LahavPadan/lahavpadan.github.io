@@ -9,8 +9,11 @@ description: Notes on machine learning, cyber, cryptography, physics, and electr
 
 <section class="shell home-intro" aria-labelledby="home-title">
   <p class="home-intro__eyebrow">notes / experiments / derivations</p>
-  <h1 id="home-title">Hi, I’m Lahav Padan <span class="hebrew-name" lang="he" dir="rtl">(להב פדן)</span>.</h1>
-  <p>It is as good a time as any to show what I am working on :)</p>
+  <h1 id="home-title" class="home-intro__title">
+    <span class="home-intro__hi">Hi, you caught me mid-derivation.</span>
+    <span class="home-intro__name">I’m Lahav Padan <span class="hebrew-name" lang="he" dir="rtl">(להב פדן)</span>,</span>
+  </h1>
+  <p class="home-intro__tagline">This is as good a time as any to show you what I’m working on :)</p>
 </section>
 
 <section class="shell post-index" aria-labelledby="posts-heading">
@@ -46,7 +49,11 @@ description: Notes on machine learning, cyber, cryptography, physics, and electr
         {% assign is_cyber = true %}
       {% endif %}
       {% assign entry_type = post.entry_type | default: "comprehensive" %}
-      <article class="post-row blog-card{% if is_cyber %} post-row--cyber{% endif %}"
+      {% assign card_accent = post.accent %}
+      {% unless card_accent %}
+        {% assign card_accent = post.tags | first %}
+      {% endunless %}
+      <article class="post-row blog-card{% if is_cyber %} post-row--cyber{% endif %}{% if card_accent %} card-accent-{{ card_accent | slugify }}{% endif %}"
         data-blog-title="{{ post.title | escape }}"
         data-blog-description="{{ post.description | escape }}"
         data-blog-tags="{{ post.tags | join: '|' | escape }}">

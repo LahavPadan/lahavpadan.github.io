@@ -2,7 +2,15 @@ title: lahavpadan.github.io
 description: Notes on machine learning, cyber, cryptography, physics, and electrical engineering.
 url: "https://lahavpadan.github.io"
 baseurl: ""
+lang: en
 profile_image: "/assets/images/whoami/me.png"
+
+author:
+  name: Lahav Padan
+
+# Fill this in with the token from Google Search Console (see the note I gave you).
+# Leave it blank until then — the tag simply won't render.
+google_site_verification: "WyIFwUQImflujTpThYRQEFPBTXoOeQIx2G_n1OypzWE"
 
 markdown: kramdown
 kramdown:
@@ -10,5 +18,14 @@ kramdown:
   math_engine: mathjax
   syntax_highlighter: rouge
 
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
 exclude:
   - templates
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - vendor
+  - .github
