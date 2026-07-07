@@ -4,9 +4,9 @@ A GitHub Pages starter for a technical blog: readable, equation-friendly writing
 
 ## What changed in this version
 
-- A quiet sun/moon theme toggle in the header, instead of a circular terminal-style toggle.
-- No prompt or cursor next to the site title.
-- A personal landing-page introduction, followed immediately by search and coloured tag filters.
+- The exact header path is `~/lahavpadan.github.io/`, without a cursor or injected symbol.
+- Search and tag filters are rendered directly by Jekyll, then handled by a small no-dependency script.
+- CSS and JavaScript URLs include a build-time version query so a deployed redesign does not remain stuck behind an old browser cache.
 - No estimated reading times.
 - Each post is labelled `brief` or `comprehensive` through its front matter.
 - Any post tagged `cyber` automatically uses the cyber article layout; all other posts use the mathematical-notebook layout.
@@ -164,7 +164,7 @@ GitHub Actions publishes the update automatically.
 
 ## Visual structure
 
-- The home page uses a compact terminal-style header and post index.
-- `~/lahavpadan.github.io/` in the navigation is static text: there is deliberately no blinking cursor.
+- The home page uses a compact terminal-style header, a clear personal introduction, and a dated post archive.
+- `~/lahavpadan.github.io/` in the navigation is one exact text string: there is deliberately no blinking cursor or inserted character.
 - The `◐` button is a plain light/dark toggle. It stores your choice in the browser.
 - Posts whose `tags:` include `cyber` automatically use the cyber article layout.
