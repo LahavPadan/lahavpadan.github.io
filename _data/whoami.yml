@@ -1,20 +1,8 @@
-# Edit this file to update the two lists on /whoami/.
-# These are examples only: remove, rename, or add entries freely.
-
-areas_of_expertise:
-  - name: Machine learning
-    note: Models, optimization, and the assumptions behind them.
-  - name: Cyber and systems
-    note: How software behaves close to the machine.
-  - name: Cryptography
-    note: The mathematics behind secure systems.
-  - name: Physics and electrical engineering
-    note: Signals, waves, fields, and the hardware that carries them.
-
+# Edit this list to update the recommendations shown on /whoami/.
 recommended_blogs:
-  - name: Lil'Log — Lilian Weng
-    url: https://lilianweng.github.io/
-    note: Clear long-form learning notes.
-  - name: Matteo Malvica
-    url: https://www.matteomalvica.com/blog/
-    note: Low-level systems and cyber writing.
+  - name: "Lil'Log — Lilian Weng"
+    url: "https://lilianweng.github.io/"
+    note: "Clear long-form learning notes."
+  - name: "Matteo Malvica"
+    url: "https://www.matteomalvica.com/blog/"
+    note: "Low-level systems and cyber writing."
