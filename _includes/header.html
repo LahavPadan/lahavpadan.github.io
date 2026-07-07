@@ -1,0 +1,16 @@
+<header class="site-header">
+  <div class="shell header-inner">
+    <a class="site-mark" href="{{ '/' | relative_url }}" aria-label="lahavpadan.github.io home">
+      <span class="site-mark__prompt">~/</span>lahavpadan.github.io<span class="site-mark__cursor" aria-hidden="true"></span>
+    </a>
+
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a {% if page.url == '/' %}aria-current="page"{% endif %} href="{{ '/' | relative_url }}">posts</a>
+      <a {% if page.url == '/whoami/' %}aria-current="page"{% endif %} href="{{ '/whoami/' | relative_url }}">whoami</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Use dark theme" aria-pressed="false">
+        <span aria-hidden="true" data-theme-icon>◐</span>
+        <span class="sr-only" data-theme-text>Toggle colour theme</span>
+      </button>
+    </nav>
+  </div>
+</header>
