@@ -714,9 +714,11 @@ kbd {
 .portrait-frame img {
   display: block;
   width: 100%;
+  height: auto;
   aspect-ratio: 1 / 1;
   border: 1px solid var(--border);
   object-fit: cover;
+  object-position: center 28%;
   filter: grayscale(1) contrast(1.03);
 }
 .whoami__copy {
