@@ -8,7 +8,7 @@ tags:
 - math
 entry_type: comprehensive
 math: true
-article: 4G.md
+article: "article.md"
 ---
 
-{% include_relative {{ page.article }} %}
+{% include_relative article.md %}

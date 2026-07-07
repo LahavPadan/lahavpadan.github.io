@@ -2,13 +2,13 @@
 layout: post
 title: Elliptic Curves
 description: A from-scratch route through finite fields, curve arithmetic, Frobenius, isogenies, and the ideas that make elliptic-curve cryptography work.
-date: 2026-06-26
+date: 2026-03-09
 tags:
 - cryptography
 - math
 entry_type: comprehensive
 math: true
-article: Elliptic Curves.md
+article: "article.md"
 ---
 
-{% include_relative {{ page.article }} %}
+{% include_relative article.md %}
