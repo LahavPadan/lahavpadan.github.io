@@ -719,7 +719,6 @@ kbd {
   border: 1px solid var(--border);
   object-fit: cover;
   object-position: center 28%;
-  filter: grayscale(1) contrast(1.03);
 }
 .whoami__copy {
   max-width: 670px;
