@@ -6,7 +6,7 @@ date: 2026-06-26
 tags:
   - cryptography
   - mathematics
-reading_time: "12 min"
+entry_type: comprehensive
 math: true
 ---
 

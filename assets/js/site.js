@@ -1,14 +1,12 @@
 (function () {
   const root = document.documentElement;
   const toggle = document.querySelector('[data-theme-toggle]');
-  const icon = document.querySelector('[data-theme-icon]');
 
   function updateThemeButton() {
     if (!toggle) return;
     const isDark = root.dataset.theme === 'dark';
     toggle.setAttribute('aria-pressed', String(isDark));
     toggle.setAttribute('aria-label', isDark ? 'Use light theme' : 'Use dark theme');
-    if (icon) icon.textContent = isDark ? '☀' : '◐';
   }
 
   updateThemeButton();
@@ -28,6 +26,7 @@
 
   if (!cards.length || !filters) return;
 
+  // Tags come from each post's `tags:` field in its index.md front matter.
   const tags = [...new Set(cards.flatMap(function (card) {
     return (card.dataset.tags || '').split('|').map(function (tag) { return tag.trim(); }).filter(Boolean);
   }))].sort(function (a, b) { return a.localeCompare(b); });
@@ -43,7 +42,7 @@
     const button = document.createElement('button');
     button.type = 'button';
     button.className = tag === 'all' ? 'tag-filter' : 'tag-filter tag--' + slugify(tag);
-    button.textContent = tag === 'all' ? 'all fields' : tag;
+    button.textContent = tag;
     button.dataset.tag = tag;
     button.setAttribute('aria-pressed', 'false');
     button.addEventListener('click', function () {

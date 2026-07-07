@@ -5,7 +5,7 @@ description: "A systems note on reasoning about memory layouts, invariants, and 
 date: 2026-05-30
 tags:
   - cyber
-reading_time: "7 min"
+entry_type: brief
 math: false
 ---
 

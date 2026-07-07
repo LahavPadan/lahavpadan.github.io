@@ -6,7 +6,7 @@ date: 2026-06-12
 tags:
   - physics
   - electrical engineering
-reading_time: "14 min"
+entry_type: comprehensive
 math: true
 ---
 

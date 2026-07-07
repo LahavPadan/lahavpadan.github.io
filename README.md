@@ -1,71 +1,38 @@
 # lahavpadan.github.io
 
-A GitHub Pages starter for a technical blog that combines a **calm mathematical notebook** with a **restrained cyber / terminal layer**.
+A GitHub Pages starter for a technical blog: readable, equation-friendly writing for mathematical topics; a more spare, monospace-first treatment for cyber posts.
 
-- Light and dark theme button
-- `posts` and `whoami` navigation in the upper-right
-- Search directly on the home page (`/` focuses it)
-- Clickable, coloured tags directly on the home page
-- Boxed post excerpts arranged as a dated timeline with horizontal dividers
-- No social links
-- MathJax for `$inline$` and `$$display$$` mathematics
-- A post format that works naturally in Obsidian: one folder per post, an `index.md`, and adjacent images
+## What changed in this version
 
-## 1. Create the GitHub repository
+- A quiet sun/moon theme toggle in the header, instead of a circular terminal-style toggle.
+- No prompt or cursor next to the site title.
+- A personal landing-page introduction, followed immediately by search and coloured tag filters.
+- No estimated reading times.
+- Each post is labelled `brief` or `comprehensive` through its front matter.
+- Any post tagged `cyber` automatically uses the cyber article layout; all other posts use the mathematical-notebook layout.
+- `/whoami/` contains your rewritten introduction, photo frame, areas of focus, and a short reading list.
+- `_data/whoami.yml` is the one place to edit the areas and recommended blogs.
+- The footer reads: `Lahav Padan · looking into the internals`.
 
-Your account name must be `lahavpadan`. Create a **public** repository named exactly:
+## 1. Publish with GitHub Pages
+
+Create a **public** GitHub repository named exactly:
 
 ```text
 lahavpadan.github.io
 ```
 
-That special repository name makes this a user site, so its public address is:
+Upload or push the files in this folder. Then open:
 
 ```text
-https://lahavpadan.github.io
+Repository → Settings → Pages → Build and deployment → Source → GitHub Actions
 ```
 
-Do not create a repository named `blog` or `website`: that would create a project site with a longer URL.
+The included workflow in `.github/workflows/pages.yml` builds and deploys the site after every push to `main`.
 
-## 2. Put this starter into the repository
+## 2. Add a post: the Obsidian-style workflow
 
-Either upload this folder through GitHub's web interface, or run these commands from the root of this folder:
-
-```bash
-git init
-git add .
-git commit -m "Create technical notebook site"
-git branch -M main
-git remote add origin https://github.com/lahavpadan/lahavpadan.github.io.git
-git push -u origin main
-```
-
-## 3. Turn on GitHub Pages
-
-In the GitHub repository:
-
-1. Open **Settings**.
-2. Open **Pages** in the left sidebar.
-3. Under **Build and deployment → Source**, select **GitHub Actions**.
-4. Push to `main` again if GitHub does not start the workflow automatically.
-5. Watch the **Actions** tab until the `Deploy Jekyll site to GitHub Pages` workflow succeeds.
-
-The workflow in `.github/workflows/pages.yml` builds the site and deploys it. Do not configure branch deployment as well.
-
-## 4. Preview locally (optional but useful)
-
-Install Ruby first. Then, from the project root:
-
-```bash
-bundle install
-bundle exec jekyll serve --livereload
-```
-
-Open the local address printed in the terminal, normally `http://127.0.0.1:4000`.
-
-## 5. Write a new post — the Obsidian-style workflow
-
-Open this whole repository as an Obsidian vault if you like. Each post lives in one self-contained folder:
+Each post is a self-contained folder:
 
 ```text
 posts/
@@ -75,90 +42,122 @@ posts/
     result.png
 ```
 
-1. Copy `templates/post-template.md` into `posts/my-new-topic/index.md`.
-2. Fill in its front matter: title, description, date, tags, reading time, and whether it uses math.
-3. Keep images alongside `index.md`.
-4. Link them with normal Markdown, e.g. `![diagram](diagram.svg)`.
-5. Commit and push. GitHub Pages will publish the change.
+Copy `templates/post-template.md` into `posts/my-new-topic/index.md`, then edit its front matter.
 
-The required `layout: post` line is what makes a Markdown page appear in the home-page timeline. The `description` becomes its card excerpt and its search text.
+```yaml
+---
+layout: post
+title: "A precise title"
+description: "A one- or two-sentence summary."
+date: 2026-07-07
+tags:
+  - machine learning
+entry_type: comprehensive # Either `brief` or `comprehensive`.
+math: true
+---
+```
 
-### Recommended tag spelling
+Use normal Obsidian-compatible Markdown below that block. Keep images in the same folder and reference them normally:
 
-Use these exact spellings so their colours stay consistent:
+```md
+![A useful diagram](diagram.svg)
+```
+
+## 3. How tags work
+
+Tags are determined by the `tags:` list in the front matter of every post’s `index.md`.
 
 ```yaml
 tags:
-  - machine learning
   - cyber
   - cryptography
-  - physics
-  - electrical engineering
 ```
 
-`mathematics` is also styled. Other tags still work; they simply use the neutral treatment until you add a colour in `assets/css/main.css`.
+When GitHub Pages builds the site, the home page receives those tags. The browser then gathers the unique tags from every rendered post card and creates the filter buttons automatically. There is no separate tag database to keep in sync.
 
-## 6. Add your photo to `whoami`
-
-1. Put your image at `assets/images/whoami/profile.jpg`.
-2. In `_config.yml`, change:
-
-```yaml
-profile_image: "/assets/images/whoami/profile-placeholder.svg"
-```
-
-to:
-
-```yaml
-profile_image: "/assets/images/whoami/profile.jpg"
-```
-
-3. Edit the prose in `whoami.md`.
-
-The surrounding frame uses a monochrome treatment and technical corner marks. It lets a natural portrait feel part of the site without making the page look like a social profile.
-
-A head-and-shoulders image with a quiet background works best. Do not bake a heavy filter into the photo; the CSS already applies the shared look.
-
-## 7. Change the visual system
-
-- **Colours and spacing:** `assets/css/main.css`
-- **Search, tags, theme button:** `assets/js/site.js`
-- **Navigation:** `_includes/header.html`
-- **Page shell, fonts, MathJax:** `_layouts/default.html`
-- **Article page layout:** `_layouts/post.html`
-- **Site title / URL / profile image:** `_config.yml`
-
-The deliberate combination is:
-
-| Mathematical-note side | Cyber side |
-| --- | --- |
-| Georgia-like readable article typography | Monospace navigation and metadata |
-| Restrained cards with explanatory excerpts | `~/` mark, cursor, query-like `whoami` language |
-| Calm light canvas and clear equations | Green accent, thin dividers, date timeline |
-| Accessible contrast and low visual noise | Small terminal cues instead of a full “hacker” skin |
-
-## Directory map
+The named tags below already have colours in `assets/css/main.css`:
 
 ```text
-.
-├── .github/workflows/pages.yml     # deploys GitHub Pages
-├── _config.yml                     # site configuration
-├── _includes/header.html           # upper navigation
-├── _layouts/default.html           # shared page wrapper
-├── _layouts/post.html              # article layout
-├── assets/
-│   ├── css/main.css                # all visual styling
-│   ├── js/site.js                  # search, filters, theme toggle
-│   └── images/                     # profile, favicon, diagrams
-├── posts/                          # one folder per article
-├── templates/post-template.md      # copy this for each new post
-├── index.html                      # searchable, filterable home page
-└── whoami.md                       # about page
+machine learning
+cyber
+cryptography
+physics
+electrical engineering
+mathematics
 ```
 
-## Before publishing
+A new tag still appears and filters correctly, but uses the neutral tag style until you add its colour class. Add a new rule near the comment `Add colour classes here`, for example:
 
-- Replace all sample posts in `posts/` with your own, or delete them.
-- Update the writing in `whoami.md`.
-- Add your photo.
-- Confirm that no private material is committed: GitHub Pages sites are public.
+```css
+.tag--signal-processing {
+  color: #1c62a8;
+  border-color: #a9cbed;
+  background: #edf6fe;
+}
+```
+
+## 4. Cyber layout versus mathematical-notebook layout
+
+The distinction is made automatically by tags:
+
+```yaml
+tags:
+  - cyber
+```
+
+A cyber post gets a more spare, monospace-first article page with divider-led headings. Every post without `cyber` gets the readable serif layout for long explanations and mathematics.
+
+A post can have several tags. As long as `cyber` is one of them, it receives the cyber layout.
+
+## 5. Brief versus comprehensive posts
+
+Instead of estimated reading time, use:
+
+```yaml
+entry_type: brief
+```
+
+or:
+
+```yaml
+entry_type: comprehensive
+```
+
+These labels appear on the home-page card and on the post page. They are a description of the post’s intended depth, not a calculated promise about how long someone takes to read.
+
+## 6. Edit `whoami`
+
+- **Writing and layout:** `whoami.md`
+- **Photo:** place an image at `assets/images/whoami/profile.jpg`, then change `profile_image` in `_config.yml` to that path.
+- **Areas of focus and recommended blogs:** `_data/whoami.yml`
+
+The photo frame applies a shared monochrome treatment in CSS, so use a natural, well-lit head-and-shoulders photo and let the page supply the technical frame.
+
+## 7. Main files
+
+```text
+.github/workflows/pages.yml  # GitHub Pages deployment
+_config.yml                  # URL, title, profile photo location
+_data/whoami.yml             # Focus areas and blogs you recommend
+_includes/header.html        # Header links and theme switch
+_layouts/default.html        # Shared page shell and footer
+_layouts/post.html           # Automatic normal/cyber article layout
+assets/css/main.css          # All visual styling and tag colours
+assets/js/site.js            # Theme switch, search, automatic tag filters
+index.html                   # Home page
+whoami.md                    # About page
+posts/                       # One folder per blog entry
+templates/post-template.md   # Copy this for a new entry
+```
+
+## 8. Push changes
+
+From the repository folder in Git Bash:
+
+```bash
+git add .
+git commit -m "Add a new post"
+git push
+```
+
+GitHub Actions publishes the update automatically.

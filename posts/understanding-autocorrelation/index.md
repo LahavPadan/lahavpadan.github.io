@@ -6,7 +6,7 @@ date: 2026-07-06
 tags:
   - machine learning
   - electrical engineering
-reading_time: "9 min"
+entry_type: comprehensive
 math: true
 ---
 

@@ -1,44 +1,48 @@
 ---
 layout: default
 title: Posts
-description: A technical notebook on machine learning, cyber, cryptography, physics, and electrical engineering.
+description: Notes on machine learning, cyber, cryptography, physics, and electrical engineering.
 ---
 {% assign posts = site.pages | where: "layout", "post" | sort: "date" | reverse %}
 <section class="shell home-hero" aria-labelledby="home-title">
-  <p class="eyebrow">technical notebook / 0x01</p>
-  <h1 id="home-title">Ideas worth<br><em>working through.</em></h1>
-  <p class="home-hero__lede">Long-form notes on machine learning, cyber, cryptography, physics, and electrical engineering.</p>
+  <h1 id="home-title">Hi, I’m Lahav Padan <span class="home-hero__hebrew">(להב פדן)</span>.</h1>
+  <p class="home-hero__lede">It is as good a time as any to show what I am working on :)</p>
 
   <div class="search-panel">
     <label class="sr-only" for="post-search">Search posts</label>
-    <span class="search-panel__glyph" aria-hidden="true">⌕</span>
-    <input id="post-search" type="search" autocomplete="off" placeholder="Search notes, tags, and topics" data-post-search>
+    <svg class="search-panel__glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.6"></circle><path d="m16 16 4.4 4.4"></path></svg>
+    <input id="post-search" type="search" autocomplete="off" placeholder="Search posts, tags, and topics" data-post-search>
     <kbd aria-hidden="true">/</kbd>
   </div>
 
   <div class="filter-region" aria-label="Filter posts by tag">
-    <div class="filter-region__label">filter by field</div>
+    <div class="filter-region__label">filter by tag</div>
     <div class="tag-filters" data-tag-filters></div>
   </div>
 </section>
 
 <section class="shell post-index" aria-labelledby="posts-heading">
   <div class="post-index__heading">
-    <h2 id="posts-heading">Selected posts</h2>
+    <h2 id="posts-heading">Posts</h2>
     <p id="post-count" aria-live="polite">{{ posts.size }} posts</p>
   </div>
 
   <div class="timeline" data-post-list>
     {% for post in posts %}
-      <article class="post-row" data-post-card data-title="{{ post.title | escape }}" data-description="{{ post.description | escape }}" data-tags="{{ post.tags | join: '|' | escape }}">
+      {% assign is_cyber = false %}
+      {% if post.tags contains "cyber" %}
+        {% assign is_cyber = true %}
+      {% endif %}
+      {% assign entry_type = post.entry_type | default: "comprehensive" %}
+      <article class="post-row{% if is_cyber %} post-row--cyber{% endif %}" data-post-card data-title="{{ post.title | escape }}" data-description="{{ post.description | escape }}" data-tags="{{ post.tags | join: '|' | escape }}">
         <div class="post-row__date">
           <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y" }}</time>
           <span>{{ post.date | date: "%b %-d" }}</span>
         </div>
         <div class="post-card">
           <div class="post-card__meta">
-            <span>{% if post.reading_time %}{{ post.reading_time }}{% else %}note{% endif %}</span>
-            <span aria-hidden="true">/</span>
+            <span class="entry-type entry-type--{{ entry_type | slugify }}">{{ entry_type }}</span>
+            <span aria-hidden="true">·</span>
             <div class="tag-list">
               {% for tag in post.tags %}
                 <a class="tag tag--{{ tag | slugify }}" href="{{ '/' | relative_url }}?tag={{ tag | url_encode }}">{{ tag }}</a>
@@ -47,10 +51,10 @@ description: A technical notebook on machine learning, cyber, cryptography, phys
           </div>
           <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
           <p>{{ post.description }}</p>
-          <a class="read-link" href="{{ post.url | relative_url }}">Read note <span aria-hidden="true">→</span></a>
+          <a class="read-link" href="{{ post.url | relative_url }}">Read entry <span aria-hidden="true">→</span></a>
         </div>
       </article>
     {% endfor %}
   </div>
-  <p class="empty-state" hidden data-empty-state>No notes match that search yet.</p>
+  <p class="empty-state" hidden data-empty-state>No posts match that search yet.</p>
 </section>
