@@ -1,11 +1,14 @@
 ---
 layout: post
-title: "4G"
-description: "4G, the protocol internals and the signal processing behind it."
+title: 4G
+description: 'From OFDM and 1 ms scheduling to LTE''s flat architecture and core network: how 4G moves data from a phone to the internet.'
 date: 2026-06-26
 tags:
-  - signal-processing
-  - math
+- signal-processing
+- math
 entry_type: comprehensive
 math: true
+article: 4G.md
 ---
+
+{% include_relative {{ page.article }} %}

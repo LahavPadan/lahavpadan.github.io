@@ -2,7 +2,7 @@ title: lahavpadan.github.io
 description: Notes on machine learning, cyber, cryptography, physics, and electrical engineering.
 url: "https://lahavpadan.github.io"
 baseurl: ""
-profile_image: "/assets/images/whoami/profile-placeholder.svg"
+profile_image: "/assets/images/whoami/me.png"
 
 markdown: kramdown
 kramdown:
