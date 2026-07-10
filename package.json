@@ -1,0 +1,15 @@
+{
+  "name": "lahavpadan-site-build-tools",
+  "private": true,
+  "version": "1.1.0",
+  "description": "Build-time rendering, post validation, and search metadata for lahavpadan.github.io",
+  "scripts": {
+    "validate:posts": "node scripts/validate-post-folders.cjs",
+    "postbuild": "node scripts/postprocess-site.cjs",
+    "validate:seo": "node scripts/validate-seo-output.cjs"
+  },
+  "dependencies": {
+    "cheerio": "1.0.0",
+    "mathjax-full": "3.2.2"
+  }
+}

@@ -1,3 +1,4 @@
+## Overview
 
 Sysmain (called "SuperFetch" through Windows 7/8, renamed "SysMain" from Windows 10) is a Windows service intended to improve interactive responsiveness by learning what the user does and pre-warming the memory manager accordingly.
 
@@ -27,7 +28,7 @@ Sysmain runs in **user mode**. It gets its data via two channels:
    - `SystemProcessInformation` — running processes.
    - `SystemExtendedHandleInformation` — open handles.
 
-**Why user-mode Sysmain needs a kernel bridge at all.** Prediction is grounded in *which physical pages* belong to *which process* and *how often each is faulted in*. The PFN database and `EPROCESS` are kernel structures — invisible from user mode without a syscall bridge. `SystemSuperfetchInformation` (class value 79) is a semi-documented class designed specifically to feed the Sysmain agents this data; if you wanted to build a comparable predictor from scratch, this is the class you'd have to reverse.
+**Why user-mode Sysmain needs a kernel bridge at all.** Prediction is grounded in *which physical pages* belong to *which process* and *how often each is faulted in*. The PFN database and `EPROCESS` are kernel structures — invisible from user mode without a syscall bridge. `SystemSuperfetchInformation` (class value 79) is a semi-documented class designed specifically to feed the Sysmain agents this data; anyone building a comparable predictor from scratch would have to reverse this class.
 
 Sysmain is the umbrella service for **Prefetch, SuperFetch, ReadyBoost, ReadyBoot** (and, historically, **ReadyDrive**).
 
@@ -57,26 +58,26 @@ A `.pf` file is **not** a copy of the code pages. It is a *plan* — a list of f
 
 On the *next* launch of the same exe, the memory manager reads the `.pf` file **before the loader starts resolving imports** and asynchronously issues page reads for the recorded ranges. By the time the loader reaches those pages, they are either already in RAM (soft page fault instead of hard) or already in flight, so the hard page fault gets shortened.
 
-This is why Prefetch speeds up **cold** launches but has essentially no effect on warm ones (the pages are already resident) and no effect at all if you disable it.
+This is why Prefetch speeds up **cold** launches but has essentially no effect on warm ones (the pages are already resident) and no effect at all when disabled.
 
 Enable/disable:
 
-~~~
+```
 HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters\EnablePrefetcher
   0 = disabled, 1 = app only, 2 = boot only, 3 = both
-~~~
+```
 
 ### Contents of a .pf file
 
 1. Full path to the executable, size of the executable.
-2. Since Windows 8: internal timestamps for the last **8 executions**, stored *inside* the .pf file. Parsers also lift `\$STANDARD_INFORMATION` and `\$FILE_NAME` timestamps from the file's MFT record.
+2. Since Windows 8: internal timestamps for the last **8 executions**, stored *inside* the .pf file. Parsers also lift `$STANDARD_INFORMATION` and `$FILE_NAME` timestamps from the file's MFT record.
 3. Filesystem timestamps of the .pf file itself. Under normal operation:
    - Create time = first ever execution (the .pf is created on first run and stays).
    - Last-modified time = most recent execution.
 
    *Important caveat:* if Sysmain rebuilds the .pf (e.g., the exe or its imports changed enough to invalidate the previous plan), the Create time *resets*. The eight internal timestamps are the reliable execution-history source; filesystem timestamps are the coarser fallback and are trivial to timestomp.
 4. Execution count.
-5. Directories and files referenced, **including the volume ID** — you get not just the path but *which drive*, which matters when reconstructing execution across removable media.
+5. Directories and files referenced, **including the volume ID** — we get not just the path but *which drive*, which matters when reconstructing execution across removable media.
 6. DLLs loaded during the traced window.
 
 ### Naming (with a forensic consequence)
@@ -111,13 +112,13 @@ Windows 7 auto-disabled Prefetch on SSDs (random-read cost negligible → trace 
 
 Attackers routinely wipe Prefetch:
 
-~~~
+```
 del /F /Q C:\Windows\Prefetch\*.pf
-~~~
+```
 
 Detection: deletion events on `%SystemRoot%\Prefetch\` from anything other than `SYSTEM`/`TrustedInstaller` are anomalous. Even after deletion, folder cardinality vs baseline is diagnostic — a nearly-empty Prefetch folder on a machine with weeks of uptime is a strong signal.
 
-Timestomping is harder than for most artifacts *because* the eight internal run timestamps live inside the file — spoofing them requires a proper rewrite, not the usual `SetFileTime`. Most timestomping tools only touch `\$STANDARD_INFORMATION`, leaving the internal timestamps intact.
+Timestomping is harder than for most artifacts *because* the eight internal run timestamps live inside the file — spoofing them requires a proper rewrite, not the usual `SetFileTime`. Most timestomping tools only touch `$STANDARD_INFORMATION`, leaving the internal timestamps intact.
 
 ### Bonus: compressed .pf in the wild
 
@@ -156,7 +157,7 @@ We get the standard guarantee: the state distribution converges to a **stationar
 
 ### Why Markov and not something more expressive
 
-The feature dates to Vista (2007) and runs continuously on every Windows box. Markov gets you: O(states²) storage and O(1) online update; provable convergence; no train/inference split; predictions that are explainable in one line. For a background service that must not perturb the workload it's optimizing, this beats a neural net — and Windows never revisited the choice.
+The feature dates to Vista (2007) and runs continuously on every Windows box. Markov offers: O(states²) storage and O(1) online update; provable convergence; no train/inference split; predictions that are explainable in one line. For a background service that must not perturb the workload it's optimizing, this beats a neural net — and Windows never revisited the choice.
 
 ### The 6-hour diurnal buckets
 
@@ -164,7 +165,7 @@ Sysmain builds four models per day — roughly morning, noon, evening, night, ea
 
 ### Memory priority
 
-Pages holding SuperFetch's own working set are considered critical and are allocated with **memory priority = 7** (the highest), pinning them against being swapped or trimmed. Compare with Prefetch's writes at priority 1. The reasoning: SuperFetch loses value if the prediction model itself is paged out — you'd defeat the point of prefetching by making the prefetcher slow.
+Pages holding SuperFetch's own working set are considered critical and are allocated with **memory priority = 7** (the highest), pinning them against being swapped or trimmed. Compare with Prefetch's writes at priority 1. The reasoning: SuperFetch loses value if the prediction model itself is paged out — we'd defeat the point of prefetching by making the prefetcher slow.
 
 ### Relationship to the standby list (the load-bearing operational detail)
 
@@ -204,7 +205,7 @@ It is a **volume filter driver**, intercepting volume-level I/O to cache reads i
 - **ReadyBoot** cache is **not** encrypted.
 - **ReadyBoost** cache **is** encrypted (AES-128).
 
-**Why the encryption asymmetry.** ReadyBoot's cache lives on the boot volume — specifically in an area accessible before/around the BitLocker unlock. The EFI system partition and pre-unlock boot data are already in the clear (the CPU has to execute them before decryption keys are available), so encrypting ReadyBoot's cache there would just add cycles without changing the threat model. ReadyBoost, in contrast, writes to *external removable media* that will physically leave the premises with the user — the relevant threat is a lost/stolen USB stick full of RAM snapshots, which is exactly what AES buys you.
+**Why the encryption asymmetry.** ReadyBoot's cache lives on the boot volume — specifically in an area accessible before/around the BitLocker unlock. The EFI system partition and pre-unlock boot data are already in the clear (the CPU has to execute them before decryption keys are available), so encrypting ReadyBoot's cache there would just add cycles without changing the threat model. ReadyBoost, in contrast, writes to *external removable media* that physically leaves the premises — the relevant threat is a lost or stolen USB stick full of RAM snapshots, which is exactly what AES defends against.
 
 Scope difference:
 
@@ -221,9 +222,9 @@ Uses a USB flash drive, SD card, or other removable device as a cache tier for m
 
 Installs a single file at the device root:
 
-~~~
+```
 \ReadyBoost.sfcache
-~~~
+```
 
 - Encrypted with **AES-128** operating on chunks of cached data.
 - Key is machine-specific, stored under `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\EMDMgmt`, DPAPI-protected.
@@ -239,7 +240,7 @@ Sysmain uses **External Memory Management** to decide whether a candidate device
 
 **Size bounds:** 256 MB minimum. Max varies by filesystem — 4 GB with FAT32, 32 GB with NTFS, larger with ExFAT.
 
-**Practical relevance today.** With commodity RAM and internal SSDs standard, ReadyBoost offers essentially no measurable improvement on modern systems and Windows 10+ often declines to enable it. When you *do* see `.sfcache` in the wild, treat it as an artifact from a low-RAM device or a legacy install; its forensic weight has correspondingly dropped.
+**Practical relevance today.** With commodity RAM and internal SSDs standard, ReadyBoost offers essentially no measurable improvement on modern systems and Windows 10+ often declines to enable it. When `.sfcache` *does* turn up in the wild, treat it as an artifact from a low-RAM device or a legacy install; its forensic weight has correspondingly dropped.
 
 ---
 
@@ -249,15 +250,15 @@ Uses a **RAM-resident** cache during boot to accelerate the boot process. Despit
 
 Its action plan is stored as a binary blob in the registry:
 
-~~~
+```
 HKLM\SYSTEM\CurrentControlSet\Services\rdyboost\Parameters\BootPlan
-~~~
+```
 
 **What's inside a BootPlan.** An ordered list of file regions predicted to be read during the boot sequence, derived from past boot traces (the `.fx` files below). At boot, `RdyBoost` reads the plan and issues those reads *ahead of* when the boot code demands them, populating a RAM cache that boot-time reads then hit.
 
 **BootPlan is deleted ~50 seconds after Sysmain starts.** Rationale: at this point boot is deemed complete, the cache has served its purpose, and holding a stale plan risks it being consumed on the next boot before Sysmain has had a chance to regenerate it against current file layout.
 
-Under `%SystemRoot%\Prefetch\ReadyBoot\`, `.fx` files store traces of boot-time I/O operations. These are **ETW** (Event Tracing for Windows) trace files — the events come primarily from the `Microsoft-Windows-Kernel-Prefetch` provider (and adjacent kernel-boot providers). Because they're ETW, you can open them with `xperf` / WPA to inspect the recorded boot I/O timeline directly.
+Under `%SystemRoot%\Prefetch\ReadyBoot\`, `.fx` files store traces of boot-time I/O operations. These are **ETW** (Event Tracing for Windows) trace files — the events come primarily from the `Microsoft-Windows-Kernel-Prefetch` provider (and adjacent kernel-boot providers). Because they're ETW, they can be opened with `xperf` / WPA to inspect the recorded boot I/O timeline directly.
 
 **Interaction with `layout.ini`.** The same trace data that generates the BootPlan also feeds `layout.ini`, which the defragmenter reads to physically reorder boot files. On HDDs the layout side is the more impactful of the two (seeks dominate cost); on SSDs only the BootPlan matters.
 
@@ -276,7 +277,7 @@ Data is written to the onboard flash via the **NV Cache feature set** introduced
 - `NV Cache Remove from NV Cache Pinned Set`
 - `NV Cache Query Misses`
 
-**Current relevance.** ReadyDrive is a Vista/7-era feature. HHDs lost commercially to pure SSDs; you rarely encounter one on modern hardware. Windows still supports the mechanism, but on a machine with a real SSD it does nothing. If you're triaging a modern system, this is the least likely of the four subsystems to be actively in use.
+**Current relevance.** ReadyDrive is a Vista/7-era feature. HHDs lost commercially to pure SSDs; they are rarely encountered on modern hardware. Windows still supports the mechanism, but on a machine with a real SSD it does nothing. For a modern-system triage, this is the least likely of the four subsystems to be actively in use.
 
 ---
 
@@ -299,7 +300,7 @@ Execution history from Sysmain artifacts, ordered by reliability:
 
 1. **Internal Prefetch timestamps (last 8 runs)** — most reliable; hard to spoof without full-file rewrite.
 2. **`AgAppLaunch.db`** — per-user, timestamped, but format is version-dependent — validate against known-good samples for the target OS build.
-3. **Prefetch file `\$STANDARD_INFORMATION`** — coarse (first-run + most-recent-run only), easy to timestomp.
+3. **Prefetch file `$STANDARD_INFORMATION`** — coarse (first-run + most-recent-run only), easy to timestomp.
 4. **`layout.ini` age** — indirect: gives a lower bound on "system has been in use since ~this time."
 
 Anti-forensic and attacker patterns worth watching for:

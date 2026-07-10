@@ -1,10 +1,55 @@
 # Edit this file to update the recommendations list on /whoami/.
-# Add, rename, or remove entries freely — the page renders whatever is here.
+# Each URL points to the blog or publication as a whole, not to one article.
 
 recommended_blogs:
-  - name: Lil'Log — Lilian Weng
-    url: https://lilianweng.github.io/
-    note: Clear long-form learning notes.
-  - name: Matteo Malvica
-    url: https://www.matteomalvica.com/blog/
-    note: Low-level systems and cyber writing.
+  - name: Alex Shtoff
+    url: https://alexshtf.github.io/
+    note: Optimization, machine learning, and software engineering.
+
+  - name: Andy Jones
+    url: https://andrewcharlesjones.github.io/menu/blog.html
+    note: Statistics, probability, machine learning, and mathematical notes.
+
+  - name: Keep the Gradient Flowing
+    url: https://fa.bianp.net/archives.html
+    note: Optimization, statistics, and machine learning.
+
+  - name: colah's blog
+    url: https://colah.github.io/
+    note: Visual explanations of neural networks and machine learning.
+
+  - name: Distill
+    url: https://distill.pub/
+    note: Interactive research articles about machine learning.
+
+  - name: Gregory Gundersen
+    url: https://gregorygundersen.com/blog/
+    note: Detailed notes on statistics, machine learning, and applied mathematics.
+
+  - name: Shell Guardians
+    url: https://www.shellguardians.com/
+    note: Unix, infrastructure, systems administration, and security.
+
+  - name: Exploit Reversing
+    url: https://exploitreversing.com/
+    note: Vulnerability research, exploit development, and reverse engineering.
+
+  - name: Decoder's Blog
+    url: https://decoder.cloud/
+    note: Windows, Active Directory, offensive security, and practical research.
+
+  - name: Secure Ideas — Professionally Evil Insights
+    url: https://www.secureideas.com/blog
+    note: Penetration testing, application security, hardware hacking, and security research.
+
+  - name: Improsec Tech Blog (itm8)
+    url: https://itm8.com/articles/tag/tech-blog
+    note: Active Directory, Windows security, identity attacks, and defensive research.
+
+  - name: Ardent101
+    url: https://ardent101.github.io/
+    note: Active Directory, Kerberos, Windows security, and penetration testing.
+
+  - name: Chudamax — I understand
+    url: https://www.chudamax.com/
+    note: Detailed information-security notes, particularly on Kerberos and Active Directory.
