@@ -16,7 +16,11 @@ permalink: /whoami/
     <figure class="portrait-frame">
       <picture>
         <source srcset="{{ '/assets/images/whoami/me.webp' | relative_url }}" type="image/webp">
-        <img src="{{ '/assets/images/whoami/me.jpg' | relative_url }}" alt="Portrait of Lahav Padan" width="600" height="600" loading="lazy" decoding="async">
+        <img src="{{ '/assets/images/whoami/me.jpg' | relative_url }}"
+             alt="Portrait of Lahav Padan"
+             width="600" height="600"
+             fetchpriority="high"
+             decoding="async">
       </picture>
     </figure>
 

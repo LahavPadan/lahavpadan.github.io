@@ -29,128 +29,20 @@ layout: default
   </header>
   <div class="post-page__rule" aria-hidden="true"></div>
   {% if entry_type == "comprehensive" %}
+    {%- comment -%}
+      Empty TOC shell. post-enhancements.js populates it from the article's
+      h2/h3/h4 headings, then wires up a rAF-throttled scroll-spy that reads
+      pre-measured heading offsets via binary search — far cheaper than firing
+      an IntersectionObserver callback for every heading on every scroll frame.
+    {%- endcomment -%}
     <nav class="post-toc" id="post-toc" aria-label="Table of contents" hidden>
       <p class="post-toc__title">on this page</p>
       <ol class="post-toc__list" id="post-toc-list"></ol>
     </nav>
   {% endif %}
-  <div class="article-prose{% if is_cyber %} article-prose--cyber{% endif %}">
+  <div class="article-prose{% if is_cyber %} article-prose--cyber{% endif %}"
+       data-article-url="{{ page.url }}"
+       data-build-version="{{ site.time | date: '%s' }}">
     {{ content }}
   </div>
 </article>
-{% if entry_type == "comprehensive" %}
-<script>
-(function () {
-  'use strict';
-
-  var nav = document.getElementById('post-toc');
-  var listEl = document.getElementById('post-toc-list');
-  var prose = document.querySelector('.article-prose');
-  if (!nav || !listEl || !prose) return;
-
-  var all = Array.prototype.slice.call(prose.querySelectorAll('h2, h3, h4'));
-  if (all.length < 2) {
-    if (nav.parentNode) nav.parentNode.removeChild(nav);
-    return;
-  }
-
-  var hasH2 = all.some(function (h) { return h.tagName === 'H2'; });
-  var topTag = hasH2 ? 'H2' : 'H3';
-
-  function isTop(h) { return h.tagName === topTag; }
-  function isSub(h) {
-    return topTag === 'H2'
-      ? (h.tagName === 'H3' || h.tagName === 'H4')
-      : (h.tagName === 'H4');
-  }
-
-  var linkable = all.filter(function (h) { return isTop(h) || isSub(h); });
-  /* Very long references (dozens of subsections) collapse to a clean,
-     section-level list; shorter ones show their subsections too. */
-  var includeSubs = linkable.length <= 40;
-
-  function slugify(text) {
-    return String(text || '')
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\u0590-\u05ff]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  }
-
-  var used = {};
-  function ensureId(h) {
-    if (h.id) { used[h.id] = true; return; }
-    var base = slugify(h.textContent) || 'section';
-    var id = base;
-    var n = 1;
-    while (document.getElementById(id) || used[id]) {
-      id = base + '-' + n;
-      n += 1;
-    }
-    h.id = id;
-    used[h.id] = true;
-  }
-
-  function makeItem(h, cls) {
-    var li = document.createElement('li');
-    li.className = 'post-toc__item ' + cls;
-    var a = document.createElement('a');
-    a.className = 'post-toc__link';
-    a.href = '#' + h.id;
-    a.textContent = h.textContent;
-    li.appendChild(a);
-    return li;
-  }
-
-  var currentSub = null;
-  var linked = [];
-
-  all.forEach(function (h) {
-    if (isTop(h)) {
-      ensureId(h);
-      currentSub = null;
-      listEl.appendChild(makeItem(h, 'post-toc__item--top'));
-      linked.push(h);
-    } else if (isSub(h) && includeSubs) {
-      ensureId(h);
-      if (!currentSub) {
-        currentSub = document.createElement('ol');
-        currentSub.className = 'post-toc__sublist';
-        (listEl.lastElementChild || listEl).appendChild(currentSub);
-      }
-      currentSub.appendChild(makeItem(h, 'post-toc__item--sub'));
-      linked.push(h);
-    }
-  });
-
-  nav.hidden = false;
-
-  var links = {};
-  Array.prototype.forEach.call(nav.querySelectorAll('a[href^="#"]'), function (a) {
-    links[a.getAttribute('href').slice(1)] = a;
-  });
-
-  if ('IntersectionObserver' in window) {
-    var visible = {};
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) visible[entry.target.id] = true;
-        else delete visible[entry.target.id];
-      });
-      var chosen = null;
-      var top = Infinity;
-      linked.forEach(function (h) {
-        if (visible[h.id]) {
-          var offset = h.getBoundingClientRect().top;
-          if (offset < top) { top = offset; chosen = h.id; }
-        }
-      });
-      Object.keys(links).forEach(function (id) {
-        links[id].classList.toggle('is-active', id === chosen);
-      });
-    }, { rootMargin: '-80px 0px -70% 0px', threshold: 0 });
-    linked.forEach(function (h) { observer.observe(h); });
-  }
-}());
-</script>
-{% endif %}
