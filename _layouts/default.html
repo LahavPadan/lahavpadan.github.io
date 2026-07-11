@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="index, follow">
+
+    {% if site.google_site_verification and site.google_site_verification != "" %}
+    <meta name="google-site-verification" content="{{ site.google_site_verification }}">
+    {% endif %}
+
+    {% comment %}
+    Keep Jekyll SEO Tag for canonical, Open Graph, Twitter and JSON-LD metadata,
+    while controlling the browser/search title directly.
+    {% endcomment %}
+    {% if page.url == '/' %}
+    <title>Lahav's Blog</title>
+    {% elsif page.title %}
+    <title>{{ page.title | escape }} · Lahav's Blog</title>
+    {% else %}
+    <title>Lahav's Blog</title>
+    {% endif %}
+    {% seo title=false %}
+
+    <link rel="icon" href="{{ '/assets/images/favicon.svg' | relative_url }}" type="image/svg+xml">
+    <meta name="theme-color" content="#11131a">
+
+    <link rel="sitemap" type="application/xml" href="{{ '/sitemap.xml' | relative_url }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    {% if page.math %}
+    {%- comment -%}
+      Preconnect + preload so the MathJax bundle starts downloading in parallel
+      with the article's HTML, instead of only after the CSS+font parse finishes.
+    {%- endcomment -%}
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preload" as="script" crossorigin
+          href="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js">
+    {% endif %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}?v={{ site.time | date: '%s' }}">
+    <link rel="stylesheet" href="{{ '/assets/css/performance-fixes.css' | relative_url }}?v={{ site.time | date: '%s' }}">
+
+    <script>
+      (function () {
+        var saved = localStorage.getItem('theme');
+        var system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = saved || system;
+      }());
+    </script>
+
+    {% if page.math %}
+    {%- comment -%}
+      MathJax configuration.
+
+      1. `output.svg` — we use the SVG output bundle (tex-mml-svg) so the
+         typeset glyphs are self-contained SVG paths. That means once a math
+         node is in the DOM it renders identically without depending on the
+         MathJax font stylesheet being fully applied. This is what lets the
+         sessionStorage cache restore rendered math on refresh with no flash.
+      2. `startup.ready` — before MathJax scans the article we run
+         `window.__lahavMathPrep()` (defined in mathjax-setup.js). That helper
+         undoes kramdown's stray `<em>` wrapping around single-`$` inline math
+         (the reason `Y$_3$Fe$_5$O$_{12}$`-style formulas break in tables and
+         list items), and restores any typeset math cached in sessionStorage
+         from a previous visit to the same article.
+      3. `startup.pageReady` — after MathJax finishes typesetting we run
+         `window.__lahavMathPost()`, which annotates each `mjx-container` with
+         its original TeX source, wraps display equations in the copy-button
+         shell, and saves the fully-typeset article body to sessionStorage
+         keyed by (URL, build-time).
+    {%- endcomment -%}
+    <script src="{{ '/assets/js/mathjax-setup.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        },
+        svg: { fontCache: 'global' },
+        options: {
+          skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        },
+        startup: {
+          pageReady: function () {
+            /* pageReady fires after DOMContentLoaded, which is what we
+               want — the article's HTML has to exist before we can
+               unwrap kramdown's mistaken <em> spans or restore a cached
+               typeset snapshot into it. Only after that do we let
+               MathJax scan and typeset (or, on a cache hit, no-op). */
+            if (typeof window.__lahavMathPrep === 'function') {
+              window.__lahavMathPrep();
+            }
+            return MathJax.startup.defaultPageReady().then(function () {
+              if (typeof window.__lahavMathPost === 'function') {
+                window.__lahavMathPost();
+              }
+            });
+          }
+        }
+      };
+    </script>
+    <script async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+    {% endif %}
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    {% include header.html %}
+    <main id="main-content" class="site-main">
+      {{ content }}
+    </main>
+    <footer class="site-footer shell">Lahav Padan <span aria-hidden="true">·</span> looking into the internals</footer>
+    <script src="{{ '/assets/js/site.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
+    <script src="{{ '/assets/js/post-enhancements.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
+  </body>
+</html>
