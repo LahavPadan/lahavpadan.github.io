@@ -501,7 +501,7 @@ kbd {
   color: var(--muted);
   font-size: 0.76rem;
 }
-.post-page h1 {
+.post-page__header > h1 {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(2.7rem, 6vw, 5.5rem);
@@ -523,28 +523,61 @@ kbd {
   background: var(--border-strong);
 }
 .article-prose {
+  min-width: 0;
   max-width: 750px;
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(1.07rem, 1.9vw, 1.18rem);
   line-height: 1.76;
+  overflow-wrap: break-word;
 }
 .article-prose p,
 .article-prose ul,
 .article-prose ol {
   margin: 0 0 1.38em;
 }
+.article-prose ul,
+.article-prose ol {
+  padding-left: 1.5em;
+}
+.article-prose ul {
+  list-style: disc outside;
+}
+.article-prose ul ul {
+  list-style: circle outside;
+}
+.article-prose ol {
+  list-style: decimal outside;
+}
+.article-prose li {
+  margin: 0.35em 0;
+  padding-left: 0.15em;
+}
+.article-prose li > ul,
+.article-prose li > ol {
+  margin-top: 0.45em;
+  margin-bottom: 0.75em;
+}
+.article-prose h1,
 .article-prose h2,
-.article-prose h3 {
+.article-prose h3,
+.article-prose h4 {
   margin: 2.3em 0 0.7em;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   letter-spacing: -0.04em;
   line-height: 1.15;
+}
+.article-prose h1 {
+  font-size: clamp(1.85rem, 3.5vw, 2.35rem);
 }
 .article-prose h2 {
   font-size: 1.55rem;
 }
 .article-prose h3 {
   font-size: 1.2rem;
+}
+.article-prose h4 {
+  font-size: 1rem;
+  letter-spacing: -0.025em;
 }
 .article-prose strong {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -1047,6 +1080,10 @@ kbd {
   border-bottom: 1px dashed var(--post-accent-border);
   color: var(--post-accent-ink);
 }
+.article-prose h1,
+.article-prose h4 {
+  color: var(--post-accent-ink);
+}
 .article-prose strong {
   color: var(--post-accent-ink);
 }
@@ -1262,7 +1299,9 @@ kbd {
 }
 
 /* Jumped-to headings clear the sticky header. */
+.article-prose h1,
 .article-prose h2,
-.article-prose h3 {
+.article-prose h3,
+.article-prose h4 {
   scroll-margin-top: 84px;
 }

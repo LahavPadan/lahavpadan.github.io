@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ProtectMath
-  # $$...$$, including several expressions on the same prose line.
+  # Match display math without consuming escaped dollar signs.
   DISPLAY_MATH = /
     (?<!\\)
     \$\$
@@ -10,7 +10,7 @@ module ProtectMath
     \$\$
   /mx.freeze
 
-  # $...$, while excluding $$...$$.
+  # Match inline math while excluding $$...$$ blocks.
   INLINE_MATH = /
     (?<![\\$])
     \$
@@ -23,10 +23,8 @@ module ProtectMath
     (?!\$)
   /x.freeze
 
-  # Remove literal pipe characters before Kramdown sees them.
-  #
-  # \vert{} is valid TeX and displays as the same single vertical bar,
-  # but it cannot be mistaken for a Markdown table separator.
+  # Kramdown can mistake a bare pipe inside math for a Markdown-table
+  # separator. Replace only those pipes; leave the rest of the TeX unchanged.
   def self.protect_pipes(tex)
     tex.gsub(/(?<!\\)\|/) { '\\vert{}' }
   end
@@ -34,23 +32,17 @@ module ProtectMath
   def self.protect(content)
     return content if content.nil? || !content.include?('$')
 
-    # Protect pipes in $$...$$ expressions.
     content = content.gsub(DISPLAY_MATH) do
-      inner = protect_pipes(Regexp.last_match(1))
-      "$$#{inner}$$"
+      "$$#{protect_pipes(Regexp.last_match(1))}$$"
     end
 
-    # Protect pipes and Kramdown-sensitive underscores in $...$ expressions.
     content.gsub(INLINE_MATH) do
-      inner = protect_pipes(Regexp.last_match(1))
-      inner = inner.gsub(/(?<!\\)_/) { '\\_' }
-
-      "$#{inner}$"
+      "$#{protect_pipes(Regexp.last_match(1))}$"
     end
   end
 end
 
-# Protect Markdown written directly inside normal pages/documents.
+# Protect Markdown written directly inside pages and documents.
 Jekyll::Hooks.register :documents, :pre_render do |document|
   document.content = ProtectMath.protect(document.content)
 end
@@ -59,9 +51,8 @@ Jekyll::Hooks.register :pages, :pre_render do |page|
   page.content = ProtectMath.protect(page.content)
 end
 
-# The important part:
-# intercept {% include_relative article.md %} and protect the included
-# Markdown before Liquid hands it to Kramdown.
+# include_relative is expanded before Kramdown runs, so protect the included
+# Markdown at the point where Jekyll reads it.
 module Jekyll
   module Tags
     class ProtectedIncludeRelativeTag < IncludeRelativeTag
