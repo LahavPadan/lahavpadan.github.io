@@ -1305,3 +1305,38 @@ kbd {
 .article-prose h4 {
   scroll-margin-top: 84px;
 }
+
+/* Obsidian-style callouts are converted by _plugins/protect_math.rb into
+   semantic <aside> elements before Kramdown parses the article. */
+.article-prose .callout {
+  margin: 1.9em 0;
+  padding: 1rem 1.15rem 0.25rem;
+  border: 1px solid var(--post-accent-border);
+  border-left: 4px solid var(--post-accent);
+  background: var(--post-accent-soft);
+  color: var(--ink);
+}
+.article-prose .callout__title {
+  margin: 0 0 0.9rem;
+  color: var(--post-accent-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.article-prose .callout__kind {
+  display: inline-block;
+  margin-right: 0.5rem;
+  font-size: 0.76em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.article-prose .callout > :last-child {
+  margin-bottom: 0;
+}
+.article-prose .callout mjx-container[display="true"] {
+  margin: 1.1em 0 !important;
+  padding: 0.65em 0;
+  border: 0;
+  background: transparent;
+}

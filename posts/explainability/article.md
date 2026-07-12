@@ -5,9 +5,11 @@ Each explainability method will have its own problems regarding feature dependen
 ## Feature Dependence in Linear Regression
 
 Feature-dependence in linear regression is often termed multicollinearity. The OLS (ordinary least squares) solution is:
+
 $$
 \hat{\beta} = (X^\top X)^{-1} X^\top y.
 $$
+
 Features sit in the columns of $X$. When features are linearly dependent — some feature can be written as a linear combination of the others — the columns of $X$ are linearly dependent, and this forces $X^\top X$ to be **singular**.
 
 > [!Info] Why linear dependence in the columns of $X$ forces $X^\top X$ to be singular
@@ -61,6 +63,7 @@ The per-coefficient variance is the $j$-th diagonal element of $\sigma^2 (X^\top
 $$
 \text{Var}(\hat{\beta}_j) = \sigma^2 \sum_{i=1}^p \frac{q_{ji}^2}{\lambda_i}
 $$
+
 The $j$-th coefficient inherits variance from every eigen-direction $i$, weighted by $q_{ji}^2$ (how much that direction participates in coefficient $j$) and inversely by $\lambda_i$ (how well-supported that direction is by the data). A tiny $\lambda_i$ dominates the sum.
 **This makes linear regression unstable, since a small change in $\lambda_i$ yields a significant change in $\hat{\beta}_j$.**
 
@@ -209,7 +212,7 @@ Regularization is often introduced as a bias-variance tradeoff — cap the coeff
 - $\ell_1$ : chooses the variable with larger scale, and gives $0$ weight to the others.
 - $\ell_2$ : prefers variables with larger scale — spreads weight proportional to scale.
 
-*$\ell_1$ regularization for linearly dependent features.*
+**$\ell_1$ regularization for linearly dependent features**
 
 ![$\ell_1$ regularization selecting an axis-aligned solution for dependent features](assets/dependent-features-l1-regularization.png)
 
@@ -264,6 +267,7 @@ Elastic net is the combined penalty
 $$
 L_{\text{EN}}(\beta) = \|y - X\beta\|^2 + \lambda_1 \|\beta\|_1 + \lambda_2 \|\beta\|_2^2.
 $$
+
 Each piece addresses a specific pathology of the other under feature dependence.
 
 - **$\ell_1$ alone**, on identical features, spreads weight arbitrarily across the same-sign options; on linearly dependent features, it collapses to a single winner. Both behaviors are unstable — a small perturbation in the data can swap which feature wins.
@@ -867,11 +871,13 @@ The Shapley values are:
 $$
 \phi_j(x) = \sum_{S \subseteq [N] \setminus \{i\}} \frac{|S|! \cdot (N - |S| - 1)!}{N!} \left[f_{S \cup \{i\}}(x) - f_S(x)\right]
 $$
+
 Rewriting the weight as $p_S = \frac{|S|! \cdot (N - |S| - 1)!}{N!} = \frac{1}{N}\binom{N-1}{|S|}^{-1}$ reveals its meaning: $p_S$ is the uniform distribution over subsets of $[N] \setminus \{i\}$ when we first sample the *size* $|S|$ uniformly from $\{0, 1, \ldots, N-1\}$, then sample a subset uniformly among all subsets of that size. So
 
 $$
 \phi_j(x) = \mathbb{E}_{S \sim p_S}\big[f_{S \cup \{i\}}(x) - f_S(x)\big]
 $$
+
 — the Shapley value is the *expected marginal contribution* of feature $i$, when a coalition $S$ (without $i$) is drawn by first choosing a random size and then a random subset of that size.
 
 > [!info] Deriving Shapley Values from the General Solution
@@ -920,6 +926,7 @@ constrains the function $\phi_i(v)$ to be the shapley-values:
 $$
 \phi_j(x) = \sum_{S \subseteq [N] \setminus \{i\}} \frac{|S|! \cdot (N - |S| - 1)!}{N!} \left[f_{S \cup \{i\}}(x) - f_S(x)\right]
 $$
+
 Lets check:
 
 1. It sums contributions to the total value (Efficiency).
@@ -939,7 +946,7 @@ _The last two can be easily verified for shapley-values. The first (efficiency),
 >   Each time the coefficient is $p_{S:|S|=N-1} = \frac{(N-1)! \cdot (N - N)!}{N!} = \frac{1}{N}$, summing to 1.
 >   (The same is true for $f_\emptyset(x)$, albeit with a negative sign).
 
-_We can show this more rigoursly. We show that the Lagrangian $\mathcal{L}$ is strictly convex, meaning the minimization of $\mathcal{L}$ is unique._
+**We can show this more rigorously.** We show that the Lagrangian $\mathcal{L}$ is strictly convex, meaning the minimization of $\mathcal{L}$ is unique.
 > [!info] Solution uniqueness using the Lagrangian's strict convexity
 >
 > **Lagrangian Function**
@@ -1043,11 +1050,13 @@ $$
 = f_{\{1,\ldots,N\}}(x)-f_\emptyset(x).
 \end{aligned}
 $$
+
 In Kernel-SHAP, $q_{|S|}$ is renamed to $\kappa_{|S|}$ — the "kernel" — and defined as:
 
 $$
 \kappa_{|S|} = \frac{(N-1)}{|S| \cdot (N - |S|) \cdot \binom{N}{|S|}} = \frac{(|S|-1)! \cdot (N-|S|-1)!}{N \cdot (N-2)!} = \frac{1}{N} \cdot \binom{N-2}{|S|-1}^{-1}
 $$
+
 _**NOTE:**_ this is the same $q_{|S|}$ that appears in Shapley values: $q_{|S|} = \frac{1}{N} \cdot \binom{N-2}{|S|-1}^{-1}$. The "kernel" is just a rebranding of the coalition-game weight.
 
 _**NOTE:**_ Another notation for $\kappa_{|S|}$ is $\pi_x (S)$.
@@ -1057,6 +1066,7 @@ _**NOTE:**_ Do **not** confuse $\kappa_{|S|}$ with $p_S = \frac{|S|! \cdot (N - 
 $$
 \phi_j(x) = \sum_{S \subseteq [N] \setminus \{i\}} \frac{|S|! \cdot (N - |S| - 1)!}{N!} \left[f_{S \cup \{i\}}(x) - f_S(x)\right]
 $$
+
 $\kappa_{|S|}$ is the *regression weight* in the least-squares view; $p_S$ is the *combinatorial coefficient* in the summation view. They are different objects that both arise when the same Shapley solution is derived from two different starting points.
 
 > [!Info] LIME and Kernel-SHAP are the same regression, with different kernels
@@ -1085,6 +1095,7 @@ $\kappa_{|S|}$ is the *regression weight* in the least-squares view; $p_S$ is th
 $$
 \boldsymbol{\phi}(x) = (X^\top W X)^{-1} X^\top W \mathbf{y}.
 $$
+
 Componentwise, with $I[\cdot]$ the indicator:
 
 $$
@@ -1094,6 +1105,7 @@ $$
 $$
 (X^\top W)_{i,S} = \kappa_{|S|} \cdot I[i \in S].
 $$
+
 The efficiency constraint is handled by Lagrangian augmentation or by parameterizing out one $\phi_j$ using $\sum_j \phi_j = f_N(x) - f_\emptyset(x)$.
 
 ### Deep SHAP
