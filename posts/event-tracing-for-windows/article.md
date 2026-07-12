@@ -6,7 +6,8 @@ Because Providers and Trace Sessions are global objects shared across all users,
 
 A Provider can also partition its events into multiple Channels for consumer convenience. The four default channels are **Admin**, **Analytic**, **Debug**, and **Operational**. Each channel gets its own log file under `%systemroot%\System32\winevt\Logs\`.
 
-**Channel semantics:**
+### Channel semantics
+
 - **Admin** — end-user actionable events (errors a sysadmin can act on). *Enabled by default.*
 - **Operational** — routine operational events, security-relevant. *Enabled by default.* Most EDR-interesting (Endpoint Detection and Response) logs live here (`Microsoft-Windows-Sysmon/Operational`, etc.).
 - **Analytic** — high-volume diagnostic events. *Disabled by default.* Enable via `wevtutil sl <name> /e:true`.
@@ -31,6 +32,7 @@ Three provider types coexist in modern Windows, with very different visibility f
 The Manifest allows Providers and Events to be registered in the system with the event log service, which runs inside `svchost.exe` as `wevtsvc.dll`.
 
 Working with manifests:
+
 - **Command:** `wevtutil.exe el` — list manifests on the system.
 - **Command:** `wevtutil.exe gl <MANIFEST_NAME>` — query a specific manifest.
 - **Command:** `wevtutil.exe im <MANIFEST_NAME>` — install a manifest.
@@ -39,7 +41,10 @@ Working with manifests:
 
 Sessions are responsible for pulling logs (via a System Thread called the **Logger Thread**). They first stage logs in an in-memory buffer and asynchronously flush to disk (which is why system overhead is minimal). They are also responsible for handing events to Consumers.
 
-**Why the "minimal overhead" claim survives scrutiny.** ETW's write path is engineered for millions of events/sec on commodity hardware because of three architectural decisions:
+### Why the “minimal overhead” claim survives scrutiny
+
+ETW's write path is engineered for millions of events/sec on commodity hardware because of three architectural decisions:
+
 - **Per-CPU buffers.** Each session allocates one buffer per logical CPU. The emitting thread writes into its own CPU's buffer — no cross-CPU contention, no cache-line ping-pong.
 - **Lockless write path.** Buffer append uses interlocked operations on the write pointer. Producers never take a spinlock in the common case.
 - **Async flush.** The Logger Thread is the only entity draining buffers; emitters never wait on I/O.
@@ -48,7 +53,8 @@ An emit costs on the order of a few dozen cycles (filter check + bytewise copy).
 
 Sessions can filter to receive only specific events from Providers by defining keywords (via the `MatchAnyKeyword` / `MatchAllKeyword` filter properties, together with a Level cap).
 
-**Filter math** (the fast-path arithmetic):
+### Filter math (the fast-path arithmetic)
+
 - **Level** — the event carries a severity byte (0–255; typically only 1–5 are used: Critical, Error, Warning, Info, Verbose). Session provides a cap; event passes if `event.level <= session.level`.
 - **Keyword** — the event carries a 64-bit bitmask. Session provides two masks:
   - `MatchAnyKeyword`: event passes if `(event.keyword & any) != 0`, or if `any == 0` (session accepts all).
@@ -57,7 +63,8 @@ Sessions can filter to receive only specific events from Providers by defining k
 
 Sessions are also responsible for defining buffer size and overflow behavior — which records get overwritten. E.g., `Circular` mode overwrites the oldest records.
 
-**File modes** (chosen at `StartTrace`):
+### File modes (chosen at `StartTrace`)
+
 - `EVENT_TRACE_FILE_MODE_SEQUENTIAL` — write until `MaximumFileSize`, then drop new events.
 - `EVENT_TRACE_FILE_MODE_CIRCULAR` — circular file buffer.
 - `EVENT_TRACE_FILE_MODE_APPEND` — append to an existing file.
@@ -91,7 +98,9 @@ On the first call to `EtwRegister`/`EtwEventRegister`, the Provider's underlying
 
 **Command:** `logman query providers -pid <PID>` — show Providers a program writes to.
 
-**The complete data path from emit to disk** (what the `ETW_REG_ENTRY` / `ETW_GUID_ENTRY` machinery actually does):
+### The complete data path from emit to disk
+
+This is what the `ETW_REG_ENTRY` / `ETW_GUID_ENTRY` machinery actually does:
 
 1. Emitter calls `EventWrite(handle, ...)`.
 2. In `ntdll`, `EtwEventWrite` validates and invokes syscall `NtTraceEvent`.
@@ -101,13 +110,17 @@ On the first call to `EtwRegister`/`EtwEventRegister`, the Provider's underlying
 6. Return to the emitter — the entire call is nonblocking.
 7. The Logger Thread eventually drains buffers, writing to `.etl` or invoking the real-time consumer callback (or both).
 
-**Note — Enable Provider.** Before a Provider can be started, listened to, etc., it must be Enabled in a Logger Session. "Enabling" is a session calling `EnableTraceEx2` with the provider's GUID and a filter set. Until at least one session enables it, the emitter's `EventWrite` exits early at step 3 — the provider has no subscribers, so the write is a couple-of-nanoseconds no-op. This is the fast-path answer to why having thousands of unsubscribed providers registered on the system costs nothing.
+### Note — Enable Provider
+
+Before a Provider can be started, listened to, etc., it must be Enabled in a Logger Session. "Enabling" is a session calling `EnableTraceEx2` with the provider's GUID and a filter set. Until at least one session enables it, the emitter's `EventWrite` exits early at step 3 — the provider has no subscribers, so the write is a couple-of-nanoseconds no-op. This is the fast-path answer to why having thousands of unsubscribed providers registered on the system costs nothing.
 
 ## Regular vs System
 
 Both Sessions and Providers have a Regular/System distinction.
 
-**Note — System Providers.** These allow tracing of ALPC, Hypervisor, Scheduler, Syscall, etc. Enabled via the `EnableFlags` field of `EVENT_TRACE_PROPERTIES` passed to `StartTrace`.
+### Note — System Providers
+
+These allow tracing of ALPC, Hypervisor, Scheduler, Syscall, etc. Enabled via the `EnableFlags` field of `EVENT_TRACE_PROPERTIES` passed to `StartTrace`.
 
 Examples of System Sessions: **Global Logger**, **Circular Kernel Context Logger**, **NT Kernel Logger**.
 
@@ -119,7 +132,8 @@ Drivers tend to use Global Logger and NT Kernel Logger.
 
 AutoLogger sessions are registered under `HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger`. The Providers referenced are not System Trace Providers (this is what separates AutoLogger from Global Logger).
 
-**AutoLogger structure in detail:**
+### AutoLogger structure in detail
+
 - Each subkey under `Autologger\` is a session definition, with values like `Start`, `MaxFileSize`, `Guid`, `LogFileMode`.
 - Each session subkey has its own child keys, one per provider GUID, holding per-provider `Enabled`, `EnableLevel`, `MatchAnyKeyword`, `MatchAllKeyword`.
 - ETW itself starts these sessions during boot, before most services come up — this is what makes AutoLogger the vehicle for early-boot capture (driver load order, BitLocker start events, WinLogon).
@@ -129,21 +143,27 @@ Unlike regular sessions, System Logger Sessions are limited to a single instance
 
 Sessions can also be registered locally within the same process — in which case they are available only to that process, not system-wide. This is the approach the kernel takes for its own private ETW usage. (In this case there is no session-count limit.)
 
-**In-process private sessions in user-mode.** Modern EDRs and monitoring components use in-process sessions for their own captures. Registered with `EventRegister` and a callback in the same process — no `svchost` involvement, no persistence, no global visibility. This is how the .NET CLR's ETW provider (`Microsoft-Windows-DotNETRuntime`), the AMSI provider, and many WinRT diagnostic events are consumed — by the emitting process itself or a same-user helper. Because they do not appear in `logman query -ets`, the same property cuts both ways: EDRs use in-process sessions to be invisible to attackers, and attackers use in-process sessions to be invisible to EDRs.
+### In-process private sessions in user mode
+
+Modern EDRs and monitoring components use in-process sessions for their own captures. Registered with `EventRegister` and a callback in the same process — no `svchost` involvement, no persistence, no global visibility. This is how the .NET CLR's ETW provider (`Microsoft-Windows-DotNETRuntime`), the AMSI provider, and many WinRT diagnostic events are consumed — by the emitting process itself or a same-user helper. Because they do not appear in `logman query -ets`, the same property cuts both ways: EDRs use in-process sessions to be invisible to attackers, and attackers use in-process sessions to be invisible to EDRs.
 
 ## Note: Lost ETW Events
 
 After creating a `UserSession` with `xperf.exe -on Base -start UserSession -on Microsoft-Windows-TCPIP`, then stopping it with `xperf.exe -stop UserSession -stop -d c:\temp\merged.etl`, a warning about the number of lost events sometimes appears.
 
 Mitigations:
+
 - Enlarge the buffer: `xperf.exe -on Base -start UserSession -on Microsoft-Windows-TCPIP -BufferSize 1024`.
 - Reduce the number of Providers writing to this trace session.
 
-**Why events are dropped.** When a per-CPU buffer fills before the Logger Thread drains it, subsequent emits on that CPU are dropped. The session records the drop count in `EVENT_TRACE_PROPERTIES.EventsLost`. This is a bounded failure — the emitter never blocks — which is a deliberate design choice: ETW would rather drop events than slow the workload.
+### Why events are dropped
+
+When a per-CPU buffer fills before the Logger Thread drains it, subsequent emits on that CPU are dropped. The session records the drop count in `EVENT_TRACE_PROPERTIES.EventsLost`. This is a bounded failure — the emitter never blocks — which is a deliberate design choice: ETW would rather drop events than slow the workload.
 
 Additionally, the Logger Thread keeps a backup of events before their transfer, at `%systemroot%\System32\LogFiles\WMI\RtBackup\`. **Real-time traces only.**
 
-**RtBackup detail:**
+### RtBackup detail
+
 - Files are named `EtwRT<SessionName>.etl`.
 - A session opened with `EVENT_TRACE_REAL_TIME_MODE` gets a shadow file in RtBackup so that if the real-time consumer detaches or falls behind, events aren't lost outright.
 - These files are frequently overlooked forensic targets — they can contain events that a real-time consumer either processed and forgot, or missed entirely.
@@ -160,7 +180,10 @@ Via `WMI_LOGGER_CONTEXT`, a session's ETW Consumers can be seen as the PIDs of t
 
 Additionally, `WMI_LOGGER_CONTEXT` stores flags and the Security Descriptor of the Session — a duplication that can be exploited defensively, since the Security Descriptor also appears in the Registry.
 
-**DKOM angles worth stating explicitly.** With a kernel primitive, an attacker can:
+### DKOM angles worth stating explicitly
+
+With a kernel primitive, an attacker can:
+
 - Zero out or replace the SD in `WMI_LOGGER_CONTEXT` to defeat access checks on session control.
 - Modify buffer-list pointers to inhibit flush.
 - Unlink the session from the ETW subsystem's session list, making it invisible to `logman query -ets`.
@@ -191,12 +214,14 @@ Windows Event Log ("WinLog") is often conflated with ETW itself, but the two are
 - WinLog is a **specialized ETW consumer**, implemented by the Event Log Service (`wevtsvc.dll` in `svchost`), that persists events into `.evtx` files and exposes them to Event Viewer, `wevtutil query-events`, and the EventLog COM API.
 
 Concretely:
+
 - WinLog defines Channels (registered under `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WINEVT\Channels`). Each channel is backed by a persistent ETW session that WinLog owns.
 - Providers that want their events to end up in Event Viewer register a channel in their manifest, pointing at a built-in log (Application, System, Security) or a custom channel.
 - When such a provider emits, WinLog's session captures the event, and its channel-writer serializes it as an `EVENT_RECORD` into an `.evtx` chunk.
 - Consumers reading Event Viewer are reading `.evtx` files, not raw ETW — they are one hop removed from the emitter.
 
 This explains why:
+
 - Not every ETW event appears in Event Viewer (only those routed through a channel).
 - `.etl` and `.evtx` files exist side-by-side (different formats for different consumers).
 - The evtx-tampering attacks below target the `.evtx` layer, which is downstream of ETW itself.
@@ -207,7 +232,8 @@ Format: binary self-relative `SECURITY_DESCRIPTOR` stored as a REG_BINARY.
 
 For both Providers and Trace Sessions, the SD is stored in the same Registry location: `HKLM\SYSTEM\CurrentControlSet\Control\WMI\Security`. A subkey named for the Provider/Trace-Session GUID holds the SD.
 
-**Access masks defined for ETW/WMI objects** (relevant ones):
+### Access masks defined for ETW/WMI objects
+
 - `WMIGUID_QUERY = 0x0001`
 - `WMIGUID_SET = 0x0002`
 - `WMIGUID_NOTIFICATION = 0x0004`
@@ -228,12 +254,14 @@ The one worth memorizing is `TRACELOG_GUID_ENABLE = 0x80` — the right a sessio
 
 The single most important provider for defensive purposes: `Microsoft-Windows-Threat-Intelligence` (GUID `{f4e1897c-bb5d-5668-f1d8-040f4d8dd344}`), introduced in Windows 10 1809. Fires kernel-mode events for suspicious API activity — remote thread creation, cross-process memory writes/allocations, driver load, image mapping into other processes, and more. This is the primary source most EDRs use for post-execution behavioral detection.
 
-**What makes ETW-TI different from every other provider:**
+### What makes ETW-TI different from every other provider
+
 - **PPL-gated.** The provider's SD requires the subscribing process to be Protected Process Light (PPL — a lightweight variant of Windows' protected-process signing requirement, blocking non-Antimalware code from opening handles to the subscriber) at antimalware signer level. A regular SYSTEM process cannot subscribe — even with the SD's ACL (Access Control List) permitting it, the ETW subsystem enforces the PPL check separately in the kernel.
 - Consequence: an attacker with SYSTEM cannot silence ETW-TI without first defeating the PPL check, which typically requires kernel code execution.
 - Vendor EDRs subscribing to ETW-TI must ship a signed PPL binary.
 
-**Attacker patterns targeting ETW-TI specifically:**
+### Attacker patterns targeting ETW-TI specifically
+
 - Bring-your-own-vulnerable-driver (BYOVD) to obtain kernel primitives and either unlink the AV process from the PPL-check path or clear its `_PS_PROTECTION` field long enough to unregister the ETW subscription.
 - Direct patch of `EtwWrite` (kernel) or the provider registration entry to skip the emit.
 - Because ETW-TI events originate in `ntoskrnl.exe`, patching the emit site requires kernel primitives — user-mode `EtwEventWrite` patches (see [ETW Patching](#1a-etw-patching)) do not blind ETW-TI.
@@ -265,7 +293,7 @@ The Windows Internals book claims WPP is built on ETW; Wikipedia claims it's bui
 
 ### 1. Attacking the Logging Services
 
-**Attacking the Windows Event Log Service:**
+#### Attacking the Windows Event Log Service
 
 - In `services.msc`: "Windows Event Log Service".
 - In `sc.exe`: `sc queryex eventlog`.
@@ -273,20 +301,27 @@ The Windows Internals book claims WPP is built on ETW; Wikipedia claims it's bui
 
 Methods:
 
-**Set Startup Type to Disabled** — logs stop flowing to Windows Event Log.
+##### Set Startup Type to Disabled
 
-**Terminate/Suspend threads of `wevtsvc.dll` inside `svchost`** (requires `THREAD_TERMINATE`/`THREAD_SUSPEND_RESUME` on a handle to the thread).
+Logs stop flowing to Windows Event Log.
+
+##### Terminate or suspend `wevtsvc.dll` threads
+
+(requires `THREAD_TERMINATE`/`THREAD_SUSPEND_RESUME` on a handle to the thread).
 
 How to find such threads?
+
 - Method 1: iterate every thread on the system and check which have `wevtsvc.dll` mapped in their process (does not require extensive handle opening).
 - Method 2: query WMI, e.g. `wmic /namespace:\\root\cimv2 path Win32_Service Where "Name=eventlog" get ProcessId`.
 - Method 3: query SCM, e.g. `sc queryex eventlog`.
 
-**Hook `wevtsvc.dll`:** Windows Event Log Service is not Protected Process Light. Therefore, user-mode programs can hook the service (requires `SeDebugPrivilege`).
+##### Hook `wevtsvc.dll`
+
+Windows Event Log Service is not Protected Process Light. Therefore, user-mode programs can hook the service (requires `SeDebugPrivilege`).
 
 The service is responsible for opening Logger Sessions (via `StartTrace` and `OpenTrace`), among other things, for Event Viewer. So a hook can monitor `wevtsvc!EtwEventCallback`, which receives events from every Provider the Trace Sessions listen to.
 
-**Attacking the Windows Event Collector:**
+#### Attacking the Windows Event Collector
 
 Introduction — the Event Forwarding feature allows forwarding logs from endpoints to a central log server (typically the SIEM — Security Information and Event Management platform). Event Forwarding uses the Windows Event Collector Service, which in turn uses WinRM.
 
@@ -296,6 +331,7 @@ Introduction — the Event Forwarding feature allows forwarding logs from endpoi
 For it to work, Windows Event Collector must be running on both the Endpoint and the Central Logging Server, and WinRM must be enabled between them.
 
 Methods:
+
 - Block WinRM in the Firewall — e.g. `netsh advfirewall firewall set rule name="Windows Remote Management (HTTP-In)" new enable=no`.
 - Prevent forwarding from the Endpoint: an XML subscription defines the events to be forwarded and the target channel on the central server. It can be modified via `wecutil delete-subscription <SUBSCRIPTION_NAME>`.
 
@@ -314,7 +350,8 @@ For the last several years, the default anti-forensic technique against user-mod
 - **`EtwWrite` patch (kernel).** With kernel code execution, patches the kernel entry point. The only way to blind kernel providers, [ETW-TI](#etw-threat-intelligence-provider-etw-ti) included.
 - **AMSI and CLR-specific variants.** `AmsiScanBuffer` and the CLR's ETW callback are common tributaries — same mechanism, targeted chokepoint.
 
-**Detection:**
+#### Detection
+
 - Code-integrity comparison of `ntdll` code section against disk.
 - Some EDRs precompute known-good hashes for the first N bytes of ETW-relevant functions.
 - For kernel-side patches, HVCI (Hypervisor-protected Code Integrity) is the answer — it forbids writable-executable kernel pages and enforces code-only pages as immutable.
@@ -328,15 +365,21 @@ Terminology note: ETW sessions themselves write `.etl` (raw ETW). `.evtx` is Eve
 Tampering targets for `.evtx` files (as files — the Logger case in `eventvwr.msc` — or in their in-memory form) might include changing certain events or hiding certain events. Several structural properties matter:
 
 Records have variable size, so the size is stored in the record header.
+
 - → A prior record can "eat" the next by having a large-enough size field. This effectively deletes the next record from parsers.
 
 Each record has a "number" — its sequence position among the records in the `.evtx`.
+
 - → To hide a record, the numbers of all subsequent records must be adjusted so the sequence remains contiguous.
 
 Checksums are computed over the file header of the `.evtx`, the chunk header, and each event record.
+
 - → After any content change in the `.evtx`, the checksum(s) must be recomputed.
 
-**Why the chunk concept exists.** The chunk-header timestamp is *part* of the reason, but four aligned uses of the same 64KB granularity make chunks worth having:
+#### Why the chunk concept exists
+
+The chunk-header timestamp is *part* of the reason, but four aligned uses of the same 64KB granularity make chunks worth having:
+
 1. **Time-range indexing.** Each chunk header carries a `FirstEventRecordTimestamp` / `LastEventRecordTimestamp` pair. Queries like "events between T1 and T2" seek chunk-by-chunk without decoding records — a large speedup on multi-GB logs.
 2. **Recovery unit.** Each chunk has its own CRC32. A corrupted chunk can be discarded without invalidating the rest of the file — important for a file that is continuously appended to and can be truncated mid-write on a crash.
 3. **Write unit.** The Event Log Service flushes at chunk boundaries. The durability granularity matches the recovery granularity.
@@ -344,36 +387,44 @@ Checksums are computed over the file header of the `.evtx`, the chunk header, an
 
 The chunk is thus the intersection of write unit, recovery unit, time-range index unit, and template scope. The 64KB size is where all four alignments happened to land.
 
-**Bonus: Record Identifier vs Event ID.**
+#### Bonus: Record Identifier vs Event ID
+
 Records store a field called Record Identifier, determined by the type of Event — so an attacker doesn't need to update it separately.
 In the case of the EventLog service, it's computed from Event ID and Qualifier, both defined in the Provider Manifest the event came from.
 In other cases, it comes from the Provider's message DLL, and there is no relationship between it and the Event ID.
 
-**Bonus: Downsides of this approach.**
+#### Bonus: Downsides of this approach
+
 Since the EventLog service continuously uses the `.evtx` files, to avoid synchronization issues, the EventLog service must be stopped first — which itself generates its own event (service state change). The sequence has to be planned around what gets logged before the stop takes effect.
 
 ### 3. Attacking the Logger Session
 
-**Deleting the Trace Session:**
+#### Deleting the Trace Session
+
 - Pass `EVENT_TRACE_CONTROL_STOP` to `ControlService` via the `ControlCode` parameter. (Alternatively, `NtTraceControl`.)
 - PowerShell: `Stop-EtwTraceSession`.
 
-**Removing Providers from the Trace Session:**
+#### Removing Providers from the Trace Session
+
 - Pass the Provider's GUID to `EnableTraceEx2` via the `ProviderId` parameter, with `ControlCode` `EVENT_CONTROL_CODE_DISABLE_PROVIDER`.
 - PowerShell: `Remove-EtwTraceProvider`.
 
-**Clearing content:**
+#### Clearing content
+
 Via `wevtutil.exe cl "ChannelName"`, or Event Viewer → right-click on the Channel → "Clear Log".
 Generates Event ID 1102 and Event ID 104 in the Security Log — in all cases except the System Event Log.
 
-**Modifying Logger Session Registry settings:**
+#### Modifying Logger Session Registry settings
+
 In a Logger Session's Registry key, notable values include:
+
 - `MaxSize`. Setting it to the minimum 1024KB causes logs to be overwritten frequently.
 - `Retention` of `0xFFFFFFFF` marks a policy where new logs will not overwrite old logs in the buffer. Effectively, no new logs appear from the moment this policy is set.
 
 The combination of these two settings can be destructive.
 
 Logger Session registry keys can be found at, for example:
+
 1. `HKLM\SYSTEM\CurrentControlSet\Services\EventLog\<LOGGER_NAME>`
 2. `HKLM\SYSTEM\CurrentControlSet\Control\AutoLogger\<LOGGER_NAME>`
 
@@ -385,17 +436,20 @@ Focus: the Message DLL. Its role is to produce the Description string inside the
 
 If the DLL has non-privileged write permissions, replacing it yields execution under the context of Event Log (whose privileges — via the DACL — are higher than the writer's).
 
-**Mechanics:**
+#### Mechanics
+
 - The Event Log Service (`wevtsvc.dll` inside a shared `svchost.exe`) loads the Message DLL via `LoadLibrary` when it needs to render an event — typically when a consumer (Event Viewer, `wevtutil query-events`, an XML subscription) requests a formatted description.
 - The load runs as the `svchost.exe` process principal, which for the `LocalService` service host group is `NT AUTHORITY\LOCAL SERVICE`, and elsewhere may be higher.
 - If the attacker can write to the Message DLL's file path but the service host is a stronger principal, this is a classic **write-what-where privilege escalation** via forced load of an attacker-controlled DLL into a higher-privilege process.
 - The trigger is trivially reachable: any event query for that provider's events causes the DLL to be loaded and cached.
 
-**Common vulnerable configurations:**
+#### Common vulnerable configurations
+
 - Third-party installers that place message DLLs in world-writable folders (`C:\Program Files (x86)\<vendor>\` with a bad DACL, some `C:\ProgramData\` subfolders).
 - Publishers whose `MessageFileName` points to a user-writable path — a manifest bug seen in shipped software.
 
-**Detection:**
+#### Detection
+
 - Baseline `MessageFileName` and `ResourceFileName` values under `HKLM\...\WINEVT\Publishers`.
 - Alert on writes to those paths from non-`SYSTEM`/non-`TrustedInstaller` principals.
 - Alert on modifications of the `MessageFileName` value itself — repointing to an attacker path is the same attack class.

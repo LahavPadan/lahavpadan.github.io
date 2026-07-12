@@ -668,22 +668,58 @@ kbd {
   line-height: 1.82;
 }
 .article-prose--cyber h2,
-.article-prose--cyber h3 {
-  margin-top: 2.5em;
+.article-prose--cyber h3,
+.article-prose--cyber h4,
+.article-prose--cyber h5 {
   color: var(--ink);
   font-family: inherit;
+  font-weight: 700;
+  line-height: 1.28;
 }
 .article-prose--cyber h2 {
+  margin-top: 2.7em;
   padding-bottom: 0.55em;
   border-bottom: 1px solid var(--border);
-  font-size: 1.1rem;
+  font-size: 1.32rem;
 }
 .article-prose--cyber h2::before {
   content: "> ";
   color: var(--accent);
 }
 .article-prose--cyber h3 {
-  font-size: 1rem;
+  margin: 2.45em 0 0.85em;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--post-accent, var(--accent));
+  font-size: 1.16rem;
+}
+.article-prose--cyber h4 {
+  margin: 2.15em 0 0.75em;
+  padding-left: 0.65rem;
+  border-left: 2px solid var(--post-accent, var(--accent));
+  font-size: 1.04rem;
+  letter-spacing: -0.025em;
+}
+.article-prose--cyber h5 {
+  margin: 1.9em 0 0.65em;
+  color: var(--post-accent, var(--accent));
+  font-size: 0.96rem;
+  letter-spacing: -0.02em;
+}
+.article-prose--cyber ul,
+.article-prose--cyber ol {
+  padding-left: 1.7rem;
+}
+.article-prose--cyber li {
+  margin: 0.42em 0;
+  padding-left: 0.25rem;
+}
+.article-prose--cyber li::marker {
+  color: var(--post-accent, var(--accent));
+  font-weight: 700;
+}
+.article-prose--cyber li > ul,
+.article-prose--cyber li > ol {
+  padding-left: 1.45rem;
 }
 .article-prose--cyber code {
   font-size: 0.9em;
