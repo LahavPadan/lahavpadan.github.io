@@ -157,7 +157,7 @@ Regularization is often introduced as a bias-variance tradeoff — cap the coeff
 > **What KKT is, briefly.** The KKT conditions are the first-order optimality conditions for constrained optimization. For an *unconstrained* smooth problem, "the gradient vanishes at the optimum" is the whole story. Once we add either constraints or non-smooth penalties (like $\|\beta\|_1$), the plain gradient equation isn't quite right — at the optimum, the gradient of the loss can be *balanced* against a contribution from the constraint or penalty rather than vanishing outright. KKT formalizes this balance:
 >
 > - At an unconstrained smooth minimum: $\nabla L(\beta^*) = 0$.
-> - At the minimum of $L(\beta) + \lambda \|\beta\|_1$: $\nabla L(\beta^*)$ is cancelled by a term from the subdifferential of $\|\beta\|_1$, giving $0 \in -\nabla L(\beta^*) + \lambda \cdot \partial \|\beta\|_1$.
+> - At the minimum of $L(\beta) + \lambda \lVert\beta\rVert_1$: $\nabla L(\beta^*)$ is cancelled by a term from the subdifferential of $\lVert\beta\rVert_1$, giving $0 \in \nabla L(\beta^*) + \lambda\,\partial\lVert\beta^*\rVert_1$.
 >
 > The subdifferential is the tool that makes this precise when the penalty has corners.
 >
