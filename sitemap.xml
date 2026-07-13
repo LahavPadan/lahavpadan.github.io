@@ -1,0 +1,61 @@
+---
+layout: null
+sitemap: false
+---
+{%- comment -%}
+  Custom sitemap. Overrides the jekyll-sitemap plugin's default template.
+
+  Why replace the plugin output:
+  jekyll-sitemap's default template iterates site.static_files with no
+  extension filter and emits a <url> entry for every static asset — for
+  this repo that's ~60 PNGs, plus CSS, JS, robots.txt, and every naked
+  article.md include fragment. Google Search Console has been rejecting
+  the resulting file. Constraining the sitemap to actual content pages
+  (index, whoami, and every post) produces valid, minimal XML that
+  Search Console accepts.
+
+  Why the plugin doesn't fight us:
+  jekyll-sitemap skips its own generator when a file named `sitemap.xml`
+  already exists in the source tree, so this file wins by being here.
+  The front matter `sitemap: false` also prevents the file from listing
+  itself if the plugin's page filter is ever run over it.
+
+  Content model:
+  Posts are `.md` files under /posts/*/index.md with `layout: post`, the
+  same filter the home page uses to list entries. We add /, /whoami/,
+  and every such post. `<lastmod>` prefers `last_modified_at` when set
+  and falls back to `date`.
+{%- endcomment -%}
+{%- assign posts = site.pages
+      | where: "layout", "post"
+      | sort: "date"
+      | reverse
+-%}
+{%- assign latest_post = posts | first -%}
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{{ '/' | absolute_url | xml_escape }}</loc>
+    {%- if latest_post %}
+    <lastmod>{{ latest_post.last_modified_at | default: latest_post.date | date_to_xmlschema }}</lastmod>
+    {%- else %}
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+    {%- endif %}
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>{{ '/whoami/' | absolute_url | xml_escape }}</loc>
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  {%- for post in posts %}
+  <url>
+    <loc>{{ post.url | replace: '/index.html', '/' | absolute_url | xml_escape }}</loc>
+    <lastmod>{{ post.last_modified_at | default: post.date | date_to_xmlschema }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  {%- endfor %}
+</urlset>

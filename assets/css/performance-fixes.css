@@ -176,3 +176,102 @@ mjx-container[data-copy-math-inline]:focus-visible {
     transition: none;
   }
 }
+
+/* -- Image lightbox ------------------------------------------- */
+/* post-enhancements.js wraps every content image in a semantic
+   <button class="image-zoom-trigger">. The button carries the block-
+   flow margin so the image sits where the plain <img> used to; the
+   image inside is stripped of its own margin to match. Clicking the
+   button opens a fixed-position overlay whose backdrop, close button,
+   and Escape key all dismiss it. */
+.article-prose .image-zoom-trigger {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 2em auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+  transition: box-shadow 100ms linear, transform 100ms linear;
+}
+
+.article-prose .image-zoom-trigger > img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.article-prose .image-zoom-trigger:hover,
+.article-prose .image-zoom-trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--post-accent, var(--accent));
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(2rem, 4vh) max(2rem, 4vw);
+  background: rgba(0, 0, 0, 0.85);
+  cursor: zoom-out;
+  animation: lightbox-in 120ms linear;
+}
+
+@keyframes lightbox-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.lightbox__image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  cursor: default;
+}
+
+.lightbox__close {
+  position: absolute;
+  top: max(1.2rem, 2vh);
+  right: max(1.2rem, 2vw);
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #f4f5f1;
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 100ms linear, background-color 100ms linear;
+}
+
+.lightbox__close:hover,
+.lightbox__close:focus-visible {
+  border-color: #fff;
+  background: rgba(0, 0, 0, 0.75);
+  outline: none;
+}
+
+/* Lock the page behind the overlay so wheel-scroll doesn't bleed through. */
+body.has-lightbox {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbox { animation: none; }
+  .article-prose .image-zoom-trigger { transition: none; }
+}
