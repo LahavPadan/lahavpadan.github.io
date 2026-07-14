@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eigenvalue Gap</title>
+<style>html,body{margin:0;background:transparent;color:#1c2420}body{padding:1px;font-family:Georgia,"Times New Roman",serif}:root[data-theme="dark"] body{color:#e9efeb}</style>
+</head>
+<body>
+<figure class="eigen-gap-viz" data-eigen-gap-viz>
+  <div class="eigen-gap-viz__header">
+    <p class="eigen-gap-viz__eyebrow">one vertical slice, two eigenvalues</p>
+    <h4>Coupling replaces the crossing with a minimum separation</h4>
+    <p>
+      Choose a detuning. The two marked points are the two eigenvalues at that
+      same detuning; the vertical segment between them is the gap there.
+    </p>
+  </div>
+
+  <div class="eigen-gap-viz__legend" aria-label="Plot legend">
+    <span><i class="eigen-gap-viz__swatch eigen-gap-viz__swatch--coupled"></i>coupled eigenvalues</span>
+    <span><i class="eigen-gap-viz__swatch eigen-gap-viz__swatch--uncoupled"></i>where the uncoupled modes would go</span>
+    <span><i class="eigen-gap-viz__swatch eigen-gap-viz__swatch--slice"></i>separation at the selected detuning</span>
+  </div>
+
+  <div class="eigen-gap-viz__plot-wrap">
+    <svg
+      class="eigen-gap-viz__plot"
+      role="img"
+      aria-label="Avoided crossing plot. Two dashed uncoupled branches cross at zero detuning. Two solid coupled branches bend apart and have a minimum separation of two kappa prime at zero detuning."
+    ></svg>
+  </div>
+
+  <div class="eigen-gap-viz__control">
+    <div class="eigen-gap-viz__control-head">
+      <label>Move the shared detuning position</label>
+      <output data-gap-position>δ = 0</output>
+    </div>
+    <input
+      data-gap-slider
+      type="range"
+      min="-300"
+      max="300"
+      value="0"
+      step="1"
+      aria-label="Selected detuning, measured in units of kappa prime"
+    >
+    <div class="eigen-gap-viz__scale" aria-hidden="true">
+      <span>negative detuning</span>
+      <button type="button" data-gap-center>exact tuning: δ = 0</button>
+      <span>positive detuning</span>
+    </div>
+  </div>
+
+  <div class="eigen-gap-viz__reading" aria-live="polite">
+    <div class="eigen-gap-viz__formula">
+      <span class="eigen-gap-viz__formula-label">upper branch</span>
+      <span>ω̄² + √(δ² + κ′²)</span>
+    </div>
+    <div class="eigen-gap-viz__formula">
+      <span class="eigen-gap-viz__formula-label">lower branch</span>
+      <span>ω̄² − √(δ² + κ′²)</span>
+    </div>
+    <div class="eigen-gap-viz__formula eigen-gap-viz__formula--gap">
+      <span class="eigen-gap-viz__formula-label">their separation</span>
+      <span data-gap-expression>2√(δ² + κ′²)</span>
+    </div>
+  </div>
+
+  <figcaption class="eigen-gap-viz__conclusion" data-gap-conclusion>
+    At exact tuning, δ² vanishes. The two branches therefore sit κ′ above and
+    κ′ below the mean, so the minimum gap is 2κ′.
+  </figcaption>
+</figure>
+
+<style>
+  .eigen-gap-viz {
+    --eg-accent: var(--post-accent, var(--accent, #85295e));
+    --eg-accent-soft: var(--post-accent-soft, var(--accent-soft, #fdeef6));
+    --eg-accent-border: var(--post-accent-border, var(--border-strong, #e8b2d1));
+    --eg-ink: var(--ink, #1c2420);
+    --eg-muted: var(--muted, #667169);
+    --eg-border: var(--border, #d6ddd7);
+    --eg-surface: var(--surface, #ffffff);
+    --eg-surface-muted: var(--surface-muted, #f4f5f1);
+
+    width: 100%;
+    margin: 2.15em 0;
+    border: 1px solid var(--eg-border);
+    background: var(--eg-surface);
+    color: var(--eg-ink);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    overflow: hidden;
+  }
+
+  .eigen-gap-viz *,
+  .eigen-gap-viz *::before,
+  .eigen-gap-viz *::after {
+    box-sizing: border-box;
+  }
+
+  .eigen-gap-viz__header {
+    display: grid;
+    gap: 0.45rem;
+    padding: clamp(1.05rem, 2.8vw, 1.45rem) clamp(1rem, 3.4vw, 1.75rem);
+    border-top: 3px solid var(--eg-accent);
+    border-bottom: 1px solid var(--eg-border);
+    background: linear-gradient(90deg, var(--eg-accent-soft), var(--eg-surface) 76%);
+  }
+
+  .eigen-gap-viz__eyebrow,
+  .eigen-gap-viz__header h4,
+  .eigen-gap-viz__header p {
+    margin: 0;
+  }
+
+  .eigen-gap-viz__eyebrow {
+    color: var(--eg-accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+  }
+
+  .eigen-gap-viz__header h4 {
+    color: var(--eg-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.08rem, 2.6vw, 1.38rem);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+  }
+
+  .eigen-gap-viz__header p:last-child {
+    max-width: 68ch;
+    color: var(--eg-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.96rem;
+    line-height: 1.55;
+  }
+
+  .eigen-gap-viz__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem 1.1rem;
+    align-items: center;
+    padding: 0.75rem clamp(1rem, 3.4vw, 1.75rem);
+    border-bottom: 1px solid var(--eg-border);
+    color: var(--eg-muted);
+    font-size: 0.68rem;
+  }
+
+  .eigen-gap-viz__legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+  }
+
+  .eigen-gap-viz__swatch {
+    display: inline-block;
+    width: 1.45rem;
+    height: 0;
+    border-top: 2px solid currentColor;
+  }
+
+  .eigen-gap-viz__swatch--coupled {
+    color: var(--eg-accent);
+    border-top-width: 3px;
+  }
+
+  .eigen-gap-viz__swatch--uncoupled {
+    color: var(--eg-muted);
+    border-top-style: dashed;
+  }
+
+  .eigen-gap-viz__swatch--slice {
+    color: var(--eg-ink);
+  }
+
+  .eigen-gap-viz__plot-wrap {
+    position: relative;
+    width: 100%;
+    min-height: 360px;
+    background: var(--eg-surface);
+  }
+
+  .eigen-gap-viz__plot {
+    display: block;
+    width: 100%;
+    height: 430px;
+    color: var(--eg-ink);
+    touch-action: none;
+  }
+
+  .eigen-gap-viz__control {
+    padding: 0.95rem clamp(1rem, 3.4vw, 1.75rem) 1rem;
+    border-top: 1px solid var(--eg-border);
+    border-bottom: 1px solid var(--eg-border);
+    background: var(--eg-surface-muted);
+  }
+
+  .eigen-gap-viz__control-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: baseline;
+    margin-bottom: 0.6rem;
+  }
+
+  .eigen-gap-viz__control-head label {
+    color: var(--eg-ink);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .eigen-gap-viz__control-head output {
+    color: var(--eg-accent);
+    font-size: 0.74rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .eigen-gap-viz input[type="range"] {
+    width: 100%;
+    accent-color: var(--eg-accent);
+    cursor: ew-resize;
+  }
+
+  .eigen-gap-viz__scale {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.65rem;
+    align-items: center;
+    margin-top: 0.35rem;
+    color: var(--eg-muted);
+    font-size: 0.62rem;
+  }
+
+  .eigen-gap-viz__scale span:last-child {
+    text-align: right;
+  }
+
+  .eigen-gap-viz__scale button {
+    padding: 0.22rem 0.42rem;
+    border: 1px solid var(--eg-accent-border);
+    background: var(--eg-surface);
+    color: var(--eg-accent);
+    font: inherit;
+    font-weight: 700;
+  }
+
+  .eigen-gap-viz__scale button:hover,
+  .eigen-gap-viz__scale button:focus-visible {
+    border-color: var(--eg-accent);
+    outline: none;
+  }
+
+  .eigen-gap-viz__reading {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-bottom: 1px solid var(--eg-border);
+  }
+
+  .eigen-gap-viz__formula {
+    min-width: 0;
+    padding: 0.95rem clamp(0.85rem, 2.8vw, 1.25rem);
+    border-right: 1px solid var(--eg-border);
+  }
+
+  .eigen-gap-viz__formula:last-child {
+    border-right: 0;
+  }
+
+  .eigen-gap-viz__formula--gap {
+    background: var(--eg-accent-soft);
+    color: var(--eg-accent);
+    font-weight: 700;
+  }
+
+  .eigen-gap-viz__formula-label {
+    display: block;
+    margin-bottom: 0.32rem;
+    color: var(--eg-muted);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+  }
+
+  .eigen-gap-viz__conclusion {
+    margin: 0;
+    padding: 1rem clamp(1rem, 3.4vw, 1.75rem) 1.1rem;
+    border-left: 3px solid var(--eg-accent);
+    color: var(--eg-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.94rem;
+    line-height: 1.58;
+  }
+
+  .eigen-gap-viz .eg-grid {
+    stroke: var(--eg-border);
+    stroke-width: 1;
+  }
+
+  .eigen-gap-viz .eg-axis {
+    stroke: var(--eg-ink);
+    stroke-width: 1.2;
+  }
+
+  .eigen-gap-viz .eg-zero {
+    stroke: var(--eg-border);
+    stroke-width: 1;
+    stroke-dasharray: 3 5;
+  }
+
+  .eigen-gap-viz .eg-uncoupled {
+    fill: none;
+    stroke: var(--eg-muted);
+    stroke-width: 1.35;
+    stroke-dasharray: 6 7;
+    opacity: 0.7;
+  }
+
+  .eigen-gap-viz .eg-coupled {
+    fill: none;
+    stroke: var(--eg-accent);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .eigen-gap-viz .eg-minimum-band {
+    fill: var(--eg-accent-soft);
+    stroke: var(--eg-accent-border);
+    stroke-width: 1;
+  }
+
+  .eigen-gap-viz .eg-minimum-bracket {
+    stroke: var(--eg-accent);
+    stroke-width: 2;
+  }
+
+  .eigen-gap-viz .eg-gap-label-bg {
+    fill: var(--eg-surface);
+    opacity: 0.94;
+  }
+
+  .eigen-gap-viz .eg-selected-line {
+    stroke: var(--eg-ink);
+    stroke-width: 2;
+  }
+
+  .eigen-gap-viz .eg-selected-guide {
+    stroke: var(--eg-muted);
+    stroke-width: 1;
+    stroke-dasharray: 3 5;
+  }
+
+  .eigen-gap-viz .eg-point {
+    fill: var(--eg-surface);
+    stroke: var(--eg-ink);
+    stroke-width: 2;
+  }
+
+  .eigen-gap-viz .eg-label,
+  .eigen-gap-viz .eg-tick,
+  .eigen-gap-viz .eg-axis-label,
+  .eigen-gap-viz .eg-gap-label {
+    dominant-baseline: middle;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", monospace;
+  }
+
+  .eigen-gap-viz .eg-tick {
+    fill: var(--eg-muted);
+    font-size: 11px;
+  }
+
+  .eigen-gap-viz .eg-axis-label {
+    fill: var(--eg-ink);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .eigen-gap-viz .eg-label {
+    fill: var(--eg-muted);
+    font-size: 11px;
+  }
+
+  .eigen-gap-viz .eg-gap-label {
+    fill: var(--eg-accent);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  @media (max-width: 620px) {
+    .eigen-gap-viz__plot {
+      height: 370px;
+    }
+
+    .eigen-gap-viz__reading {
+      grid-template-columns: 1fr;
+    }
+
+    .eigen-gap-viz__formula {
+      border-right: 0;
+      border-bottom: 1px solid var(--eg-border);
+    }
+
+    .eigen-gap-viz__formula:last-child {
+      border-bottom: 0;
+    }
+
+    .eigen-gap-viz__scale {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .eigen-gap-viz__scale button {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      justify-self: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .eigen-gap-viz * {
+      scroll-behavior: auto !important;
+      transition: none !important;
+    }
+  }
+</style>
+
+<script>
+(() => {
+  const NS = "http://www.w3.org/2000/svg";
+
+  const svgEl = (name, attrs = {}, text = "") => {
+    const node = document.createElementNS(NS, name);
+    Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+    if (text) node.textContent = text;
+    return node;
+  };
+
+  document.querySelectorAll("[data-eigen-gap-viz]").forEach((root) => {
+    if (root.dataset.eigenGapReady === "true") return;
+    root.dataset.eigenGapReady = "true";
+
+    const svg = root.querySelector(".eigen-gap-viz__plot");
+    const slider = root.querySelector("[data-gap-slider]");
+    const centerButton = root.querySelector("[data-gap-center]");
+    const positionOutput = root.querySelector("[data-gap-position]");
+    const gapExpression = root.querySelector("[data-gap-expression]");
+    const conclusion = root.querySelector("[data-gap-conclusion]");
+
+    const xMin = -3;
+    const xMax = 3;
+    const yMin = -3.35;
+    const yMax = 3.35;
+    const kappa = 0.82;
+
+    const add = (name, attrs, text) => {
+      const node = svgEl(name, attrs, text);
+      svg.appendChild(node);
+      return node;
+    };
+
+    const signed = (value) => {
+      if (Math.abs(value) < 0.005) return "0";
+      const rounded = Math.abs(value).toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+      return `${value < 0 ? "−" : "+"}${rounded}κ′`;
+    };
+
+    const render = () => {
+      const width = Math.max(300, Math.round(svg.getBoundingClientRect().width));
+      const height = width < 520 ? 370 : 430;
+      const mobile = width < 520;
+      const margin = mobile
+        ? { left: 46, right: 18, top: 52, bottom: 62 }
+        : { left: 57, right: 28, top: 55, bottom: 68 };
+      const plotW = width - margin.left - margin.right;
+      const plotH = height - margin.top - margin.bottom;
+
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      svg.setAttribute("height", height);
+      svg.replaceChildren();
+
+      const xToPx = (x) => margin.left + ((x - xMin) / (xMax - xMin)) * plotW;
+      const yToPx = (y) => margin.top + ((yMax - y) / (yMax - yMin)) * plotH;
+
+      [-2, -1, 0, 1, 2].forEach((x) => {
+        add("line", {
+          x1: xToPx(x), y1: margin.top, x2: xToPx(x), y2: margin.top + plotH,
+          class: x === 0 ? "eg-zero" : "eg-grid"
+        });
+        add("text", {
+          x: xToPx(x), y: margin.top + plotH + 22,
+          "text-anchor": "middle", class: "eg-tick"
+        }, x === 0 ? "0" : `${x < 0 ? "−" : ""}${Math.abs(x)}κ′`);
+      });
+
+      [-2, -1, 0, 1, 2].forEach((y) => {
+        add("line", {
+          x1: margin.left, y1: yToPx(y), x2: margin.left + plotW, y2: yToPx(y),
+          class: y === 0 ? "eg-zero" : "eg-grid"
+        });
+        if (y !== 0) {
+          add("text", {
+            x: margin.left - 9, y: yToPx(y),
+            "text-anchor": "end", class: "eg-tick"
+          }, `${y < 0 ? "−" : "+"}${Math.abs(y)}κ′`);
+        }
+      });
+
+      add("line", {
+        x1: margin.left, y1: yToPx(0), x2: margin.left + plotW, y2: yToPx(0),
+        class: "eg-axis"
+      });
+      add("line", {
+        x1: xToPx(0), y1: margin.top, x2: xToPx(0), y2: margin.top + plotH,
+        class: "eg-axis"
+      });
+
+      add("text", {
+        x: margin.left + plotW / 2,
+        y: height - 19,
+        "text-anchor": "middle",
+        class: "eg-axis-label"
+      }, "detuning δ");
+
+      add("text", {
+        x: margin.left,
+        y: 22,
+        "text-anchor": "start",
+        class: "eg-axis-label"
+      }, "eigenvalue shift  ω² − ω̄²");
+
+      add("line", {
+        x1: xToPx(xMin), y1: yToPx(xMin), x2: xToPx(xMax), y2: yToPx(xMax),
+        class: "eg-uncoupled"
+      });
+      add("line", {
+        x1: xToPx(xMin), y1: yToPx(-xMin), x2: xToPx(xMax), y2: yToPx(-xMax),
+        class: "eg-uncoupled"
+      });
+
+      const pathFor = (sign) => {
+        const points = [];
+        for (let i = 0; i <= 180; i += 1) {
+          const x = xMin + ((xMax - xMin) * i) / 180;
+          const y = sign * Math.sqrt(x * x + kappa * kappa);
+          points.push(`${i === 0 ? "M" : "L"}${xToPx(x).toFixed(2)},${yToPx(y).toFixed(2)}`);
+        }
+        return points.join(" ");
+      };
+
+      add("path", { d: pathFor(1), class: "eg-coupled" });
+      add("path", { d: pathFor(-1), class: "eg-coupled" });
+
+      const centerX = xToPx(0);
+      const upperCenter = yToPx(kappa);
+      const lowerCenter = yToPx(-kappa);
+      const bandWidth = mobile ? 20 : 26;
+
+      add("rect", {
+        x: centerX - bandWidth / 2,
+        y: upperCenter,
+        width: bandWidth,
+        height: lowerCenter - upperCenter,
+        rx: 4,
+        class: "eg-minimum-band"
+      });
+      add("line", {
+        x1: centerX, y1: upperCenter, x2: centerX, y2: lowerCenter,
+        class: "eg-minimum-bracket"
+      });
+      add("line", {
+        x1: centerX - 6, y1: upperCenter, x2: centerX + 6, y2: upperCenter,
+        class: "eg-minimum-bracket"
+      });
+      add("line", {
+        x1: centerX - 6, y1: lowerCenter, x2: centerX + 6, y2: lowerCenter,
+        class: "eg-minimum-bracket"
+      });
+      const gapLabelX = centerX + (mobile ? 11 : 15);
+      const gapLabelY = (upperCenter + lowerCenter) / 2 - 15;
+      add("rect", {
+        x: gapLabelX - 5,
+        y: gapLabelY - 10,
+        width: mobile ? 111 : 124,
+        height: 20,
+        rx: 3,
+        class: "eg-gap-label-bg"
+      });
+      add("text", {
+        x: gapLabelX,
+        y: gapLabelY,
+        "text-anchor": "start",
+        class: "eg-gap-label"
+      }, "minimum gap = 2κ′");
+
+      const detuning = Number(slider.value) / 100;
+      const branch = Math.sqrt(detuning * detuning + kappa * kappa);
+      const selectedX = xToPx(detuning);
+      const selectedUpper = yToPx(branch);
+      const selectedLower = yToPx(-branch);
+
+      add("line", {
+        x1: selectedX, y1: margin.top, x2: selectedX, y2: margin.top + plotH,
+        class: "eg-selected-guide"
+      });
+      if (Math.abs(detuning) > 0.035) {
+        add("line", {
+          x1: selectedX, y1: selectedUpper, x2: selectedX, y2: selectedLower,
+          class: "eg-selected-line"
+        });
+      }
+      add("circle", { cx: selectedX, cy: selectedUpper, r: 5, class: "eg-point" });
+      add("circle", { cx: selectedX, cy: selectedLower, r: 5, class: "eg-point" });
+
+      if (!mobile) {
+        const labelAt = 2.05;
+        const branchY = Math.sqrt(labelAt ** 2 + kappa ** 2);
+        add("text", {
+          x: margin.left + plotW - 5, y: yToPx(branchY) - 12,
+          "text-anchor": "end", class: "eg-label"
+        }, "upper eigenvalue");
+        add("text", {
+          x: margin.left + plotW - 5, y: yToPx(-branchY) + 12,
+          "text-anchor": "end", class: "eg-label"
+        }, "lower eigenvalue");
+      }
+
+      positionOutput.textContent = `δ = ${signed(detuning)}`;
+      gapExpression.textContent = detuning === 0
+        ? "2κ′  (the minimum)"
+        : "2√(δ² + κ′²)  >  2κ′";
+
+      if (Math.abs(detuning) < 0.005) {
+        conclusion.textContent =
+          "At exact tuning, δ² vanishes. The two branches therefore sit κ′ above and κ′ below the mean, so the minimum gap is 2κ′.";
+      } else {
+        conclusion.textContent =
+          "Away from exact tuning, δ² is positive. It is added under the square root, so this vertical separation is larger than 2κ′; moving toward δ = 0 can only shrink it.";
+      }
+    };
+
+    slider.addEventListener("input", render);
+    centerButton.addEventListener("click", () => {
+      slider.value = "0";
+      slider.focus();
+      render();
+    });
+
+    let lastWidth = 0;
+    const resizeObserver = new ResizeObserver(() => {
+      const nextWidth = Math.round(svg.getBoundingClientRect().width);
+      if (nextWidth !== lastWidth) {
+        lastWidth = nextWidth;
+        render();
+      }
+    });
+    resizeObserver.observe(svg.parentElement);
+    lastWidth = Math.round(svg.getBoundingClientRect().width);
+    render();
+  });
+})();
+</script>
+
+<script data-article-visualization-bridge>
+/* Height-sync bridge with the parent article page. This version is
+   drift-free: it never adds a fudge factor to the reported height, it
+   never writes window.frameElement.style.height directly (which
+   raced with the parent's own write), and it measures the article
+   content (`.viz`) rather than `document.body`/`document.documentElement`,
+   whose scrollHeight follows the viewport height and therefore fed
+   back into itself once the parent applied the reported number.
+   A last-reported memo cheaply de-dupes identical measurements so we
+   don't send a message on every animation frame. */
+(() => {
+  const root = document.documentElement;
+  const syncTheme = () => {
+    try {
+      const theme = window.parent.document.documentElement.dataset.theme;
+      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+    } catch (_) {}
+  };
+  let lastReported = 0;
+  const report = () => {
+    /* Measure the article content itself rather than body/documentElement.
+       body.scrollHeight and root.scrollHeight both include the viewport's
+       own dimensions once the iframe has been sized by the parent, so
+       reading them creates a feedback loop with the parent's iframe.style.
+       .viz sits at the top of the flow, doesn't depend on viewport height,
+       and gives a stable content measurement. */
+    const target = document.querySelector(".viz") || document.body;
+    const rect = target.getBoundingClientRect();
+    const height = Math.max(1, Math.ceil(rect.bottom + window.scrollY));
+    /* De-dup identical reports without any accumulating fudge. The parent
+       has its own hysteresis, but sending fewer messages avoids waking
+       its handler needlessly. */
+    if (Math.abs(height - lastReported) < 2) return;
+    lastReported = height;
+    try {
+      window.parent.postMessage(
+        { type: "article-visualization:resize", height },
+        window.location.origin
+      );
+    } catch (_) {}
+  };
+  syncTheme();
+  try {
+    new MutationObserver(() => { syncTheme(); report(); })
+      .observe(window.parent.document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-theme"],
+      });
+  } catch (_) {}
+  window.addEventListener("load", report, { once: true });
+  /* Deliberately do NOT listen for `resize` on the iframe's own window.
+     That event fires whenever the parent applies iframe.style.height,
+     which turns any tiny mismatch between our measurement and the
+     applied value into a feedback loop that grows on every frame. */
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(report).catch(() => {});
+  }
+  if ("ResizeObserver" in window) {
+    /* Observe the content, not the body. Watching body reflects the
+       viewport (which the parent controls) back into our height
+       report — that was the runaway. */
+    const target = document.querySelector(".viz") || document.body;
+    new ResizeObserver(report).observe(target);
+  }
+  requestAnimationFrame(report);
+})();
+</script>
+</body>
+</html>

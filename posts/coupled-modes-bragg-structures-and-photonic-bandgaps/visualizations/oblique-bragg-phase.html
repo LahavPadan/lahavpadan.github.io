@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Oblique-incidence Bragg phase</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { color-scheme: light dark; }
+    html, body { width: 100%; min-width: 0; margin: 0; background: transparent !important; overflow-x: clip; }
+    body { padding: clamp(4px, 1.2vw, 12px); }
+  </style>
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const variableNames = [
+        '--page','--surface','--surface-muted','--ink','--muted','--border','--border-strong','--accent','--accent-soft',
+        '--post-accent','--post-accent-soft','--post-accent-border','--post-accent-ink',
+        '--color-bg','--color-surface','--color-surface-muted','--color-text','--color-text-muted','--color-border','--color-border-strong'
+      ];
+      function syncFromParent() {
+        try {
+          if (window.parent === window) return;
+          const parentRoot = window.parent.document.documentElement;
+          const article = window.parent.document.querySelector('article, main') || parentRoot;
+          const rootStyle = window.parent.getComputedStyle(parentRoot);
+          const articleStyle = window.parent.getComputedStyle(article);
+          const explicit = parentRoot.getAttribute('data-theme') ||
+            (parentRoot.classList.contains('dark') ? 'dark' : '') ||
+            (parentRoot.classList.contains('light') ? 'light' : '');
+          if (explicit) root.setAttribute('data-theme', explicit);
+          else root.removeAttribute('data-theme');
+          root.classList.toggle('dark', explicit === 'dark');
+          root.classList.toggle('light', explicit === 'light');
+          for (const name of variableNames) {
+            const value = articleStyle.getPropertyValue(name).trim() || rootStyle.getPropertyValue(name).trim();
+            if (value) root.style.setProperty(name, value);
+          }
+          const aliases = {
+            '--page': '--color-bg',
+            '--surface': '--color-surface',
+            '--surface-muted': '--color-surface-muted',
+            '--ink': '--color-text',
+            '--muted': '--color-text-muted',
+            '--border': '--color-border',
+            '--border-strong': '--color-border-strong',
+            '--accent': '--post-accent',
+            '--accent-soft': '--post-accent-soft'
+          };
+          for (const [alias, source] of Object.entries(aliases)) {
+            if (!root.style.getPropertyValue(alias)) {
+              const value = root.style.getPropertyValue(source);
+              if (value) root.style.setProperty(alias, value);
+            }
+          }
+        } catch (_) {}
+      }
+      syncFromParent();
+      window.addEventListener('DOMContentLoaded', syncFromParent, { once: true });
+      try {
+        if (window.parent !== window) {
+          const parentRoot = window.parent.document.documentElement;
+          new MutationObserver(syncFromParent).observe(parentRoot, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-color-mode'] });
+        }
+      } catch (_) {}
+    }());
+  </script>
+</head>
+<body>
+<style>
+.oblique-bragg {
+  --ob-accent: var(--post-accent, var(--accent, #6f73c9));
+  --ob-ink: var(--ink, #202431);
+  --ob-muted: var(--muted, #687080);
+  --ob-surface: var(--surface, #ffffff);
+  --ob-soft: var(--surface-muted, #f5f6f8);
+  --ob-border: var(--border, #d9dde5);
+  --ob-border-strong: var(--border-strong, #aeb5c2);
+  margin: 2.25rem 0;
+  border: 1px solid var(--ob-border);
+  border-top: 3px solid var(--ob-accent);
+  background: var(--ob-surface);
+  color: var(--ob-ink);
+  overflow: hidden;
+}
+
+.oblique-bragg,
+.oblique-bragg * {
+  box-sizing: border-box;
+}
+
+.oblique-bragg__head {
+  padding: 1.15rem 1.2rem 1rem;
+  border-bottom: 1px solid var(--ob-border);
+  background:
+    linear-gradient(
+      110deg,
+      color-mix(in srgb, var(--ob-accent) 10%, transparent),
+      transparent 68%
+    );
+}
+
+.oblique-bragg__kicker {
+  margin: 0 0 0.28rem;
+  color: var(--ob-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.oblique-bragg__title {
+  margin: 0;
+  max-width: 52rem;
+  font-size: clamp(1.15rem, 2.4vw, 1.48rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.018em;
+}
+
+.oblique-bragg__lead {
+  margin: 0.5rem 0 0;
+  max-width: 60rem;
+  color: var(--ob-muted);
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.oblique-bragg__steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.oblique-bragg__step {
+  min-width: 0;
+  padding: 1.05rem 1rem 1.1rem;
+}
+
+.oblique-bragg__step + .oblique-bragg__step {
+  border-left: 1px solid var(--ob-border);
+}
+
+.oblique-bragg__step-head {
+  min-height: 3.95rem;
+}
+
+.oblique-bragg__step-index {
+  display: block;
+  margin-bottom: 0.22rem;
+  color: var(--ob-accent);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.oblique-bragg__step-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.oblique-bragg__step-note {
+  margin: 0.24rem 0 0;
+  color: var(--ob-muted);
+  font-size: 0.82rem;
+  line-height: 1.48;
+}
+
+.oblique-bragg__drawing {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0.65rem 0 0;
+}
+
+.oblique-bragg__drawing text {
+  fill: var(--ob-ink);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.oblique-bragg__drawing .ob-label-small {
+  font-size: 11.5px;
+}
+
+.oblique-bragg__drawing .ob-label-muted {
+  fill: var(--ob-muted);
+}
+
+.oblique-bragg__drawing .ob-label-accent {
+  fill: var(--ob-accent);
+  font-weight: 700;
+}
+
+.oblique-bragg__drawing .ob-layer {
+  fill: var(--ob-soft);
+}
+
+.oblique-bragg__drawing .ob-interface {
+  stroke: var(--ob-border-strong);
+  stroke-width: 2;
+}
+
+.oblique-bragg__drawing .ob-axis {
+  stroke: var(--ob-border-strong);
+  stroke-width: 1.35;
+}
+
+.oblique-bragg__drawing .ob-guide {
+  fill: none;
+  stroke: var(--ob-border-strong);
+  stroke-width: 1.15;
+  stroke-dasharray: 4 5;
+}
+
+.oblique-bragg__drawing .ob-ink-line {
+  fill: none;
+  stroke: var(--ob-ink);
+  stroke-width: 2.45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.oblique-bragg__drawing .ob-accent-line {
+  fill: none;
+  stroke: var(--ob-accent);
+  stroke-width: 2.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.oblique-bragg__drawing .ob-curve {
+  fill: none;
+  stroke: var(--ob-accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.oblique-bragg__drawing .ob-point {
+  fill: var(--ob-surface);
+  stroke: var(--ob-accent);
+  stroke-width: 2.2;
+}
+
+.oblique-bragg__equation {
+  min-height: 5rem;
+  margin-top: 0.65rem;
+  padding: 0.68rem 0.75rem 0.72rem;
+  border: 1px solid var(--ob-border);
+  background: var(--ob-soft);
+}
+
+.oblique-bragg__equation-label {
+  display: block;
+  margin-bottom: 0.24rem;
+  color: var(--ob-muted);
+  font-family: inherit;
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.oblique-bragg__equation-math {
+  display: block;
+  color: var(--ob-accent);
+  font-family: "STIX Two Math", "Cambria Math", Georgia, serif;
+  font-size: clamp(0.92rem, 1.02vw, 1rem);
+  font-weight: 700;
+  line-height: 1.48;
+}
+
+.oblique-bragg__equation-line {
+  display: block;
+}
+
+.oblique-bragg__reading {
+  margin: 0.58rem 0 0;
+  color: var(--ob-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.oblique-bragg__result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.72rem;
+  padding: 0.9rem 1.05rem;
+  border-top: 1px solid var(--ob-border);
+  background: color-mix(in srgb, var(--ob-accent) 6%, var(--ob-soft));
+}
+
+.oblique-bragg__result-part {
+  min-width: 0;
+  text-align: center;
+}
+
+.oblique-bragg__result-label {
+  display: block;
+  color: var(--ob-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.oblique-bragg__result-value {
+  display: block;
+  margin-top: 0.18rem;
+  font-family: "STIX Two Math", "Cambria Math", Georgia, serif;
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+
+.oblique-bragg__result-arrow {
+  color: var(--ob-accent);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.oblique-bragg figcaption {
+  margin: 0;
+  padding: 0.82rem 1.2rem 0.92rem;
+  border-top: 1px solid var(--ob-border);
+  color: var(--ob-muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 860px) {
+  .oblique-bragg__steps {
+    grid-template-columns: 1fr;
+  }
+
+  .oblique-bragg__step + .oblique-bragg__step {
+    border-left: 0;
+    border-top: 1px solid var(--ob-border);
+  }
+
+  .oblique-bragg__step-head {
+    min-height: 0;
+  }
+
+  .oblique-bragg__drawing {
+    max-width: 34rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .oblique-bragg__equation,
+  .oblique-bragg__reading {
+    max-width: 34rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .oblique-bragg__head,
+  .oblique-bragg__step,
+  .oblique-bragg figcaption {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+
+  .oblique-bragg__result {
+    grid-template-columns: 1fr;
+    gap: 0.38rem;
+  }
+
+  .oblique-bragg__result-arrow {
+    display: block;
+    width: 100%;
+    font-size: 0;
+    line-height: 1;
+    text-align: center;
+    transform: none;
+  }
+
+  .oblique-bragg__result-arrow::before {
+    content: "↓";
+    font-size: 1.2rem;
+  }
+}
+</style>
+
+<figure class="oblique-bragg" aria-labelledby="oblique-bragg-title">
+  <header class="oblique-bragg__head">
+    <p class="oblique-bragg__kicker">Oblique incidence</p>
+    <h4 class="oblique-bragg__title" id="oblique-bragg-title">The stack phase follows the normal wavevector component</h4>
+    <p class="oblique-bragg__lead">Tilting the wave makes the diagonal crossing longer, but a multilayer is periodic along its normal coordinate <i>z</i>. The phase accumulated from one interface plane to the next is therefore set by <i>k</i><sub>z,i</sub>, not by the geometric ray length alone.</p>
+  </header>
+
+  <div class="oblique-bragg__steps">
+    <section class="oblique-bragg__step" aria-labelledby="oblique-geometry-title">
+      <div class="oblique-bragg__step-head">
+        <span class="oblique-bragg__step-index">1 · Geometry</span>
+        <h5 class="oblique-bragg__step-title" id="oblique-geometry-title">The diagonal crossing becomes longer</h5>
+        <p class="oblique-bragg__step-note">The physical layer thickness remains fixed.</p>
+      </div>
+
+      <svg class="oblique-bragg__drawing" viewBox="0 0 320 220" role="img" aria-labelledby="oblique-geometry-svg-title oblique-geometry-svg-desc">
+        <title id="oblique-geometry-svg-title">An oblique ray crossing a dielectric layer</title>
+        <desc id="oblique-geometry-svg-desc">A ray crosses between two parallel interfaces. The vertical layer thickness is fixed while the diagonal ray segment is longer.</desc>
+        <defs>
+          <marker id="oblique-geometry-ray-arrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ob-ink)"></path>
+          </marker>
+          <marker id="oblique-geometry-dim-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M0,5 L10,0 L10,10 z" fill="var(--ob-accent)"></path>
+          </marker>
+        </defs>
+
+        <rect class="ob-layer" x="42" y="42" width="236" height="134" rx="2"></rect>
+        <line class="ob-interface" x1="42" y1="42" x2="278" y2="42"></line>
+        <line class="ob-interface" x1="42" y1="176" x2="278" y2="176"></line>
+
+        <line class="ob-guide" x1="104" y1="20" x2="104" y2="197"></line>
+        <text class="ob-label-small ob-label-muted" x="104" y="15" text-anchor="middle">layer normal</text>
+
+        <line class="ob-ink-line" x1="104" y1="42" x2="228" y2="176" marker-end="url(#oblique-geometry-ray-arrow)"></line>
+        <path class="ob-accent-line" d="M104 78 A36 36 0 0 0 128 68"></path>
+        <text class="ob-label-accent" x="135" y="74">θ<tspan baseline-shift="sub" font-size="9">i</tspan></text>
+
+        <line class="ob-accent-line" x1="70" y1="48" x2="70" y2="170" marker-start="url(#oblique-geometry-dim-arrow)" marker-end="url(#oblique-geometry-dim-arrow)"></line>
+        <text class="ob-label-accent" x="60" y="112" text-anchor="end">d<tspan baseline-shift="sub" font-size="9">i</tspan></text>
+
+        <circle cx="104" cy="42" r="3.3" fill="var(--ob-surface)" stroke="var(--ob-ink)" stroke-width="1.7"></circle>
+        <circle cx="228" cy="176" r="3.3" fill="var(--ob-surface)" stroke="var(--ob-ink)" stroke-width="1.7"></circle>
+
+        <text class="ob-label-small ob-label-muted" x="160" y="205" text-anchor="middle">parallel interface planes</text>
+      </svg>
+
+      <div class="oblique-bragg__equation">
+        <span class="oblique-bragg__equation-label">Ray distance</span>
+        <span class="oblique-bragg__equation-math">ℓ<sub>i</sub> = d<sub>i</sub>/cos&nbsp;θ<sub>i</sub></span>
+      </div>
+      <p class="oblique-bragg__reading">As θ<sub>i</sub> increases, cos θ<sub>i</sub> decreases, so the diagonal distance increases.</p>
+    </section>
+
+    <section class="oblique-bragg__step" aria-labelledby="oblique-phase-title">
+      <div class="oblique-bragg__step-head">
+        <span class="oblique-bragg__step-index">2 · Phase</span>
+        <h5 class="oblique-bragg__step-title" id="oblique-phase-title">Only the normal component advances the stack coordinate</h5>
+        <p class="oblique-bragg__step-note">Resolve the wavevector along <i>z</i>, the direction in which the layers repeat.</p>
+      </div>
+
+      <svg class="oblique-bragg__drawing" viewBox="0 0 320 220" role="img" aria-labelledby="oblique-phase-svg-title oblique-phase-svg-desc">
+        <title id="oblique-phase-svg-title">Wavevector decomposition into tangential and normal components</title>
+        <desc id="oblique-phase-svg-desc">The wavevector is decomposed into a horizontal tangential component and a vertical normal component. The normal component is highlighted.</desc>
+        <defs>
+          <marker id="oblique-phase-ink-arrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ob-ink)"></path>
+          </marker>
+          <marker id="oblique-phase-accent-arrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ob-accent)"></path>
+          </marker>
+        </defs>
+
+        <line class="ob-axis" x1="62" y1="176" x2="273" y2="176"></line>
+        <line class="ob-axis" x1="62" y1="176" x2="62" y2="30"></line>
+        <text class="ob-label-small ob-label-muted" x="280" y="181">x</text>
+        <text class="ob-label-small ob-label-muted" x="56" y="25" text-anchor="end">z</text>
+
+        <line class="ob-ink-line" x1="62" y1="176" x2="224" y2="55" marker-end="url(#oblique-phase-ink-arrow)"></line>
+        <line class="ob-guide" x1="224" y1="55" x2="224" y2="176"></line>
+        <line class="ob-guide" x1="62" y1="55" x2="224" y2="55"></line>
+
+        <line class="ob-accent-line" x1="62" y1="176" x2="62" y2="55" marker-end="url(#oblique-phase-accent-arrow)"></line>
+        <line class="ob-axis" x1="62" y1="176" x2="224" y2="176"></line>
+
+        <text x="230" y="54">k<tspan baseline-shift="sub" font-size="9">i</tspan></text>
+        <text class="ob-label-accent" x="48" y="111" text-anchor="end">k<tspan baseline-shift="sub" font-size="9">z,i</tspan></text>
+        <text class="ob-label-small ob-label-muted" x="143" y="196" text-anchor="middle">k<tspan baseline-shift="sub" font-size="8">x</tspan></text>
+
+        <path class="ob-accent-line" d="M62 137 A39 39 0 0 1 86 145"></path>
+        <text class="ob-label-accent" x="91" y="144">θ<tspan baseline-shift="sub" font-size="9">i</tspan></text>
+
+        <text class="ob-label-small ob-label-muted" x="160" y="20" text-anchor="middle">normal projection</text>
+      </svg>
+
+      <div class="oblique-bragg__equation">
+        <span class="oblique-bragg__equation-label">Layer phase</span>
+        <span class="oblique-bragg__equation-math">
+          <span class="oblique-bragg__equation-line">φ<sub>i</sub> = k<sub>z,i</sub>d<sub>i</sub></span>
+          <span class="oblique-bragg__equation-line">= (2π/λ)n<sub>i</sub>d<sub>i</sub>cos&nbsp;θ<sub>i</sub></span>
+        </span>
+      </div>
+      <p class="oblique-bragg__reading">Here the cosine multiplies the phase thickness. Increasing the angle therefore reduces the phase accumulated between adjacent interface planes at fixed λ.</p>
+    </section>
+
+    <section class="oblique-bragg__step" aria-labelledby="oblique-shift-title">
+      <div class="oblique-bragg__step-head">
+        <span class="oblique-bragg__step-index">3 · Consequence</span>
+        <h5 class="oblique-bragg__step-title" id="oblique-shift-title">The Bragg centre moves to shorter wavelength</h5>
+        <p class="oblique-bragg__step-note">Both layers contribute their own normal phase thickness.</p>
+      </div>
+
+      <svg class="oblique-bragg__drawing" viewBox="0 0 320 220" role="img" aria-labelledby="oblique-shift-svg-title oblique-shift-svg-desc">
+        <title id="oblique-shift-svg-title">Normalized Bragg wavelength decreases with external angle</title>
+        <desc id="oblique-shift-svg-desc">A smooth descending curve begins at the normal-incidence value one and falls as the external angle increases.</desc>
+
+        <text class="ob-label-small ob-label-muted" x="49" y="21">λ<tspan baseline-shift="sub" font-size="8">B</tspan>(θ<tspan baseline-shift="sub" font-size="8">0</tspan>) / λ<tspan baseline-shift="sub" font-size="8">B</tspan>(0)</text>
+
+        <line class="ob-axis" x1="49" y1="39" x2="49" y2="176"></line>
+        <line class="ob-axis" x1="49" y1="176" x2="286" y2="176"></line>
+
+        <line class="ob-guide" x1="49" y1="61" x2="281" y2="61"></line>
+        <text class="ob-label-small ob-label-muted" x="38" y="65" text-anchor="end">1</text>
+
+        <path class="ob-curve" fill="none" d="M58 61 C106 63, 151 74, 191 94 C227 112, 257 137, 280 159"></path>
+        <circle class="ob-point" cx="58" cy="61" r="4.5"></circle>
+
+        <line class="ob-guide" x1="232" y1="115" x2="232" y2="176"></line>
+        <circle class="ob-point" cx="232" cy="115" r="4.5"></circle>
+
+        <text class="ob-label-small ob-label-muted" x="58" y="196" text-anchor="start">0</text>
+        <text class="ob-label-small ob-label-muted" x="286" y="196" text-anchor="end">larger θ<tspan baseline-shift="sub" font-size="8">0</tspan></text>
+        <text class="ob-label-accent" x="137" y="148" text-anchor="middle">λ<tspan baseline-shift="sub" font-size="9">B</tspan> decreases</text>
+      </svg>
+
+      <div class="oblique-bragg__equation">
+        <span class="oblique-bragg__equation-label">One H–L period at Bragg resonance</span>
+        <span class="oblique-bragg__equation-math">
+          <span class="oblique-bragg__equation-line">λ<sub>B</sub>(θ<sub>0</sub>) = 2[</span>
+          <span class="oblique-bragg__equation-line">n<sub>H</sub>d<sub>H</sub>cos&nbsp;θ<sub>H</sub> + n<sub>L</sub>d<sub>L</sub>cos&nbsp;θ<sub>L</sub>]</span>
+        </span>
+      </div>
+      <p class="oblique-bragg__reading">Snell’s law makes θ<sub>H</sub> and θ<sub>L</sub> increase with θ<sub>0</sub>. Their cosine factors decrease, so the Bragg condition is recovered at a shorter vacuum wavelength.</p>
+    </section>
+  </div>
+
+  <div class="oblique-bragg__result" aria-label="Chain of reasoning for the angular Bragg shift">
+    <div class="oblique-bragg__result-part">
+      <span class="oblique-bragg__result-label">Increase incidence angle</span>
+      <span class="oblique-bragg__result-value">θ<sub>0</sub> ↑</span>
+    </div>
+    <span class="oblique-bragg__result-arrow" aria-hidden="true">→</span>
+    <div class="oblique-bragg__result-part">
+      <span class="oblique-bragg__result-label">Reduce normal phase factors</span>
+      <span class="oblique-bragg__result-value">cos θ<sub>H</sub>, cos θ<sub>L</sub> ↓</span>
+    </div>
+    <span class="oblique-bragg__result-arrow" aria-hidden="true">→</span>
+    <div class="oblique-bragg__result-part">
+      <span class="oblique-bragg__result-label">Shift the Bragg centre</span>
+      <span class="oblique-bragg__result-value">λ<sub>B</sub> ↓</span>
+    </div>
+  </div>
+
+  <figcaption>The longer diagonal path and the smaller normal phase are not competing estimates of the same quantity. The first describes the ray geometry; the second is the phase advance used by the one-dimensional multilayer calculation.</figcaption>
+</figure>
+<script>
+  (function () {
+    let frame = 0;
+    function reportHeight() {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(function () {
+        frame = 0;
+        const height = Math.ceil(Math.max(
+          document.documentElement.scrollHeight,
+          document.body ? document.body.scrollHeight : 0
+        ));
+        try { if (window.frameElement) window.frameElement.style.height = height + 'px'; } catch (_) {}
+        try {
+          window.parent.postMessage({ type: 'article-visualization:resize', height: height }, '*');
+          window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, '*');
+        } catch (_) {}
+      });
+    }
+    window.addEventListener('load', reportHeight);
+    window.addEventListener('resize', reportHeight, { passive: true });
+    document.addEventListener('input', reportHeight, { passive: true });
+    document.addEventListener('click', reportHeight, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(reportHeight).observe(document.documentElement);
+    reportHeight();
+  }());
+</script>
+</body>
+</html>

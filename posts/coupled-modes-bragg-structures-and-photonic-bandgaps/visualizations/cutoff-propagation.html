@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Cutoff and evanescence</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { color-scheme: light dark; }
+    html, body { width: 100%; min-width: 0; margin: 0; background: transparent !important; overflow-x: clip; }
+    body { padding: clamp(4px, 1.2vw, 12px); }
+  </style>
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const variableNames = [
+        '--page','--surface','--surface-muted','--ink','--muted','--border','--border-strong','--accent','--accent-soft',
+        '--post-accent','--post-accent-soft','--post-accent-border','--post-accent-ink',
+        '--color-bg','--color-surface','--color-surface-muted','--color-text','--color-text-muted','--color-border','--color-border-strong'
+      ];
+      function syncFromParent() {
+        try {
+          if (window.parent === window) return;
+          const parentRoot = window.parent.document.documentElement;
+          const article = window.parent.document.querySelector('article, main') || parentRoot;
+          const rootStyle = window.parent.getComputedStyle(parentRoot);
+          const articleStyle = window.parent.getComputedStyle(article);
+          const explicit = parentRoot.getAttribute('data-theme') ||
+            (parentRoot.classList.contains('dark') ? 'dark' : '') ||
+            (parentRoot.classList.contains('light') ? 'light' : '');
+          if (explicit) root.setAttribute('data-theme', explicit);
+          else root.removeAttribute('data-theme');
+          root.classList.toggle('dark', explicit === 'dark');
+          root.classList.toggle('light', explicit === 'light');
+          for (const name of variableNames) {
+            const value = articleStyle.getPropertyValue(name).trim() || rootStyle.getPropertyValue(name).trim();
+            if (value) root.style.setProperty(name, value);
+          }
+          const aliases = {
+            '--page': '--color-bg',
+            '--surface': '--color-surface',
+            '--surface-muted': '--color-surface-muted',
+            '--ink': '--color-text',
+            '--muted': '--color-text-muted',
+            '--border': '--color-border',
+            '--border-strong': '--color-border-strong',
+            '--accent': '--post-accent',
+            '--accent-soft': '--post-accent-soft'
+          };
+          for (const [alias, source] of Object.entries(aliases)) {
+            if (!root.style.getPropertyValue(alias)) {
+              const value = root.style.getPropertyValue(source);
+              if (value) root.style.setProperty(alias, value);
+            }
+          }
+        } catch (_) {}
+      }
+      syncFromParent();
+      window.addEventListener('DOMContentLoaded', syncFromParent, { once: true });
+      try {
+        if (window.parent !== window) {
+          const parentRoot = window.parent.document.documentElement;
+          new MutationObserver(syncFromParent).observe(parentRoot, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-color-mode'] });
+        }
+      } catch (_) {}
+    }());
+  </script>
+</head>
+<body>
+<figure class="cutoff-shape-viz" id="cutoff-shape-viz" aria-labelledby="cutoff-shape-title">
+  <header class="cutoff-shape-viz__header">
+    <div class="cutoff-shape-viz__title-block">
+      <p class="cutoff-shape-viz__eyebrow">one dispersion curve · three spatial regimes</p>
+      <h4 id="cutoff-shape-title">The cutoff separates propagation from evanescence</h4>
+      <p class="cutoff-shape-viz__intro">
+        Fix the frequency and read horizontally. The question is not how large the numbers are,
+        but whether the line meets the dispersion curve.
+      </p>
+    </div>
+
+    <div class="cutoff-shape-viz__equation" aria-label="omega squared equals omega c squared plus v squared q squared">
+      <span>ω<sup>2</sup></span>
+      <span>=</span>
+      <span>ω<sub>c</sub><sup>2</sup></span>
+      <span>+</span>
+      <span>v<sup>2</sup>q<sup>2</sup></span>
+    </div>
+  </header>
+
+  <div class="cutoff-shape-viz__controls" role="group" aria-label="Choose the frequency regime">
+    <button type="button" class="cutoff-shape-viz__control" data-regime="above" aria-pressed="true">
+      <span>above cutoff</span>
+      <strong>ω &gt; ω<sub>c</sub></strong>
+    </button>
+    <button type="button" class="cutoff-shape-viz__control" data-regime="at" aria-pressed="false">
+      <span>at cutoff</span>
+      <strong>ω = ω<sub>c</sub></strong>
+    </button>
+    <button type="button" class="cutoff-shape-viz__control" data-regime="below" aria-pressed="false">
+      <span>below cutoff</span>
+      <strong>ω &lt; ω<sub>c</sub></strong>
+    </button>
+  </div>
+
+  <div class="cutoff-shape-viz__stage">
+    <section class="cutoff-shape-viz__panel" aria-labelledby="cutoff-dispersion-heading">
+      <div class="cutoff-shape-viz__panel-heading">
+        <span class="cutoff-shape-viz__step">01</span>
+        <div>
+          <h5 id="cutoff-dispersion-heading">Intersect the dispersion curve</h5>
+          <p>Real intersections correspond to real longitudinal wavenumbers.</p>
+        </div>
+      </div>
+
+      <svg class="cutoff-shape-viz__plot" viewBox="0 0 680 430" role="img" aria-labelledby="cutoff-plot-title cutoff-plot-desc">
+        <title id="cutoff-plot-title">Cutoff dispersion and a selectable frequency line</title>
+        <desc id="cutoff-plot-desc">
+          A U-shaped positive-frequency dispersion curve has its minimum at omega c. A horizontal line can cross the curve twice, touch it once, or remain below it.
+        </desc>
+
+        <defs>
+          <clipPath id="cutoff-shape-clip">
+            <rect x="74" y="34" width="566" height="334" rx="4"></rect>
+          </clipPath>
+        </defs>
+
+        <rect class="cutoff-shape-viz__forbidden" x="74" y="252" width="566" height="116" rx="4"></rect>
+
+        <g class="cutoff-shape-viz__grid" aria-hidden="true">
+          <line x1="74" y1="118" x2="640" y2="118"></line>
+          <line x1="74" y1="252" x2="640" y2="252"></line>
+          <line x1="357" y1="34" x2="357" y2="368"></line>
+        </g>
+
+        <g class="cutoff-shape-viz__axes" aria-hidden="true">
+          <line x1="74" y1="368" x2="650" y2="368"></line>
+          <path d="M650 368 l-11 -6.5 v13 z"></path>
+          <line x1="74" y1="376" x2="74" y2="25"></line>
+          <path d="M74 25 l-6.5 11 h13 z"></path>
+        </g>
+
+        <text class="cutoff-shape-viz__axis-label" x="652" y="393" text-anchor="end">q</text>
+        <text class="cutoff-shape-viz__axis-label" x="49" y="36" text-anchor="middle">ω</text>
+
+        <g clip-path="url(#cutoff-shape-clip)">
+          <path id="cutoff-dispersion-path" class="cutoff-shape-viz__dispersion" d=""></path>
+          <line class="cutoff-shape-viz__cutoff-line" x1="74" x2="640" y1="252" y2="252"></line>
+          <line id="cutoff-frequency-line" class="cutoff-shape-viz__frequency-line" x1="74" x2="640" y1="118" y2="118"></line>
+          <circle id="cutoff-left-intersection" class="cutoff-shape-viz__intersection" cx="132" cy="118" r="7"></circle>
+          <circle id="cutoff-right-intersection" class="cutoff-shape-viz__intersection" cx="582" cy="118" r="7"></circle>
+          <circle class="cutoff-shape-viz__cutoff-point" cx="357" cy="252" r="7"></circle>
+        </g>
+
+        <g class="cutoff-shape-viz__cutoff-label" aria-hidden="true">
+          <line x1="357" y1="252" x2="428" y2="206"></line>
+          <rect x="434" y="166" width="158" height="50" rx="12"></rect>
+          <text x="448" y="186">minimum frequency</text>
+          <text x="448" y="206">ω<tspan baseline-shift="sub" font-size="11">c</tspan></text>
+        </g>
+
+        <g id="cutoff-intersection-labels" class="cutoff-shape-viz__intersection-labels" aria-hidden="true">
+          <text x="132" y="142" text-anchor="middle">−q</text>
+          <text x="582" y="142" text-anchor="middle">+q</text>
+        </g>
+
+        <g id="cutoff-selected-line-label" class="cutoff-shape-viz__selected-line-label" aria-hidden="true">
+          <rect x="84" y="82" width="117" height="28" rx="14"></rect>
+          <text x="142.5" y="101" text-anchor="middle">ω &gt; ω<tspan baseline-shift="sub" font-size="10">c</tspan></text>
+        </g>
+
+        <g class="cutoff-shape-viz__forbidden-label" aria-hidden="true">
+          <text x="357" y="313" text-anchor="middle">below the minimum</text>
+          <text x="357" y="337" text-anchor="middle">no real intersection with the curve</text>
+        </g>
+      </svg>
+    </section>
+
+    <section class="cutoff-shape-viz__panel" aria-labelledby="cutoff-field-heading">
+      <div class="cutoff-shape-viz__panel-heading">
+        <span class="cutoff-shape-viz__step">02</span>
+        <div>
+          <h5 id="cutoff-field-heading">Read the spatial consequence</h5>
+          <p>The same equation now determines whether the field oscillates or decays.</p>
+        </div>
+      </div>
+
+      <div class="cutoff-shape-viz__state">
+        <span id="cutoff-state-badge" class="cutoff-shape-viz__state-badge">propagating</span>
+        <strong id="cutoff-state-equation" class="cutoff-shape-viz__state-equation">q is real</strong>
+      </div>
+
+      <svg class="cutoff-shape-viz__field" viewBox="0 0 560 292" role="img" aria-labelledby="cutoff-field-title cutoff-field-desc">
+        <title id="cutoff-field-title">Spatial field in the selected regime</title>
+        <desc id="cutoff-field-desc">
+          Above cutoff the field oscillates, at cutoff the longitudinal variation disappears, and below cutoff the field decays exponentially.
+        </desc>
+
+        <g class="cutoff-shape-viz__field-grid" aria-hidden="true">
+          <line x1="48" y1="145" x2="528" y2="145"></line>
+          <line x1="48" y1="55" x2="48" y2="235"></line>
+          <line x1="168" y1="55" x2="168" y2="235"></line>
+          <line x1="288" y1="55" x2="288" y2="235"></line>
+          <line x1="408" y1="55" x2="408" y2="235"></line>
+          <line x1="528" y1="55" x2="528" y2="235"></line>
+        </g>
+
+        <g class="cutoff-shape-viz__field-axes" aria-hidden="true">
+          <line x1="48" y1="250" x2="538" y2="250"></line>
+          <path d="M538 250 l-11 -6.5 v13 z"></path>
+          <text x="292" y="280" text-anchor="middle">distance z</text>
+        </g>
+
+        <path id="cutoff-envelope-top" class="cutoff-shape-viz__envelope" d=""></path>
+        <path id="cutoff-envelope-bottom" class="cutoff-shape-viz__envelope" d=""></path>
+        <path id="cutoff-field-path" class="cutoff-shape-viz__field-path" d=""></path>
+
+        <g id="cutoff-travel-arrows" class="cutoff-shape-viz__travel-arrows" aria-hidden="true">
+          <line x1="178" y1="38" x2="248" y2="38"></line>
+          <path d="M248 38 l-12 -7 v14 z"></path>
+          <text x="213" y="23" text-anchor="middle">phase advances</text>
+        </g>
+
+        <g id="cutoff-decay-label" class="cutoff-shape-viz__decay-label" aria-hidden="true">
+          <line x1="166" y1="82" x2="225" y2="105"></line>
+          <text x="154" y="72" text-anchor="start">exponential envelope</text>
+        </g>
+      </svg>
+
+      <div class="cutoff-shape-viz__reasoning" aria-live="polite">
+        <span id="cutoff-relation-one">ω &gt; ω<sub>c</sub></span>
+        <span aria-hidden="true">⇒</span>
+        <span id="cutoff-relation-two">q<sup>2</sup> &gt; 0</span>
+        <span aria-hidden="true">⇒</span>
+        <strong id="cutoff-relation-three">oscillatory propagation</strong>
+      </div>
+    </section>
+  </div>
+
+  <div class="cutoff-shape-viz__conclusion">
+    <span class="cutoff-shape-viz__conclusion-label">general shape</span>
+    <p id="cutoff-conclusion-text">
+      Above cutoff, one frequency corresponds to two real wavenumbers, representing the two propagation directions.
+    </p>
+  </div>
+
+  <figcaption>
+    The cutoff is a geometric statement about the minimum of the dispersion branch. Below that minimum, the frequency is still meaningful, but the longitudinal wavenumber is imaginary rather than real.
+  </figcaption>
+</figure>
+
+<style>
+.cutoff-shape-viz {
+  --csv-accent: var(--post-accent, var(--accent, #85295e));
+  --csv-accent-ink: var(--post-accent-ink, var(--csv-accent));
+  --csv-soft: var(--post-accent-soft, var(--accent-soft, #f8eaf2));
+  --csv-border: var(--post-accent-border, var(--border, #d6ddd7));
+  --csv-border-strong: var(--border-strong, #aab4ad);
+  --csv-surface: var(--surface, #ffffff);
+  --csv-surface-muted: var(--surface-muted, #f4f5f1);
+  --csv-ink: var(--ink, #1c2420);
+  --csv-muted: var(--muted, #667169);
+  --csv-faint: color-mix(in srgb, var(--csv-muted) 18%, transparent);
+
+  box-sizing: border-box;
+  width: 100%;
+  margin: 2.6rem 0;
+  padding: clamp(1rem, 2.5vw, 1.55rem);
+  overflow: hidden;
+  border: 1px solid var(--csv-border);
+  border-top: 4px solid var(--csv-accent);
+  border-radius: 0.5rem;
+  background: var(--csv-surface);
+  color: var(--csv-ink);
+  box-shadow: 0 16px 42px color-mix(in srgb, var(--csv-ink) 8%, transparent);
+}
+
+.cutoff-shape-viz,
+.cutoff-shape-viz * {
+  box-sizing: border-box;
+}
+
+.cutoff-shape-viz__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem 1.5rem;
+  align-items: start;
+}
+
+.cutoff-shape-viz__eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--csv-accent-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.cutoff-shape-viz h4,
+.cutoff-shape-viz h5,
+.cutoff-shape-viz p {
+  max-width: none;
+}
+
+.cutoff-shape-viz h4 {
+  margin: 0;
+  color: var(--csv-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.15rem, 2.15vw, 1.58rem);
+  line-height: 1.18;
+}
+
+.cutoff-shape-viz__intro {
+  max-width: 64ch !important;
+  margin: 0.6rem 0 0;
+  color: var(--csv-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.cutoff-shape-viz__equation {
+  display: flex;
+  gap: 0.38rem;
+  align-items: baseline;
+  justify-content: center;
+  min-width: 17rem;
+  padding: 0.75rem 0.95rem;
+  border: 1px solid var(--csv-border);
+  border-radius: 0.35rem;
+  background: var(--csv-surface-muted);
+  color: var(--csv-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  white-space: nowrap;
+}
+
+.cutoff-shape-viz__controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-top: 1.15rem;
+}
+
+.cutoff-shape-viz__control {
+  display: grid;
+  gap: 0.16rem;
+  min-width: 0;
+  padding: 0.72rem 0.8rem;
+  border: 1px solid var(--csv-border);
+  border-radius: 0.34rem;
+  background: var(--csv-surface);
+  color: var(--csv-muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.cutoff-shape-viz__control:hover {
+  border-color: var(--csv-border-strong);
+  transform: translateY(-1px);
+}
+
+.cutoff-shape-viz__control:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--csv-accent) 28%, transparent);
+  outline-offset: 2px;
+}
+
+.cutoff-shape-viz__control[aria-pressed="true"] {
+  border-color: var(--csv-accent);
+  background: var(--csv-soft);
+  color: var(--csv-accent-ink);
+}
+
+.cutoff-shape-viz__control span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.cutoff-shape-viz__control strong {
+  color: var(--csv-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.96rem;
+  font-weight: 600;
+}
+
+.cutoff-shape-viz__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
+.cutoff-shape-viz__panel {
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--csv-border);
+  border-radius: 0.42rem;
+  background: color-mix(in srgb, var(--csv-surface) 94%, var(--csv-surface-muted));
+}
+
+.cutoff-shape-viz__panel-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.7rem;
+  align-items: start;
+  min-height: 3.5rem;
+}
+
+.cutoff-shape-viz__step {
+  display: grid;
+  place-items: center;
+  width: 1.82rem;
+  height: 1.82rem;
+  border: 1px solid var(--csv-accent);
+  border-radius: 50%;
+  color: var(--csv-accent-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.cutoff-shape-viz h5 {
+  margin: 0;
+  color: var(--csv-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.cutoff-shape-viz__panel-heading p {
+  margin: 0.25rem 0 0;
+  color: var(--csv-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.cutoff-shape-viz__plot,
+.cutoff-shape-viz__field {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 0.55rem;
+  overflow: visible;
+}
+
+.cutoff-shape-viz__grid line,
+.cutoff-shape-viz__field-grid line {
+  stroke: var(--csv-faint);
+  stroke-width: 1;
+}
+
+.cutoff-shape-viz__axes line,
+.cutoff-shape-viz__field-axes line {
+  stroke: var(--csv-border-strong);
+  stroke-width: 1.25;
+}
+
+.cutoff-shape-viz__axes path,
+.cutoff-shape-viz__field-axes path {
+  fill: var(--csv-border-strong);
+}
+
+.cutoff-shape-viz__axis-label,
+.cutoff-shape-viz__field-axes text {
+  fill: var(--csv-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+}
+
+.cutoff-shape-viz__forbidden {
+  fill: color-mix(in srgb, var(--csv-accent) 7%, transparent);
+}
+
+.cutoff-shape-viz__dispersion {
+  fill: none;
+  stroke: var(--csv-ink);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cutoff-shape-viz__cutoff-line {
+  stroke: var(--csv-border-strong);
+  stroke-width: 1.5;
+  stroke-dasharray: 7 7;
+}
+
+.cutoff-shape-viz__frequency-line {
+  stroke: var(--csv-accent);
+  stroke-width: 3;
+  transition: y1 240ms ease, y2 240ms ease;
+}
+
+.cutoff-shape-viz__intersection,
+.cutoff-shape-viz__cutoff-point {
+  fill: var(--csv-surface);
+  stroke: var(--csv-accent);
+  stroke-width: 4;
+  transition: opacity 180ms ease, visibility 180ms ease, cx 240ms ease, cy 240ms ease;
+}
+
+.cutoff-shape-viz__cutoff-point {
+  stroke: var(--csv-ink);
+  stroke-width: 3;
+}
+
+.cutoff-shape-viz__cutoff-label line {
+  stroke: var(--csv-border-strong);
+  stroke-width: 1.3;
+}
+
+.cutoff-shape-viz__cutoff-label rect {
+  fill: color-mix(in srgb, var(--csv-surface) 92%, transparent);
+  stroke: var(--csv-border);
+  stroke-width: 1;
+}
+
+.cutoff-shape-viz__cutoff-label text,
+.cutoff-shape-viz__intersection-labels text,
+.cutoff-shape-viz__forbidden-label text {
+  fill: var(--csv-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+}
+
+.cutoff-shape-viz__intersection-labels text {
+  fill: var(--csv-accent-ink);
+  font-style: italic;
+  font-weight: 700;
+}
+
+.cutoff-shape-viz__forbidden-label text:first-child {
+  fill: var(--csv-accent-ink);
+  font-weight: 700;
+}
+
+.cutoff-shape-viz__forbidden-label text:last-child {
+  font-size: 14px;
+}
+
+.cutoff-shape-viz__selected-line-label rect {
+  fill: var(--csv-surface);
+  stroke: var(--csv-accent);
+  stroke-width: 1.3;
+}
+
+.cutoff-shape-viz__selected-line-label text {
+  fill: var(--csv-accent-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.cutoff-shape-viz__state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.72rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.65rem;
+  padding: 0.62rem 0.72rem;
+  border: 1px solid var(--csv-border);
+  border-radius: 0.34rem;
+  background: var(--csv-surface-muted);
+}
+
+.cutoff-shape-viz__state-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.8rem;
+  padding: 0.3rem 0.62rem;
+  border-radius: 999px;
+  background: var(--csv-soft);
+  color: var(--csv-accent-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.cutoff-shape-viz__state-equation {
+  color: var(--csv-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.cutoff-shape-viz__field-path {
+  fill: none;
+  stroke: var(--csv-accent);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: d 250ms ease;
+}
+
+.cutoff-shape-viz__envelope {
+  fill: none;
+  stroke: color-mix(in srgb, var(--csv-accent) 45%, transparent);
+  stroke-width: 1.8;
+  stroke-dasharray: 7 6;
+}
+
+.cutoff-shape-viz__travel-arrows line,
+.cutoff-shape-viz__decay-label line {
+  stroke: var(--csv-border-strong);
+  stroke-width: 1.4;
+}
+
+.cutoff-shape-viz__travel-arrows path {
+  fill: var(--csv-border-strong);
+}
+
+.cutoff-shape-viz__travel-arrows text,
+.cutoff-shape-viz__decay-label text {
+  fill: var(--csv-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+}
+
+.cutoff-shape-viz__reasoning {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.55rem;
+  align-items: baseline;
+  justify-content: center;
+  min-height: 3.25rem;
+  margin-top: 0.6rem;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid var(--csv-border);
+  border-radius: 0.34rem;
+  background: var(--csv-surface);
+  color: var(--csv-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.cutoff-shape-viz__reasoning strong {
+  color: var(--csv-ink);
+}
+
+.cutoff-shape-viz__conclusion {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem 1rem;
+  align-items: center;
+  margin-top: 0.85rem;
+  padding: 0.82rem 0.92rem;
+  border: 1px solid var(--csv-border);
+  border-left: 4px solid var(--csv-accent);
+  border-radius: 0.32rem;
+  background: linear-gradient(100deg, var(--csv-soft), var(--csv-surface) 76%);
+}
+
+.cutoff-shape-viz__conclusion-label {
+  color: var(--csv-accent-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+}
+
+.cutoff-shape-viz__conclusion p {
+  margin: 0;
+  color: var(--csv-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.cutoff-shape-viz figcaption {
+  margin-top: 0.85rem;
+  color: var(--csv-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .cutoff-shape-viz__stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .cutoff-shape-viz {
+    padding: 0.82rem;
+  }
+
+  .cutoff-shape-viz__header,
+  .cutoff-shape-viz__conclusion {
+    grid-template-columns: 1fr;
+  }
+
+  .cutoff-shape-viz__equation {
+    justify-self: stretch;
+    min-width: 0;
+  }
+
+  .cutoff-shape-viz__controls {
+    grid-template-columns: 1fr;
+  }
+
+  .cutoff-shape-viz__control {
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+  }
+
+  .cutoff-shape-viz__cutoff-label rect {
+    width: 146px;
+    height: 54px;
+  }
+
+  .cutoff-shape-viz__cutoff-label text {
+    font-size: 18px;
+  }
+
+  .cutoff-shape-viz__forbidden-label text:last-child,
+  .cutoff-shape-viz__axis-label {
+    display: none;
+  }
+
+  .cutoff-shape-viz__forbidden-label text:first-child {
+    font-size: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cutoff-shape-viz *,
+  .cutoff-shape-viz *::before,
+  .cutoff-shape-viz *::after {
+    transition: none !important;
+  }
+}
+</style>
+
+<script>
+(function () {
+  const root = document.getElementById('cutoff-shape-viz');
+  if (!root || root.dataset.initialized === 'true') return;
+  root.dataset.initialized = 'true';
+
+  const buttons = Array.from(root.querySelectorAll('[data-regime]'));
+  const dispersionPath = root.querySelector('#cutoff-dispersion-path');
+  const frequencyLine = root.querySelector('#cutoff-frequency-line');
+  const leftIntersection = root.querySelector('#cutoff-left-intersection');
+  const rightIntersection = root.querySelector('#cutoff-right-intersection');
+  const intersectionLabels = root.querySelector('#cutoff-intersection-labels');
+  const selectedLineLabel = root.querySelector('#cutoff-selected-line-label');
+  const selectedLineLabelRect = selectedLineLabel.querySelector('rect');
+  const selectedLineLabelText = selectedLineLabel.querySelector('text');
+  const stateBadge = root.querySelector('#cutoff-state-badge');
+  const stateEquation = root.querySelector('#cutoff-state-equation');
+  const relationOne = root.querySelector('#cutoff-relation-one');
+  const relationTwo = root.querySelector('#cutoff-relation-two');
+  const relationThree = root.querySelector('#cutoff-relation-three');
+  const conclusionText = root.querySelector('#cutoff-conclusion-text');
+  const fieldPath = root.querySelector('#cutoff-field-path');
+  const envelopeTop = root.querySelector('#cutoff-envelope-top');
+  const envelopeBottom = root.querySelector('#cutoff-envelope-bottom');
+  const travelArrows = root.querySelector('#cutoff-travel-arrows');
+  const decayLabel = root.querySelector('#cutoff-decay-label');
+
+  const plot = {
+    left: 74,
+    right: 640,
+    top: 34,
+    bottom: 368,
+    centerX: 357,
+    cutoffY: 252
+  };
+
+  const field = {
+    left: 48,
+    right: 528,
+    mid: 145,
+    amplitude: 76
+  };
+
+  const states = {
+    above: {
+      y: 118,
+      label: 'ω > ωc',
+      badge: 'propagating',
+      equation: 'q is real',
+      relationOne: 'ω &gt; ω<sub>c</sub>',
+      relationTwo: 'q<sup>2</sup> &gt; 0',
+      relationThree: 'oscillatory propagation',
+      conclusion: 'Above cutoff, one frequency corresponds to two real wavenumbers, representing the two propagation directions.'
+    },
+    at: {
+      y: 252,
+      label: 'ω = ωc',
+      badge: 'cutoff',
+      equation: 'q = 0',
+      relationOne: 'ω = ω<sub>c</sub>',
+      relationTwo: 'q<sup>2</sup> = 0',
+      relationThree: 'no longitudinal phase advance',
+      conclusion: 'At cutoff, the two intersections merge at q = 0. The field is at the boundary between oscillation and exponential decay.'
+    },
+    below: {
+      y: 314,
+      label: 'ω < ωc',
+      badge: 'evanescent',
+      equation: 'q = iα is imaginary',
+      relationOne: 'ω &lt; ω<sub>c</sub>',
+      relationTwo: 'q<sup>2</sup> &lt; 0',
+      relationThree: 'exponential decay',
+      conclusion: 'Below cutoff, the horizontal line misses the real dispersion curve. The longitudinal wavenumber becomes imaginary, so the field decays instead of propagating.'
+    }
+  };
+
+  function setVisible(element, visible) {
+    element.style.opacity = visible ? '1' : '0';
+    element.style.visibility = visible ? 'visible' : 'hidden';
+  }
+
+  function makeDispersion() {
+    const points = [];
+    const qScale = 123;
+    const count = 220;
+
+    for (let i = 0; i <= count; i += 1) {
+      const u = -2.3 + (4.6 * i / count);
+      const x = plot.centerX + u * qScale;
+      const y = plot.cutoffY - 40 * u * u;
+      points.push(`${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`);
+    }
+
+    dispersionPath.setAttribute('d', points.join(' '));
+  }
+
+  function fieldX(t) {
+    return field.left + t * (field.right - field.left);
+  }
+
+  function makeField(regime) {
+    const curve = [];
+    const top = [];
+    const bottom = [];
+    const count = 260;
+
+    if (regime === 'above') {
+      for (let i = 0; i <= count; i += 1) {
+        const t = i / count;
+        const x = fieldX(t);
+        const y = field.mid - field.amplitude * Math.cos(2 * Math.PI * 4.15 * t);
+        curve.push(`${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`);
+      }
+      setVisible(envelopeTop, false);
+      setVisible(envelopeBottom, false);
+      setVisible(travelArrows, true);
+      setVisible(decayLabel, false);
+    } else if (regime === 'at') {
+      curve.push(`M ${field.left} ${field.mid - field.amplitude}`);
+      curve.push(`L ${field.right} ${field.mid - field.amplitude}`);
+      setVisible(envelopeTop, false);
+      setVisible(envelopeBottom, false);
+      setVisible(travelArrows, false);
+      setVisible(decayLabel, false);
+    } else {
+      for (let i = 0; i <= count; i += 1) {
+        const t = i / count;
+        const x = fieldX(t);
+        const amplitude = field.amplitude * Math.exp(-4.1 * t);
+        const y = field.mid - amplitude;
+        curve.push(`${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`);
+        top.push(`${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${(field.mid - amplitude).toFixed(2)}`);
+        bottom.push(`${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${(field.mid + amplitude).toFixed(2)}`);
+      }
+      envelopeTop.setAttribute('d', top.join(' '));
+      envelopeBottom.setAttribute('d', bottom.join(' '));
+      setVisible(envelopeTop, true);
+      setVisible(envelopeBottom, true);
+      setVisible(travelArrows, false);
+      setVisible(decayLabel, true);
+    }
+
+    fieldPath.setAttribute('d', curve.join(' '));
+  }
+
+  function setLineLabel(regime, y) {
+    selectedLineLabelRect.setAttribute('y', String(y - 36));
+    selectedLineLabelText.setAttribute('y', String(y - 17));
+
+    if (regime === 'above') {
+      selectedLineLabelText.innerHTML = 'ω &gt; ω<tspan baseline-shift="sub" font-size="10">c</tspan>';
+    } else if (regime === 'at') {
+      selectedLineLabelText.innerHTML = 'ω = ω<tspan baseline-shift="sub" font-size="10">c</tspan>';
+    } else {
+      selectedLineLabelText.innerHTML = 'ω &lt; ω<tspan baseline-shift="sub" font-size="10">c</tspan>';
+    }
+  }
+
+  function setRegime(regime) {
+    const state = states[regime];
+
+    buttons.forEach(button => {
+      button.setAttribute('aria-pressed', button.dataset.regime === regime ? 'true' : 'false');
+    });
+
+    frequencyLine.setAttribute('y1', String(state.y));
+    frequencyLine.setAttribute('y2', String(state.y));
+    setLineLabel(regime, state.y);
+
+    if (regime === 'above') {
+      leftIntersection.setAttribute('cx', '132');
+      leftIntersection.setAttribute('cy', String(state.y));
+      rightIntersection.setAttribute('cx', '582');
+      rightIntersection.setAttribute('cy', String(state.y));
+      setVisible(leftIntersection, true);
+      setVisible(rightIntersection, true);
+      setVisible(intersectionLabels, true);
+    } else if (regime === 'at') {
+      leftIntersection.setAttribute('cx', String(plot.centerX));
+      leftIntersection.setAttribute('cy', String(state.y));
+      setVisible(leftIntersection, true);
+      setVisible(rightIntersection, false);
+      setVisible(intersectionLabels, false);
+    } else {
+      setVisible(leftIntersection, false);
+      setVisible(rightIntersection, false);
+      setVisible(intersectionLabels, false);
+    }
+
+    stateBadge.textContent = state.badge;
+    stateEquation.innerHTML = state.equation;
+    relationOne.innerHTML = state.relationOne;
+    relationTwo.innerHTML = state.relationTwo;
+    relationThree.textContent = state.relationThree;
+    conclusionText.textContent = state.conclusion;
+
+    makeField(regime);
+  }
+
+  buttons.forEach(button => {
+    button.addEventListener('click', () => setRegime(button.dataset.regime));
+  });
+
+  makeDispersion();
+  setRegime('above');
+})();
+</script>
+<script>
+  (function () {
+    let frame = 0;
+    function reportHeight() {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(function () {
+        frame = 0;
+        const height = Math.ceil(Math.max(
+          document.documentElement.scrollHeight,
+          document.body ? document.body.scrollHeight : 0
+        ));
+        try { if (window.frameElement) window.frameElement.style.height = height + 'px'; } catch (_) {}
+        try {
+          window.parent.postMessage({ type: 'article-visualization:resize', height: height }, '*');
+          window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, '*');
+        } catch (_) {}
+      });
+    }
+    window.addEventListener('load', reportHeight);
+    window.addEventListener('resize', reportHeight, { passive: true });
+    document.addEventListener('input', reportHeight, { passive: true });
+    document.addEventListener('click', reportHeight, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(reportHeight).observe(document.documentElement);
+    reportHeight();
+  }());
+</script>
+</body>
+</html>

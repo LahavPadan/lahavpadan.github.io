@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TE accumulation and TM stopband closure at Brewster incidence</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: var(--color-bg, var(--page, #fbfbf8));
+      --surface: var(--color-surface, #ffffff);
+      --surface-muted: var(--color-surface-muted, #f4f5f1);
+      --ink: var(--color-text, #1c2420);
+      --muted: var(--color-text-muted, #667169);
+      --border: var(--color-border, #d6ddd7);
+      --border-strong: var(--color-border-strong, #a6b2a9);
+      --primary: var(--post-accent, var(--accent, #245aa7));
+      --primary-soft: var(--post-accent-soft, #eaf1fb);
+      --primary-border: var(--post-accent-border, #b3c8e7);
+      --primary-ink: var(--post-accent-ink, #17447f);
+      --tm: #39735a;
+      --tm-soft: #eaf4ee;
+      --tm-border: #b8d1c2;
+      --back: #9a294d;
+      --back-soft: #faedf1;
+      --serif: "STIX Two Text", "Cambria Math", Georgia, serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    :root[data-theme="dark"], :root.dark {
+      --bg: #121617; --surface: #192022; --surface-muted: #20292c; --ink: #edf1f2; --muted: #aab4b7;
+      --border: #384449; --border-strong: #596970; --primary: var(--post-accent, #8eb2ef);
+      --primary-soft: #1d2a3d; --primary-border: #3f5c85; --primary-ink: #bfd2f4;
+      --tm: #89c3a1; --tm-soft: #1b3327; --tm-border: #3e6d50; --back: #ef91ad; --back-soft: #3a2029;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-width: 0; background: transparent; color: var(--ink); }
+    body { padding: clamp(6px, 1.2vw, 14px); font-family: var(--serif); }
+    .viz { border: 1px solid var(--border); border-top: 4px solid var(--primary); background: var(--surface); overflow: hidden; box-shadow: 0 16px 45px color-mix(in srgb, var(--ink) 8%, transparent); }
+    .head { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); border-bottom: 1px solid var(--border); }
+    .head > div { padding: 1rem 1.15rem; text-align: center; }
+    .head > div + div { border-left: 1px solid var(--border); }
+    .head h3 { margin: 0; font-size: clamp(1.15rem, 2.7vw, 1.75rem); line-height: 1.12; }
+    .head .te { color: var(--primary-ink); background: linear-gradient(120deg, var(--primary-soft), transparent 75%); }
+    .head .tm { color: var(--tm); background: linear-gradient(120deg, var(--tm-soft), transparent 75%); }
+    .head p { margin: .35rem 0 0; color: var(--muted); font-family: var(--sans); font-size: .82rem; }
+    .matrix { display: grid; grid-template-columns: 8.8rem minmax(0,1fr) minmax(0,1fr); }
+    .row-label, .cell { border-bottom: 1px solid var(--border); }
+    .row-label { display: flex; align-items: center; gap: .6rem; padding: 1rem .85rem; background: var(--surface-muted); font-weight: 700; line-height: 1.25; }
+    .row-label .n { flex: 0 0 auto; display: grid; place-items: center; width: 1.7rem; height: 1.7rem; border: 1px solid var(--border-strong); border-radius: 50%; font-family: var(--sans); font-size: .76rem; }
+    .cell { min-width: 0; padding: .9rem; }
+    .cell.tm-cell { border-left: 1px solid var(--border); }
+    .diagram { width: 100%; height: auto; display: block; }
+    .diagram text { fill: var(--ink); font-family: var(--serif); }
+    .diagram .muted { fill: var(--muted); font-family: var(--sans); }
+    .diagram .primary { stroke: var(--primary); fill: var(--primary); }
+    .diagram .tmline { stroke: var(--tm); fill: var(--tm); }
+    .diagram .back { stroke: var(--back); fill: var(--back); }
+    .diagram .guide { stroke: var(--border-strong); }
+    .diagram .layer { fill: var(--surface-muted); stroke: none; }
+    .diagram .gapfill { fill: color-mix(in srgb, var(--primary-soft) 75%, transparent); }
+    .formula { margin: .65rem 0 0; padding: .6rem .7rem; border-left: 3px solid var(--primary); background: var(--primary-soft); text-align: center; font-size: clamp(.93rem, 1.8vw, 1.08rem); }
+    .tm-cell .formula { border-left-color: var(--tm); background: var(--tm-soft); }
+    .reading { margin: .48rem 0 0; color: var(--muted); font-family: var(--sans); font-size: .82rem; line-height: 1.45; text-align: center; }
+    .conclusion { margin: 0; padding: 1rem 1.2rem; background: linear-gradient(90deg, color-mix(in srgb, var(--primary-soft) 72%, transparent), var(--surface)); text-align: center; font-size: clamp(.96rem, 1.9vw, 1.15rem); }
+    .conclusion strong { color: var(--primary-ink); }
+    @media (max-width: 760px) {
+      .head { grid-template-columns: 1fr; }
+      .head > div + div { border-left: 0; border-top: 1px solid var(--border); }
+      .matrix { grid-template-columns: 1fr; }
+      .row-label { border-bottom: 0; padding: .75rem .9rem; }
+      .cell { border-bottom: 1px solid var(--border); }
+      .cell.tm-cell { border-left: 0; }
+      .cell::before { display: block; margin: 0 0 .4rem; font-family: var(--sans); font-weight: 700; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+      .cell:not(.tm-cell)::before { content: "TE"; color: var(--primary-ink); }
+      .cell.tm-cell::before { content: "TM at Brewster incidence"; color: var(--tm); }
+    }
+  </style>
+</head>
+<body>
+  <section class="viz" aria-labelledby="brewster-title">
+    <header class="head" id="brewster-title">
+      <div class="te"><h3>TE (transverse electric)</h3><p>Each boundary launches a backward increment.</p></div>
+      <div class="tm"><h3>TM at Brewster incidence</h3><p>The single-interface reflection coefficient vanishes.</p></div>
+    </header>
+    <div class="matrix">
+      <div class="row-label"><span class="n">1</span><span>Single interface</span></div>
+      <article class="cell">
+        <svg class="diagram" viewBox="0 0 520 180" role="img" aria-label="A TE forward wave reaches one interface and launches a reflected wave to the left">
+          <defs><marker id="bte-f" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--primary)"/></marker><marker id="bte-r" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--back)"/></marker></defs>
+          <rect class="layer" x="355" y="16" width="145" height="142"/><line class="guide" x1="355" y1="16" x2="355" y2="158" stroke-width="2"/>
+          <line x1="95" y1="65" x2="340" y2="65" stroke="var(--primary)" stroke-width="6" marker-end="url(#bte-f)"/><text x="96" y="44" font-size="20">forward wave A(z<tspan baseline-shift="sub" font-size="13">j</tspan>)</text>
+          <line x1="350" y1="112" x2="208" y2="112" stroke="var(--back)" stroke-width="5" marker-end="url(#bte-r)"/><text x="92" y="139" font-size="20" fill="var(--back)">reflected increment ΔB<tspan baseline-shift="sub" font-size="13">j</tspan></text>
+        </svg>
+        <div class="formula">ΔB<sub>j</sub> ∝ r<sub>TE</sub>A(z<sub>j</sub>), &nbsp; r<sub>TE</sub> ≠ 0</div>
+      </article>
+      <article class="cell tm-cell">
+        <svg class="diagram" viewBox="0 0 520 180" role="img" aria-label="A TM forward wave reaches one interface at Brewster incidence and launches no reflected wave">
+          <defs><marker id="btm-f" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--tm)"/></marker></defs>
+          <rect class="layer" x="355" y="16" width="145" height="142"/><line class="guide" x1="355" y1="16" x2="355" y2="158" stroke-width="2"/>
+          <line x1="95" y1="65" x2="340" y2="65" stroke="var(--tm)" stroke-width="6" marker-end="url(#btm-f)"/><text x="96" y="44" font-size="20">forward wave A(z<tspan baseline-shift="sub" font-size="13">j</tspan>)</text>
+          <text x="276" y="115" text-anchor="middle" font-size="20" fill="var(--tm)">no backward amplitude is launched</text>
+        </svg>
+        <div class="formula">r<sub>TM</sub>(θ<sub>B</sub>) = 0 &nbsp;⇒&nbsp; ΔB<sub>j</sub> = 0</div>
+      </article>
+
+      <div class="row-label"><span class="n">2</span><span>Across many interfaces</span></div>
+      <article class="cell">
+        <svg class="diagram" viewBox="0 0 520 215" role="img" aria-label="Several TE interfaces launch left-going increments that accumulate into a backward wave">
+          <defs><marker id="bte2-f" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--primary)"/></marker><marker id="bte2-r" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--back)"/></marker></defs>
+          <rect class="layer" x="120" y="25" width="330" height="105"/>
+          <g stroke="var(--border-strong)" stroke-width="2"><line x1="150" y1="25" x2="150" y2="130"/><line x1="215" y1="25" x2="215" y2="130"/><line x1="280" y1="25" x2="280" y2="130"/><line x1="345" y1="25" x2="345" y2="130"/><line x1="410" y1="25" x2="410" y2="130"/></g>
+          <line x1="65" y1="58" x2="475" y2="58" stroke="var(--primary)" stroke-width="6" marker-end="url(#bte2-f)"/>
+          <g stroke="var(--back)" stroke-width="4" marker-end="url(#bte2-r)"><line x1="150" y1="101" x2="115" y2="101"/><line x1="215" y1="101" x2="180" y2="101"/><line x1="280" y1="101" x2="245" y2="101"/><line x1="345" y1="101" x2="310" y2="101"/><line x1="410" y1="101" x2="375" y2="101"/></g>
+          <g font-size="15" fill="var(--muted)" text-anchor="middle"><text x="150" y="151">z₁</text><text x="215" y="151">z₂</text><text x="280" y="151">z₃</text><text x="345" y="151">z₄</text><text x="410" y="151">z₅</text></g>
+          <line x1="310" y1="186" x2="82" y2="186" stroke="var(--back)" stroke-width="8" marker-end="url(#bte2-r)"/><text x="325" y="192" font-size="18" fill="var(--back)">B<tspan baseline-shift="sub" font-size="12">back</tspan> builds up</text>
+        </svg>
+        <p class="reading">At Bragg phase matching, the backward increments return with the same phase and add coherently.</p>
+        <div class="formula">κ<sub>TE</sub> ∝ r<sub>TE</sub> ≠ 0</div>
+      </article>
+      <article class="cell tm-cell">
+        <svg class="diagram" viewBox="0 0 520 215" role="img" aria-label="Several TM interfaces at Brewster incidence launch zero backward increments">
+          <defs><marker id="btm2-f" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--tm)"/></marker></defs>
+          <rect class="layer" x="120" y="25" width="330" height="105"/>
+          <g stroke="var(--border-strong)" stroke-width="2"><line x1="150" y1="25" x2="150" y2="130"/><line x1="215" y1="25" x2="215" y2="130"/><line x1="280" y1="25" x2="280" y2="130"/><line x1="345" y1="25" x2="345" y2="130"/><line x1="410" y1="25" x2="410" y2="130"/></g>
+          <line x1="65" y1="58" x2="475" y2="58" stroke="var(--tm)" stroke-width="6" marker-end="url(#btm2-f)"/>
+          <g font-size="16" fill="var(--tm)" text-anchor="middle"><text x="150" y="106">0</text><text x="215" y="106">0</text><text x="280" y="106">0</text><text x="345" y="106">0</text><text x="410" y="106">0</text></g>
+          <g font-size="15" fill="var(--muted)" text-anchor="middle"><text x="150" y="151">z₁</text><text x="215" y="151">z₂</text><text x="280" y="151">z₃</text><text x="345" y="151">z₄</text><text x="410" y="151">z₅</text></g>
+          <text x="260" y="190" text-anchor="middle" font-size="18" fill="var(--tm)">no interface launches a backward component</text>
+        </svg>
+        <p class="reading">Correct spacing cannot accumulate a reflected field when every launch amplitude is zero.</p>
+        <div class="formula">κ<sub>TM</sub> = 0</div>
+      </article>
+
+      <div class="row-label"><span class="n">3</span><span>Consequence for the stopband</span></div>
+      <article class="cell">
+        <svg class="diagram" viewBox="0 0 520 230" role="img" aria-label="TE dispersion branches remain separated by a finite stopband">
+          <defs><marker id="axis1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--ink)"/></marker></defs>
+          <line x1="62" y1="194" x2="470" y2="194" stroke="var(--ink)" stroke-width="2" marker-end="url(#axis1)"/><line x1="62" y1="194" x2="62" y2="25" stroke="var(--ink)" stroke-width="2" marker-end="url(#axis1)"/>
+          <path d="M62 52 C185 60 310 35 425 24" fill="none" stroke="var(--primary)" stroke-width="4"/><path d="M62 192 C185 151 310 150 425 138" fill="none" stroke="var(--primary)" stroke-width="4"/>
+          <rect class="gapfill" x="62" y="82" width="363" height="43"/><line x1="62" y1="82" x2="425" y2="82" stroke="var(--primary)" stroke-dasharray="7 6"/><line x1="62" y1="125" x2="425" y2="125" stroke="var(--primary)" stroke-dasharray="7 6"/>
+          <text x="478" y="205" font-size="20">k<tspan baseline-shift="sub" font-size="13">z</tspan></text><text x="44" y="28" font-size="20">ω</text><text x="330" y="108" font-size="19" fill="var(--primary)">Δω<tspan baseline-shift="sub" font-size="12">TE</tspan> &gt; 0</text>
+        </svg>
+        <div class="formula">finite TE stopband</div>
+      </article>
+      <article class="cell tm-cell">
+        <svg class="diagram" viewBox="0 0 520 230" role="img" aria-label="TM dispersion branches cross and the stopband closes at Brewster incidence">
+          <defs><marker id="axis2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--ink)"/></marker></defs>
+          <line x1="62" y1="194" x2="470" y2="194" stroke="var(--ink)" stroke-width="2" marker-end="url(#axis2)"/><line x1="62" y1="194" x2="62" y2="25" stroke="var(--ink)" stroke-width="2" marker-end="url(#axis2)"/>
+          <path d="M62 46 L425 168" fill="none" stroke="var(--tm)" stroke-width="4"/><path d="M62 168 L425 46" fill="none" stroke="var(--tm)" stroke-width="4"/><line x1="62" y1="107" x2="425" y2="107" stroke="var(--muted)" stroke-dasharray="7 6"/>
+          <circle cx="244" cy="107" r="6" fill="var(--surface)" stroke="var(--tm)" stroke-width="3"/><text x="478" y="205" font-size="20">k<tspan baseline-shift="sub" font-size="13">z</tspan></text><text x="44" y="28" font-size="20">ω</text><text x="335" y="99" font-size="19" fill="var(--tm)">Δω<tspan baseline-shift="sub" font-size="12">TM</tspan> = 0</text>
+        </svg>
+        <div class="formula">the TM stopband closes</div>
+      </article>
+    </div>
+    <p class="conclusion">The Bragg spacing may still be correct. <strong>The TM stopband disappears because the interface reflection amplitude vanishes at Brewster incidence.</strong></p>
+  </section>
+  <script>
+    (function () {
+      const root = document.documentElement;
+      function sync() {
+        try {
+          if (parent === window) return;
+          const pr = parent.document.documentElement;
+          const article = parent.document.querySelector('article, main') || pr;
+          const ps = parent.getComputedStyle(article);
+          const rs = parent.getComputedStyle(pr);
+          const theme = pr.getAttribute('data-theme') || (pr.classList.contains('dark') ? 'dark' : '') || (pr.classList.contains('light') ? 'light' : '');
+          if (theme) root.setAttribute('data-theme', theme); else root.removeAttribute('data-theme');
+          root.classList.toggle('dark', theme === 'dark'); root.classList.toggle('light', theme === 'light');
+          ['--post-accent','--post-accent-soft','--post-accent-border','--post-accent-ink','--color-bg','--color-surface','--color-surface-muted','--color-text','--color-text-muted','--color-border','--color-border-strong'].forEach(function (name) {
+            const v = ps.getPropertyValue(name).trim() || rs.getPropertyValue(name).trim(); if (v) root.style.setProperty(name, v);
+          });
+        } catch (_) {}
+      }
+      function resize() { const h = Math.ceil(document.documentElement.scrollHeight); try { if (frameElement) frameElement.style.height = h + 'px'; } catch (_) {} try { parent.postMessage({type:'article-visualization:resize',height:h},'*'); } catch (_) {} }
+      sync(); resize();
+      try { if (parent !== window) new MutationObserver(sync).observe(parent.document.documentElement,{attributes:true,attributeFilter:['class','data-theme','data-color-mode']}); } catch (_) {}
+      addEventListener('load', resize); addEventListener('resize', resize); if ('ResizeObserver' in window) new ResizeObserver(resize).observe(document.body);
+    }());
+  </script>
+</body>
+</html>

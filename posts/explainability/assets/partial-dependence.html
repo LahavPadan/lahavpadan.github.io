@@ -1,0 +1,1405 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Partial dependence plots</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { color-scheme: light dark; }
+    html, body { width: 100%; min-width: 0; margin: 0; background: transparent !important; overflow-x: clip; }
+    body { padding: clamp(4px, 1.2vw, 12px); }
+  </style>
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const variableNames = [
+        '--page','--surface','--surface-muted','--ink','--muted','--border','--border-strong','--accent','--accent-soft',
+        '--post-accent','--post-accent-soft','--post-accent-border','--post-accent-ink',
+        '--color-bg','--color-surface','--color-surface-muted','--color-text','--color-text-muted','--color-border','--color-border-strong'
+      ];
+      function syncFromParent() {
+        try {
+          if (window.parent === window) return;
+          const parentRoot = window.parent.document.documentElement;
+          const article = window.parent.document.querySelector('article, main') || parentRoot;
+          const rootStyle = window.parent.getComputedStyle(parentRoot);
+          const articleStyle = window.parent.getComputedStyle(article);
+          const explicit = parentRoot.getAttribute('data-theme') ||
+            (parentRoot.classList.contains('dark') ? 'dark' : '') ||
+            (parentRoot.classList.contains('light') ? 'light' : '');
+          if (explicit) root.setAttribute('data-theme', explicit);
+          else root.removeAttribute('data-theme');
+          root.classList.toggle('dark', explicit === 'dark');
+          root.classList.toggle('light', explicit === 'light');
+          for (const name of variableNames) {
+            const value = articleStyle.getPropertyValue(name).trim() || rootStyle.getPropertyValue(name).trim();
+            if (value) root.style.setProperty(name, value);
+          }
+          const aliases = {
+            '--page': '--color-bg',
+            '--surface': '--color-surface',
+            '--surface-muted': '--color-surface-muted',
+            '--ink': '--color-text',
+            '--muted': '--color-text-muted',
+            '--border': '--color-border',
+            '--border-strong': '--color-border-strong',
+            '--accent': '--post-accent',
+            '--accent-soft': '--post-accent-soft'
+          };
+          for (const [alias, source] of Object.entries(aliases)) {
+            if (!root.style.getPropertyValue(alias)) {
+              const value = root.style.getPropertyValue(source);
+              if (value) root.style.setProperty(alias, value);
+            }
+          }
+        } catch (_) {}
+      }
+      syncFromParent();
+      window.addEventListener('DOMContentLoaded', syncFromParent, { once: true });
+      try {
+        if (window.parent !== window) {
+          const parentRoot = window.parent.document.documentElement;
+          new MutationObserver(syncFromParent).observe(parentRoot, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-color-mode'] });
+        }
+      } catch (_) {}
+    }());
+  </script>
+</head>
+<body>
+<style>
+  .pdp-viz {
+    --pdp-accent: var(--post-accent, #5f3f9c);
+    --pdp-accent-soft: var(--post-accent-soft, #f4effd);
+    --pdp-accent-border: var(--post-accent-border, #cdbce7);
+    --pdp-accent-ink: var(--post-accent-ink, #4c327f);
+    --pdp-surface: var(--surface, #ffffff);
+    --pdp-surface-muted: var(--surface-muted, #f4f5f1);
+    --pdp-page: var(--page, #fbfbf8);
+    --pdp-ink: var(--ink, #1c2420);
+    --pdp-muted: var(--muted, #667169);
+    --pdp-border: var(--border, #d6ddd7);
+    --pdp-border-strong: var(--border-strong, #a6b2a9);
+    --pdp-positive: #9b553f;
+    --pdp-positive-soft: #f8e9e4;
+    --pdp-negative: #2f678e;
+    --pdp-negative-soft: #e6f0f6;
+
+    position: relative;
+    left: 50%;
+    width: min(940px, calc(100vw - 32px));
+    margin: 2.35rem 0;
+    transform: translateX(-50%);
+    border: 1px solid var(--pdp-border);
+    border-top: 4px solid var(--pdp-accent);
+    background: var(--pdp-surface);
+    color: var(--pdp-ink);
+    box-shadow: 0 20px 50px -42px rgba(24, 31, 27, 0.62);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", monospace;
+    line-height: 1.5;
+    isolation: isolate;
+  }
+
+  :root[data-theme="dark"] .pdp-viz {
+    --pdp-positive: #f0a48d;
+    --pdp-positive-soft: #41271f;
+    --pdp-negative: #8bc4ec;
+    --pdp-negative-soft: #173348;
+  }
+
+  .pdp-viz,
+  .pdp-viz * {
+    box-sizing: border-box;
+  }
+
+  .pdp-viz button,
+  .pdp-viz input {
+    font: inherit;
+  }
+
+  .pdp-viz__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 24px;
+    align-items: start;
+    padding: clamp(20px, 3.5vw, 32px);
+    border-bottom: 1px solid var(--pdp-border);
+  }
+
+  .pdp-viz__eyebrow {
+    margin: 0 0 8px;
+    color: var(--pdp-accent);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .pdp-viz__title {
+    max-width: 660px;
+    margin: 0;
+    color: var(--pdp-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.42rem, 3vw, 2.08rem);
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.15;
+  }
+
+  .pdp-viz__intro {
+    max-width: 680px;
+    margin: 12px 0 0;
+    color: var(--pdp-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1rem;
+    line-height: 1.58;
+  }
+
+  .pdp-viz__formula {
+    min-width: 246px;
+    padding: 14px 16px;
+    border: 1px solid var(--pdp-accent-border);
+    background: var(--pdp-accent-soft);
+  }
+
+  .pdp-viz__formula-main {
+    display: block;
+    color: var(--pdp-accent-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.08rem;
+    line-height: 1.45;
+    white-space: nowrap;
+  }
+
+  .pdp-viz__formula-note {
+    display: block;
+    margin-top: 7px;
+    color: var(--pdp-muted);
+    font-size: 0.68rem;
+    line-height: 1.45;
+  }
+
+  .pdp-viz__tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-bottom: 1px solid var(--pdp-border);
+    background: var(--pdp-surface-muted);
+  }
+
+  .pdp-viz__tab {
+    appearance: none;
+    min-height: 50px;
+    padding: 12px 16px;
+    border: 0;
+    border-right: 1px solid var(--pdp-border);
+    background: transparent;
+    color: var(--pdp-muted);
+    cursor: pointer;
+    font-size: 0.76rem;
+    font-weight: 750;
+    text-align: left;
+  }
+
+  .pdp-viz__tab:last-child {
+    border-right: 0;
+  }
+
+  .pdp-viz__tab[aria-selected="true"] {
+    background: var(--pdp-surface);
+    color: var(--pdp-accent-ink);
+    box-shadow: inset 0 -3px 0 var(--pdp-accent);
+  }
+
+  .pdp-viz__tab:focus-visible,
+  .pdp-viz__range:focus-visible {
+    outline: 2px solid var(--pdp-accent);
+    outline-offset: -3px;
+  }
+
+  .pdp-viz__panel {
+    padding: clamp(18px, 3vw, 28px);
+  }
+
+  .pdp-viz__panel[hidden] {
+    display: none;
+  }
+
+  .pdp-viz__flow {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .pdp-viz__flow-step {
+    position: relative;
+    min-height: 82px;
+    padding: 12px 13px;
+    border: 1px solid var(--pdp-border);
+    background: var(--pdp-surface-muted);
+  }
+
+  .pdp-viz__flow-step:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    top: 50%;
+    right: -12px;
+    z-index: 2;
+    display: grid;
+    width: 16px;
+    height: 22px;
+    place-items: center;
+    transform: translateY(-50%);
+    background: var(--pdp-surface);
+    color: var(--pdp-accent);
+    font-weight: 800;
+  }
+
+  .pdp-viz__flow-number {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--pdp-accent);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .pdp-viz__flow-title {
+    display: block;
+    color: var(--pdp-ink);
+    font-size: 0.76rem;
+    font-weight: 800;
+  }
+
+  .pdp-viz__flow-copy {
+    display: block;
+    margin-top: 3px;
+    color: var(--pdp-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.79rem;
+    line-height: 1.4;
+  }
+
+  .pdp-viz__control-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--pdp-accent-border);
+    background: var(--pdp-accent-soft);
+  }
+
+  .pdp-viz__control-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 9px;
+    color: var(--pdp-accent-ink);
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  .pdp-viz__control-explanation {
+    color: var(--pdp-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.82rem;
+    font-weight: 400;
+  }
+
+  .pdp-viz__range {
+    width: 100%;
+    height: 24px;
+    margin: 0;
+    accent-color: var(--pdp-accent);
+    cursor: ew-resize;
+  }
+
+  .pdp-viz__value {
+    min-width: 86px;
+    padding: 9px 11px;
+    border: 1px solid var(--pdp-accent-border);
+    background: var(--pdp-surface);
+    color: var(--pdp-accent-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.08rem;
+    text-align: center;
+  }
+
+  .pdp-viz__construction-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.88fr) minmax(360px, 1.12fr);
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .pdp-viz__card {
+    min-width: 0;
+    border: 1px solid var(--pdp-border);
+    background: var(--pdp-surface);
+  }
+
+  .pdp-viz__card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 58px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--pdp-border);
+    background: var(--pdp-surface-muted);
+  }
+
+  .pdp-viz__card-title {
+    margin: 0;
+    color: var(--pdp-ink);
+    font-size: 0.76rem;
+    font-weight: 850;
+  }
+
+  .pdp-viz__card-copy {
+    max-width: 420px;
+    margin: 3px 0 0;
+    color: var(--pdp-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+
+  .pdp-viz__mean-badge {
+    flex: 0 0 auto;
+    padding: 6px 8px;
+    border: 1px solid var(--pdp-accent-border);
+    background: var(--pdp-accent-soft);
+    color: var(--pdp-accent-ink);
+    font-size: 0.7rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .pdp-viz__rows {
+    display: grid;
+    gap: 7px;
+    padding: 12px;
+  }
+
+  .pdp-viz__row {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1.2fr) minmax(92px, 0.75fr) minmax(92px, 0.75fr);
+    gap: 9px;
+    align-items: center;
+    padding: 9px 10px;
+    border: 1px solid var(--pdp-border);
+    background: var(--pdp-surface);
+  }
+
+  .pdp-viz__row-index {
+    display: grid;
+    width: 27px;
+    height: 27px;
+    place-items: center;
+    border: 1px solid var(--pdp-accent-border);
+    background: var(--pdp-accent-soft);
+    color: var(--pdp-accent-ink);
+    font-size: 0.67rem;
+    font-weight: 850;
+  }
+
+  .pdp-viz__datum-label {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--pdp-muted);
+    font-size: 0.6rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .pdp-viz__datum-value {
+    display: block;
+    overflow: hidden;
+    color: var(--pdp-ink);
+    font-size: 0.72rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pdp-viz__datum-value--fixed,
+  .pdp-viz__datum-value--prediction {
+    color: var(--pdp-accent-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.88rem;
+  }
+
+  .pdp-viz__average {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    margin: 0 12px 12px;
+    padding: 12px;
+    border: 1px solid var(--pdp-accent-border);
+    background: var(--pdp-accent-soft);
+  }
+
+  .pdp-viz__average-label {
+    color: var(--pdp-accent-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.94rem;
+    line-height: 1.4;
+  }
+
+  .pdp-viz__average-value {
+    color: var(--pdp-accent-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .pdp-viz__chart-wrap {
+    padding: 10px 12px 12px;
+  }
+
+  .pdp-viz__chart {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 300px;
+    overflow: visible;
+  }
+
+  .pdp-viz__grid-line {
+    stroke: var(--pdp-border);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pdp-viz__axis-line {
+    stroke: var(--pdp-border-strong);
+    stroke-width: 1.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pdp-viz__axis-text {
+    fill: var(--pdp-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+  }
+
+  .pdp-viz__ice-line {
+    fill: none;
+    stroke: var(--pdp-border-strong);
+    stroke-width: 1.5;
+    opacity: 0.55;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pdp-viz__pdp-line {
+    fill: none;
+    stroke: var(--pdp-accent);
+    stroke-width: 3.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pdp-viz__slice-line {
+    stroke: var(--pdp-accent);
+    stroke-width: 1.25;
+    stroke-dasharray: 5 5;
+    opacity: 0.8;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pdp-viz__ice-point {
+    fill: var(--pdp-surface);
+    stroke: var(--pdp-border-strong);
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pdp-viz__pdp-point {
+    fill: var(--pdp-accent);
+    stroke: var(--pdp-surface);
+    stroke-width: 2.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pdp-viz__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 15px;
+    margin-top: 7px;
+    color: var(--pdp-muted);
+    font-size: 0.66rem;
+  }
+
+  .pdp-viz__legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .pdp-viz__legend-swatch {
+    width: 24px;
+    height: 0;
+    border-top: 2px solid var(--pdp-border-strong);
+  }
+
+  .pdp-viz__legend-swatch--pdp {
+    border-top-width: 3px;
+    border-top-color: var(--pdp-accent);
+  }
+
+  .pdp-viz__meaning {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .pdp-viz__meaning-card {
+    padding: 14px 15px;
+    border-left: 3px solid var(--pdp-accent);
+    background: var(--pdp-surface-muted);
+  }
+
+  .pdp-viz__meaning-title {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--pdp-accent-ink);
+    font-size: 0.72rem;
+    font-weight: 850;
+  }
+
+  .pdp-viz__meaning-copy {
+    margin: 0;
+    color: var(--pdp-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  .pdp-viz__cancellation-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 16px;
+  }
+
+  .pdp-viz__model {
+    padding: 14px 16px;
+    border-left: 3px solid var(--pdp-accent);
+    background: var(--pdp-surface-muted);
+  }
+
+  .pdp-viz__model-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--pdp-accent-ink);
+    font-size: 0.68rem;
+    font-weight: 850;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .pdp-viz__model-equation {
+    color: var(--pdp-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(0.96rem, 2.2vw, 1.18rem);
+    line-height: 1.5;
+  }
+
+  .pdp-viz__model-copy {
+    max-width: 610px;
+    margin: 8px 0 0;
+    color: var(--pdp-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.84rem;
+    line-height: 1.52;
+  }
+
+  .pdp-viz__share {
+    min-width: 228px;
+    padding: 13px 14px;
+    border: 1px solid var(--pdp-accent-border);
+    background: var(--pdp-accent-soft);
+  }
+
+  .pdp-viz__share .pdp-viz__control-label {
+    margin-bottom: 8px;
+  }
+
+  .pdp-viz__share-readout {
+    color: var(--pdp-accent-ink);
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+
+  .pdp-viz__cancel-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(250px, 0.85fr);
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .pdp-viz__conditional-lines {
+    display: grid;
+    gap: 9px;
+    padding: 14px;
+  }
+
+  .pdp-viz__conditional {
+    padding: 12px 13px;
+    border: 1px solid var(--pdp-border);
+    background: var(--pdp-surface);
+  }
+
+  .pdp-viz__conditional--negative {
+    border-left: 4px solid var(--pdp-negative);
+    background: linear-gradient(90deg, var(--pdp-negative-soft), transparent 72%);
+  }
+
+  .pdp-viz__conditional--positive {
+    border-left: 4px solid var(--pdp-positive);
+    background: linear-gradient(90deg, var(--pdp-positive-soft), transparent 72%);
+  }
+
+  .pdp-viz__conditional-label {
+    display: block;
+    color: var(--pdp-muted);
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .pdp-viz__conditional-equation {
+    display: block;
+    margin-top: 4px;
+    color: var(--pdp-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1rem;
+  }
+
+  .pdp-viz__average-equation {
+    padding: 14px;
+    border: 1px solid var(--pdp-accent-border);
+    background: var(--pdp-accent-soft);
+  }
+
+  .pdp-viz__average-equation-main {
+    display: block;
+    color: var(--pdp-accent-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+
+  .pdp-viz__average-equation-result {
+    display: block;
+    margin-top: 7px;
+    color: var(--pdp-accent-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.17rem;
+    font-weight: 700;
+  }
+
+  .pdp-viz__warning {
+    margin-top: 9px;
+    padding: 12px 13px;
+    border: 1px solid var(--pdp-border);
+    background: var(--pdp-surface-muted);
+  }
+
+  .pdp-viz__warning strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--pdp-accent-ink);
+    font-size: 0.72rem;
+  }
+
+  .pdp-viz__warning p {
+    margin: 0;
+    color: var(--pdp-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+  .pdp-viz__cancel-negative {
+    fill: none;
+    stroke: var(--pdp-negative);
+    stroke-width: 2.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pdp-viz__cancel-positive {
+    fill: none;
+    stroke: var(--pdp-positive);
+    stroke-width: 2.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pdp-viz__cancel-average {
+    fill: none;
+    stroke: var(--pdp-accent);
+    stroke-width: 3.6;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pdp-viz__legend-swatch--negative {
+    border-top-color: var(--pdp-negative);
+  }
+
+  .pdp-viz__legend-swatch--positive {
+    border-top-color: var(--pdp-positive);
+  }
+
+  .pdp-viz__footer-note {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px dashed var(--pdp-accent-border);
+    color: var(--pdp-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  .pdp-viz__footer-note strong {
+    color: var(--pdp-accent-ink);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.82rem;
+  }
+
+  @media (max-width: 780px) {
+    .pdp-viz__header,
+    .pdp-viz__construction-grid,
+    .pdp-viz__cancel-grid,
+    .pdp-viz__cancellation-intro {
+      grid-template-columns: 1fr;
+    }
+
+    .pdp-viz__formula,
+    .pdp-viz__share {
+      min-width: 0;
+    }
+
+    .pdp-viz__formula-main {
+      white-space: normal;
+    }
+
+    .pdp-viz__flow {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pdp-viz__flow-step:nth-child(2)::after {
+      display: none;
+    }
+
+    .pdp-viz__construction-grid {
+      gap: 14px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .pdp-viz {
+      width: calc(100vw - 20px);
+      margin-block: 1.75rem;
+    }
+
+    .pdp-viz__header,
+    .pdp-viz__panel {
+      padding: 16px;
+    }
+
+    .pdp-viz__tabs {
+      grid-template-columns: 1fr;
+    }
+
+    .pdp-viz__tab {
+      border-right: 0;
+      border-bottom: 1px solid var(--pdp-border);
+    }
+
+    .pdp-viz__tab:last-child {
+      border-bottom: 0;
+    }
+
+    .pdp-viz__flow {
+      grid-template-columns: 1fr;
+    }
+
+    .pdp-viz__flow-step::after {
+      display: none !important;
+    }
+
+    .pdp-viz__control-card {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .pdp-viz__value {
+      width: 100%;
+    }
+
+    .pdp-viz__row {
+      grid-template-columns: 30px minmax(0, 1fr) minmax(82px, 0.78fr);
+    }
+
+    .pdp-viz__row > :last-child {
+      grid-column: 2 / -1;
+      padding-top: 7px;
+      border-top: 1px dashed var(--pdp-border);
+    }
+
+    .pdp-viz__meaning {
+      grid-template-columns: 1fr;
+    }
+
+    .pdp-viz__chart {
+      min-height: 250px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pdp-viz *,
+    .pdp-viz *::before,
+    .pdp-viz *::after {
+      scroll-behavior: auto !important;
+      transition: none !important;
+    }
+  }
+</style>
+
+<div class="pdp-viz" data-pdp-viz>
+  <header class="pdp-viz__header">
+    <div>
+      <p class="pdp-viz__eyebrow">Partial dependence plot</p>
+      <h4 class="pdp-viz__title">Hold one feature fixed, reuse every observed context, then average the model outputs.</h4>
+      <p class="pdp-viz__intro">
+        A PDP is not obtained by selecting the training rows whose feature already equals a chosen value.
+        It creates a synthetic copy of every row, overwrites only feature <em>x</em><sub>j</sub>, evaluates the model,
+        and averages those predictions.
+      </p>
+    </div>
+
+    <div class="pdp-viz__formula" aria-label="Empirical partial dependence formula">
+      <span class="pdp-viz__formula-main">
+        PD<sub>j</sub>(z) = <span aria-hidden="true">1/n&nbsp;∑</span><sub>i=1</sub><sup>n</sup>
+        f(z, x<sub>−j</sub><sup>(i)</sup>)
+      </span>
+      <span class="pdp-viz__formula-note">The average is over the empirical marginal distribution of all other features.</span>
+    </div>
+  </header>
+
+  <div class="pdp-viz__tabs" role="tablist" aria-label="PDP visualization views">
+    <button class="pdp-viz__tab" type="button" role="tab" aria-selected="true" aria-controls="pdp-construction-panel" id="pdp-construction-tab" data-pdp-tab="construction">
+      01 · What the algorithm computes
+    </button>
+    <button class="pdp-viz__tab" type="button" role="tab" aria-selected="false" aria-controls="pdp-cancellation-panel" id="pdp-cancellation-tab" data-pdp-tab="cancellation">
+      02 · What the average can erase
+    </button>
+  </div>
+
+  <section class="pdp-viz__panel" id="pdp-construction-panel" role="tabpanel" aria-labelledby="pdp-construction-tab" data-pdp-panel="construction">
+    <div class="pdp-viz__flow" aria-label="Four stages of PDP construction">
+      <div class="pdp-viz__flow-step">
+        <span class="pdp-viz__flow-number">01</span>
+        <span class="pdp-viz__flow-title">Keep the contexts</span>
+        <span class="pdp-viz__flow-copy">Retain each observed x<sub>−j</sub><sup>(i)</sup>.</span>
+      </div>
+      <div class="pdp-viz__flow-step">
+        <span class="pdp-viz__flow-number">02</span>
+        <span class="pdp-viz__flow-title">Overwrite one feature</span>
+        <span class="pdp-viz__flow-copy">Set x<sub>j</sub> = z in every copied row.</span>
+      </div>
+      <div class="pdp-viz__flow-step">
+        <span class="pdp-viz__flow-number">03</span>
+        <span class="pdp-viz__flow-title">Evaluate the model</span>
+        <span class="pdp-viz__flow-copy">Compute f(z, x<sub>−j</sub><sup>(i)</sup>) for every context.</span>
+      </div>
+      <div class="pdp-viz__flow-step">
+        <span class="pdp-viz__flow-number">04</span>
+        <span class="pdp-viz__flow-title">Average vertically</span>
+        <span class="pdp-viz__flow-copy">One mean prediction becomes one point of the PDP.</span>
+      </div>
+    </div>
+
+    <div class="pdp-viz__control-card">
+      <div>
+        <label class="pdp-viz__control-label" for="pdp-z-slider">
+          <span>Chosen feature value z</span>
+          <span class="pdp-viz__control-explanation">Move z; the contexts do not change.</span>
+        </label>
+        <input class="pdp-viz__range" id="pdp-z-slider" data-pdp-z type="range" min="-100" max="100" step="1" value="-20" aria-label="Chosen value z for the target feature">
+      </div>
+      <output class="pdp-viz__value" data-pdp-z-value for="pdp-z-slider">z = −0.20</output>
+    </div>
+
+    <div class="pdp-viz__construction-grid">
+      <div class="pdp-viz__card">
+        <div class="pdp-viz__card-head">
+          <div>
+            <h5 class="pdp-viz__card-title">The synthetic rows evaluated at this z</h5>
+            <p class="pdp-viz__card-copy">Only the target column is replaced. Each row keeps its own observed context.</p>
+          </div>
+          <span class="pdp-viz__mean-badge">n = 5 contexts</span>
+        </div>
+
+        <div class="pdp-viz__rows" data-pdp-rows>
+          <div class="pdp-viz__row" data-context-offset="-0.40">
+            <span class="pdp-viz__row-index">1</span>
+            <span><span class="pdp-viz__datum-label">observed context</span><span class="pdp-viz__datum-value">x<sub>−j</sub><sup>(1)</sup></span></span>
+            <span><span class="pdp-viz__datum-label">fixed feature</span><span class="pdp-viz__datum-value pdp-viz__datum-value--fixed" data-row-z>x<sub>j</sub> = −0.20</span></span>
+            <span><span class="pdp-viz__datum-label">model output</span><span class="pdp-viz__datum-value pdp-viz__datum-value--prediction" data-row-prediction>−0.71</span></span>
+          </div>
+          <div class="pdp-viz__row" data-context-offset="-0.20">
+            <span class="pdp-viz__row-index">2</span>
+            <span><span class="pdp-viz__datum-label">observed context</span><span class="pdp-viz__datum-value">x<sub>−j</sub><sup>(2)</sup></span></span>
+            <span><span class="pdp-viz__datum-label">fixed feature</span><span class="pdp-viz__datum-value pdp-viz__datum-value--fixed" data-row-z>x<sub>j</sub> = −0.20</span></span>
+            <span><span class="pdp-viz__datum-label">model output</span><span class="pdp-viz__datum-value pdp-viz__datum-value--prediction" data-row-prediction>−0.51</span></span>
+          </div>
+          <div class="pdp-viz__row" data-context-offset="0">
+            <span class="pdp-viz__row-index">3</span>
+            <span><span class="pdp-viz__datum-label">observed context</span><span class="pdp-viz__datum-value">x<sub>−j</sub><sup>(3)</sup></span></span>
+            <span><span class="pdp-viz__datum-label">fixed feature</span><span class="pdp-viz__datum-value pdp-viz__datum-value--fixed" data-row-z>x<sub>j</sub> = −0.20</span></span>
+            <span><span class="pdp-viz__datum-label">model output</span><span class="pdp-viz__datum-value pdp-viz__datum-value--prediction" data-row-prediction>−0.31</span></span>
+          </div>
+          <div class="pdp-viz__row" data-context-offset="0.20">
+            <span class="pdp-viz__row-index">4</span>
+            <span><span class="pdp-viz__datum-label">observed context</span><span class="pdp-viz__datum-value">x<sub>−j</sub><sup>(4)</sup></span></span>
+            <span><span class="pdp-viz__datum-label">fixed feature</span><span class="pdp-viz__datum-value pdp-viz__datum-value--fixed" data-row-z>x<sub>j</sub> = −0.20</span></span>
+            <span><span class="pdp-viz__datum-label">model output</span><span class="pdp-viz__datum-value pdp-viz__datum-value--prediction" data-row-prediction>−0.11</span></span>
+          </div>
+          <div class="pdp-viz__row" data-context-offset="0.40">
+            <span class="pdp-viz__row-index">5</span>
+            <span><span class="pdp-viz__datum-label">observed context</span><span class="pdp-viz__datum-value">x<sub>−j</sub><sup>(5)</sup></span></span>
+            <span><span class="pdp-viz__datum-label">fixed feature</span><span class="pdp-viz__datum-value pdp-viz__datum-value--fixed" data-row-z>x<sub>j</sub> = −0.20</span></span>
+            <span><span class="pdp-viz__datum-label">model output</span><span class="pdp-viz__datum-value pdp-viz__datum-value--prediction" data-row-prediction>0.09</span></span>
+          </div>
+        </div>
+
+        <div class="pdp-viz__average">
+          <span class="pdp-viz__average-label">Average the five outputs at this same value of z.</span>
+          <output class="pdp-viz__average-value" data-pdp-mean>−0.31</output>
+        </div>
+      </div>
+
+      <div class="pdp-viz__card">
+        <div class="pdp-viz__card-head">
+          <div>
+            <h5 class="pdp-viz__card-title">Repeat the same operation across z</h5>
+            <p class="pdp-viz__card-copy">Each thin response curve belongs to one fixed context. Their pointwise average is the PDP.</p>
+          </div>
+          <span class="pdp-viz__mean-badge">current slice</span>
+        </div>
+
+        <div class="pdp-viz__chart-wrap">
+          <svg class="pdp-viz__chart" data-pdp-construction-chart viewBox="0 0 580 320" role="img" aria-labelledby="pdp-construction-chart-title pdp-construction-chart-desc" preserveAspectRatio="xMidYMid meet">
+            <title id="pdp-construction-chart-title">Individual model response curves and their partial dependence average</title>
+            <desc id="pdp-construction-chart-desc">Five parallel individual response curves are averaged at every selected z value to form one thicker partial dependence curve.</desc>
+            <g data-chart-grid></g>
+            <g data-chart-ice-lines></g>
+            <path class="pdp-viz__pdp-line" data-chart-pdp-line></path>
+            <line class="pdp-viz__slice-line" data-chart-slice></line>
+            <g data-chart-ice-points></g>
+            <circle class="pdp-viz__pdp-point" data-chart-pdp-point r="5.5"></circle>
+            <g data-chart-labels></g>
+          </svg>
+
+          <div class="pdp-viz__legend" aria-hidden="true">
+            <span class="pdp-viz__legend-item"><span class="pdp-viz__legend-swatch"></span>one observed context</span>
+            <span class="pdp-viz__legend-item"><span class="pdp-viz__legend-swatch pdp-viz__legend-swatch--pdp"></span>pointwise average: PD<sub>j</sub>(z)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdp-viz__meaning">
+      <div class="pdp-viz__meaning-card">
+        <span class="pdp-viz__meaning-title">What a changing PDP means</span>
+        <p class="pdp-viz__meaning-copy">The model’s average prediction changes when x<sub>j</sub> is varied while the empirical distribution of the remaining features is reused.</p>
+      </div>
+      <div class="pdp-viz__meaning-card">
+        <span class="pdp-viz__meaning-title">What it does not mean</span>
+        <p class="pdp-viz__meaning-copy">It does not say that every individual row responds in the same way, and it does not preserve dependence between x<sub>j</sub> and x<sub>−j</sub>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pdp-viz__panel" id="pdp-cancellation-panel" role="tabpanel" aria-labelledby="pdp-cancellation-tab" data-pdp-panel="cancellation" hidden>
+    <div class="pdp-viz__cancellation-intro">
+      <div class="pdp-viz__model">
+        <span class="pdp-viz__model-label">The interaction from the article</span>
+        <div class="pdp-viz__model-equation">
+          f(X<sub>1</sub>, X<sub>2</sub>, X<sub>3</sub>) = 0.2X<sub>1</sub> − 5X<sub>2</sub> + 10X<sub>2</sub>1[X<sub>3</sub> &gt; 0]
+        </div>
+        <p class="pdp-viz__model-copy">
+          For X<sub>3</sub> ≤ 0, increasing X<sub>2</sub> pushes the prediction downward. For X<sub>3</sub> &gt; 0, it pushes the prediction upward by the same magnitude.
+        </p>
+      </div>
+
+      <div class="pdp-viz__share">
+        <label class="pdp-viz__control-label" for="pdp-share-slider">
+          <span>π = P(X<sub>3</sub> &gt; 0)</span>
+          <output class="pdp-viz__share-readout" data-pdp-share-value for="pdp-share-slider">50%</output>
+        </label>
+        <input class="pdp-viz__range" id="pdp-share-slider" data-pdp-share type="range" min="0" max="100" step="1" value="50" aria-label="Share of observations for which X3 is greater than zero">
+      </div>
+    </div>
+
+    <div class="pdp-viz__cancel-grid">
+      <div class="pdp-viz__card">
+        <div class="pdp-viz__card-head">
+          <div>
+            <h5 class="pdp-viz__card-title">Two strong conditional effects, one average</h5>
+            <p class="pdp-viz__card-copy">The PDP line is the weighted pointwise average of the two conditional response lines.</p>
+          </div>
+          <span class="pdp-viz__mean-badge" data-pdp-slope-badge>PDP slope = 0</span>
+        </div>
+
+        <div class="pdp-viz__chart-wrap">
+          <svg class="pdp-viz__chart" data-pdp-cancel-chart viewBox="0 0 580 320" role="img" aria-labelledby="pdp-cancel-chart-title pdp-cancel-chart-desc" preserveAspectRatio="xMidYMid meet">
+            <title id="pdp-cancel-chart-title">Opposing conditional effects can cancel in a partial dependence plot</title>
+            <desc id="pdp-cancel-chart-desc">One conditional effect has slope negative five and the other has slope positive five. At an equal mixture their average is a flat line.</desc>
+            <g data-cancel-grid></g>
+            <path class="pdp-viz__cancel-negative" data-cancel-negative></path>
+            <path class="pdp-viz__cancel-positive" data-cancel-positive></path>
+            <path class="pdp-viz__cancel-average" data-cancel-average></path>
+            <g data-cancel-labels></g>
+          </svg>
+
+          <div class="pdp-viz__legend" aria-hidden="true">
+            <span class="pdp-viz__legend-item"><span class="pdp-viz__legend-swatch pdp-viz__legend-swatch--negative"></span>X<sub>3</sub> ≤ 0: slope −5</span>
+            <span class="pdp-viz__legend-item"><span class="pdp-viz__legend-swatch pdp-viz__legend-swatch--positive"></span>X<sub>3</sub> &gt; 0: slope +5</span>
+            <span class="pdp-viz__legend-item"><span class="pdp-viz__legend-swatch pdp-viz__legend-swatch--pdp"></span>PDP average</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pdp-viz__card">
+        <div class="pdp-viz__card-head">
+          <div>
+            <h5 class="pdp-viz__card-title">The cancellation in algebra</h5>
+            <p class="pdp-viz__card-copy">A flat PDP can be produced by opposing effects, not by the absence of an effect.</p>
+          </div>
+        </div>
+
+        <div class="pdp-viz__conditional-lines">
+          <div class="pdp-viz__conditional pdp-viz__conditional--negative">
+            <span class="pdp-viz__conditional-label">when X₃ ≤ 0</span>
+            <span class="pdp-viz__conditional-equation">f<sub>2</sub>(x<sub>2</sub> | X<sub>3</sub> ≤ 0) = −5x<sub>2</sub></span>
+          </div>
+          <div class="pdp-viz__conditional pdp-viz__conditional--positive">
+            <span class="pdp-viz__conditional-label">when X₃ &gt; 0</span>
+            <span class="pdp-viz__conditional-equation">f<sub>2</sub>(x<sub>2</sub> | X<sub>3</sub> &gt; 0) = +5x<sub>2</sub></span>
+          </div>
+
+          <div class="pdp-viz__average-equation">
+            <span class="pdp-viz__average-equation-main">
+              PD<sub>2</sub>(x<sub>2</sub>) = (1 − π)(−5x<sub>2</sub>) + π(5x<sub>2</sub>)
+            </span>
+            <span class="pdp-viz__average-equation-result" data-pdp-average-equation>= 0 · x<sub>2</sub> = 0</span>
+          </div>
+
+          <div class="pdp-viz__warning">
+            <strong data-pdp-warning-title>At π = 0.50, the PDP is exactly flat.</strong>
+            <p data-pdp-warning-copy>Both subgroups have a large effect of magnitude 5, but the marginal average reports zero variation.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdp-viz__footer-note">
+      <strong>The diagnostic implication:</strong>
+      compare the PDP with individual conditional expectation curves or stratified PDPs. A single average curve cannot reveal heterogeneous or sign-changing effects by itself.
+    </div>
+  </section>
+</div>
+
+<script>
+  (() => {
+    "use strict";
+
+    const SVG_NS = "http://www.w3.org/2000/svg";
+
+    const formatSigned = (value, digits = 2) => {
+      const threshold = 0.5 * 10 ** (-digits);
+      const normalized = Math.abs(value) < threshold ? 0 : value;
+      const text = Math.abs(normalized).toFixed(digits);
+      return normalized < 0 ? `−${text}` : text;
+    };
+
+    const createSvg = (name, attributes = {}) => {
+      const node = document.createElementNS(SVG_NS, name);
+      Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, String(value)));
+      return node;
+    };
+
+    const makePath = (fn, xMin, xMax, mapX, mapY, samples = 100) => {
+      let path = "";
+      for (let index = 0; index <= samples; index += 1) {
+        const x = xMin + ((xMax - xMin) * index) / samples;
+        const command = index === 0 ? "M" : "L";
+        path += `${command}${mapX(x).toFixed(2)},${mapY(fn(x)).toFixed(2)} `;
+      }
+      return path.trim();
+    };
+
+    document.querySelectorAll("[data-pdp-viz]").forEach((root) => {
+      if (root.dataset.pdpReady === "true") return;
+      root.dataset.pdpReady = "true";
+
+      const tabs = Array.from(root.querySelectorAll("[data-pdp-tab]"));
+      const panels = Array.from(root.querySelectorAll("[data-pdp-panel]"));
+
+      const activateTab = (name) => {
+        tabs.forEach((tab) => {
+          const active = tab.dataset.pdpTab === name;
+          tab.setAttribute("aria-selected", String(active));
+          tab.tabIndex = active ? 0 : -1;
+        });
+        panels.forEach((panel) => {
+          panel.hidden = panel.dataset.pdpPanel !== name;
+        });
+      };
+
+      tabs.forEach((tab, tabIndex) => {
+        tab.addEventListener("click", () => activateTab(tab.dataset.pdpTab));
+        tab.addEventListener("keydown", (event) => {
+          if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+          event.preventDefault();
+          const direction = event.key === "ArrowRight" ? 1 : -1;
+          const nextIndex = (tabIndex + direction + tabs.length) % tabs.length;
+          tabs[nextIndex].focus();
+          activateTab(tabs[nextIndex].dataset.pdpTab);
+        });
+      });
+
+      const zSlider = root.querySelector("[data-pdp-z]");
+      const zOutput = root.querySelector("[data-pdp-z-value]");
+      const meanOutput = root.querySelector("[data-pdp-mean]");
+      const rows = Array.from(root.querySelectorAll("[data-context-offset]"));
+      const contextOffsets = rows.map((row) => Number(row.dataset.contextOffset));
+
+      const baseResponse = (z) => 0.78 * Math.tanh(1.65 * z) + 0.16 * z;
+
+      const constructionSvg = root.querySelector("[data-pdp-construction-chart]");
+      const constructionGrid = constructionSvg.querySelector("[data-chart-grid]");
+      const iceLineGroup = constructionSvg.querySelector("[data-chart-ice-lines]");
+      const pdpLine = constructionSvg.querySelector("[data-chart-pdp-line]");
+      const sliceLine = constructionSvg.querySelector("[data-chart-slice]");
+      const icePointGroup = constructionSvg.querySelector("[data-chart-ice-points]");
+      const pdpPoint = constructionSvg.querySelector("[data-chart-pdp-point]");
+      const constructionLabels = constructionSvg.querySelector("[data-chart-labels]");
+
+      const cPlot = { left: 58, right: 558, top: 24, bottom: 270, xMin: -1, xMax: 1, yMin: -1.35, yMax: 1.35 };
+      const cMapX = (x) => cPlot.left + ((x - cPlot.xMin) / (cPlot.xMax - cPlot.xMin)) * (cPlot.right - cPlot.left);
+      const cMapY = (y) => cPlot.bottom - ((y - cPlot.yMin) / (cPlot.yMax - cPlot.yMin)) * (cPlot.bottom - cPlot.top);
+
+      [-1, -0.5, 0, 0.5, 1].forEach((tick) => {
+        constructionGrid.appendChild(createSvg("line", {
+          x1: cMapX(tick), y1: cPlot.top, x2: cMapX(tick), y2: cPlot.bottom, class: "pdp-viz__grid-line"
+        }));
+        const label = createSvg("text", {
+          x: cMapX(tick), y: cPlot.bottom + 20, "text-anchor": "middle", class: "pdp-viz__axis-text"
+        });
+        label.textContent = formatSigned(tick, 1);
+        constructionLabels.appendChild(label);
+      });
+
+      [-1, -0.5, 0, 0.5, 1].forEach((tick) => {
+        constructionGrid.appendChild(createSvg("line", {
+          x1: cPlot.left, y1: cMapY(tick), x2: cPlot.right, y2: cMapY(tick), class: "pdp-viz__grid-line"
+        }));
+        const label = createSvg("text", {
+          x: cPlot.left - 10, y: cMapY(tick) + 4, "text-anchor": "end", class: "pdp-viz__axis-text"
+        });
+        label.textContent = formatSigned(tick, 1);
+        constructionLabels.appendChild(label);
+      });
+
+      constructionGrid.appendChild(createSvg("line", {
+        x1: cPlot.left, y1: cMapY(0), x2: cPlot.right, y2: cMapY(0), class: "pdp-viz__axis-line"
+      }));
+      constructionGrid.appendChild(createSvg("line", {
+        x1: cMapX(0), y1: cPlot.top, x2: cMapX(0), y2: cPlot.bottom, class: "pdp-viz__axis-line"
+      }));
+
+      const xAxisLabel = createSvg("text", {
+        x: (cPlot.left + cPlot.right) / 2, y: 308, "text-anchor": "middle", class: "pdp-viz__axis-text"
+      });
+      xAxisLabel.textContent = "chosen feature value z";
+      constructionLabels.appendChild(xAxisLabel);
+
+      const yAxisLabel = createSvg("text", {
+        x: 14, y: (cPlot.top + cPlot.bottom) / 2,
+        transform: `rotate(-90 14 ${(cPlot.top + cPlot.bottom) / 2})`,
+        "text-anchor": "middle", class: "pdp-viz__axis-text"
+      });
+      yAxisLabel.textContent = "model prediction";
+      constructionLabels.appendChild(yAxisLabel);
+
+      const icePaths = contextOffsets.map((offset) => {
+        const path = createSvg("path", { class: "pdp-viz__ice-line" });
+        path.setAttribute("d", makePath((z) => baseResponse(z) + offset, -1, 1, cMapX, cMapY));
+        iceLineGroup.appendChild(path);
+        return path;
+      });
+
+      const icePoints = contextOffsets.map(() => {
+        const point = createSvg("circle", { r: 3.8, class: "pdp-viz__ice-point" });
+        icePointGroup.appendChild(point);
+        return point;
+      });
+
+      pdpLine.setAttribute("d", makePath(baseResponse, -1, 1, cMapX, cMapY));
+
+      const updateConstruction = () => {
+        const z = Number(zSlider.value) / 100;
+        const mean = baseResponse(z);
+        zOutput.textContent = `z = ${formatSigned(z, 2)}`;
+        meanOutput.textContent = formatSigned(mean, 2);
+
+        rows.forEach((row, index) => {
+          const prediction = mean + contextOffsets[index];
+          row.querySelector("[data-row-z]").innerHTML = `x<sub>j</sub> = ${formatSigned(z, 2)}`;
+          row.querySelector("[data-row-prediction]").textContent = formatSigned(prediction, 2);
+          icePoints[index].setAttribute("cx", cMapX(z));
+          icePoints[index].setAttribute("cy", cMapY(prediction));
+        });
+
+        const x = cMapX(z);
+        sliceLine.setAttribute("x1", x);
+        sliceLine.setAttribute("x2", x);
+        sliceLine.setAttribute("y1", cPlot.top);
+        sliceLine.setAttribute("y2", cPlot.bottom);
+        pdpPoint.setAttribute("cx", x);
+        pdpPoint.setAttribute("cy", cMapY(mean));
+      };
+
+      zSlider.addEventListener("input", updateConstruction, { passive: true });
+      updateConstruction();
+
+      const shareSlider = root.querySelector("[data-pdp-share]");
+      const shareOutput = root.querySelector("[data-pdp-share-value]");
+      const slopeBadge = root.querySelector("[data-pdp-slope-badge]");
+      const averageEquation = root.querySelector("[data-pdp-average-equation]");
+      const warningTitle = root.querySelector("[data-pdp-warning-title]");
+      const warningCopy = root.querySelector("[data-pdp-warning-copy]");
+
+      const cancelSvg = root.querySelector("[data-pdp-cancel-chart]");
+      const cancelGrid = cancelSvg.querySelector("[data-cancel-grid]");
+      const cancelNegative = cancelSvg.querySelector("[data-cancel-negative]");
+      const cancelPositive = cancelSvg.querySelector("[data-cancel-positive]");
+      const cancelAverage = cancelSvg.querySelector("[data-cancel-average]");
+      const cancelLabels = cancelSvg.querySelector("[data-cancel-labels]");
+
+      const kPlot = { left: 58, right: 558, top: 24, bottom: 270, xMin: -1, xMax: 1, yMin: -6, yMax: 6 };
+      const kMapX = (x) => kPlot.left + ((x - kPlot.xMin) / (kPlot.xMax - kPlot.xMin)) * (kPlot.right - kPlot.left);
+      const kMapY = (y) => kPlot.bottom - ((y - kPlot.yMin) / (kPlot.yMax - kPlot.yMin)) * (kPlot.bottom - kPlot.top);
+
+      [-1, -0.5, 0, 0.5, 1].forEach((tick) => {
+        cancelGrid.appendChild(createSvg("line", {
+          x1: kMapX(tick), y1: kPlot.top, x2: kMapX(tick), y2: kPlot.bottom, class: "pdp-viz__grid-line"
+        }));
+        const label = createSvg("text", {
+          x: kMapX(tick), y: kPlot.bottom + 20, "text-anchor": "middle", class: "pdp-viz__axis-text"
+        });
+        label.textContent = formatSigned(tick, 1);
+        cancelLabels.appendChild(label);
+      });
+
+      [-5, 0, 5].forEach((tick) => {
+        cancelGrid.appendChild(createSvg("line", {
+          x1: kPlot.left, y1: kMapY(tick), x2: kPlot.right, y2: kMapY(tick), class: "pdp-viz__grid-line"
+        }));
+        const label = createSvg("text", {
+          x: kPlot.left - 10, y: kMapY(tick) + 4, "text-anchor": "end", class: "pdp-viz__axis-text"
+        });
+        label.textContent = formatSigned(tick, 0);
+        cancelLabels.appendChild(label);
+      });
+
+      cancelGrid.appendChild(createSvg("line", {
+        x1: kPlot.left, y1: kMapY(0), x2: kPlot.right, y2: kMapY(0), class: "pdp-viz__axis-line"
+      }));
+      cancelGrid.appendChild(createSvg("line", {
+        x1: kMapX(0), y1: kPlot.top, x2: kMapX(0), y2: kPlot.bottom, class: "pdp-viz__axis-line"
+      }));
+
+      const cancelXLabel = createSvg("text", {
+        x: (kPlot.left + kPlot.right) / 2, y: 308, "text-anchor": "middle", class: "pdp-viz__axis-text"
+      });
+      cancelXLabel.textContent = "x₂";
+      cancelLabels.appendChild(cancelXLabel);
+
+      const cancelYLabel = createSvg("text", {
+        x: 14, y: (kPlot.top + kPlot.bottom) / 2,
+        transform: `rotate(-90 14 ${(kPlot.top + kPlot.bottom) / 2})`,
+        "text-anchor": "middle", class: "pdp-viz__axis-text"
+      });
+      cancelYLabel.textContent = "effect on prediction";
+      cancelLabels.appendChild(cancelYLabel);
+
+      cancelNegative.setAttribute("d", makePath((x) => -5 * x, -1, 1, kMapX, kMapY, 2));
+      cancelPositive.setAttribute("d", makePath((x) => 5 * x, -1, 1, kMapX, kMapY, 2));
+
+      const updateCancellation = () => {
+        const share = Number(shareSlider.value) / 100;
+        const slope = 10 * share - 5;
+        const shareText = `${Math.round(share * 100)}%`;
+        const slopeText = formatSigned(slope, 2);
+
+        shareOutput.textContent = shareText;
+        slopeBadge.textContent = `PDP slope = ${slopeText}`;
+        cancelAverage.setAttribute("d", makePath((x) => slope * x, -1, 1, kMapX, kMapY, 2));
+
+        if (Math.abs(slope) < 0.005) {
+          averageEquation.innerHTML = `= 0 · x<sub>2</sub> = 0`;
+          warningTitle.textContent = "At π = 0.50, the PDP is exactly flat.";
+          warningCopy.textContent = "Both subgroups have a large effect of magnitude 5, but the marginal average reports zero variation.";
+        } else {
+          averageEquation.innerHTML = `= ${slopeText}x<sub>2</sub>`;
+          warningTitle.textContent = `At π = ${share.toFixed(2)}, the average slope is ${slopeText}.`;
+          warningCopy.textContent = "Changing the subgroup mixture changes the PDP even though neither subgroup's conditional response has changed.";
+        }
+      };
+
+      shareSlider.addEventListener("input", updateCancellation, { passive: true });
+      updateCancellation();
+
+      void icePaths;
+    });
+  })();
+</script>
+<script>
+  (function () {
+    let frame = 0;
+    function reportHeight() {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(function () {
+        frame = 0;
+        const height = Math.ceil(Math.max(
+          document.documentElement.scrollHeight,
+          document.body ? document.body.scrollHeight : 0
+        ));
+        try { if (window.frameElement) window.frameElement.style.height = height + 'px'; } catch (_) {}
+        try {
+          window.parent.postMessage({ type: 'article-visualization:resize', height: height }, '*');
+          window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, '*');
+        } catch (_) {}
+      });
+    }
+    window.addEventListener('load', reportHeight);
+    window.addEventListener('resize', reportHeight, { passive: true });
+    document.addEventListener('input', reportHeight, { passive: true });
+    document.addEventListener('click', reportHeight, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(reportHeight).observe(document.documentElement);
+    reportHeight();
+  }());
+</script>
+</body>
+</html>

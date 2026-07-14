@@ -1,0 +1,1290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cascading and determinant conservation</title>
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --ink: #181818;
+      --muted: #5f636b;
+      --hairline: #d8dbe2;
+      --hairline-strong: #b8bec9;
+      --blue: #174fc9;
+      --blue-dark: #123d98;
+      --blue-soft: #f3f6ff;
+      --blue-softer: #f8faff;
+      --green: #16735f;
+      --green-soft: #f1faf7;
+      --serif: "STIX Two Text", "Times New Roman", Georgia, serif;
+      --math: "STIX Two Math", "Cambria Math", "Times New Roman", serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #151719;
+      --ink: #f2f2f2;
+      --muted: #b8bcc4;
+      --hairline: #353a42;
+      --hairline-strong: #555c67;
+      --blue: #83a7ff;
+      --blue-dark: #adc3ff;
+      --blue-soft: #1c2539;
+      --blue-softer: #181e2b;
+      --green: #78d7bd;
+      --green-soft: #172923;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-width: 0;
+      overflow-x: clip;
+      background: transparent;
+    }
+
+    body {
+      padding: clamp(10px, 2vw, 22px);
+      color: var(--ink);
+      font-family: var(--serif);
+      line-height: 1.5;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .plate {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--hairline);
+      border-radius: 12px;
+      background: var(--bg);
+    }
+
+    .plate-header {
+      padding: clamp(24px, 4vw, 42px) clamp(22px, 4vw, 44px) clamp(20px, 3vw, 30px);
+      border-bottom: 1px solid var(--hairline);
+      text-align: center;
+    }
+
+    .plate-header h1 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: clamp(1.75rem, 4vw, 2.7rem);
+      font-weight: 500;
+      letter-spacing: -0.025em;
+      line-height: 1.12;
+    }
+
+    .plate-header p {
+      max-width: 790px;
+      margin: 11px auto 0;
+      color: var(--muted);
+      font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+    }
+
+    .section {
+      padding: clamp(24px, 4vw, 42px) clamp(20px, 4vw, 42px);
+    }
+
+    .section + .section {
+      border-top: 1px solid var(--hairline);
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 14px;
+      align-items: baseline;
+      margin-bottom: 26px;
+    }
+
+    .section-letter {
+      color: var(--blue);
+      font-family: var(--sans);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: clamp(1.16rem, 2vw, 1.45rem);
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .section-note {
+      grid-column: 2;
+      max-width: 800px;
+      margin: -7px 0 0;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    /* -----------------------------------------------------
+       Native MathML
+       ----------------------------------------------------- */
+
+    math {
+      color: inherit;
+      font-family: var(--math);
+      font-size: 1em;
+    }
+
+    .display-math {
+      display: flex;
+      max-width: 100%;
+      justify-content: center;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 3px 0;
+      scrollbar-width: thin;
+    }
+
+    .display-math math {
+      font-size: clamp(1.02rem, 2vw, 1.28rem);
+    }
+
+    .display-math--large math {
+      font-size: clamp(1.12rem, 2.4vw, 1.46rem);
+    }
+
+    .math-blue {
+      color: var(--blue-dark);
+    }
+
+    .math-green {
+      color: var(--green);
+    }
+
+    /* -----------------------------------------------------
+       Cascading
+       ----------------------------------------------------- */
+
+    .state-chain {
+      display: grid;
+      grid-template-columns:
+        minmax(102px, 1fr)
+        minmax(72px, 0.68fr)
+        minmax(102px, 1fr)
+        minmax(72px, 0.68fr)
+        minmax(102px, 1fr)
+        minmax(38px, 0.3fr)
+        minmax(112px, 1fr)
+        minmax(72px, 0.68fr)
+        minmax(102px, 1fr);
+      gap: clamp(6px, 1vw, 12px);
+      align-items: center;
+      margin: 0 auto;
+    }
+
+    .state {
+      min-width: 0;
+      padding: 13px 10px;
+      border: 1px solid var(--hairline-strong);
+      border-radius: 8px;
+      background: var(--bg);
+      text-align: center;
+    }
+
+    .state math {
+      font-size: clamp(0.96rem, 1.8vw, 1.12rem);
+    }
+
+    .map {
+      display: grid;
+      min-width: 0;
+      gap: 7px;
+      justify-items: center;
+    }
+
+    .map-label {
+      color: var(--blue-dark);
+      white-space: nowrap;
+    }
+
+    .map-label math {
+      font-size: clamp(0.88rem, 1.6vw, 1rem);
+    }
+
+    .arrow {
+      position: relative;
+      width: 100%;
+      min-width: 38px;
+      height: 1px;
+      background: var(--blue);
+    }
+
+    .arrow::after {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      width: 8px;
+      height: 8px;
+      border-top: 1.5px solid var(--blue);
+      border-right: 1.5px solid var(--blue);
+      content: "";
+      transform: translateY(-50%) rotate(45deg);
+      transform-origin: center;
+    }
+
+    .ellipsis {
+      color: var(--muted);
+      font-size: 1.35rem;
+      text-align: center;
+    }
+
+    .composition-result {
+      margin-top: 25px;
+      padding: 17px 18px;
+      border: 1px solid color-mix(in srgb, var(--blue) 40%, var(--hairline));
+      border-radius: 9px;
+      background: var(--blue-soft);
+    }
+
+    .composition-result .caption {
+      margin: 0 0 7px;
+      color: var(--blue-dark);
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .action-order {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      text-align: center;
+    }
+
+    .periodic {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(250px, 1.2fr) minmax(0, 0.9fr);
+      gap: 22px;
+      align-items: center;
+      margin-top: 25px;
+      padding-top: 23px;
+      border-top: 1px solid var(--hairline);
+    }
+
+    .periodic-copy h3 {
+      margin: 0 0 5px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .periodic-copy p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.89rem;
+    }
+
+    .cells {
+      display: flex;
+      min-width: 0;
+      justify-content: center;
+    }
+
+    .cell {
+      display: grid;
+      width: 46px;
+      height: 47px;
+      place-items: center;
+      border: 1px solid var(--hairline-strong);
+      background: var(--blue-softer);
+      color: var(--blue-dark);
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .cell + .cell {
+      margin-left: -1px;
+    }
+
+    .cell:first-child {
+      border-radius: 7px 0 0 7px;
+    }
+
+    .cell:last-child {
+      border-radius: 0 7px 7px 0;
+    }
+
+    .cell-dots {
+      display: grid;
+      width: 40px;
+      place-items: center;
+      color: var(--muted);
+      font-size: 1.2rem;
+    }
+
+    /* -----------------------------------------------------
+       Determinant derivation
+       ----------------------------------------------------- */
+
+    .proof-flow {
+      display: grid;
+      grid-template-columns:
+        minmax(0, 1fr)
+        46px
+        minmax(0, 1fr)
+        46px
+        minmax(0, 1fr);
+      align-items: stretch;
+    }
+
+    .proof-step {
+      min-width: 0;
+      padding: 5px 16px 0;
+      text-align: center;
+    }
+
+    .proof-step:first-child {
+      padding-left: 0;
+    }
+
+    .proof-step:last-child {
+      padding-right: 0;
+    }
+
+    .step-number {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      margin: 0 auto 10px;
+      place-items: center;
+      border: 1px solid var(--blue);
+      border-radius: 50%;
+      color: var(--blue-dark);
+      font-family: var(--sans);
+      font-size: 0.73rem;
+      font-weight: 800;
+    }
+
+    .proof-step h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    .proof-step p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .proof-arrow {
+      position: relative;
+      align-self: center;
+      height: 1px;
+      background: var(--hairline-strong);
+    }
+
+    .proof-arrow::after {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      width: 8px;
+      height: 8px;
+      border-top: 1.5px solid var(--hairline-strong);
+      border-right: 1.5px solid var(--hairline-strong);
+      content: "";
+      transform: translateY(-50%) rotate(45deg);
+    }
+
+    .cancel-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .det-result {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 20px;
+      align-items: center;
+      margin-top: 28px;
+      padding: 18px 20px;
+      border: 1px solid color-mix(in srgb, var(--green) 42%, var(--hairline));
+      border-radius: 9px;
+      background: var(--green-soft);
+    }
+
+    .det-result-copy {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .det-result-copy strong {
+      color: var(--ink);
+    }
+
+    .det-result-equals {
+      color: var(--hairline-strong);
+      font-size: 1.4rem;
+    }
+
+    .next-step {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 19px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      text-align: center;
+    }
+
+    .next-step strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* -----------------------------------------------------
+       Responsive
+       ----------------------------------------------------- */
+
+    @media (max-width: 860px) {
+      .periodic {
+        grid-template-columns: 1fr;
+      }
+
+      .cells {
+        justify-content: flex-start;
+      }
+
+      .proof-flow {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      .proof-step,
+      .proof-step:first-child,
+      .proof-step:last-child {
+        padding: 0;
+        text-align: left;
+      }
+
+      .step-number {
+        margin: 0 0 10px;
+      }
+
+      .proof-arrow {
+        width: 1px;
+        height: 28px;
+        margin-left: 13px;
+        background: var(--hairline-strong);
+      }
+
+      .proof-arrow::after {
+        top: auto;
+        right: auto;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%) rotate(135deg);
+      }
+
+      .det-result {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .det-result-equals {
+        transform: rotate(90deg);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .state-chain {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .map {
+        min-height: 54px;
+      }
+
+      .arrow {
+        width: 1px;
+        min-width: 0;
+        height: 28px;
+      }
+
+      .arrow::after {
+        top: auto;
+        right: auto;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%) rotate(135deg);
+      }
+
+      .ellipsis {
+        padding: 4px 0;
+        transform: rotate(90deg);
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 6px;
+      }
+
+      .plate {
+        border-radius: 9px;
+      }
+
+      .plate-header,
+      .section {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .section-head {
+        grid-template-columns: 1fr;
+        gap: 5px;
+      }
+
+      .section-note {
+        grid-column: 1;
+        margin-top: 0;
+      }
+
+      .composition-result,
+      .det-result {
+        padding: 15px 12px;
+      }
+
+      .display-math math {
+        font-size: 0.98rem;
+      }
+
+      .display-math--large math {
+        font-size: 1.04rem;
+      }
+
+      .cell {
+        width: 39px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="plate" id="transfer-matrix-cascading">
+    <header class="plate-header">
+      <h1>Cascading and the determinant invariant</h1>
+      <p>
+        The product law follows from substituting one interval’s output into
+        the next. The determinant constraint follows directly from the differential
+        equation already obeyed by the transfer matrix.
+      </p>
+    </header>
+
+    <section class="section" aria-labelledby="composition-title">
+      <div class="section-head">
+        <div class="section-letter">A</div>
+        <h2 class="section-title" id="composition-title">
+          Local propagation maps compose in physical order
+        </h2>
+        <p class="section-note">
+          Write
+          <math>
+            <msub><mi>T</mi><mi>j</mi></msub>
+            <mo>=</mo>
+            <mi>T</mi>
+            <mo>(</mo>
+            <msub><mi>z</mi><mrow><mi>j</mi><mo>−</mo><mn>1</mn></mrow></msub>
+            <mo>,</mo>
+            <msub><mi>z</mi><mi>j</mi></msub>
+            <mo>)</mo>
+          </math>.
+          Each matrix receives the state produced by the interval immediately
+          before it.
+        </p>
+      </div>
+
+      <div class="state-chain" aria-label="Cascading transfer matrices">
+        <div class="state">
+          <math>
+            <mi mathvariant="bold">v</mi>
+            <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>)</mo>
+          </math>
+        </div>
+
+        <div class="map">
+          <div class="map-label">
+            <math><msub><mi>T</mi><mn>1</mn></msub></math>
+          </div>
+          <div class="arrow" aria-hidden="true"></div>
+        </div>
+
+        <div class="state">
+          <math>
+            <mi mathvariant="bold">v</mi>
+            <mo>(</mo><msub><mi>z</mi><mn>1</mn></msub><mo>)</mo>
+          </math>
+        </div>
+
+        <div class="map">
+          <div class="map-label">
+            <math><msub><mi>T</mi><mn>2</mn></msub></math>
+          </div>
+          <div class="arrow" aria-hidden="true"></div>
+        </div>
+
+        <div class="state">
+          <math>
+            <mi mathvariant="bold">v</mi>
+            <mo>(</mo><msub><mi>z</mi><mn>2</mn></msub><mo>)</mo>
+          </math>
+        </div>
+
+        <div class="ellipsis" aria-hidden="true">⋯</div>
+
+        <div class="state">
+          <math>
+            <mi mathvariant="bold">v</mi>
+            <mo>(</mo>
+            <msub>
+              <mi>z</mi>
+              <mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow>
+            </msub>
+            <mo>)</mo>
+          </math>
+        </div>
+
+        <div class="map">
+          <div class="map-label">
+            <math><msub><mi>T</mi><mi>n</mi></msub></math>
+          </div>
+          <div class="arrow" aria-hidden="true"></div>
+        </div>
+
+        <div class="state">
+          <math>
+            <mi mathvariant="bold">v</mi>
+            <mo>(</mo><msub><mi>z</mi><mi>n</mi></msub><mo>)</mo>
+          </math>
+        </div>
+      </div>
+
+      <div class="composition-result">
+        <p class="caption">Repeated substitution</p>
+        <div class="display-math display-math--large math-blue">
+          <math display="block">
+            <mi mathvariant="bold">v</mi>
+            <mo>(</mo><msub><mi>z</mi><mi>n</mi></msub><mo>)</mo>
+            <mo>=</mo>
+            <msub><mi>T</mi><mi>n</mi></msub>
+            <msub><mi>T</mi><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></msub>
+            <mo>⋯</mo>
+            <msub><mi>T</mi><mn>2</mn></msub>
+            <msub><mi>T</mi><mn>1</mn></msub>
+            <mi mathvariant="bold">v</mi>
+            <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>)</mo>
+          </math>
+        </div>
+
+        <div class="display-math display-math--large">
+          <math display="block">
+            <mi>T</mi>
+            <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>,</mo><msub><mi>z</mi><mi>n</mi></msub><mo>)</mo>
+            <mo>=</mo>
+            <mi>T</mi>
+            <mo>(</mo><msub><mi>z</mi><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>z</mi><mi>n</mi></msub><mo>)</mo>
+            <mo>⋯</mo>
+            <mi>T</mi>
+            <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>,</mo><msub><mi>z</mi><mn>1</mn></msub><mo>)</mo>
+          </math>
+        </div>
+
+        <p class="action-order">
+          The rightmost factor acts first because it is the first interval
+          crossed.
+        </p>
+      </div>
+
+      <div class="periodic">
+        <div class="periodic-copy">
+          <h3>Periodic medium</h3>
+          <p>
+            Every interval is the same unit cell, so the same map is applied
+            repeatedly.
+          </p>
+        </div>
+
+        <div class="cells" aria-label="Repeated identical unit cells">
+          <div class="cell">cell</div>
+          <div class="cell">cell</div>
+          <div class="cell">cell</div>
+          <div class="cell-dots">⋯</div>
+          <div class="cell">cell</div>
+        </div>
+
+        <div class="display-math display-math--large math-blue">
+          <math display="block">
+            <mi>T</mi>
+            <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>,</mo><msub><mi>z</mi><mi>N</mi></msub><mo>)</mo>
+            <mo>=</mo>
+            <msubsup>
+              <mi>T</mi>
+              <mtext>cell</mtext>
+              <mi>N</mi>
+            </msubsup>
+          </math>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="determinant-title">
+      <div class="section-head">
+        <div class="section-letter">B</div>
+        <h2 class="section-title" id="determinant-title">
+          Why the determinant stays equal to one
+        </h2>
+        <p class="section-note">
+          Start again from the scalar wave equation and the already-defined
+          state
+          <math>
+            <mi mathvariant="bold">v</mi>
+            <mo>=</mo>
+            <mrow>
+              <mo>(</mo>
+              <mtable>
+                <mtr><mtd><mi>E</mi></mtd></mtr>
+                <mtr><mtd><msup><mi>E</mi><mo>′</mo></msup></mtd></mtr>
+              </mtable>
+              <mo>)</mo>
+            </mrow>.
+          </math>
+          The matrix below is not assumed; its two rows are just the two
+          component equations written together.
+        </p>
+      </div>
+
+      <div class="definition-row">
+        <div class="definition-copy">
+          <strong>Start from the scalar equation.</strong>
+          It gives the second component derivative explicitly.
+        </div>
+
+        <div class="definition-math math-block math-large">
+          <div class="display-math">
+            <math display="block">
+              <msup><mi>E</mi><mo>″</mo></msup>
+              <mo>+</mo>
+              <msup>
+                <mrow>
+                  <mo>(</mo>
+                  <mfrac><mi>ω</mi><mi>c</mi></mfrac>
+                  <mo>)</mo>
+                </mrow>
+                <mn>2</mn>
+              </msup>
+              <mi>ε</mi><mo>(</mo><mi>z</mi><mo>)</mo>
+              <mi>E</mi>
+              <mo>=</mo>
+              <mn>0</mn>
+            </math>
+          </div>
+        </div>
+      </div>
+
+      <div class="substitution" style="margin-bottom: 26px;">
+        <div class="substitution-row">
+          <div class="substitution-index">top</div>
+          <div>
+            <div class="display-math">
+              <math display="block">
+                <mfrac>
+                  <mrow><mi>d</mi></mrow>
+                  <mrow><mi>d</mi><mi>z</mi></mrow>
+                </mfrac>
+                <mi>E</mi>
+                <mo>=</mo>
+                <msup><mi>E</mi><mo>′</mo></msup>
+                <mo>=</mo>
+                <mn>0</mn><mo>·</mo><mi>E</mi>
+                <mo>+</mo>
+                <mn>1</mn><mo>·</mo><msup><mi>E</mi><mo>′</mo></msup>.
+              </math>
+            </div>
+            <p class="substitution-note">
+              This is why the first row is
+              <math><mrow><mo>(</mo><mn>0</mn><mspace width="0.5em"/><mn>1</mn><mo>)</mo></mrow></math>.
+            </p>
+          </div>
+        </div>
+
+        <div class="substitution-row">
+          <div class="substitution-index">bottom</div>
+          <div>
+            <div class="display-math">
+              <math display="block">
+                <mfrac>
+                  <mrow><mi>d</mi></mrow>
+                  <mrow><mi>d</mi><mi>z</mi></mrow>
+                </mfrac>
+                <msup><mi>E</mi><mo>′</mo></msup>
+                <mo>=</mo>
+                <msup><mi>E</mi><mo>″</mo></msup>
+                <mo>=</mo>
+                <mo>−</mo>
+                <msup>
+                  <mrow>
+                    <mo>(</mo>
+                    <mfrac><mi>ω</mi><mi>c</mi></mfrac>
+                    <mo>)</mo>
+                  </mrow>
+                  <mn>2</mn>
+                </msup>
+                <mi>ε</mi><mo>(</mo><mi>z</mi><mo>)</mo>
+                <mi>E</mi>
+                <mo>+</mo>
+                <mn>0</mn><mo>·</mo><msup><mi>E</mi><mo>′</mo></msup>.
+              </math>
+            </div>
+            <p class="substitution-note">
+              This is why the second row is
+              <math>
+                <mrow>
+                  <mo>(</mo>
+                  <mo>−</mo>
+                  <msup>
+                    <mrow>
+                      <mo>(</mo>
+                      <mfrac><mi>ω</mi><mi>c</mi></mfrac>
+                      <mo>)</mo>
+                    </mrow>
+                    <mn>2</mn>
+                  </msup>
+                  <mi>ε</mi><mo>(</mo><mi>z</mi><mo>)</mo>
+                  <mspace width="0.5em"/>
+                  <mn>0</mn>
+                  <mo>)</mo>
+                </mrow>.
+              </math>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="composition-result" style="margin-top: 0; margin-bottom: 28px;">
+        <p class="caption">The two component equations, written together</p>
+        <div class="display-math display-math--large math-blue">
+          <math display="block">
+            <mfrac>
+              <mrow><mi>d</mi></mrow>
+              <mrow><mi>d</mi><mi>z</mi></mrow>
+            </mfrac>
+            <mrow>
+              <mo>(</mo>
+              <mtable>
+                <mtr><mtd><mi>E</mi></mtd></mtr>
+                <mtr><mtd><msup><mi>E</mi><mo>′</mo></msup></mtd></mtr>
+              </mtable>
+              <mo>)</mo>
+            </mrow>
+            <mo>=</mo>
+            <mrow>
+              <mo>(</mo>
+              <mtable columnspacing="1em">
+                <mtr>
+                  <mtd><mn>0</mn></mtd>
+                  <mtd><mn>1</mn></mtd>
+                </mtr>
+                <mtr>
+                  <mtd>
+                    <mo>−</mo>
+                    <msup>
+                      <mrow>
+                        <mo>(</mo>
+                        <mfrac><mi>ω</mi><mi>c</mi></mfrac>
+                        <mo>)</mo>
+                      </mrow>
+                      <mn>2</mn>
+                    </msup>
+                    <mi>ε</mi><mo>(</mo><mi>z</mi><mo>)</mo>
+                  </mtd>
+                  <mtd><mn>0</mn></mtd>
+                </mtr>
+              </mtable>
+              <mo>)</mo>
+            </mrow>
+            <mrow>
+              <mo>(</mo>
+              <mtable>
+                <mtr><mtd><mi>E</mi></mtd></mtr>
+                <mtr><mtd><msup><mi>E</mi><mo>′</mo></msup></mtd></mtr>
+              </mtable>
+              <mo>)</mo>
+            </mrow>.
+          </math>
+        </div>
+      </div>
+
+      <div class="proof-flow">
+        <article class="proof-step">
+          <div class="step-number">1</div>
+          <h3>Differentiate the transfer relation</h3>
+
+          <div class="display-math">
+            <math display="block">
+              <mi mathvariant="bold">v</mi><mo>(</mo><mi>z</mi><mo>)</mo>
+              <mo>=</mo>
+              <mi>T</mi>
+              <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>,</mo><mi>z</mi><mo>)</mo>
+              <mi mathvariant="bold">v</mi>
+              <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>)</mo>.
+            </math>
+          </div>
+
+          <div class="display-math">
+            <math display="block">
+              <msup><mi mathvariant="bold">v</mi><mo>′</mo></msup>
+              <mo>=</mo>
+              <msup><mi>T</mi><mo>′</mo></msup>
+              <mi mathvariant="bold">v</mi>
+              <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>)</mo>.
+            </math>
+          </div>
+
+          <p>
+            The first-order equation just derived also gives
+          </p>
+
+          <div class="display-math">
+            <math display="block">
+              <msup><mi mathvariant="bold">v</mi><mo>′</mo></msup>
+              <mo>=</mo>
+              <mrow>
+                <mo>(</mo>
+                <mtable columnspacing="0.9em">
+                  <mtr>
+                    <mtd><mn>0</mn></mtd>
+                    <mtd><mn>1</mn></mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <mo>−</mo>
+                      <msup>
+                        <mrow>
+                          <mo>(</mo>
+                          <mfrac><mi>ω</mi><mi>c</mi></mfrac>
+                          <mo>)</mo>
+                        </mrow>
+                        <mn>2</mn>
+                      </msup>
+                      <mi>ε</mi><mo>(</mo><mi>z</mi><mo>)</mo>
+                    </mtd>
+                    <mtd><mn>0</mn></mtd>
+                  </mtr>
+                </mtable>
+                <mo>)</mo>
+              </mrow>
+              <mi>T</mi>
+              <mi mathvariant="bold">v</mi>
+              <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>)</mo>.
+            </math>
+          </div>
+
+          <p>
+            These expressions agree for every initial state, hence
+          </p>
+
+          <div class="display-math display-math--large math-blue">
+            <math display="block">
+              <msup><mi>T</mi><mo>′</mo></msup>
+              <mo>=</mo>
+              <mrow>
+                <mo>(</mo>
+                <mtable columnspacing="0.9em">
+                  <mtr>
+                    <mtd><mn>0</mn></mtd>
+                    <mtd><mn>1</mn></mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <mo>−</mo>
+                      <msup>
+                        <mrow>
+                          <mo>(</mo>
+                          <mfrac><mi>ω</mi><mi>c</mi></mfrac>
+                          <mo>)</mo>
+                        </mrow>
+                        <mn>2</mn>
+                      </msup>
+                      <mi>ε</mi><mo>(</mo><mi>z</mi><mo>)</mo>
+                    </mtd>
+                    <mtd><mn>0</mn></mtd>
+                  </mtr>
+                </mtable>
+                <mo>)</mo>
+              </mrow>
+              <mi>T</mi>.
+            </math>
+          </div>
+        </article>
+
+        <div class="proof-arrow" aria-hidden="true"></div>
+
+        <article class="proof-step">
+          <div class="step-number">2</div>
+          <h3>Write the resulting entry equations</h3>
+
+          <div class="display-math">
+            <math display="block">
+              <mi>T</mi>
+              <mo>=</mo>
+              <mrow>
+                <mo>(</mo>
+                <mtable columnspacing="1em">
+                  <mtr>
+                    <mtd><mi>a</mi></mtd>
+                    <mtd><mi>b</mi></mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd><mi>c</mi></mtd>
+                    <mtd><mi>d</mi></mtd>
+                  </mtr>
+                </mtable>
+                <mo>)</mo>.
+              </mrow>
+            </math>
+          </div>
+
+          <p>
+            For compactness only, set
+          </p>
+
+          <div class="display-math">
+            <math display="block">
+              <mi>r</mi><mo>(</mo><mi>z</mi><mo>)</mo>
+              <mo>≡</mo>
+              <msup>
+                <mrow>
+                  <mo>(</mo>
+                  <mfrac><mi>ω</mi><mi>c</mi></mfrac>
+                  <mo>)</mo>
+                </mrow>
+                <mn>2</mn>
+              </msup>
+              <mi>ε</mi><mo>(</mo><mi>z</mi><mo>)</mo>.
+            </math>
+          </div>
+
+          <div class="display-math display-math--large math-blue">
+            <math display="block">
+              <msup><mi>a</mi><mo>′</mo></msup><mo>=</mo><mi>c</mi>
+              <mo>,</mo>
+              <mspace width="0.65em"/>
+              <msup><mi>b</mi><mo>′</mo></msup><mo>=</mo><mi>d</mi>
+              <mo>,</mo>
+              <mspace width="0.65em"/>
+              <msup><mi>c</mi><mo>′</mo></msup><mo>=</mo><mo>−</mo><mi>r</mi><mi>a</mi>
+              <mo>,</mo>
+              <mspace width="0.65em"/>
+              <msup><mi>d</mi><mo>′</mo></msup><mo>=</mo><mo>−</mo><mi>r</mi><mi>b</mi>.
+            </math>
+          </div>
+        </article>
+
+        <div class="proof-arrow" aria-hidden="true"></div>
+
+        <article class="proof-step">
+          <div class="step-number">3</div>
+          <h3>Differentiate the determinant</h3>
+
+          <div class="display-math">
+            <math display="block">
+              <mi>det</mi><mi>T</mi>
+              <mo>=</mo>
+              <mi>a</mi><mi>d</mi>
+              <mo>−</mo>
+              <mi>b</mi><mi>c</mi>.
+            </math>
+          </div>
+
+          <div class="display-math">
+            <math display="block">
+              <mfrac>
+                <mrow><mi>d</mi></mrow>
+                <mrow><mi>d</mi><mi>z</mi></mrow>
+              </mfrac>
+              <mi>det</mi><mi>T</mi>
+              <mo>=</mo>
+              <msup><mi>a</mi><mo>′</mo></msup><mi>d</mi>
+              <mo>+</mo>
+              <mi>a</mi><msup><mi>d</mi><mo>′</mo></msup>
+              <mo>−</mo>
+              <msup><mi>b</mi><mo>′</mo></msup><mi>c</mi>
+              <mo>−</mo>
+              <mi>b</mi><msup><mi>c</mi><mo>′</mo></msup>
+            </math>
+          </div>
+
+          <div class="display-math display-math--large math-blue">
+            <math display="block">
+              <mo>=</mo>
+              <mi>c</mi><mi>d</mi>
+              <mo>−</mo>
+              <mi>r</mi><mi>a</mi><mi>b</mi>
+              <mo>−</mo>
+              <mi>d</mi><mi>c</mi>
+              <mo>+</mo>
+              <mi>r</mi><mi>b</mi><mi>a</mi>
+              <mo>=</mo>
+              <mn>0</mn>.
+            </math>
+          </div>
+
+          <p>
+            Thus the determinant is constant in
+            <math><mi>z</mi></math>.
+            At zero propagation distance,
+            <math>
+              <mi>T</mi>
+              <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>,</mo><msub><mi>z</mi><mn>0</mn></msub><mo>)</mo>
+              <mo>=</mo>
+              <mi>I</mi>,
+            </math>
+            so that constant is one.
+          </p>
+        </article>
+      </div>
+
+      <div class="det-result">
+        <div class="det-result-copy">
+          <strong>The derivative vanishes and the initial map is the identity</strong>
+          <div class="display-math">
+            <math display="block">
+              <mfrac>
+                <mrow><mi>d</mi></mrow>
+                <mrow><mi>d</mi><mi>z</mi></mrow>
+              </mfrac>
+              <mi>det</mi><mi>T</mi>
+              <mo>=</mo><mn>0</mn>
+              <mo>,</mo>
+              <mspace width="0.6em"/>
+              <mi>det</mi><mi>T</mi>
+              <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>,</mo><msub><mi>z</mi><mn>0</mn></msub><mo>)</mo>
+              <mo>=</mo><mn>1</mn>.
+            </math>
+          </div>
+        </div>
+
+        <div class="det-result-equals" aria-hidden="true">⇒</div>
+
+        <div class="display-math display-math--large math-green">
+          <math display="block">
+            <mi>det</mi>
+            <mi>T</mi>
+            <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>,</mo><mi>z</mi><mo>)</mo>
+            <mo>=</mo>
+            <mn>1</mn>.
+          </math>
+        </div>
+      </div>
+
+      <div class="next-step">
+        <strong>This is the fact used in § 8.3.</strong>
+        <span>For the two eigenvalues of one cell,</span>
+        <math>
+          <msub><mi>λ</mi><mn>1</mn></msub>
+          <msub><mi>λ</mi><mn>2</mn></msub>
+          <mo>=</mo>
+          <mi>det</mi>
+          <msub><mi>T</mi><mtext>cell</mtext></msub>
+          <mo>=</mo><mn>1</mn>.
+        </math>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      function detectTheme() {
+        try {
+          const root = window.parent.document.documentElement;
+          const body = window.parent.document.body;
+          const raw = [
+            root.dataset.theme || "",
+            root.getAttribute("data-color-mode") || "",
+            root.className || "",
+            body?.dataset?.theme || "",
+            body?.className || ""
+          ].join(" ").toLowerCase();
+
+          if (raw.includes("dark")) return "dark";
+          if (raw.includes("light")) return "light";
+        } catch (_) {}
+
+        return matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      }
+
+      function applyTheme() {
+        document.documentElement.dataset.theme = detectTheme();
+      }
+
+      applyTheme();
+
+      if (window.parent !== window) {
+        try {
+          const root = window.parent.document.documentElement;
+          const body = window.parent.document.body;
+          const observer = new MutationObserver(applyTheme);
+
+          observer.observe(root, {
+            attributes: true,
+            attributeFilter: ["class", "data-theme", "data-color-mode"]
+          });
+
+          if (body) {
+            observer.observe(body, {
+              attributes: true,
+              attributeFilter: ["class", "data-theme"]
+            });
+          }
+        } catch (_) {}
+      }
+
+      matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener?.("change", applyTheme);
+
+      function reportHeight() {
+        window.parent.postMessage(
+          {
+            type: "lahav-visualization-resize",
+            id: "transfer-matrix-cascading",
+            height: Math.ceil(document.documentElement.scrollHeight)
+          },
+          "*"
+        );
+      }
+
+      addEventListener("load", reportHeight);
+      addEventListener("resize", reportHeight);
+
+      if ("ResizeObserver" in window) {
+        new ResizeObserver(reportHeight).observe(document.body);
+      }
+
+      reportHeight();
+    })();
+  </script>
+</body>
+</html>

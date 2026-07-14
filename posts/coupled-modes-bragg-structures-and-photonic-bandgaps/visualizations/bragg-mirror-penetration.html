@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Penetration into a finite Bragg mirror</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bmp-page: var(--color-bg, #fbfaf7);
+      --bmp-paper: var(--color-surface, #ffffff);
+      --bmp-paper-soft: var(--color-surface-muted, #f4f5f1);
+      --bmp-ink: var(--color-text, #1d2521);
+      --bmp-muted: var(--color-text-muted, #667169);
+      --bmp-line: var(--color-border, #d6ddd7);
+      --bmp-line-strong: var(--color-border-strong, #a9b4ac);
+      --bmp-main: var(--post-accent, var(--accent, #2369a8));
+      --bmp-main-ink: var(--post-accent-ink, #174f82);
+      --bmp-main-soft: var(--post-accent-soft, #eaf3fb);
+      --bmp-main-border: var(--post-accent-border, #abcbe5);
+      --bmp-teal: #2f7d78;
+      --bmp-teal-soft: #e9f6f4;
+      --bmp-warm: #a66224;
+      --bmp-warm-soft: #fff3e3;
+      --bmp-violet: #6b5aa5;
+      --bmp-violet-soft: #f2effa;
+      --bmp-serif: Georgia, "Times New Roman", serif;
+      --bmp-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bmp-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bmp-page: #101511;
+      --bmp-paper: #171e19;
+      --bmp-paper-soft: #1d2721;
+      --bmp-ink: #e9efeb;
+      --bmp-muted: #a7b5aa;
+      --bmp-line: #344138;
+      --bmp-line-strong: #526258;
+      --bmp-main: var(--post-accent, var(--accent, #93c8f4));
+      --bmp-main-ink: #b9dcf8;
+      --bmp-main-soft: #173247;
+      --bmp-main-border: #3d6d91;
+      --bmp-teal: #87d8d0;
+      --bmp-teal-soft: #173a38;
+      --bmp-warm: #f0bd7f;
+      --bmp-warm-soft: #3a2b1d;
+      --bmp-violet: #c9bbf3;
+      --bmp-violet-soft: #2d2740;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --bmp-page: #101511;
+        --bmp-paper: #171e19;
+        --bmp-paper-soft: #1d2721;
+        --bmp-ink: #e9efeb;
+        --bmp-muted: #a7b5aa;
+        --bmp-line: #344138;
+        --bmp-line-strong: #526258;
+        --bmp-main: var(--post-accent, var(--accent, #93c8f4));
+        --bmp-main-ink: #b9dcf8;
+        --bmp-main-soft: #173247;
+        --bmp-main-border: #3d6d91;
+        --bmp-teal: #87d8d0;
+        --bmp-teal-soft: #173a38;
+        --bmp-warm: #f0bd7f;
+        --bmp-warm-soft: #3a2b1d;
+        --bmp-violet: #c9bbf3;
+        --bmp-violet-soft: #2d2740;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-width: 0; background: transparent; }
+    body { color: var(--bmp-ink); font-family: var(--bmp-serif); }
+    button, input { font: inherit; }
+
+    .bmp {
+      width: 100%;
+      min-width: 0;
+      padding: clamp(1rem, 2.8vw, 1.8rem);
+      overflow: clip;
+      border: 1px solid var(--bmp-line);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 100% 0, color-mix(in srgb, var(--bmp-main-soft) 72%, transparent), transparent 34%),
+        var(--bmp-page);
+      container: bragg-penetration / inline-size;
+    }
+
+    .bmp p, .bmp h1, .bmp h2, .bmp h3 { margin-top: 0; }
+    .bmp-eyebrow {
+      margin-bottom: .55rem;
+      color: var(--bmp-main-ink);
+      font: 750 .69rem/1.3 var(--bmp-mono);
+      letter-spacing: .075em;
+      text-transform: uppercase;
+    }
+    .bmp-header { max-width: 850px; }
+    .bmp-header h1 {
+      margin-bottom: .72rem;
+      font: 500 clamp(1.75rem, 4.2cqi, 3.1rem)/1.02 var(--bmp-serif);
+      letter-spacing: -.045em;
+    }
+    .bmp-header__lead {
+      max-width: 760px;
+      margin-bottom: 1.25rem;
+      color: var(--bmp-muted);
+      font-size: clamp(.96rem, 1.9cqi, 1.08rem);
+      line-height: 1.67;
+    }
+
+    .bmp-bridge {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin: 1.15rem 0 1.35rem;
+      overflow: hidden;
+      border: 1px solid var(--bmp-main-border);
+      border-radius: 13px;
+      background: var(--bmp-paper);
+    }
+    .bmp-bridge__step {
+      min-width: 0;
+      padding: .92rem 1rem;
+    }
+    .bmp-bridge__step + .bmp-bridge__step { border-left: 1px solid var(--bmp-main-border); }
+    .bmp-bridge__label {
+      display: block;
+      margin-bottom: .3rem;
+      color: var(--bmp-muted);
+      font: 700 .64rem/1.3 var(--bmp-mono);
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
+    .bmp-bridge__math {
+      display: block;
+      overflow-wrap: anywhere;
+      color: var(--bmp-main-ink);
+      font: 600 clamp(.98rem, 2cqi, 1.14rem)/1.45 var(--bmp-serif);
+    }
+
+    .bmp-controls {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 1rem 1.35rem;
+      align-items: end;
+      margin-bottom: 1rem;
+      padding: 1rem 1.05rem;
+      border: 1px solid var(--bmp-line);
+      border-radius: 13px;
+      background: var(--bmp-paper);
+    }
+    .bmp-control__top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: .45rem 1rem;
+      margin-bottom: .55rem;
+    }
+    .bmp-control__label {
+      color: var(--bmp-ink);
+      font: 720 .76rem/1.3 var(--bmp-mono);
+    }
+    .bmp-control__value {
+      color: var(--bmp-main-ink);
+      font: 750 .76rem/1.3 var(--bmp-mono);
+    }
+    .bmp input[type="range"] {
+      width: 100%;
+      margin: 0;
+      accent-color: var(--bmp-main);
+      cursor: pointer;
+    }
+    .bmp-presets { display: flex; flex-wrap: wrap; gap: .42rem; }
+    .bmp-preset {
+      padding: .48rem .64rem;
+      border: 1px solid var(--bmp-line);
+      border-radius: 999px;
+      background: var(--bmp-paper-soft);
+      color: var(--bmp-muted);
+      font: 700 .66rem/1.1 var(--bmp-mono);
+      cursor: pointer;
+    }
+    .bmp-preset:hover, .bmp-preset:focus-visible,
+    .bmp-preset[aria-pressed="true"] {
+      border-color: var(--bmp-main-border);
+      background: var(--bmp-main-soft);
+      color: var(--bmp-main-ink);
+    }
+    .bmp-preset:focus-visible, .bmp input:focus-visible {
+      outline: 2px solid var(--bmp-main);
+      outline-offset: 3px;
+    }
+
+    .bmp-section-heading {
+      display: grid;
+      grid-template-columns: 2rem minmax(0, 1fr);
+      gap: .7rem;
+      align-items: start;
+      margin-bottom: .9rem;
+    }
+    .bmp-section-heading__number {
+      display: grid;
+      width: 2rem;
+      height: 2rem;
+      place-items: center;
+      border: 1px solid var(--bmp-main-border);
+      border-radius: 50%;
+      background: var(--bmp-main-soft);
+      color: var(--bmp-main-ink);
+      font: 750 .72rem/1 var(--bmp-mono);
+    }
+    .bmp-section-heading h2 {
+      margin-bottom: .25rem;
+      font: 650 clamp(1.08rem, 2.3cqi, 1.35rem)/1.25 var(--bmp-sans);
+      letter-spacing: -.025em;
+    }
+    .bmp-section-heading p {
+      margin-bottom: 0;
+      color: var(--bmp-muted);
+      font-size: .89rem;
+      line-height: 1.55;
+    }
+
+    .bmp-equation-stage {
+      display: grid;
+      grid-template-columns: minmax(0, .93fr) minmax(0, 1.07fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .bmp-panel {
+      min-width: 0;
+      padding: 1rem;
+      border: 1px solid var(--bmp-line);
+      border-radius: 14px;
+      background: var(--bmp-paper);
+    }
+    .bmp-panel--accent {
+      border-color: var(--bmp-main-border);
+      background: linear-gradient(145deg, var(--bmp-main-soft), var(--bmp-paper) 58%);
+    }
+    .bmp-panel__kicker {
+      margin-bottom: .38rem;
+      color: var(--bmp-main-ink);
+      font: 750 .64rem/1.3 var(--bmp-mono);
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
+    .bmp-panel h3 {
+      margin-bottom: .6rem;
+      font: 650 1rem/1.32 var(--bmp-sans);
+      letter-spacing: -.02em;
+    }
+    .bmp-panel p {
+      margin-bottom: .7rem;
+      color: var(--bmp-muted);
+      font-size: .88rem;
+      line-height: 1.58;
+    }
+    .bmp-panel p:last-child { margin-bottom: 0; }
+
+    .bmp-coupled-equations {
+      display: grid;
+      gap: .45rem;
+      margin: .8rem 0;
+    }
+    .bmp-equation-line {
+      padding: .63rem .75rem;
+      border-left: 3px solid var(--bmp-main);
+      background: color-mix(in srgb, var(--bmp-main-soft) 70%, var(--bmp-paper));
+      color: var(--bmp-ink);
+      font: 600 clamp(.94rem, 1.9cqi, 1.08rem)/1.45 var(--bmp-serif);
+      overflow-wrap: anywhere;
+    }
+    .bmp-arrow-proof {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: .5rem;
+      align-items: center;
+      margin-top: .7rem;
+      color: var(--bmp-muted);
+      font: 680 .76rem/1.45 var(--bmp-mono);
+      text-align: center;
+    }
+    .bmp-arrow-proof__result { color: var(--bmp-main-ink); }
+
+    .bmp-matrix-equation {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: .55rem;
+      align-items: center;
+      margin: .78rem 0 .85rem;
+      font-size: clamp(.78rem, 1.75cqi, .98rem);
+    }
+    .bmp-vector, .bmp-matrix {
+      position: relative;
+      display: grid;
+      min-width: 0;
+      padding: .28rem .58rem;
+      font-family: var(--bmp-serif);
+      text-align: center;
+    }
+    .bmp-vector { grid-template-columns: 1fr; gap: .18rem; }
+    .bmp-matrix { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .2rem .56rem; }
+    .bmp-vector::before, .bmp-matrix::before,
+    .bmp-vector::after, .bmp-matrix::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: .35rem;
+      border-top: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+    }
+    .bmp-vector::before, .bmp-matrix::before { left: 0; border-left: 1.5px solid currentColor; }
+    .bmp-vector::after, .bmp-matrix::after { right: 0; border-right: 1.5px solid currentColor; }
+    .bmp-equals { font: 650 1.1rem/1 var(--bmp-serif); }
+    .bmp-boundary {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: .65rem;
+      align-items: start;
+      margin-top: .7rem;
+      padding-top: .7rem;
+      border-top: 1px solid var(--bmp-line);
+    }
+    .bmp-boundary__tag {
+      padding: .22rem .4rem;
+      border-radius: 5px;
+      background: var(--bmp-warm-soft);
+      color: var(--bmp-warm);
+      font: 750 .62rem/1.3 var(--bmp-mono);
+      text-transform: uppercase;
+    }
+    .bmp-boundary p { margin: 0; }
+
+    .bmp-results {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: .65rem;
+      margin-bottom: 1rem;
+    }
+    .bmp-result {
+      min-width: 0;
+      padding: .78rem .82rem;
+      border: 1px solid var(--bmp-line);
+      border-radius: 11px;
+      background: var(--bmp-paper);
+    }
+    .bmp-result__label {
+      display: block;
+      margin-bottom: .28rem;
+      color: var(--bmp-muted);
+      font: 700 .61rem/1.3 var(--bmp-mono);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .bmp-result__value {
+      display: block;
+      overflow-wrap: anywhere;
+      color: var(--bmp-ink);
+      font: 650 clamp(.92rem, 1.9cqi, 1.12rem)/1.3 var(--bmp-serif);
+    }
+    .bmp-result--main { border-color: var(--bmp-main-border); background: var(--bmp-main-soft); }
+    .bmp-result--main .bmp-result__value { color: var(--bmp-main-ink); }
+
+    .bmp-plots {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .bmp-plot-panel { min-width: 0; }
+    .bmp-plot-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: .55rem 1rem;
+      margin-bottom: .55rem;
+    }
+    .bmp-plot-head h3 {
+      margin-bottom: .16rem;
+      font: 650 .95rem/1.3 var(--bmp-sans);
+      letter-spacing: -.02em;
+    }
+    .bmp-plot-head p { margin: 0; color: var(--bmp-muted); font-size: .78rem; line-height: 1.45; }
+    .bmp-legend { display: flex; flex-wrap: wrap; gap: .38rem .72rem; }
+    .bmp-legend__item {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      color: var(--bmp-muted);
+      font: 680 .62rem/1.3 var(--bmp-mono);
+    }
+    .bmp-legend__swatch { width: 1.2rem; height: 2px; background: currentColor; }
+    .bmp-legend__item--a { color: var(--bmp-main); }
+    .bmp-legend__item--b { color: var(--bmp-teal); }
+    .bmp-legend__item--exp { color: var(--bmp-warm); }
+    .bmp-svg-wrap {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--bmp-line);
+      border-radius: 10px;
+      background: var(--bmp-paper-soft);
+    }
+    .bmp svg { display: block; width: 100%; height: auto; min-width: 0; }
+    .bmp-svg-axis { stroke: var(--bmp-line-strong); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+    .bmp-svg-grid { stroke: var(--bmp-line); stroke-width: 1; stroke-dasharray: 3 5; vector-effect: non-scaling-stroke; }
+    .bmp-svg-text { fill: var(--bmp-muted); font: 12px var(--bmp-mono); }
+    .bmp-svg-text--strong { fill: var(--bmp-ink); font-weight: 700; }
+    .bmp-svg-a { fill: none; stroke: var(--bmp-main); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+    .bmp-svg-b { fill: none; stroke: var(--bmp-teal); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+    .bmp-svg-exp { fill: none; stroke: var(--bmp-warm); stroke-width: 2; stroke-dasharray: 7 5; vector-effect: non-scaling-stroke; }
+    .bmp-svg-r { fill: none; stroke: var(--bmp-main); stroke-width: 3; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+    .bmp-svg-threshold { stroke: var(--bmp-warm); stroke-width: 1.3; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; }
+    .bmp-svg-marker { fill: var(--bmp-paper); stroke: var(--bmp-main); stroke-width: 3; vector-effect: non-scaling-stroke; }
+    .bmp-svg-medium { fill: color-mix(in srgb, var(--bmp-main-soft) 62%, transparent); }
+    .bmp-svg-flux { fill: color-mix(in srgb, var(--bmp-teal-soft) 72%, transparent); }
+
+    .bmp-derivation {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: .8rem;
+      margin-bottom: 1rem;
+    }
+    .bmp-derivation__card {
+      min-width: 0;
+      padding: .9rem;
+      border-top: 3px solid var(--bmp-main);
+      background: var(--bmp-paper);
+    }
+    .bmp-derivation__card:nth-child(2) { border-color: var(--bmp-teal); }
+    .bmp-derivation__card:nth-child(3) { border-color: var(--bmp-warm); }
+    .bmp-derivation__card h3 {
+      margin-bottom: .42rem;
+      font: 700 .88rem/1.35 var(--bmp-sans);
+      letter-spacing: -.015em;
+    }
+    .bmp-derivation__card p {
+      margin-bottom: .5rem;
+      color: var(--bmp-muted);
+      font-size: .82rem;
+      line-height: 1.55;
+    }
+    .bmp-derivation__card p:last-child { margin-bottom: 0; }
+    .bmp-mini-equation {
+      display: block;
+      margin: .48rem 0;
+      color: var(--bmp-ink);
+      font: 650 .91rem/1.45 var(--bmp-serif);
+      overflow-wrap: anywhere;
+    }
+
+    .bmp-correction {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: .8rem;
+      align-items: start;
+      margin-bottom: 1rem;
+      padding: .9rem 1rem;
+      border: 1px solid color-mix(in srgb, var(--bmp-warm) 48%, var(--bmp-line));
+      border-radius: 12px;
+      background: var(--bmp-warm-soft);
+    }
+    .bmp-correction__mark {
+      display: grid;
+      width: 1.7rem;
+      height: 1.7rem;
+      place-items: center;
+      border: 1px solid var(--bmp-warm);
+      border-radius: 50%;
+      color: var(--bmp-warm);
+      font: 800 .8rem/1 var(--bmp-mono);
+    }
+    .bmp-correction h3 {
+      margin-bottom: .3rem;
+      color: var(--bmp-warm);
+      font: 750 .76rem/1.35 var(--bmp-mono);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .bmp-correction p { margin: 0; color: var(--bmp-ink); font-size: .87rem; line-height: 1.58; }
+
+    .bmp-conclusion {
+      display: grid;
+      grid-template-columns: minmax(135px, .26fr) minmax(0, 1fr);
+      gap: 1rem;
+      align-items: start;
+      padding: 1rem 0 .15rem;
+      border-top: 1px solid var(--bmp-main-border);
+    }
+    .bmp-conclusion__label {
+      color: var(--bmp-main-ink);
+      font: 760 .66rem/1.4 var(--bmp-mono);
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
+    .bmp-conclusion p { margin: 0; color: var(--bmp-muted); font-size: .91rem; line-height: 1.6; }
+    .bmp-conclusion strong { color: var(--bmp-ink); }
+
+    @container bragg-penetration (max-width: 760px) {
+      .bmp-bridge { grid-template-columns: minmax(0, 1fr); }
+      .bmp-bridge__step + .bmp-bridge__step { border-left: 0; border-top: 1px solid var(--bmp-main-border); }
+      .bmp-controls { grid-template-columns: minmax(0, 1fr); }
+      .bmp-equation-stage, .bmp-plots { grid-template-columns: minmax(0, 1fr); }
+      .bmp-plots { gap: .8rem; }
+      .bmp-results { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .bmp-derivation { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    @container bragg-penetration (max-width: 500px) {
+      .bmp { padding: .85rem; border-radius: 13px; }
+      .bmp-matrix-equation { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+      .bmp-equals { transform: none; }
+      .bmp-results { grid-template-columns: minmax(0, 1fr); }
+      .bmp-arrow-proof { grid-template-columns: minmax(0, 1fr); }
+      .bmp-arrow-proof__arrow { transform: rotate(90deg); }
+      .bmp-conclusion { grid-template-columns: minmax(0, 1fr); gap: .42rem; }
+      .bmp-section-heading { grid-template-columns: 1.75rem minmax(0, 1fr); }
+      .bmp-section-heading__number { width: 1.75rem; height: 1.75rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="bmp" id="bragg-penetration-viz">
+    <header class="bmp-header">
+      <p class="bmp-eyebrow">From an imaginary Bloch wavenumber to a measurable mirror</p>
+      <h1>A finite Bragg mirror is a two-boundary problem</h1>
+      <p class="bmp-header__lead">The gap relation explains why a field can decay. It does not, by itself, determine how much is reflected by a grating of length <i>L</i>. That requires the coupled forward and backward envelopes together with the far-end condition: no backward wave is incident from the right.</p>
+    </header>
+
+    <div class="bmp-bridge" aria-label="The logical bridge from the stopband to finite reflectivity">
+      <div class="bmp-bridge__step">
+        <span class="bmp-bridge__label">Stopband eigenvalue</span>
+        <span class="bmp-bridge__math"><i>q</i><sup>2</sup> = δ<sup>2</sup> − κ<sup>2</sup></span>
+      </div>
+      <div class="bmp-bridge__step">
+        <span class="bmp-bridge__label">Exact Bragg tuning, δ = 0</span>
+        <span class="bmp-bridge__math"><i>q</i> = <i>i</i>κ &nbsp;⇒&nbsp; e<sup><i>iqz</i></sup> = e<sup>−κ<i>z</i></sup></span>
+      </div>
+      <div class="bmp-bridge__step">
+        <span class="bmp-bridge__label">Amplitude decay length</span>
+        <span class="bmp-bridge__math"><i>L</i><sub>B</sub> = 1 / κ</span>
+      </div>
+    </div>
+
+    <section class="bmp-controls" aria-label="Mirror length control">
+      <div>
+        <div class="bmp-control__top">
+          <label class="bmp-control__label" for="length-control">Physical length in Bragg lengths</label>
+          <output class="bmp-control__value" id="length-output" for="length-control">κL = L/LB = 3.00</output>
+        </div>
+        <input id="length-control" type="range" min="0.2" max="5" step="0.05" value="3" aria-label="Set kappa times mirror length">
+      </div>
+      <div class="bmp-presets" aria-label="Length presets">
+        <button class="bmp-preset" type="button" data-length="1">1 Bragg length</button>
+        <button class="bmp-preset" type="button" data-length="2.65">κL = 2.65</button>
+        <button class="bmp-preset" type="button" data-length="3">99% power</button>
+        <button class="bmp-preset" type="button" data-length="4">4 Bragg lengths</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="bmp-step-one">
+      <div class="bmp-section-heading">
+        <span class="bmp-section-heading__number">1</span>
+        <div>
+          <h2 id="bmp-step-one">The periodic modulation continuously converts the two envelopes into one another</h2>
+          <p>At exact Bragg tuning, the phase-mismatch terms vanish. Only the coupling κ remains.</p>
+        </div>
+      </div>
+
+      <div class="bmp-equation-stage">
+        <article class="bmp-panel">
+          <p class="bmp-panel__kicker">Local evolution</p>
+          <h3>Forward amplitude <i>A</i> and backward amplitude <i>B</i></h3>
+          <div class="bmp-coupled-equations" aria-label="Coupled mode equations at exact Bragg tuning">
+            <div class="bmp-equation-line">d<i>A</i>/d<i>z</i> = <i>i</i>κ<i>B</i></div>
+            <div class="bmp-equation-line">d<i>B</i>/d<i>z</i> = −<i>i</i>κ<i>A</i></div>
+          </div>
+          <div class="bmp-arrow-proof" aria-label="Differentiating once gives the second order equation">
+            <span>differentiate once</span>
+            <span class="bmp-arrow-proof__arrow" aria-hidden="true">→</span>
+            <span class="bmp-arrow-proof__result"><i>A</i>″ = κ<sup>2</sup><i>A</i>, &nbsp;<i>B</i>″ = κ<sup>2</sup><i>B</i></span>
+          </div>
+          <p>The positive sign in the second-order equation is the mathematical signature of hyperbolic growth/decay rather than oscillation. The two independent solutions are e<sup>+κz</sup> and e<sup>−κz</sup>.</p>
+        </article>
+
+        <article class="bmp-panel bmp-panel--accent">
+          <p class="bmp-panel__kicker">Propagation through a length L</p>
+          <h3>The exact transfer relation is hyperbolic</h3>
+          <div class="bmp-matrix-equation" aria-label="Transfer matrix through a finite Bragg grating">
+            <div class="bmp-vector"><span><i>A</i>(<i>L</i>)</span><span><i>B</i>(<i>L</i>)</span></div>
+            <span class="bmp-equals">=</span>
+            <div class="bmp-matrix">
+              <span>cosh κ<i>L</i></span><span><i>i</i> sinh κ<i>L</i></span>
+              <span>−<i>i</i> sinh κ<i>L</i></span><span>cosh κ<i>L</i></span>
+            </div>
+            <div class="bmp-vector"><span><i>A</i>(0)</span><span><i>B</i>(0)</span></div>
+          </div>
+          <div class="bmp-boundary">
+            <span class="bmp-boundary__tag">boundary</span>
+            <p><strong><i>B</i>(<i>L</i>) = 0</strong>: no wave is sent into the grating from the far side. This one condition fixes the reflected amplitude at the entrance.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="bmp-step-two">
+      <div class="bmp-section-heading">
+        <span class="bmp-section-heading__number">2</span>
+        <div>
+          <h2 id="bmp-step-two">The far-end boundary condition turns the exponentials into cosh and sinh profiles</h2>
+          <p>Normalize the incident amplitude to <i>A</i>(0)=1. The selected solution is shown for the chosen dimensionless length <i>N</i>=κ<i>L</i>.</p>
+        </div>
+      </div>
+
+      <div class="bmp-results" aria-live="polite">
+        <div class="bmp-result">
+          <span class="bmp-result__label">amplitude reflection</span>
+          <span class="bmp-result__value" id="r-readout">|r| = tanh N = 0.9951</span>
+        </div>
+        <div class="bmp-result bmp-result--main">
+          <span class="bmp-result__label">power reflectivity</span>
+          <span class="bmp-result__value" id="R-readout">R = tanh² N = 99.01%</span>
+        </div>
+        <div class="bmp-result">
+          <span class="bmp-result__label">power transmission</span>
+          <span class="bmp-result__value" id="T-readout">T = sech² N = 0.99%</span>
+        </div>
+        <div class="bmp-result">
+          <span class="bmp-result__label">rear-face amplitude</span>
+          <span class="bmp-result__value" id="rear-readout">|A(L)| = sech N = 0.0993</span>
+        </div>
+      </div>
+
+      <div class="bmp-plots">
+        <article class="bmp-panel bmp-plot-panel">
+          <div class="bmp-plot-head">
+            <div>
+              <h3>Envelope amplitudes inside the finite mirror</h3>
+              <p>Horizontal position is measured in Bragg lengths: <i>z</i>/<i>L</i><sub>B</sub> = κ<i>z</i>.</p>
+            </div>
+            <div class="bmp-legend" aria-label="Profile legend">
+              <span class="bmp-legend__item bmp-legend__item--a"><span class="bmp-legend__swatch"></span>|A(z)| forward</span>
+              <span class="bmp-legend__item bmp-legend__item--b"><span class="bmp-legend__swatch"></span>|B(z)| backward</span>
+              <span class="bmp-legend__item bmp-legend__item--exp"><span class="bmp-legend__swatch"></span>e<sup>−κz</sup> limit</span>
+            </div>
+          </div>
+          <div class="bmp-svg-wrap">
+            <svg id="profile-plot" viewBox="0 0 760 330" role="img" aria-label="Forward and backward envelope profiles inside a finite Bragg mirror"></svg>
+          </div>
+        </article>
+
+        <article class="bmp-panel bmp-plot-panel">
+          <div class="bmp-plot-head">
+            <div>
+              <h3>Reflectivity versus mirror length</h3>
+              <p>The horizontal scale is <i>N</i>=κ<i>L</i>=<i>L</i>/<i>L</i><sub>B</sub>.</p>
+            </div>
+          </div>
+          <div class="bmp-svg-wrap">
+            <svg id="reflectivity-plot" viewBox="0 0 430 330" role="img" aria-label="Power reflectivity tanh squared of kappa L"></svg>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="bmp-step-three">
+      <div class="bmp-section-heading">
+        <span class="bmp-section-heading__number">3</span>
+        <div>
+          <h2 id="bmp-step-three">“Penetration depth” names two related but different length readings</h2>
+          <p>The distinction prevents the common factor-of-two ambiguity.</p>
+        </div>
+      </div>
+
+      <div class="bmp-derivation">
+        <article class="bmp-derivation__card">
+          <h3>Amplitude Bragg length</h3>
+          <p>For a semi-infinite mirror at exact Bragg tuning, the non-growing eigenmode is</p>
+          <span class="bmp-mini-equation">|E(z)| ∝ e<sup>−κz</sup> = e<sup>−z/L<sub>B</sub></sup>.</span>
+          <p>After one <i>L</i><sub>B</sub>=1/κ, the field amplitude is 1/e of its surface value.</p>
+        </article>
+        <article class="bmp-derivation__card">
+          <h3>Intensity decay length</h3>
+          <p>Power or intensity is quadratic in field amplitude:</p>
+          <span class="bmp-mini-equation">I(z) ∝ e<sup>−2κz</sup> = e<sup>−z/(L<sub>B</sub>/2)</sup>.</span>
+          <p>Its e-folding length is therefore <i>L</i><sub>B</sub>/2, not <i>L</i><sub>B</sub>.</p>
+        </article>
+        <article class="bmp-derivation__card">
+          <h3>Effective reflection position</h3>
+          <p>The centroid of that intensity-like exponential is</p>
+          <span class="bmp-mini-equation">∫z e<sup>−2κz</sup>dz / ∫e<sup>−2κz</sup>dz = 1/(2κ).</span>
+          <p>This gives the useful exact-Bragg, long-mirror estimate <i>L</i><sub>pen</sub>≈<i>L</i><sub>B</sub>/2.</p>
+        </article>
+      </div>
+    </section>
+
+    <aside class="bmp-correction" aria-label="Correction to the former ninety-nine percent claim">
+      <span class="bmp-correction__mark">!</span>
+      <div>
+        <h3>Amplitude is not power</h3>
+        <p>At κ<i>L</i>=2.65, tanh(κ<i>L</i>)≈0.990 is the <em>amplitude</em> reflection coefficient, while <i>R</i>=tanh²(κ<i>L</i>)≈0.980. Requiring <i>R</i>&gt;99% gives κ<i>L</i>&gt;atanh(√0.99)=2.993 — essentially three Bragg lengths.</p>
+      </div>
+    </aside>
+
+    <footer class="bmp-conclusion">
+      <span class="bmp-conclusion__label">The missing logical chain</span>
+      <p><strong>The hyperbola supplies the imaginary wavenumber and hence the local decay scale.</strong> The finite mirror’s reflectivity comes only after the forward/backward coupled equations are solved with both boundaries. That boundary-value problem is why exponentials combine into cosh and sinh, and why the final answer is <i>R</i>=tanh²(κ<i>L</i>).</p>
+    </footer>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const root = document.getElementById('bragg-penetration-viz');
+      const lengthInput = document.getElementById('length-control');
+      const lengthOutput = document.getElementById('length-output');
+      const rReadout = document.getElementById('r-readout');
+      const RReadout = document.getElementById('R-readout');
+      const TReadout = document.getElementById('T-readout');
+      const rearReadout = document.getElementById('rear-readout');
+      const profileSvg = document.getElementById('profile-plot');
+      const reflectivitySvg = document.getElementById('reflectivity-plot');
+      const presetButtons = Array.from(root.querySelectorAll('[data-length]'));
+      const ns = 'http://www.w3.org/2000/svg';
+
+      const svgEl = (name, attrs = {}, text = '') => {
+        const node = document.createElementNS(ns, name);
+        Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+        if (text) node.textContent = text;
+        return node;
+      };
+
+      const pathFrom = points => points.map((point, index) => `${index ? 'L' : 'M'}${point[0].toFixed(2)},${point[1].toFixed(2)}`).join(' ');
+      const sech = value => 1 / Math.cosh(value);
+      const percent = value => `${(100 * value).toFixed(value >= .995 ? 2 : value >= .1 ? 1 : 2)}%`;
+      const decimal = value => value.toFixed(value >= .1 ? 4 : 5).replace(/0+$/, '').replace(/\.$/, '');
+      const css = name => getComputedStyle(root).getPropertyValue(name).trim();
+
+      function addText(svg, x, y, text, className = 'bmp-svg-text', anchor = 'start') {
+        svg.appendChild(svgEl('text', { x, y, class: className, 'text-anchor': anchor }, text));
+      }
+
+      function drawProfile(N) {
+        profileSvg.replaceChildren();
+        const compact = root.clientWidth <= 500;
+        const geometry = compact
+          ? { viewBox: '0 0 460 315', left: 48, right: 438, top: 32, bottom: 263, axisY: 304 }
+          : { viewBox: '0 0 760 330', left: 62, right: 730, top: 34, bottom: 278, axisY: 320 };
+        profileSvg.setAttribute('viewBox', geometry.viewBox);
+        const { left, right, top, bottom, axisY } = geometry;
+        const width = right - left;
+        const height = bottom - top;
+        const x = u => left + (u / N) * width;
+        const y = amplitude => bottom - (amplitude / 1.05) * height;
+
+        profileSvg.appendChild(svgEl('rect', { x: left, y: top, width, height, rx: 7, class: 'bmp-svg-medium' }));
+
+        [0, .25, .5, .75, 1].forEach(tick => {
+          const yy = y(tick);
+          profileSvg.appendChild(svgEl('line', { x1: left, y1: yy, x2: right, y2: yy, class: 'bmp-svg-grid' }));
+          addText(profileSvg, left - 11, yy + 4, tick.toFixed(tick === 0 || tick === 1 ? 0 : 2), 'bmp-svg-text', 'end');
+        });
+
+        const xTicks = compact
+          ? [0, N / 2, N]
+          : N <= 1
+            ? [0, N / 2, N]
+            : N <= 2.2
+              ? [0, .5, 1, 1.5, 2].filter(v => v <= N + .02).concat(Math.abs(N - Math.round(N * 2) / 2) > .08 ? [N] : [])
+              : Array.from({ length: Math.floor(N) + 1 }, (_, index) => index).concat(Math.abs(N - Math.floor(N)) > .08 ? [N] : []);
+        [...new Set(xTicks.map(value => Number(value.toFixed(2))))].sort((a, b) => a - b).forEach(tick => {
+          const xx = x(tick);
+          profileSvg.appendChild(svgEl('line', { x1: xx, y1: top, x2: xx, y2: bottom, class: 'bmp-svg-grid' }));
+          addText(profileSvg, xx, bottom + 22, tick.toFixed(Number.isInteger(tick) ? 0 : 1), 'bmp-svg-text', 'middle');
+        });
+
+        profileSvg.appendChild(svgEl('line', { x1: left, y1: bottom, x2: right, y2: bottom, class: 'bmp-svg-axis' }));
+        profileSvg.appendChild(svgEl('line', { x1: left, y1: top, x2: left, y2: bottom, class: 'bmp-svg-axis' }));
+        addText(profileSvg, (left + right) / 2, axisY, 'z / LB = κz', 'bmp-svg-text bmp-svg-text--strong', 'middle');
+        addText(profileSvg, 15, 24, 'relative amplitude', 'bmp-svg-text bmp-svg-text--strong');
+
+        const denom = Math.cosh(N);
+        const aPoints = [];
+        const bPoints = [];
+        const expPoints = [];
+        for (let i = 0; i <= 260; i += 1) {
+          const u = (N * i) / 260;
+          aPoints.push([x(u), y(Math.cosh(N - u) / denom)]);
+          bPoints.push([x(u), y(Math.sinh(N - u) / denom)]);
+          expPoints.push([x(u), y(Math.exp(-u))]);
+        }
+
+        profileSvg.appendChild(svgEl('path', { d: pathFrom(expPoints), class: 'bmp-svg-exp' }));
+        profileSvg.appendChild(svgEl('path', { d: pathFrom(aPoints), class: 'bmp-svg-a' }));
+        profileSvg.appendChild(svgEl('path', { d: pathFrom(bPoints), class: 'bmp-svg-b' }));
+
+        profileSvg.appendChild(svgEl('line', { x1: left, y1: top, x2: left, y2: bottom, class: 'bmp-svg-axis' }));
+        profileSvg.appendChild(svgEl('line', { x1: right, y1: top, x2: right, y2: bottom, class: 'bmp-svg-axis' }));
+        addText(profileSvg, left + 8, top + 17, 'input face: A(0)=1', 'bmp-svg-text bmp-svg-text--strong');
+        addText(profileSvg, right - 8, top + 17, 'far face: B(L)=0', 'bmp-svg-text bmp-svg-text--strong', 'end');
+
+        const flux = sech(N) ** 2;
+        const fluxY = y(Math.min(1, flux));
+        profileSvg.appendChild(svgEl('rect', { x: left, y: fluxY, width, height: Math.max(0, bottom - fluxY), class: 'bmp-svg-flux' }));
+        profileSvg.insertBefore(profileSvg.lastChild, profileSvg.querySelector('.bmp-svg-exp'));
+        addText(profileSvg, right - 8, Math.max(top + 38, fluxY - 7), `constant net flux A²−B² = T = ${percent(flux)}`, 'bmp-svg-text', 'end');
+      }
+
+      function drawReflectivity(N) {
+        reflectivitySvg.replaceChildren();
+        const left = 52;
+        const right = 404;
+        const top = 34;
+        const bottom = 278;
+        const width = right - left;
+        const height = bottom - top;
+        const x = value => left + (value / 5) * width;
+        const y = value => bottom - value * height;
+
+        [0, .25, .5, .75, 1].forEach(tick => {
+          const yy = y(tick);
+          reflectivitySvg.appendChild(svgEl('line', { x1: left, y1: yy, x2: right, y2: yy, class: 'bmp-svg-grid' }));
+          addText(reflectivitySvg, left - 9, yy + 4, `${Math.round(tick * 100)}%`, 'bmp-svg-text', 'end');
+        });
+        [0, 1, 2, 3, 4, 5].forEach(tick => {
+          const xx = x(tick);
+          reflectivitySvg.appendChild(svgEl('line', { x1: xx, y1: top, x2: xx, y2: bottom, class: 'bmp-svg-grid' }));
+          addText(reflectivitySvg, xx, bottom + 22, String(tick), 'bmp-svg-text', 'middle');
+        });
+        reflectivitySvg.appendChild(svgEl('line', { x1: left, y1: bottom, x2: right, y2: bottom, class: 'bmp-svg-axis' }));
+        reflectivitySvg.appendChild(svgEl('line', { x1: left, y1: top, x2: left, y2: bottom, class: 'bmp-svg-axis' }));
+        addText(reflectivitySvg, (left + right) / 2, 320, 'N = κL = L / LB', 'bmp-svg-text bmp-svg-text--strong', 'middle');
+
+        const threshold = Math.atanh(Math.sqrt(.99));
+        reflectivitySvg.appendChild(svgEl('line', { x1: left, y1: y(.99), x2: right, y2: y(.99), class: 'bmp-svg-threshold' }));
+        reflectivitySvg.appendChild(svgEl('line', { x1: x(threshold), y1: top, x2: x(threshold), y2: bottom, class: 'bmp-svg-threshold' }));
+        addText(reflectivitySvg, right - 5, y(.99) - 7, 'R = 99%', 'bmp-svg-text', 'end');
+        addText(reflectivitySvg, x(threshold) - 5, top + 17, 'N = 2.993', 'bmp-svg-text', 'end');
+
+        const curve = [];
+        for (let i = 0; i <= 300; i += 1) {
+          const value = (5 * i) / 300;
+          curve.push([x(value), y(Math.tanh(value) ** 2)]);
+        }
+        reflectivitySvg.appendChild(svgEl('path', { d: pathFrom(curve), class: 'bmp-svg-r' }));
+
+        const currentR = Math.tanh(N) ** 2;
+        reflectivitySvg.appendChild(svgEl('circle', { cx: x(N), cy: y(currentR), r: 6.5, class: 'bmp-svg-marker' }));
+        const labelAnchor = N > 3.7 ? 'end' : 'start';
+        const labelX = N > 3.7 ? x(N) - 9 : x(N) + 9;
+        const labelY = Math.max(top + 35, y(currentR) - 10);
+        addText(reflectivitySvg, labelX, labelY, `${percent(currentR)} at N=${N.toFixed(2)}`, 'bmp-svg-text bmp-svg-text--strong', labelAnchor);
+      }
+
+      function update() {
+        const N = Number(lengthInput.value);
+        const r = Math.tanh(N);
+        const R = r * r;
+        const t = sech(N);
+        const T = t * t;
+
+        lengthOutput.textContent = `κL = L/LB = ${N.toFixed(2)}`;
+        rReadout.textContent = `|r| = tanh N = ${decimal(r)}`;
+        RReadout.textContent = `R = tanh² N = ${percent(R)}`;
+        TReadout.textContent = `T = sech² N = ${percent(T)}`;
+        rearReadout.textContent = `|A(L)| = sech N = ${decimal(t)}`;
+
+        presetButtons.forEach(button => {
+          button.setAttribute('aria-pressed', String(Math.abs(Number(button.dataset.length) - N) < .026));
+        });
+
+        drawProfile(N);
+        drawReflectivity(N);
+        fitFrame();
+      }
+
+      function syncParentTheme() {
+        try {
+          const parentRoot = window.parent.document.documentElement;
+          const apply = () => {
+            const explicit = parentRoot.getAttribute('data-theme') ||
+              (parentRoot.classList.contains('dark') ? 'dark' : parentRoot.classList.contains('light') ? 'light' : '');
+            if (explicit) document.documentElement.setAttribute('data-theme', explicit);
+            else document.documentElement.removeAttribute('data-theme');
+
+            const parentStyle = getComputedStyle(parentRoot);
+            ['--post-accent', '--accent-color', '--accent'].some(name => {
+              const value = parentStyle.getPropertyValue(name).trim();
+              if (!value) return false;
+              document.documentElement.style.setProperty('--accent', value);
+              return true;
+            });
+          };
+          apply();
+          new MutationObserver(apply).observe(parentRoot, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+        } catch (_) {
+          // Standalone and cross-origin previews keep the local theme fallback.
+        }
+      }
+
+      function fitFrame() {
+        const height = Math.ceil(document.documentElement.scrollHeight + 4);
+        try {
+          if (window.frameElement) window.frameElement.style.height = `${height}px`;
+        } catch (_) {}
+        try {
+          window.parent.postMessage({ type: 'article-visualization:resize', height }, window.location.origin);
+        } catch (_) {}
+      }
+
+      lengthInput.addEventListener('input', update);
+      presetButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          lengthInput.value = button.dataset.length;
+          update();
+          lengthInput.focus();
+        });
+      });
+
+      syncParentTheme();
+      update();
+      new ResizeObserver(fitFrame).observe(document.body);
+      window.addEventListener('load', fitFrame, { once: true });
+    })();
+  </script>
+</body>
+</html>

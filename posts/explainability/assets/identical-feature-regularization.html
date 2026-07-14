@@ -1,0 +1,1131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regularization for identical features</title>
+  <style>
+  :root {
+    --page: #fbfbf8;
+    --surface: #ffffff;
+    --surface-muted: #f4f5f1;
+    --ink: #1c2420;
+    --muted: #667169;
+    --border: #d6ddd7;
+    --border-strong: #a6b2a9;
+    --accent: #0d7659;
+    --accent-soft: #dcefe7;
+    --post-accent: var(--accent);
+    --post-accent-soft: var(--accent-soft);
+    --post-accent-border: var(--border-strong);
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { min-width: 0; }
+
+  body {
+    margin: 0;
+    padding: 32px 16px;
+    overflow-x: hidden;
+    background: var(--page);
+    color: var(--ink);
+    font-family: "STIX Two Text", "Iowan Old Style", "Palatino Linotype",
+      "Book Antiqua", Georgia, serif;
+  }
+
+  mjx-container { max-width: 100%; }
+
+  @media (max-width: 560px) {
+    body { padding: 14px 8px; }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #171411;
+      --surface: #211d19;
+      --surface-muted: #2a2520;
+      --ink: #f0eae3;
+      --muted: #c5baae;
+      --border: #4b433b;
+      --border-strong: #655b51;
+      --accent: #d784b4;
+      --accent-soft: #35242f;
+      color-scheme: dark;
+    }
+  }
+</style>
+  <style>
+  .reg-geometry {
+    --rg-accent: var(--post-accent, var(--accent, #0d7659));
+    --rg-accent-soft: var(--post-accent-soft, var(--accent-soft, #dcefe7));
+    --rg-accent-border: var(--post-accent-border, var(--border-strong, #a6b2a9));
+    --rg-page: var(--page, #fbfbf8);
+    --rg-surface: var(--surface, #fff);
+    --rg-surface-muted: var(--surface-muted, #f4f5f1);
+    --rg-ink: var(--ink, #1c2420);
+    --rg-muted: var(--muted, #667169);
+    --rg-border: var(--border, #d6ddd7);
+    --rg-serif: "STIX Two Text", "Iowan Old Style", "Palatino Linotype",
+      "Book Antiqua", Georgia, serif;
+    --rg-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      sans-serif;
+    --rg-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", monospace;
+
+    width: min(1040px, 100%);
+    margin: 0 auto;
+    border: 1px solid var(--rg-border);
+    border-top: 3px solid var(--rg-accent);
+    border-radius: 15px;
+    background: var(--rg-surface);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.035);
+    color: var(--rg-ink);
+    font-family: var(--rg-serif);
+    font-size: 0.93rem;
+    line-height: 1.6;
+    overflow: hidden;
+  }
+
+  .reg-geometry *,
+  .reg-geometry *::before,
+  .reg-geometry *::after {
+    box-sizing: border-box;
+  }
+
+  .reg-geometry p {
+    margin: 0;
+  }
+
+  .reg-geometry__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: start;
+    padding: clamp(1rem, 2.8vw, 1.45rem);
+    border-bottom: 1px solid var(--rg-border);
+    background: linear-gradient(
+      135deg,
+      var(--rg-accent-soft),
+      var(--rg-surface) 72%
+    );
+  }
+
+  .reg-geometry__eyebrow {
+    font-family: var(--rg-mono);
+    margin: 0 0 0.28rem;
+    color: var(--rg-accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .reg-geometry__title {
+    margin: 0;
+    color: var(--rg-ink);
+    font-family: var(--rg-sans);
+    font-size: clamp(1.16rem, 2.7vw, 1.5rem);
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.16;
+  }
+
+  .reg-geometry__index {
+    font-family: var(--rg-mono);
+    display: grid;
+    width: 2.1rem;
+    height: 2.1rem;
+    place-items: center;
+    border: 1px solid var(--rg-accent-border);
+    background: var(--rg-surface);
+    color: var(--rg-accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .reg-geometry__identity {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem 1rem;
+    align-items: center;
+    padding: 0.95rem clamp(1rem, 2.8vw, 1.45rem);
+    border-bottom: 1px solid var(--rg-border);
+    background: var(--rg-surface-muted);
+  }
+
+  .reg-geometry__identity-label {
+    font-family: var(--rg-mono);
+    color: var(--rg-muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .reg-geometry__equation {
+    min-width: 0;
+    color: var(--rg-ink);
+    font-family: inherit;
+    font-size: clamp(0.98rem, 2.1vw, 1.08rem);
+    line-height: 1.62;
+  }
+
+  .reg-geometry__equation p {
+    margin: 0 0 0.48rem;
+  }
+
+  .reg-geometry__equation p:last-child {
+    margin-bottom: 0;
+  }
+
+  .reg-geometry__equation-row {
+    margin: 0.42rem 0 0.52rem;
+    color: var(--rg-ink);
+    font-size: clamp(1rem, 2.2vw, 1.12rem);
+  }
+
+  .reg-geometry__equation strong {
+    color: var(--rg-accent);
+  }
+
+  .reg-geometry__controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 260px);
+    gap: 1rem 1.4rem;
+    align-items: center;
+    padding: 0.95rem clamp(1rem, 2.8vw, 1.45rem);
+    border-bottom: 1px solid var(--rg-border);
+  }
+
+  .reg-geometry__control-copy {
+    min-width: 0;
+  }
+
+  .reg-geometry__control-title {
+    margin: 0 0 0.18rem;
+    color: var(--rg-ink);
+    font-family: var(--rg-mono);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .reg-geometry__control-note {
+    margin: 0;
+    color: var(--rg-muted);
+    font-family: inherit;
+    font-size: 0.96rem;
+    line-height: 1.48;
+  }
+
+  .reg-geometry__range-wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.65rem;
+    align-items: center;
+  }
+
+  .reg-geometry input[type="range"] {
+    width: 100%;
+    min-width: 0;
+    accent-color: var(--rg-accent);
+  }
+
+  .reg-geometry__value {
+    font-family: var(--rg-mono);
+    min-width: 4.2rem;
+    padding: 0.32rem 0.45rem;
+    border: 1px solid var(--rg-border);
+    background: var(--rg-surface-muted);
+    color: var(--rg-accent);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .reg-geometry__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--rg-border);
+  }
+
+  .reg-geometry__panel {
+    min-width: 0;
+    padding: clamp(0.9rem, 2.4vw, 1.25rem);
+    background: var(--rg-surface);
+  }
+
+  .reg-geometry__panel-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+    margin-bottom: 0.75rem;
+  }
+
+  .reg-geometry__penalty {
+    display: inline-grid;
+    min-width: 2.7rem;
+    min-height: 2.05rem;
+    place-items: center;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid var(--rg-accent-border);
+    background: var(--rg-accent-soft);
+    color: var(--rg-accent);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .reg-geometry__panel-title {
+    margin: 0 0 0.16rem;
+    color: var(--rg-ink);
+    font-family: var(--rg-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.42;
+  }
+
+  .reg-geometry__panel-subtitle {
+    margin: 0;
+    color: var(--rg-muted);
+    font-family: inherit;
+    font-size: 0.94rem;
+    line-height: 1.42;
+  }
+
+  .reg-geometry__plot-shell {
+    position: relative;
+    width: 100%;
+    border: 1px solid var(--rg-border);
+    background: var(--rg-surface-muted);
+    aspect-ratio: 1.18 / 1;
+    overflow: hidden;
+  }
+
+  .reg-geometry__plot {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .reg-geometry__plot .rg-grid-line {
+    stroke: var(--rg-border);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .reg-geometry__plot .rg-axis {
+    stroke: var(--rg-muted);
+    stroke-width: 1.1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .reg-geometry__plot .rg-contour {
+    fill: none;
+    stroke: var(--rg-muted);
+    stroke-width: 1;
+    stroke-dasharray: 4 6;
+    opacity: 0.38;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .reg-geometry__plot .rg-valley {
+    fill: none;
+    stroke: var(--rg-ink);
+    stroke-width: 2.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .reg-geometry__plot .rg-penalty-set {
+    fill: var(--rg-accent-soft);
+    fill-opacity: 0.72;
+    stroke: var(--rg-accent);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .reg-geometry__plot .rg-minimizer-set {
+    fill: none;
+    stroke: var(--rg-accent);
+    stroke-width: 5;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .reg-geometry__plot .rg-guide {
+    fill: none;
+    stroke: var(--rg-accent);
+    stroke-width: 1.5;
+    stroke-dasharray: 5 5;
+    opacity: 0.8;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .reg-geometry__plot .rg-candidate {
+    fill: var(--rg-surface);
+    stroke: var(--rg-accent);
+    stroke-width: 1.6;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .reg-geometry__plot .rg-selected {
+    fill: var(--rg-accent);
+    stroke: var(--rg-surface);
+    stroke-width: 3;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .reg-geometry__plot .rg-rejected {
+    fill: var(--rg-surface);
+    stroke: var(--rg-muted);
+    stroke-width: 1.5;
+    stroke-dasharray: 2 3;
+    opacity: 0.7;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .reg-geometry__plot .rg-axis-label {
+    fill: var(--rg-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 16px;
+  }
+
+  .reg-geometry__legend {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+    margin: 0.7rem 0 0;
+    color: var(--rg-muted);
+    font-family: var(--rg-mono);
+    font-size: 0.66rem;
+    line-height: 1.42;
+  }
+
+  .reg-geometry__legend-item {
+    display: grid;
+    grid-template-columns: 1rem minmax(0, 1fr);
+    gap: 0.38rem;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .reg-geometry__legend-mark {
+    display: block;
+    width: 1rem;
+    height: 0.55rem;
+  }
+
+  .reg-geometry__legend-mark--valley {
+    border-top: 2px solid var(--rg-ink);
+  }
+
+  .reg-geometry__legend-mark--penalty {
+    border: 1px solid var(--rg-accent);
+    background: var(--rg-accent-soft);
+  }
+
+  .reg-geometry__legend-mark--point {
+    width: 0.55rem;
+    height: 0.55rem;
+    margin-left: 0.2rem;
+    border-radius: 50%;
+    background: var(--rg-accent);
+  }
+
+  .reg-geometry__derivation {
+    display: grid;
+    gap: 0.55rem;
+    margin-top: 0.9rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--rg-border);
+  }
+
+  .reg-geometry__mathline {
+    margin: 0;
+    color: var(--rg-ink);
+    font-family: inherit;
+    font-size: 0.96rem;
+    line-height: 1.58;
+  }
+
+  .reg-geometry__mathline + .reg-geometry__mathline {
+    margin-top: 0.42rem;
+  }
+
+  .reg-geometry__proof-equation {
+    margin: 0.42rem 0;
+    color: var(--rg-ink);
+    font-size: clamp(0.96rem, 2vw, 1.06rem);
+  }
+
+  .reg-geometry__mathline strong {
+    color: var(--rg-accent);
+  }
+
+  .reg-geometry__weights {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .reg-geometry__plot-shell + .reg-geometry__weights {
+    margin-top: 0.72rem;
+    padding: 0 0.05rem 0.1rem;
+  }
+
+  .reg-geometry__weight-row {
+    display: grid;
+    grid-template-columns: 2.8rem minmax(0, 1fr) 4.5rem;
+    gap: 0.55rem;
+    align-items: center;
+    color: var(--rg-muted);
+    font-size: 0.68rem;
+  }
+
+  .reg-geometry__weight-track {
+    height: 0.5rem;
+    border: 1px solid var(--rg-border);
+    background: var(--rg-surface-muted);
+    overflow: hidden;
+  }
+
+  .reg-geometry__weight-fill {
+    height: 100%;
+    background: var(--rg-accent);
+    transform-origin: left center;
+  }
+
+  .reg-geometry__weight-number {
+    color: var(--rg-ink);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .reg-geometry__conclusion {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+    padding: 1rem clamp(1rem, 2.8vw, 1.45rem);
+    border-top: 1px solid var(--rg-border);
+    background: var(--rg-accent-soft);
+  }
+
+  .reg-geometry__conclusion-mark {
+    color: var(--rg-accent);
+    font-weight: 700;
+  }
+
+  .reg-geometry__conclusion p {
+    margin: 0;
+    color: var(--rg-ink);
+    font-family: inherit;
+    font-size: 0.98rem;
+    line-height: 1.5;
+  }
+
+  .reg-geometry__conclusion strong {
+    color: var(--rg-accent);
+  }
+
+  .reg-geometry mjx-container {
+    color: inherit;
+  }
+
+  .reg-geometry mjx-container:not([display="true"]) {
+    margin: 0 0.04em;
+  }
+
+  .reg-geometry__penalty mjx-container,
+  .reg-geometry__legend mjx-container,
+  .reg-geometry__weight-row mjx-container {
+    margin: 0 !important;
+  }
+
+  .reg-geometry__equation-row mjx-container {
+    max-width: 100%;
+  }
+
+  @media (max-width: 720px) {
+    .reg-geometry__header,
+    .reg-geometry__controls {
+      grid-template-columns: 1fr;
+    }
+
+    .reg-geometry__index {
+      display: none;
+    }
+
+    .reg-geometry__identity {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+
+    .reg-geometry__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .reg-geometry__legend {
+      grid-template-columns: 1fr;
+    }
+
+    .reg-geometry__plot-shell {
+      aspect-ratio: 1.08 / 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reg-geometry *,
+    .reg-geometry *::before,
+    .reg-geometry *::after {
+      scroll-behavior: auto !important;
+      transition: none !important;
+    }
+  }
+</style>
+  <script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [["$", "$"], ["\\(", "\\)"]],
+      displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+      processEscapes: true
+    },
+    svg: { fontCache: "global" },
+    options: {
+      skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+    },
+    startup: {
+      pageReady: function () {
+        return MathJax.startup.defaultPageReady().then(function () {
+          document.documentElement.dataset.mathReady = "true";
+          if (typeof window.__regReportHeight === "function") {
+            window.__regReportHeight();
+          }
+        });
+      }
+    }
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+  <section class="reg-geometry" id="identical-feature-regularization" data-rg-identical>
+  <header class="reg-geometry__header">
+    <div>
+      <p class="reg-geometry__eyebrow">identical features</p>
+      <div class="reg-geometry__title" role="heading" aria-level="4">
+        One fitted contribution, many coefficient pairs
+      </div>
+    </div>
+    <div class="reg-geometry__index" aria-hidden="true">01</div>
+  </header>
+
+  <div class="reg-geometry__identity">
+    <span class="reg-geometry__identity-label">step 1 · derive the constraint</span>
+    <div class="reg-geometry__equation">
+      <p>Assume that the two columns of the design matrix are identical.</p>
+      <div class="reg-geometry__equation-row">
+        $\displaystyle \mathbf{x}_1=\mathbf{x}_2=\mathbf{x}
+        \quad\Longrightarrow\quad
+        \beta_1\mathbf{x}_1+\beta_2\mathbf{x}_2
+        =(\beta_1+\beta_2)\mathbf{x}.$
+      </div>
+      <p>
+        Fix the combined coefficient $c$. The fitted contribution is $c\mathbf{x}$
+        precisely for coefficient pairs satisfying $\beta_1+\beta_2=c$.
+      </p>
+    </div>
+  </div>
+
+  <div class="reg-geometry__controls">
+    <div class="reg-geometry__control-copy">
+      <p class="reg-geometry__control-title">Move along $\beta_1+\beta_2=c$</p>
+      <p class="reg-geometry__control-note">
+        The control sets $\beta_1=\alpha c$ and $\beta_2=(1-\alpha)c$.
+        Their sum remains $c$, so every slider position gives the same fitted contribution.
+      </p>
+    </div>
+    <label class="reg-geometry__range-wrap">
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value="72"
+        step="1"
+        aria-label="Choose a split between beta one and beta two"
+        data-rg-identical-split
+      >
+      <output class="reg-geometry__value" data-rg-identical-alpha>72% / 28%</output>
+    </label>
+  </div>
+
+  <div class="reg-geometry__grid">
+    <article class="reg-geometry__panel">
+      <div class="reg-geometry__panel-head">
+        <div class="reg-geometry__penalty">$\ell_1$</div>
+        <div>
+          <p class="reg-geometry__panel-title">Every nonnegative split reaches the same lower bound</p>
+          <p class="reg-geometry__panel-subtitle">
+            The triangle inequality supplies a lower bound for every point on the constraint line.
+          </p>
+        </div>
+      </div>
+
+      <div class="reg-geometry__plot-shell">
+        <svg
+          class="reg-geometry__plot"
+          viewBox="0 0 400 340"
+          role="img"
+          aria-labelledby="rg-identical-l1-title rg-identical-l1-desc"
+          data-rg-identical-l1
+        >
+          <title id="rg-identical-l1-title">L1 regularization with identical features</title>
+          <desc id="rg-identical-l1-desc">
+            The line beta one plus beta two equals c shares its nonnegative segment
+            with the boundary of the smallest L1 penalty set.
+          </desc>
+        </svg>
+      </div>
+
+      <div class="reg-geometry__weights" aria-label="Current L1 coefficient split">
+        <div class="reg-geometry__weight-row">
+          <span>$\beta_1$</span>
+          <span class="reg-geometry__weight-track"><span class="reg-geometry__weight-fill" data-rg-identical-l1-bar1></span></span>
+          <span class="reg-geometry__weight-number" data-rg-identical-l1-value1>72% of total</span>
+        </div>
+        <div class="reg-geometry__weight-row">
+          <span>$\beta_2$</span>
+          <span class="reg-geometry__weight-track"><span class="reg-geometry__weight-fill" data-rg-identical-l1-bar2></span></span>
+          <span class="reg-geometry__weight-number" data-rg-identical-l1-value2>28% of total</span>
+        </div>
+      </div>
+
+      <div class="reg-geometry__legend" aria-hidden="true">
+        <div class="reg-geometry__legend-item">
+          <span class="reg-geometry__legend-mark reg-geometry__legend-mark--valley"></span>
+          <span>$\beta_1+\beta_2=c$</span>
+        </div>
+        <div class="reg-geometry__legend-item">
+          <span class="reg-geometry__legend-mark reg-geometry__legend-mark--penalty"></span>
+          <span>smallest $\ell_1$ level set</span>
+        </div>
+        <div class="reg-geometry__legend-item">
+          <span class="reg-geometry__legend-mark reg-geometry__legend-mark--point"></span>
+          <span>current split</span>
+        </div>
+      </div>
+
+      <div class="reg-geometry__derivation">
+        <p class="reg-geometry__mathline">For every pair with $\beta_1+\beta_2=c$ and $c&gt;0$,</p>
+        <div class="reg-geometry__proof-equation">
+          $\displaystyle |\beta_1|+|\beta_2|
+          \ge |\beta_1+\beta_2|=c.$
+        </div>
+        <p class="reg-geometry__mathline">
+          On the segment $0\leq\beta_1\leq c$ with $\beta_2=c-\beta_1\geq0$,
+          the absolute values disappear and the penalty equals $c$ exactly.
+          <strong>Therefore every point on that segment is an $\ell_1$ minimizer.</strong>
+        </p>
+      </div>
+    </article>
+
+    <article class="reg-geometry__panel">
+      <div class="reg-geometry__panel-head">
+        <div class="reg-geometry__penalty">$\ell_2$</div>
+        <div>
+          <p class="reg-geometry__panel-title">Completing the square leaves one possible minimizer</p>
+          <p class="reg-geometry__panel-subtitle">
+            Substitute the constraint into the squared penalty and separate its constant part.
+          </p>
+        </div>
+      </div>
+
+      <div class="reg-geometry__plot-shell">
+        <svg
+          class="reg-geometry__plot"
+          viewBox="0 0 400 340"
+          role="img"
+          aria-labelledby="rg-identical-l2-title rg-identical-l2-desc"
+          data-rg-identical-l2
+        >
+          <title id="rg-identical-l2-title">L2 regularization with identical features</title>
+          <desc id="rg-identical-l2-desc">
+            The equal coefficient point is the unique point on beta one plus beta two equals c
+            with the smallest squared distance from the origin.
+          </desc>
+        </svg>
+      </div>
+
+      <div class="reg-geometry__weights" aria-label="L2 coefficient split">
+        <div class="reg-geometry__weight-row">
+          <span>$\beta_1$</span>
+          <span class="reg-geometry__weight-track"><span class="reg-geometry__weight-fill" style="width:50%"></span></span>
+          <span class="reg-geometry__weight-number">50% of total</span>
+        </div>
+        <div class="reg-geometry__weight-row">
+          <span>$\beta_2$</span>
+          <span class="reg-geometry__weight-track"><span class="reg-geometry__weight-fill" style="width:50%"></span></span>
+          <span class="reg-geometry__weight-number">50% of total</span>
+        </div>
+      </div>
+
+      <div class="reg-geometry__legend" aria-hidden="true">
+        <div class="reg-geometry__legend-item">
+          <span class="reg-geometry__legend-mark reg-geometry__legend-mark--valley"></span>
+          <span>$\beta_1+\beta_2=c$</span>
+        </div>
+        <div class="reg-geometry__legend-item">
+          <span class="reg-geometry__legend-mark reg-geometry__legend-mark--penalty"></span>
+          <span>smallest $\ell_2$ level set</span>
+        </div>
+        <div class="reg-geometry__legend-item">
+          <span class="reg-geometry__legend-mark reg-geometry__legend-mark--point"></span>
+          <span>$\beta_1=\beta_2=c/2$</span>
+        </div>
+      </div>
+
+      <div class="reg-geometry__derivation">
+        <p class="reg-geometry__mathline">Using $\beta_2=c-\beta_1$,</p>
+        <div class="reg-geometry__proof-equation">
+          $\displaystyle \beta_1^2+\beta_2^2
+          =\beta_1^2+(c-\beta_1)^2
+          =\frac{c^2}{2}+2\left(\beta_1-\frac{c}{2}\right)^2.$
+        </div>
+        <p class="reg-geometry__mathline">
+          The second term is nonnegative and becomes zero only at $\beta_1=c/2$.
+          The constraint then gives $\beta_2=c/2$.
+          <strong>The $\ell_2$ minimizer is the unique equal split.</strong>
+        </p>
+      </div>
+    </article>
+  </div>
+
+  <div class="reg-geometry__conclusion">
+    <span class="reg-geometry__conclusion-mark" aria-hidden="true">→</span>
+    <p>
+      The data determine only $\beta_1+\beta_2=c$.
+      <strong>The $\ell_1$ penalty is constant on the entire nonnegative segment, whereas the $\ell_2$ penalty has the single minimizer $(c/2,c/2)$.</strong>
+    </p>
+  </div>
+</section>
+  <script>
+  (() => {
+    "use strict";
+
+    const NS = "http://www.w3.org/2000/svg";
+    const RANGE = 1.24;
+    const PLOT = { left: 45, right: 365, top: 22, bottom: 314 };
+
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+    const fmt = (value, digits = 2) => Number(value).toFixed(digits);
+
+    function mapX(x) {
+      return PLOT.left + ((x + RANGE) / (2 * RANGE)) * (PLOT.right - PLOT.left);
+    }
+
+    function mapY(y) {
+      return PLOT.bottom - ((y + RANGE) / (2 * RANGE)) * (PLOT.bottom - PLOT.top);
+    }
+
+    function svgEl(name, attrs = {}) {
+      const node = document.createElementNS(NS, name);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
+      return node;
+    }
+
+    function add(svg, name, attrs = {}) {
+      const node = svgEl(name, attrs);
+      svg.appendChild(node);
+      return node;
+    }
+
+    function addLine(svg, x1, y1, x2, y2, className) {
+      return add(svg, "line", {
+        x1: mapX(x1),
+        y1: mapY(y1),
+        x2: mapX(x2),
+        y2: mapY(y2),
+        class: className
+      });
+    }
+
+    function lineBoxIntersections(p, q, r) {
+      // p*x + q*y = r, clipped to [-RANGE, RANGE]^2.
+      const points = [];
+      const eps = 1e-9;
+
+      if (Math.abs(q) > eps) {
+        [-RANGE, RANGE].forEach((x) => {
+          const y = (r - p * x) / q;
+          if (y >= -RANGE - eps && y <= RANGE + eps) points.push([x, clamp(y, -RANGE, RANGE)]);
+        });
+      }
+
+      if (Math.abs(p) > eps) {
+        [-RANGE, RANGE].forEach((y) => {
+          const x = (r - q * y) / p;
+          if (x >= -RANGE - eps && x <= RANGE + eps) points.push([clamp(x, -RANGE, RANGE), y]);
+        });
+      }
+
+      const unique = [];
+      points.forEach((point) => {
+        if (!unique.some((other) => Math.hypot(point[0] - other[0], point[1] - other[1]) < 1e-6)) {
+          unique.push(point);
+        }
+      });
+
+      if (unique.length < 2) return null;
+
+      let best = [unique[0], unique[1]];
+      let bestDistance = -1;
+      for (let i = 0; i < unique.length; i += 1) {
+        for (let j = i + 1; j < unique.length; j += 1) {
+          const distance = Math.hypot(unique[i][0] - unique[j][0], unique[i][1] - unique[j][1]);
+          if (distance > bestDistance) {
+            bestDistance = distance;
+            best = [unique[i], unique[j]];
+          }
+        }
+      }
+      return best;
+    }
+
+    function addImplicitLine(svg, p, q, r, className) {
+      const segment = lineBoxIntersections(p, q, r);
+      if (!segment) return null;
+      return addLine(svg, segment[0][0], segment[0][1], segment[1][0], segment[1][1], className);
+    }
+
+    function addCircle(svg, cx, cy, radius, className) {
+      const pixelRadius = Math.abs(mapX(cx + radius) - mapX(cx));
+      return add(svg, "circle", {
+        cx: mapX(cx),
+        cy: mapY(cy),
+        r: pixelRadius,
+        class: className
+      });
+    }
+
+    function addPoint(svg, x, y, radius, className) {
+      return add(svg, "circle", {
+        cx: mapX(x),
+        cy: mapY(y),
+        r: radius,
+        class: className
+      });
+    }
+
+    function addDiamond(svg, radius) {
+      const points = [
+        [radius, 0],
+        [0, radius],
+        [-radius, 0],
+        [0, -radius]
+      ]
+        .map(([x, y]) => `${mapX(x)},${mapY(y)}`)
+        .join(" ");
+      return add(svg, "polygon", { points, class: "rg-penalty-set" });
+    }
+
+    function addAxes(svg) {
+      [-0.6, 0.6].forEach((value) => {
+        addLine(svg, value, -RANGE, value, RANGE, "rg-grid-line");
+        addLine(svg, -RANGE, value, RANGE, value, "rg-grid-line");
+      });
+      addLine(svg, -RANGE, 0, RANGE, 0, "rg-axis");
+      addLine(svg, 0, -RANGE, 0, RANGE, "rg-axis");
+
+      const beta1 = add(svg, "text", {
+        x: PLOT.right - 2,
+        y: mapY(0) - 8,
+        class: "rg-axis-label",
+        "text-anchor": "end"
+      });
+      beta1.textContent = "β₁";
+
+      const beta2 = add(svg, "text", {
+        x: mapX(0) + 10,
+        y: PLOT.top + 17,
+        class: "rg-axis-label"
+      });
+      beta2.textContent = "β₂";
+    }
+
+    function addContours(svg, p, q, center, spacing = 0.25) {
+      [-2, -1, 1, 2].forEach((offset) => {
+        addImplicitLine(svg, p, q, center + offset * spacing, "rg-contour");
+      });
+      addImplicitLine(svg, p, q, center, "rg-valley");
+    }
+
+    function resetSvg(svg) {
+      [...svg.children].forEach((child) => {
+        if (!child.matches("title, desc")) child.remove();
+      });
+      addAxes(svg);
+    }
+
+    function renderIdenticalPlot(svg, penalty, alpha = 0.72) {
+      resetSvg(svg);
+      const s = 0.9;
+      addContours(svg, 1, 1, s, 0.22);
+
+      if (penalty === "l1") {
+        addDiamond(svg, s);
+        addLine(svg, s, 0, 0, s, "rg-minimizer-set");
+        [0.14, 0.32, 0.5, 0.68, 0.86].forEach((candidateAlpha) => {
+          addPoint(svg, candidateAlpha * s, (1 - candidateAlpha) * s, 4.1, "rg-candidate");
+        });
+        addPoint(svg, alpha * s, (1 - alpha) * s, 7.2, "rg-selected");
+      } else {
+        const radius = s / Math.sqrt(2);
+        addCircle(svg, 0, 0, radius, "rg-penalty-set");
+        addLine(svg, 0, 0, s / 2, s / 2, "rg-guide");
+        addPoint(svg, s / 2, s / 2, 7.2, "rg-selected");
+      }
+    }
+
+    function renderDependentPlot(svg, penalty, a) {
+      resetSvg(svg);
+      const u = 0.92;
+      addContours(svg, 1, a, u, 0.22);
+
+      if (penalty === "l1") {
+        const radius = u / a;
+        addDiamond(svg, radius);
+        const selected = [0, u / a];
+        const alternative = [u, 0];
+        addPoint(svg, alternative[0], alternative[1], 5.2, "rg-rejected");
+        addPoint(svg, selected[0], selected[1], 7.2, "rg-selected");
+      } else {
+        const denom = 1 + a * a;
+        const beta1 = u / denom;
+        const beta2 = (a * u) / denom;
+        const radius = u / Math.sqrt(denom);
+        addCircle(svg, 0, 0, radius, "rg-penalty-set");
+        addLine(svg, 0, 0, beta1, beta2, "rg-guide");
+        addPoint(svg, beta1, beta2, 7.2, "rg-selected");
+      }
+    }
+
+    function initIdentical(root) {
+      const slider = root.querySelector("[data-rg-identical-split]");
+      const output = root.querySelector("[data-rg-identical-alpha]");
+      const l1Svg = root.querySelector("[data-rg-identical-l1]");
+      const l2Svg = root.querySelector("[data-rg-identical-l2]");
+      const bar1 = root.querySelector("[data-rg-identical-l1-bar1]");
+      const bar2 = root.querySelector("[data-rg-identical-l1-bar2]");
+      const value1 = root.querySelector("[data-rg-identical-l1-value1]");
+      const value2 = root.querySelector("[data-rg-identical-l1-value2]");
+
+      const update = () => {
+        const alpha = Number(slider.value) / 100;
+        output.value = `${Math.round(alpha * 100)}% / ${Math.round((1 - alpha) * 100)}%`;
+        output.textContent = output.value;
+        bar1.style.width = `${alpha * 100}%`;
+        bar2.style.width = `${(1 - alpha) * 100}%`;
+        value1.textContent = `${Math.round(alpha * 100)}% of total`;
+        value2.textContent = `${Math.round((1 - alpha) * 100)}% of total`;
+        renderIdenticalPlot(l1Svg, "l1", alpha);
+      };
+
+      renderIdenticalPlot(l2Svg, "l2");
+      slider.addEventListener("input", update, { passive: true });
+      update();
+    }
+
+    function initDependent(root) {
+      const slider = root.querySelector("[data-rg-dependent-scale]");
+      const output = root.querySelector("[data-rg-dependent-a]");
+      const l1Svg = root.querySelector("[data-rg-dependent-l1]");
+      const l2Svg = root.querySelector("[data-rg-dependent-l2]");
+      const l1Bar1 = root.querySelector("[data-rg-dependent-l1-bar1]");
+      const l1Bar2 = root.querySelector("[data-rg-dependent-l1-bar2]");
+      const l2Bar1 = root.querySelector("[data-rg-dependent-l2-bar1]");
+      const l2Bar2 = root.querySelector("[data-rg-dependent-l2-bar2]");
+      const l1Value1 = root.querySelector("[data-rg-dependent-l1-value1]");
+      const l1Value2 = root.querySelector("[data-rg-dependent-l1-value2]");
+      const l2Value1 = root.querySelector("[data-rg-dependent-l2-value1]");
+      const l2Value2 = root.querySelector("[data-rg-dependent-l2-value2]");
+
+      const update = () => {
+        const a = Number(slider.value) / 100;
+        const l1Beta1 = 0;
+        const l1Beta2 = 1 / a;
+        const denom = 1 + a * a;
+        const l2Beta1 = 1 / denom;
+        const l2Beta2 = a / denom;
+
+        output.value = `${fmt(a, 2)}×`;
+        output.textContent = output.value;
+
+        l1Bar1.style.width = "0%";
+        l1Bar2.style.width = `${clamp(l1Beta2 * 100, 0, 100)}%`;
+        l2Bar1.style.width = `${clamp(l2Beta1 * 100, 0, 100)}%`;
+        l2Bar2.style.width = `${clamp(l2Beta2 * 100, 0, 100)}%`;
+
+        l1Value1.textContent = fmt(l1Beta1, 3);
+        l1Value2.textContent = fmt(l1Beta2, 3);
+        l2Value1.textContent = fmt(l2Beta1, 3);
+        l2Value2.textContent = fmt(l2Beta2, 3);
+
+        renderDependentPlot(l1Svg, "l1", a);
+        renderDependentPlot(l2Svg, "l2", a);
+      };
+
+      slider.addEventListener("input", update, { passive: true });
+      update();
+    }
+
+    function boot() {
+      document.querySelectorAll("[data-rg-identical]").forEach((root) => {
+        if (root.hasAttribute("data-rg-ready")) return;
+        root.setAttribute("data-rg-ready", "");
+        initIdentical(root);
+      });
+      document.querySelectorAll("[data-rg-dependent]").forEach((root) => {
+        if (root.hasAttribute("data-rg-ready")) return;
+        root.setAttribute("data-rg-ready", "");
+        initDependent(root);
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", boot, { once: true });
+    } else {
+      boot();
+    }
+  })();
+</script>
+
+  <script>
+  (function () {
+    "use strict";
+    var frame = 0;
+
+    function reportHeight() {
+      if (frame) return;
+      frame = requestAnimationFrame(function () {
+        frame = 0;
+        var height = Math.ceil(Math.max(
+          document.documentElement.scrollHeight,
+          document.body ? document.body.scrollHeight : 0
+        ));
+        if (window.parent !== window) {
+          window.parent.postMessage({ height: height }, window.location.origin);
+        }
+      });
+    }
+
+    window.__regReportHeight = reportHeight;
+    window.addEventListener("load", reportHeight, { once: true });
+    window.addEventListener("resize", reportHeight, { passive: true });
+
+    if (window.ResizeObserver && document.documentElement) {
+      new ResizeObserver(reportHeight).observe(document.documentElement);
+    }
+  })();
+</script>
+</body>
+</html>

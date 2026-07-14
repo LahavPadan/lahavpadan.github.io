@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Regularization for linearly dependent features</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { color-scheme: light dark; }
+    html, body { width: 100%; min-width: 0; margin: 0; background: transparent !important; overflow-x: clip; }
+    body { padding: clamp(4px, 1.2vw, 12px); }
+  </style>
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const variableNames = [
+        '--page','--surface','--surface-muted','--ink','--muted','--border','--border-strong','--accent','--accent-soft',
+        '--post-accent','--post-accent-soft','--post-accent-border','--post-accent-ink',
+        '--color-bg','--color-surface','--color-surface-muted','--color-text','--color-text-muted','--color-border','--color-border-strong'
+      ];
+      function syncFromParent() {
+        try {
+          if (window.parent === window) return;
+          const parentRoot = window.parent.document.documentElement;
+          const article = window.parent.document.querySelector('article, main') || parentRoot;
+          const rootStyle = window.parent.getComputedStyle(parentRoot);
+          const articleStyle = window.parent.getComputedStyle(article);
+          const explicit = parentRoot.getAttribute('data-theme') ||
+            (parentRoot.classList.contains('dark') ? 'dark' : '') ||
+            (parentRoot.classList.contains('light') ? 'light' : '');
+          if (explicit) root.setAttribute('data-theme', explicit);
+          else root.removeAttribute('data-theme');
+          root.classList.toggle('dark', explicit === 'dark');
+          root.classList.toggle('light', explicit === 'light');
+          for (const name of variableNames) {
+            const value = articleStyle.getPropertyValue(name).trim() || rootStyle.getPropertyValue(name).trim();
+            if (value) root.style.setProperty(name, value);
+          }
+          const aliases = {
+            '--page': '--color-bg',
+            '--surface': '--color-surface',
+            '--surface-muted': '--color-surface-muted',
+            '--ink': '--color-text',
+            '--muted': '--color-text-muted',
+            '--border': '--color-border',
+            '--border-strong': '--color-border-strong',
+            '--accent': '--post-accent',
+            '--accent-soft': '--post-accent-soft'
+          };
+          for (const [alias, source] of Object.entries(aliases)) {
+            if (!root.style.getPropertyValue(alias)) {
+              const value = root.style.getPropertyValue(source);
+              if (value) root.style.setProperty(alias, value);
+            }
+          }
+        } catch (_) {}
+      }
+      syncFromParent();
+      window.addEventListener('DOMContentLoaded', syncFromParent, { once: true });
+      try {
+        if (window.parent !== window) {
+          const parentRoot = window.parent.document.documentElement;
+          new MutationObserver(syncFromParent).observe(parentRoot, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-color-mode'] });
+        }
+      } catch (_) {}
+    }());
+  </script>
+</head>
+<body>
+<div class="lp-dependent-penalties" id="lp-dependent-penalties">
+  <style>
+    #lp-dependent-penalties {
+      --lp-surface: var(--surface, #ffffff);
+      --lp-surface-muted: var(--surface-muted, #f6f3fa);
+      --lp-ink: var(--ink, #24212a);
+      --lp-muted: var(--muted, #686370);
+      --lp-border: var(--border, #ddd7e4);
+      --lp-border-strong: var(--border-strong, #c9bfd5);
+      --lp-accent: var(--post-accent, var(--accent, #5f3f9c));
+      --lp-accent-soft: var(--post-accent-soft, var(--accent-soft, #f4effd));
+      --lp-accent-border: var(
+        --post-accent-border,
+        var(--border-strong, #cdbce7)
+      );
+      --lp-accent-ink: var(
+        --post-accent-ink,
+        var(--accent, #4c327f)
+      );
+      --lp-serif: Georgia, "Times New Roman", serif;
+      --lp-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", monospace;
+
+      width: 100%;
+      margin: 2rem 0;
+      color: var(--lp-ink);
+      font-family: var(--lp-serif);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    #lp-dependent-penalties,
+    #lp-dependent-penalties * {
+      box-sizing: border-box;
+    }
+
+    #lp-dependent-penalties .lp-shell {
+      border: 1px solid var(--lp-border-strong);
+      background: var(--lp-surface);
+    }
+
+    #lp-dependent-penalties .lp-header {
+      padding: clamp(1rem, 2.8vw, 1.45rem);
+      border-bottom: 1px solid var(--lp-border);
+      background:
+        linear-gradient(
+          135deg,
+          var(--lp-accent-soft),
+          transparent 72%
+        ),
+        var(--lp-surface);
+    }
+
+    #lp-dependent-penalties .lp-kicker {
+      margin: 0 0 0.45rem !important;
+      color: var(--lp-accent-ink);
+      font-family: var(--lp-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      line-height: 1.3;
+      text-transform: uppercase;
+    }
+
+    #lp-dependent-penalties .lp-title {
+      margin: 0 !important;
+      color: var(--lp-ink);
+      font-family: var(--lp-mono);
+      font-size: clamp(1.08rem, 2.5vw, 1.34rem);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.28;
+    }
+
+    #lp-dependent-penalties .lp-intro {
+      max-width: 68ch;
+      margin: 0.7rem 0 0 !important;
+      color: var(--lp-muted);
+      font-family: var(--lp-serif);
+      font-size: 0.98rem;
+      line-height: 1.58;
+    }
+
+    #lp-dependent-penalties .lp-relation {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem 0.7rem;
+      width: fit-content;
+      max-width: 100%;
+      margin-top: 0.85rem;
+      padding: 0.42rem 0.62rem;
+      border: 1px solid var(--lp-accent-border);
+      background: var(--lp-surface);
+      color: var(--lp-ink);
+      font-size: 0.96rem;
+      line-height: 1.25;
+    }
+
+    #lp-dependent-penalties .lp-math {
+      white-space: nowrap;
+    }
+
+    #lp-dependent-penalties .lp-math i {
+      font-family: var(--lp-serif);
+      font-weight: 400;
+    }
+
+    #lp-dependent-penalties .lp-relation-arrow {
+      color: var(--lp-accent-ink);
+      font-family: var(--lp-mono);
+      font-size: 0.92em;
+    }
+
+    #lp-dependent-penalties .lp-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0;
+    }
+
+    #lp-dependent-penalties .lp-panel {
+      min-width: 0;
+      padding: clamp(0.9rem, 2.2vw, 1.2rem);
+    }
+
+    #lp-dependent-penalties .lp-panel + .lp-panel {
+      border-left: 1px solid var(--lp-border);
+    }
+
+    #lp-dependent-penalties .lp-panel-head {
+      min-height: 3.7rem;
+      margin-bottom: 0.45rem;
+    }
+
+    #lp-dependent-penalties .lp-panel-title {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin: 0 !important;
+      color: var(--lp-ink);
+      font-family: var(--lp-mono);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.35;
+    }
+
+    #lp-dependent-penalties .lp-panel-index {
+      color: var(--lp-accent-ink);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+    }
+
+    #lp-dependent-penalties .lp-panel-subtitle {
+      margin: 0.3rem 0 0 !important;
+      color: var(--lp-muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    #lp-dependent-penalties .lp-figure {
+      margin: 0;
+    }
+
+    #lp-dependent-penalties .lp-plot {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 400 / 330;
+      border: 1px solid var(--lp-border);
+      background: var(--lp-surface-muted);
+    }
+
+    #lp-dependent-penalties .lp-axis {
+      stroke: var(--lp-muted);
+      stroke-width: 1.25;
+      vector-effect: non-scaling-stroke;
+    }
+
+    #lp-dependent-penalties .lp-axis-label {
+      fill: var(--lp-ink);
+      font-family: var(--lp-serif);
+      font-size: 16px;
+      font-style: italic;
+    }
+
+    #lp-dependent-penalties .lp-origin-label {
+      fill: var(--lp-muted);
+      font-family: var(--lp-mono);
+      font-size: 11px;
+    }
+
+    #lp-dependent-penalties .lp-loss-line {
+      stroke: var(--lp-accent-ink);
+      stroke-width: 2.7;
+      stroke-linecap: round;
+      vector-effect: non-scaling-stroke;
+    }
+
+    #lp-dependent-penalties .lp-constraint-faint {
+      fill: none;
+      stroke: var(--lp-accent-border);
+      stroke-width: 1.2;
+      stroke-dasharray: 4 5;
+      opacity: 0.72;
+      vector-effect: non-scaling-stroke;
+    }
+
+    #lp-dependent-penalties .lp-constraint-touch {
+      fill: var(--lp-accent-soft);
+      fill-opacity: 0.78;
+      stroke: var(--lp-accent);
+      stroke-width: 2.3;
+      vector-effect: non-scaling-stroke;
+    }
+
+    #lp-dependent-penalties .lp-radius {
+      stroke: var(--lp-accent-border);
+      stroke-width: 1.1;
+      stroke-dasharray: 3 5;
+      vector-effect: non-scaling-stroke;
+    }
+
+    #lp-dependent-penalties .lp-contact-ring {
+      fill: var(--lp-surface);
+      stroke: var(--lp-ink);
+      stroke-width: 2.2;
+      vector-effect: non-scaling-stroke;
+    }
+
+    #lp-dependent-penalties .lp-contact-core {
+      fill: var(--lp-accent);
+    }
+
+    #lp-dependent-penalties .lp-key {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.8rem;
+      margin-top: 0.6rem;
+      color: var(--lp-muted);
+      font-family: var(--lp-mono);
+      font-size: 0.69rem;
+      line-height: 1.4;
+    }
+
+    #lp-dependent-penalties .lp-key-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    #lp-dependent-penalties .lp-key-line {
+      width: 1.35rem;
+      height: 0;
+      border-top: 2px solid var(--lp-accent-ink);
+    }
+
+    #lp-dependent-penalties .lp-key-shape {
+      width: 1.35rem;
+      height: 0;
+      border-top: 2px solid var(--lp-accent);
+    }
+
+    #lp-dependent-penalties .lp-key-point {
+      width: 0.52rem;
+      height: 0.52rem;
+      border: 1px solid var(--lp-ink);
+      border-radius: 50%;
+      background: var(--lp-accent);
+      box-shadow: 0 0 0 2px var(--lp-surface);
+    }
+
+    #lp-dependent-penalties .lp-reading {
+      display: grid;
+      gap: 0.55rem;
+      margin-top: 0.85rem;
+      padding-top: 0.8rem;
+      border-top: 1px solid var(--lp-border);
+    }
+
+    #lp-dependent-penalties .lp-step {
+      display: grid;
+      grid-template-columns: 1.35rem minmax(0, 1fr);
+      gap: 0.55rem;
+      align-items: start;
+    }
+
+    #lp-dependent-penalties .lp-step-number {
+      display: grid;
+      place-items: center;
+      width: 1.35rem;
+      height: 1.35rem;
+      margin-top: 0.14rem;
+      border: 1px solid var(--lp-accent-border);
+      background: var(--lp-accent-soft);
+      color: var(--lp-accent-ink);
+      font-family: var(--lp-mono);
+      font-size: 0.67rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    #lp-dependent-penalties .lp-step p {
+      margin: 0 !important;
+      color: var(--lp-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    #lp-dependent-penalties .lp-step strong {
+      color: var(--lp-ink);
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: 700;
+    }
+
+    @media (max-width: 650px) {
+      #lp-dependent-penalties .lp-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #lp-dependent-penalties .lp-panel + .lp-panel {
+        border-top: 1px solid var(--lp-border);
+        border-left: 0;
+      }
+
+      #lp-dependent-penalties .lp-panel-head {
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 430px) {
+      #lp-dependent-penalties .lp-header,
+      #lp-dependent-penalties .lp-panel {
+        padding: 0.85rem;
+      }
+
+      #lp-dependent-penalties .lp-relation {
+        width: 100%;
+      }
+    }
+  </style>
+
+  <div class="lp-shell">
+    <header class="lp-header">
+      <p class="lp-kicker">Geometric intuition</p>
+
+      <h3 class="lp-title">
+        Linearly dependent features: why
+        ℓ<sub>1</sub> selects and ℓ<sub>2</sub> spreads
+      </h3>
+
+      <p class="lp-intro">
+        If one feature is a scalar multiple of another, the loss depends
+        only on one linear combination of the coefficients. The minimizers
+        therefore form a line of equal loss.
+      </p>
+
+      <div
+        class="lp-relation"
+        aria-label="x two equals c x one, so beta one plus c beta two equals s"
+      >
+        <span class="lp-math">
+          <i>x</i><sub>2</sub> = <i>c x</i><sub>1</sub>
+        </span>
+
+        <span class="lp-relation-arrow" aria-hidden="true">⇒</span>
+
+        <span class="lp-math">
+          <i>β</i><sub>1</sub> + <i>cβ</i><sub>2</sub> = <i>s</i>
+        </span>
+      </div>
+    </header>
+
+    <div class="lp-grid">
+      <!-- ℓ1 panel -->
+      <section class="lp-panel" aria-labelledby="lp-l1-title">
+        <div class="lp-panel-head">
+          <h4 class="lp-panel-title" id="lp-l1-title">
+            <span class="lp-panel-index">01</span>
+            <span>ℓ<sub>1</sub> penalty</span>
+          </h4>
+
+          <p class="lp-panel-subtitle">
+            Expand the diamond until it first reaches the equal-loss line.
+          </p>
+        </div>
+
+        <figure class="lp-figure">
+          <svg
+            class="lp-plot"
+            viewBox="0 0 400 330"
+            role="img"
+            aria-labelledby="lp-l1-svg-title lp-l1-svg-desc"
+          >
+            <title id="lp-l1-svg-title">
+              The L1 constraint first touches the equal-loss line at an
+              axis vertex
+            </title>
+
+            <desc id="lp-l1-svg-desc">
+              Nested diamonds centered at the origin expand until the
+              largest shown diamond touches the equal-loss line at its
+              upper vertex, where beta one is zero.
+            </desc>
+
+            <defs>
+              <marker
+                id="lp-arrow-l1"
+                viewBox="0 0 8 8"
+                refX="6.8"
+                refY="4"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path
+                  d="M0 0 L8 4 L0 8 Z"
+                  fill="var(--lp-muted)"
+                ></path>
+              </marker>
+            </defs>
+
+            <!-- Axes -->
+            <line
+              class="lp-axis"
+              x1="31"
+              y1="205"
+              x2="368"
+              y2="205"
+              marker-end="url(#lp-arrow-l1)"
+            ></line>
+
+            <line
+              class="lp-axis"
+              x1="170"
+              y1="300"
+              x2="170"
+              y2="35"
+              marker-end="url(#lp-arrow-l1)"
+            ></line>
+
+            <text class="lp-axis-label" x="371" y="224">β₁</text>
+            <text class="lp-axis-label" x="147" y="31">β₂</text>
+            <text class="lp-origin-label" x="155" y="222">0</text>
+
+            <!-- Expanding ℓ1 boundaries -->
+            <polygon
+              class="lp-constraint-faint"
+              points="170,173 202,205 170,237 138,205"
+            ></polygon>
+
+            <polygon
+              class="lp-constraint-faint"
+              points="170,143 232,205 170,267 108,205"
+            ></polygon>
+
+            <polygon
+              class="lp-constraint-touch"
+              points="170,111 264,205 170,299 76,205"
+            ></polygon>
+
+            <!-- Same equal-loss line used in both panels -->
+            <line
+              class="lp-loss-line"
+              x1="69"
+              y1="48"
+              x2="356"
+              y2="227"
+            ></line>
+
+            <!-- Vertex contact -->
+            <circle
+              class="lp-contact-ring"
+              cx="170"
+              cy="111"
+              r="7"
+            ></circle>
+
+            <circle
+              class="lp-contact-core"
+              cx="170"
+              cy="111"
+              r="3.2"
+            ></circle>
+          </svg>
+
+          <figcaption class="lp-key">
+            <span class="lp-key-item">
+              <span class="lp-key-line"></span>
+              equal-loss line
+            </span>
+
+            <span class="lp-key-item">
+              <span class="lp-key-shape"></span>
+              penalty boundary
+            </span>
+
+            <span class="lp-key-item">
+              <span class="lp-key-point"></span>
+              first contact
+            </span>
+          </figcaption>
+        </figure>
+
+        <div class="lp-reading">
+          <div class="lp-step">
+            <span class="lp-step-number">1</span>
+
+            <p>
+              The first contact with the diamond occurs at a
+              <strong>vertex</strong>.
+            </p>
+          </div>
+
+          <div class="lp-step">
+            <span class="lp-step-number">2</span>
+
+            <p>
+              That vertex lies on an axis, so one coefficient is exactly
+              zero.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ℓ2 panel -->
+      <section class="lp-panel" aria-labelledby="lp-l2-title">
+        <div class="lp-panel-head">
+          <h4 class="lp-panel-title" id="lp-l2-title">
+            <span class="lp-panel-index">02</span>
+            <span>ℓ<sub>2</sub> penalty</span>
+          </h4>
+
+          <p class="lp-panel-subtitle">
+            Expand the circle until it first reaches the same equal-loss
+            line.
+          </p>
+        </div>
+
+        <figure class="lp-figure">
+          <svg
+            class="lp-plot"
+            viewBox="0 0 400 330"
+            role="img"
+            aria-labelledby="lp-l2-svg-title lp-l2-svg-desc"
+          >
+            <title id="lp-l2-svg-title">
+              The L2 constraint first touches the equal-loss line away
+              from the axes
+            </title>
+
+            <desc id="lp-l2-svg-desc">
+              Nested circles centered at the origin expand until the
+              largest shown circle touches the equal-loss line at a point
+              with both beta one and beta two nonzero.
+            </desc>
+
+            <defs>
+              <marker
+                id="lp-arrow-l2"
+                viewBox="0 0 8 8"
+                refX="6.8"
+                refY="4"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path
+                  d="M0 0 L8 4 L0 8 Z"
+                  fill="var(--lp-muted)"
+                ></path>
+              </marker>
+            </defs>
+
+            <!-- Axes -->
+            <line
+              class="lp-axis"
+              x1="31"
+              y1="205"
+              x2="368"
+              y2="205"
+              marker-end="url(#lp-arrow-l2)"
+            ></line>
+
+            <line
+              class="lp-axis"
+              x1="170"
+              y1="300"
+              x2="170"
+              y2="35"
+              marker-end="url(#lp-arrow-l2)"
+            ></line>
+
+            <text class="lp-axis-label" x="371" y="224">β₁</text>
+            <text class="lp-axis-label" x="147" y="31">β₂</text>
+            <text class="lp-origin-label" x="155" y="222">0</text>
+
+            <!-- Expanding ℓ2 boundaries -->
+            <circle
+              class="lp-constraint-faint"
+              cx="170"
+              cy="205"
+              r="30"
+            ></circle>
+
+            <circle
+              class="lp-constraint-faint"
+              cx="170"
+              cy="205"
+              r="55"
+            ></circle>
+
+            <circle
+              class="lp-constraint-touch"
+              cx="170"
+              cy="205"
+              r="79.5"
+            ></circle>
+
+            <!-- Radius is perpendicular to the tangent line -->
+            <line
+              class="lp-radius"
+              x1="170"
+              y1="205"
+              x2="212.1"
+              y2="137.6"
+            ></line>
+
+            <!-- Same equal-loss line used in both panels -->
+            <line
+              class="lp-loss-line"
+              x1="69"
+              y1="48"
+              x2="356"
+              y2="227"
+            ></line>
+
+            <!-- Off-axis contact -->
+            <circle
+              class="lp-contact-ring"
+              cx="212.1"
+              cy="137.6"
+              r="7"
+            ></circle>
+
+            <circle
+              class="lp-contact-core"
+              cx="212.1"
+              cy="137.6"
+              r="3.2"
+            ></circle>
+          </svg>
+
+          <figcaption class="lp-key">
+            <span class="lp-key-item">
+              <span class="lp-key-line"></span>
+              equal-loss line
+            </span>
+
+            <span class="lp-key-item">
+              <span class="lp-key-shape"></span>
+              penalty boundary
+            </span>
+
+            <span class="lp-key-item">
+              <span class="lp-key-point"></span>
+              first contact
+            </span>
+          </figcaption>
+        </figure>
+
+        <div class="lp-reading">
+          <div class="lp-step">
+            <span class="lp-step-number">1</span>
+
+            <p>
+              The first contact with the circle occurs
+              <strong>away from the axes</strong>.
+            </p>
+          </div>
+
+          <div class="lp-step">
+            <span class="lp-step-number">2</span>
+
+            <p>
+              Both coefficients remain nonzero, so the fitted weight is
+              shared.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    let frame = 0;
+    function reportHeight() {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(function () {
+        frame = 0;
+        const height = Math.ceil(Math.max(
+          document.documentElement.scrollHeight,
+          document.body ? document.body.scrollHeight : 0
+        ));
+        try { if (window.frameElement) window.frameElement.style.height = height + 'px'; } catch (_) {}
+        try {
+          window.parent.postMessage({ type: 'article-visualization:resize', height: height }, '*');
+          window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, '*');
+        } catch (_) {}
+      });
+    }
+    window.addEventListener('load', reportHeight);
+    window.addEventListener('resize', reportHeight, { passive: true });
+    document.addEventListener('input', reportHeight, { passive: true });
+    document.addEventListener('click', reportHeight, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(reportHeight).observe(document.documentElement);
+    reportHeight();
+  }());
+</script>
+</body>
+</html>

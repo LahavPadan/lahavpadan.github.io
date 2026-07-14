@@ -16,98 +16,34 @@ $$
 \hat{\beta} = (X^\top X)^{-1} X^\top y.
 $$
 
-Features sit in the columns of $X$. When the columns are linearly dependent, some nonzero combination of the features vanishes, and $X^\top X$ is singular.
+Features sit in the columns of $X$. When features are linearly dependent — some feature can be written as a linear combination of the others — the columns of $X$ are linearly dependent, and this forces $X^\top X$ to be **singular**.
 
-**What happens if the columns of $X$ are linearly independent?** Then $X^\top X$ is positive definite, and therefore invertible.
+<div class="guided-fold-start" data-label="Why linear dependence makes the Gram matrix singular" data-tone="derivation"></div>
 
-<div class="guided-fold-start" data-label="Why X and its Gram matrix have the same null directions" data-tone="proof"></div>
+Suppose the columns of $X$ are linearly dependent. Then there exists a nonzero vector $v$ with $Xv = 0$ (the coefficients of the linear combination that produces the redundant feature). Multiplying by $X^\top$: $X^\top X v = X^\top (Xv) = 0$, so $v \in \mathcal{N}(X^\top X)$ and $X^\top X$ has a nontrivial null space — hence singular.
 
-For every vector $v$,
+Conversely, if the columns of $X$ are linearly independent, $Xv = 0 \Rightarrow v = 0$, and $v^\top X^\top X v = \|Xv\|^2 = 0 \Rightarrow v = 0$; then $X^\top X$ is positive definite.
 
-$$
-v^\top X^\top Xv = (Xv)^\top(Xv) = \|Xv\|^2 \geq 0.
-$$
-
-Thus $X^\top X$ is always positive semidefinite. More importantly, $X$ and $X^\top X$ have exactly the same null space:
-
-- If $Xv=0$, then $X^\top Xv=X^\top 0=0$.
-- If $X^\top Xv=0$, then
-
-  $$
-  0=v^\top X^\top Xv=\|Xv\|^2,
-  $$
-
-  and a squared norm can vanish only when $Xv=0$.
-
-Therefore,
-
-$$
-\mathcal N(X^\top X)=\mathcal N(X).
-$$
-
-Both linear maps have domain $\mathbb R^p$, where $p$ is the number of columns of $X$. The rank-nullity theorem now gives
-
-$$
-\operatorname{rank}(X^\top X)
-= p-\dim\mathcal N(X^\top X)
-= p-\dim\mathcal N(X)
-= \operatorname{rank}(X).
-$$
-
-This single identity gives both cases. If the columns of $X$ are dependent, the shared null space contains a nonzero vector, so $X^\top X$ is singular. If the columns are independent, then $Xv\neq 0$ for every $v\neq 0$, and hence
-
-$$
-v^\top X^\top Xv=\|Xv\|^2>0,
-$$
-
-which is exactly positive definiteness.
+The rank of $X^\top X$ therefore equals the rank of $X$, and the redundancy among features translates directly into rank-deficiency of the Gram matrix. **Near-dependence — the practical case — leaves $X^\top X$ technically invertible but with tiny eigenvalues in the directions that "almost" satisfy the redundancy.**
 
 <div class="guided-fold-end"></div>
 
-Exact feature redundancy is therefore equivalent to rank deficiency of the Gram matrix. **Near-dependence — the practical case — leaves $X^\top X$ technically invertible, but creates a direction in which $Xv$ is very small and the corresponding eigenvalue is close to zero.**
 
+<div class="guided-fold-start" data-label="Normal-equation solutions" data-tone="derivation"></div>
 
-<div class="guided-fold-start" data-label="Reminder: the OLS solution and the normal equation" data-tone="derivation"></div>
+Consider the normal equations: $A^\top A \mathbf{x} = A^\top \mathbf{b}$
+where $A \in \mathbb{R}^{N \times M}$, $\mathbf{b} \in \mathbb{R}^N$, and $\mathbf{x} \in \mathbb{R}^M$.
+We have:
 
-OLS chooses $\mathbf{x}$ to minimize the squared residual
-
-$$
-\|A\mathbf{x}-\mathbf{b}\|^2.
-$$
-
-Differentiating with respect to $\mathbf{x}$ and setting the gradient to zero gives the normal equation
-
-$$
-A^\top A\mathbf{x}=A^\top\mathbf{b},
-$$
-
-where $A\in\mathbb R^{N\times M}$, $\mathbf b\in\mathbb R^N$, and $\mathbf x\in\mathbb R^M$.
-
-1. The normal equation always has at least one solution. From $\mathcal N(A^\top A)=\mathcal N(A)$, we obtain $\mathcal R(A^\top A)=\mathcal N(A^\top A)^\perp=\mathcal N(A)^\perp=\mathcal R(A^\top)$. Since $A^\top\mathbf b\in\mathcal R(A^\top)$, it also lies in $\mathcal R(A^\top A)$, so the equation is consistent.
-2. The solution is unique exactly when $A$ has full column rank, equivalently when $A^\top A$ is invertible. Then
-
-   $$
-   \hat{\mathbf x}=(A^\top A)^{-1}A^\top\mathbf b.
-   $$
-
-3. If $A$ is rank deficient and $\mathbf x_0$ is one solution, then every solution has the form
-
-   $$
-   \mathbf x_0+z,\qquad z\in\mathcal N(A).
-   $$
-
-   Indeed, two solutions satisfy $A^\top A(\mathbf x_1-\mathbf x_2)=0$; because $\mathcal N(A^\top A)=\mathcal N(A)$, their difference lies in $\mathcal N(A)$. Consequently, all OLS solutions produce the same fitted values: $A(\mathbf x_0+z)=A\mathbf x_0$.
-
-**Bonus.** The minimum-norm OLS solution is $A^+\mathbf b$, where $A^+$ is the Moore–Penrose pseudoinverse. Ridge solves a different, strictly convex problem,
-
-$$
-\min_{\mathbf x}\ \|A\mathbf x-\mathbf b\|^2+\lambda\|\mathbf x\|^2,
-$$
-
-with the unique solution $(A^\top A+\lambda I)^{-1}A^\top\mathbf b$. As $\lambda\downarrow 0$, the ridge solution approaches the minimum-norm OLS solution.
+1. A solution $\mathbf{x}$ **always exists**.
+2. The solution $\mathbf{x}$ is unique when $A^\top A$ is invertible (i.e., when $N \geq M$ and $A$ has full rank). In this case, the solution is given by: $\mathbf{x} = (A^\top A)^{-1} A^\top \mathbf{b}$
+3. There exist infinitely many solutions $\mathbf{x}$ when $A^\top A$ is singular.
+4. Under (3), any two solutions $\mathbf{x}_1$ and $\mathbf{x}_2$ will differ by a vector in the null space of $A$: $\mathbf{x}_1 - \mathbf{x}_2 \in \mathcal{N}(A)$
 
 <div class="guided-fold-end"></div>
 
+
+_**Bonus:**_ (4) above is a prime motivator for ridge regularization; even though we have infinite solutions we take the smallest one, and it doesn't matter since they are all equivalent (they differ by a vector in the null space).
 
 <div class="guided-fold-start" data-label="How ridge counters multicollinearity" data-tone="derivation"></div>
 
@@ -135,32 +71,7 @@ $$
 where $\sigma^2$ is the variance of the errors.
 Using the spectral decomposition: $X^\top X = Q \Lambda Q^\top$; it also holds $(X^\top X)^{-1} = Q \Lambda^{-1} Q^\top$.
 
-Why are the eigenvectors directions in feature-space? A vector $q\in\mathbb R^p$ assigns one weight to each of the $p$ features, so moving in the direction $q$ means changing the coefficient vector by a multiple of $q$. The resulting change in the fitted values is $Xq$.
-
-Assume the feature columns have been centered. Then the entries of $Xq$ are the projections of the training samples onto the feature-space direction $q$, and
-
-$$
-\|Xq\|^2=q^\top X^\top Xq
-$$
-
-is their total squared spread along that direction. If $q_i$ is a unit eigenvector of $X^\top X$, then
-
-$$
-X^\top Xq_i=\lambda_iq_i
-\qquad\Longrightarrow\qquad
-\|Xq_i\|^2=q_i^\top X^\top Xq_i=\lambda_i.
-$$
-
-Thus the eigenvectors identify orthogonal directions in feature-space, while each eigenvalue measures how much the training samples spread along its direction, up to the usual normalization by the number of samples. A near-dependency is a direction $q_i$ for which a weighted combination of the columns almost vanishes: $Xq_i\approx 0$. The sample projections then form a tight cluster rather than a broad spread, and $\lambda_i=\|Xq_i\|^2$ is tiny.
-
-<iframe
-  class="article-visualization"
-  data-article-visualization="compact"
-  src="assets/feature-space-eigendirections.html"
-  title="How the eigenvectors and eigenvalues of X transpose X encode spread in feature space"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+The eigenvectors of $X^\top X$ are directions in feature-space; the eigenvalues measure how much the training data varies in each of those directions. A near-dependency among features corresponds to a direction along which the samples barely differ — the samples in that direction look like a tight cluster rather than a spread — and this direction is exactly the eigenvector with a tiny eigenvalue.
 
 The per-coefficient variance is the $j$-th diagonal element of $\sigma^2 (X^\top X)^{-1}$:
 
@@ -293,14 +204,9 @@ which unpacks componentwise to "$\text{sign}(\beta_j)$ equals a specific number 
 - $\ell_1$ : spreads weight arbitrarily (all weights same sign).
 - $\ell_2$ : spreads weight evenly.
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="assets/identical-feature-regularization.html"
-  title="How L1 and L2 regularization distribute weight between identical features"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+| $\ell_1$ regularization for identical features | $\ell_2$ regularization for identical features |
+|:--:|:--:|
+| ![$\ell_1$ feasible diamond and loss contours for identical features](assets/identical-features-l1-regularization.png) | ![$\ell_2$ feasible circle and loss contours for identical features](assets/identical-features-l2-regularization.png) |
 
 <div class="guided-fold-start" data-label="Why ℓ₁ distributes identical-feature weight arbitrarily" data-tone="proof"></div>
 
@@ -331,15 +237,11 @@ Meaning that $\ell_1$ spreads weight arbitrarily for identical features.
 - $\ell_1$ : chooses the variable with larger scale, and gives $0$ weight to the others.
 - $\ell_2$ : prefers variables with larger scale — spreads weight proportional to scale.
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="assets/dependent-feature-regularization.html"
-  title="Why L1 selects an axis while L2 shares weight for linearly dependent features"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+**$\ell_1$ regularization for linearly dependent features**
 
+![$\ell_1$ regularization selecting an axis-aligned solution for dependent features](assets/dependent-features-l1-regularization.png)
+
+The intuition: with linearly dependent features the loss surface has a flat valley of equally-good solutions. $\ell_1$ picks the vertex of the diamond that touches the valley first, and vertices lie on the axes — one coordinate wins, the others are zeroed. $\ell_2$ picks the point on the circle that touches the valley, and the circle has no preferred direction — weight spreads.
 
 <div class="guided-fold-start" data-label="Why ℓ₁ selects the larger-scale variable" data-tone="derivation"></div>
 
@@ -459,14 +361,6 @@ There are two types of feature importance:
 
 ## § 4. Global Interpretation
 
-Throughout §§ 4–5, write an input as
-
-$$
-x=(x_j,x_{-j}),
-$$
-
-where $x_j$ is feature $j$ and $x_{-j}$ is the vector containing all remaining features. This notation lets us separate the feature being studied from the context supplied by the rest of the input.
-
 Linear models and tree models already expose model-specific measures of feature importance:
 
 - **Linear models:** For $y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_p x_p + \epsilon$, use the absolute value of the coefficient associated with feature $j$.
@@ -529,7 +423,7 @@ The measured performance drop then confounds two things: the importance we wante
 
 #### Partial Dependence Plot (PDP)
 
-Using the notation introduced above, a PDP fixes $x_j$ and averages over $x_{-j}$ to describe the influence of feature $j$:
+Let $x_{-j}$ denote all features except $x_j$. To describe the influence of feature $j$:
 
 1. **Perturbation:** Fix $x_j$ and average over the distribution of the other features. The resulting function captures the model's average behavior as $x_j$ changes:
 
@@ -543,15 +437,6 @@ Using the notation introduced above, a PDP fixes $x_j$ and averages over $x_{-j}
 
     - **Range:** $\max f_j(x_j) - \min f_j(x_j)$.
     - **Variance:** The variance of $f_j(x_j)$ over the distribution of $x_j$.
-
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="assets/partial-dependence.html"
-  title="How a partial dependence plot averages predictions and can hide heterogeneous effects"
-  loading="lazy"
-  scrolling="no"
-></iframe>
 
 #### Disadvantages of Partial Dependence Plots:
 
@@ -605,7 +490,7 @@ Meaning that it introduces an extra term - $\sum_{i < j} g_{ij}(x_i, x_j)$, whic
 
 ## § 5. Conditional vs Marginal Expectation
 
-Recall the notation from § 4: $x_{-j}$ contains every feature except $x_j$. Every method that "removes" feature $j$ has to answer: *what stands in for the removed value while $x_{-j}$ remains observed?* Two answers have genuinely different meanings.
+Every method that "removes" a feature has to answer: *what stands in for the removed value?* Two answers, with genuinely different meanings.
 
 - **Marginal expectation** — draw the missing feature from its marginal $p(x_j)$, independent of the other features:
 

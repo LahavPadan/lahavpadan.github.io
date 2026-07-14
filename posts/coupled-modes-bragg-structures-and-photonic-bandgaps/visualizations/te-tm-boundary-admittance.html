@@ -1,0 +1,2412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>TE and TM boundary admittance</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { color-scheme: light dark; }
+    html, body { width: 100%; min-width: 0; margin: 0; background: transparent !important; overflow-x: clip; }
+    body { padding: clamp(4px, 1.2vw, 12px); }
+  </style>
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const variableNames = [
+        '--page','--surface','--surface-muted','--ink','--muted','--border','--border-strong','--accent','--accent-soft',
+        '--post-accent','--post-accent-soft','--post-accent-border','--post-accent-ink',
+        '--color-bg','--color-surface','--color-surface-muted','--color-text','--color-text-muted','--color-border','--color-border-strong'
+      ];
+      function syncFromParent() {
+        try {
+          if (window.parent === window) return;
+          const parentRoot = window.parent.document.documentElement;
+          const article = window.parent.document.querySelector('article, main') || parentRoot;
+          const rootStyle = window.parent.getComputedStyle(parentRoot);
+          const articleStyle = window.parent.getComputedStyle(article);
+          const explicit = parentRoot.getAttribute('data-theme') ||
+            (parentRoot.classList.contains('dark') ? 'dark' : '') ||
+            (parentRoot.classList.contains('light') ? 'light' : '');
+          if (explicit) root.setAttribute('data-theme', explicit);
+          else root.removeAttribute('data-theme');
+          root.classList.toggle('dark', explicit === 'dark');
+          root.classList.toggle('light', explicit === 'light');
+          for (const name of variableNames) {
+            const value = articleStyle.getPropertyValue(name).trim() || rootStyle.getPropertyValue(name).trim();
+            if (value) root.style.setProperty(name, value);
+          }
+          const aliases = {
+            '--page': '--color-bg',
+            '--surface': '--color-surface',
+            '--surface-muted': '--color-surface-muted',
+            '--ink': '--color-text',
+            '--muted': '--color-text-muted',
+            '--border': '--color-border',
+            '--border-strong': '--color-border-strong',
+            '--accent': '--post-accent',
+            '--accent-soft': '--post-accent-soft'
+          };
+          for (const [alias, source] of Object.entries(aliases)) {
+            if (!root.style.getPropertyValue(alias)) {
+              const value = root.style.getPropertyValue(source);
+              if (value) root.style.setProperty(alias, value);
+            }
+          }
+        } catch (_) {}
+      }
+      syncFromParent();
+      window.addEventListener('DOMContentLoaded', syncFromParent, { once: true });
+      try {
+        if (window.parent !== window) {
+          const parentRoot = window.parent.document.documentElement;
+          new MutationObserver(syncFromParent).observe(parentRoot, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-color-mode'] });
+        }
+      } catch (_) {}
+    }());
+  </script>
+</head>
+<body>
+<style>
+  .paviz {
+    --pa-accent: var(--post-accent, var(--accent, #85295e));
+    --pa-accent-soft: var(--post-accent-soft, var(--accent-soft, #fdeef6));
+    --pa-accent-border: var(--post-accent-border, var(--border-strong, #b88aa6));
+    --pa-ink: var(--ink, #1c2420);
+    --pa-muted: var(--muted, #667169);
+    --pa-surface: var(--surface, #ffffff);
+    --pa-surface-muted: var(--surface-muted, #f4f5f1);
+    --pa-border: var(--border, #d6ddd7);
+    --pa-te: var(--pa-accent);
+    --pa-tm: #527fa4;
+
+    width: 100%;
+    margin: 2.2rem 0;
+    border: 1px solid var(--pa-border);
+    border-top: 3px solid var(--pa-accent);
+    background: var(--pa-surface);
+    color: var(--pa-ink);
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    overflow: hidden;
+  }
+
+  .paviz,
+  .paviz * {
+    box-sizing: border-box;
+  }
+
+  .paviz__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem 2rem;
+    align-items: center;
+    padding: clamp(1.15rem, 2.8vw, 1.65rem);
+    border-bottom: 1px solid var(--pa-border);
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--pa-accent-soft) 70%, var(--pa-surface)),
+        var(--pa-surface) 62%
+      );
+  }
+
+  .paviz__eyebrow {
+    margin: 0 0 0.34rem;
+    color: var(--pa-accent);
+    font-size: 0.73rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .paviz__title {
+    margin: 0;
+    color: var(--pa-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.28rem, 3vw, 1.78rem);
+    font-weight: 600;
+    line-height: 1.18;
+  }
+
+  .paviz__subtitle {
+    max-width: 48rem;
+    margin: 0.62rem 0 0;
+    color: var(--pa-muted);
+    font-size: 0.93rem;
+    line-height: 1.58;
+  }
+
+  .paviz__interface {
+    min-width: 12rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--pa-accent-border);
+    background: var(--pa-accent-soft);
+    background:
+      color-mix(
+        in srgb,
+        var(--pa-accent-soft) 68%,
+        var(--pa-surface)
+      );
+    text-align: center;
+  }
+
+  .paviz__interface-label {
+    display: block;
+    margin-bottom: 0.16rem;
+    color: var(--pa-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .paviz__interface-value {
+    color: var(--pa-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.93rem;
+    font-weight: 700;
+  }
+
+  .paviz__comparison {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    padding: clamp(1rem, 2.8vw, 1.65rem);
+    border-bottom: 1px solid var(--pa-border);
+    background: var(--pa-surface-muted);
+  }
+
+  .paviz__panel,
+  .paviz__mode,
+  .paviz__plot {
+    min-width: 0;
+    border: 1px solid var(--pa-border);
+    background: var(--pa-surface);
+  }
+
+  .paviz__panel-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.8rem;
+    align-items: baseline;
+    padding: 0.76rem 0.86rem;
+    border-bottom: 1px solid var(--pa-border);
+    background: var(--pa-surface-muted);
+  }
+
+  .paviz__panel-title {
+    margin: 0;
+    color: var(--pa-ink);
+    font-size: 0.95rem;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  .paviz__panel-kicker {
+    flex: 0 0 auto;
+    color: var(--pa-muted);
+    font-size: 0.69rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .paviz__diagram {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1.7 / 1;
+  }
+
+  .paviz__diagram-note {
+    min-height: 5.25rem;
+    padding: 0.78rem 0.86rem 0.84rem;
+    border-top: 1px solid var(--pa-border);
+    color: var(--pa-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  .paviz__diagram-note strong {
+    color: var(--pa-ink);
+  }
+
+  .paviz__key {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.68rem;
+  }
+
+  .paviz__key-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.46rem;
+    align-items: center;
+  }
+
+  .paviz__key-symbol {
+    display: inline-flex;
+    width: 1.5rem;
+    height: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid currentColor;
+    color: var(--pa-te);
+    font-size: 0.82rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .paviz__key-symbol--tm {
+    color: var(--pa-tm);
+  }
+
+  .paviz__key-copy {
+    min-width: 0;
+    color: var(--pa-muted);
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .paviz__key-copy strong {
+    display: block;
+    color: var(--pa-ink);
+    font-size: 0.75rem;
+  }
+
+  .paviz__controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.9rem 1.2rem;
+    align-items: center;
+    padding: 0.96rem clamp(1rem, 2.8vw, 1.65rem);
+    border-bottom: 1px solid var(--pa-border);
+  }
+
+  .paviz__slider-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.38rem;
+    color: var(--pa-muted);
+    font-size: 0.77rem;
+    font-weight: 700;
+  }
+
+  .paviz__slider-row output {
+    color: var(--pa-ink);
+    font-weight: 900;
+  }
+
+  .paviz__range {
+    width: 100%;
+    margin: 0;
+    accent-color: var(--pa-accent);
+  }
+
+  .paviz__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.42rem;
+  }
+
+  .paviz__button {
+    appearance: none;
+    min-height: 2.12rem;
+    padding: 0.35rem 0.62rem;
+    border: 1px solid var(--pa-border);
+    background: var(--pa-surface);
+    color: var(--pa-muted);
+    font: inherit;
+    font-size: 0.73rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .paviz__button:hover,
+  .paviz__button:focus-visible,
+  .paviz__button[aria-pressed="true"] {
+    border-color: var(--pa-accent);
+    color: var(--pa-accent);
+    outline: none;
+  }
+
+  .paviz__responses {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    padding: clamp(1rem, 2.8vw, 1.65rem);
+  }
+
+  .paviz__mode {
+    border-left-width: 3px;
+  }
+
+  .paviz__mode--te {
+    border-left-color: var(--pa-te);
+  }
+
+  .paviz__mode--tm {
+    border-left-color: var(--pa-tm);
+  }
+
+  .paviz__mode-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.65rem;
+    align-items: center;
+    padding: 0.78rem 0.82rem;
+    border-bottom: 1px solid var(--pa-border);
+    background: var(--pa-surface-muted);
+  }
+
+  .paviz__mode-badge {
+    display: inline-flex;
+    min-width: 2.5rem;
+    min-height: 1.85rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid currentColor;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+  }
+
+  .paviz__mode--te .paviz__mode-badge,
+  .paviz__mode--te .paviz__reflection-value {
+    color: var(--pa-te);
+  }
+
+  .paviz__mode--tm .paviz__mode-badge,
+  .paviz__mode--tm .paviz__reflection-value {
+    color: var(--pa-tm);
+  }
+
+  .paviz__mode-rule {
+    min-width: 0;
+  }
+
+  .paviz__mode-rule strong {
+    display: block;
+    color: var(--pa-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.96rem;
+    font-weight: 600;
+  }
+
+  .paviz__mode-rule span {
+    display: block;
+    margin-top: 0.1rem;
+    color: var(--pa-muted);
+    font-size: 0.7rem;
+    line-height: 1.35;
+  }
+
+  .paviz__reflection {
+    text-align: right;
+  }
+
+  .paviz__reflection-label {
+    display: block;
+    color: var(--pa-muted);
+    font-size: 0.64rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .paviz__reflection-value {
+    display: block;
+    margin-top: 0.06rem;
+    font-size: 1.12rem;
+    font-weight: 900;
+  }
+
+  .paviz__mode-body {
+    padding: 0.8rem 0.82rem 0.85rem;
+  }
+
+  .paviz__bar-row {
+    display: grid;
+    grid-template-columns: 4.4rem minmax(0, 1fr) 3.45rem;
+    gap: 0.48rem 0.58rem;
+    align-items: center;
+  }
+
+  .paviz__bar-row + .paviz__bar-row {
+    margin-top: 0.5rem;
+  }
+
+  .paviz__bar-label,
+  .paviz__bar-value {
+    color: var(--pa-muted);
+    font-size: 0.71rem;
+  }
+
+  .paviz__bar-value {
+    color: var(--pa-ink);
+    text-align: right;
+    font-weight: 800;
+  }
+
+  .paviz__track {
+    height: 0.5rem;
+    background: var(--pa-border);
+    background:
+      color-mix(
+        in srgb,
+        var(--pa-border) 62%,
+        transparent
+      );
+    overflow: hidden;
+  }
+
+  .paviz__fill {
+    width: 0;
+    height: 100%;
+    transition: width 120ms linear;
+  }
+
+  .paviz__mode--te .paviz__fill {
+    background: var(--pa-te);
+  }
+
+  .paviz__mode--tm .paviz__fill {
+    background: var(--pa-tm);
+  }
+
+  .paviz__formula {
+    margin-top: 0.72rem;
+    padding-top: 0.68rem;
+    border-top: 1px solid var(--pa-border);
+    color: var(--pa-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.81rem;
+    line-height: 1.5;
+  }
+
+  .paviz__formula strong {
+    color: var(--pa-ink);
+    font-weight: 600;
+  }
+
+  .paviz__plot {
+    margin:
+      0
+      clamp(1rem, 2.8vw, 1.65rem)
+      clamp(1rem, 2.8vw, 1.65rem);
+  }
+
+  .paviz__plot-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.8rem 1rem;
+    align-items: center;
+    padding: 0.78rem 0.86rem;
+    border-bottom: 1px solid var(--pa-border);
+    background: var(--pa-surface-muted);
+  }
+
+  .paviz__legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.45rem 0.85rem;
+  }
+
+  .paviz__legend-item {
+    display: inline-flex;
+    gap: 0.34rem;
+    align-items: center;
+    color: var(--pa-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+
+  .paviz__swatch {
+    width: 1.15rem;
+    height: 0.18rem;
+    background: var(--pa-te);
+  }
+
+  .paviz__swatch--tm {
+    background: var(--pa-tm);
+  }
+
+  .paviz__plot svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3.45 / 1;
+    min-height: 12rem;
+  }
+
+  .paviz__takeaway {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.68rem;
+    align-items: start;
+    padding: 0.94rem clamp(1rem, 2.8vw, 1.65rem);
+    border-top: 1px solid var(--pa-border);
+    background: var(--pa-accent-soft);
+    background:
+      color-mix(
+        in srgb,
+        var(--pa-accent-soft) 55%,
+        var(--pa-surface)
+      );
+  }
+
+  .paviz__takeaway-mark {
+    color: var(--pa-accent);
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1.5;
+  }
+
+  .paviz__takeaway p {
+    margin: 0;
+    color: var(--pa-ink);
+    font-size: 0.85rem;
+    line-height: 1.55;
+  }
+
+  .paviz__takeaway strong {
+    color: var(--pa-accent);
+  }
+
+  .paviz svg text {
+    fill: var(--pa-muted);
+    font-family: inherit;
+  }
+
+  .paviz svg .pa-svg-ink {
+    fill: var(--pa-ink);
+  }
+
+  .paviz svg .pa-svg-accent {
+    fill: var(--pa-accent);
+  }
+
+  .paviz svg .pa-svg-te {
+    fill: var(--pa-te);
+  }
+
+  .paviz svg .pa-svg-tm {
+    fill: var(--pa-tm);
+  }
+
+  @media (max-width: 820px) {
+    .paviz__header,
+    .paviz__comparison,
+    .paviz__responses,
+    .paviz__plot-head {
+      grid-template-columns: 1fr;
+    }
+
+    .paviz__interface {
+      min-width: 0;
+      text-align: left;
+    }
+
+    .paviz__legend {
+      justify-content: flex-start;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .paviz__controls {
+      grid-template-columns: 1fr;
+    }
+
+    .paviz__diagram {
+      aspect-ratio: 1.48 / 1;
+    }
+
+    .paviz__key {
+      grid-template-columns: 1fr;
+    }
+
+    .paviz__mode-head {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .paviz__reflection {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      text-align: left;
+    }
+
+    .paviz__plot svg {
+      min-height: 11rem;
+    }
+
+    .paviz__plot-y-label,
+    .paviz__plot-y-tick,
+    .paviz__svg-secondary {
+      display: none;
+    }
+
+    .paviz__diagram .pa-svg-accent,
+    .paviz__diagram [data-theta1],
+    .paviz__diagram [data-theta2] {
+      font-size: 20px;
+    }
+
+    .paviz__plot svg text {
+      font-size: 25px;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .paviz__panel-head {
+      display: block;
+    }
+
+    .paviz__panel-kicker {
+      display: block;
+      margin-top: 0.18rem;
+      white-space: normal;
+    }
+
+    .paviz__bar-row {
+      grid-template-columns: 3.9rem minmax(0, 1fr) 3.25rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .paviz__fill {
+      transition: none;
+    }
+  }
+</style>
+
+<section class="paviz" data-paviz aria-labelledby="paviz-title">
+  <header class="paviz__header">
+    <div>
+      <p class="paviz__eyebrow">Angular boundary conditions</p>
+
+      <h3 class="paviz__title" id="paviz-title">
+        Oblique incidence gives TE and TM different boundary mismatches
+      </h3>
+
+      <p class="paviz__subtitle">
+        Normal incidence leaves no preferred transverse direction.
+        Tilting the ray fixes a plane of incidence; the electric field
+        can then be perpendicular to that plane (TE) or lie inside it
+        (TM), and the two choices produce different optical admittances.
+      </p>
+    </div>
+
+    <div
+      class="paviz__interface"
+      aria-label="Interface refractive indices"
+    >
+      <span class="paviz__interface-label">
+        interface used below
+      </span>
+
+      <span class="paviz__interface-value">
+        <i>n</i><sub>1</sub> = 1.00
+        &nbsp;→&nbsp;
+        <i>n</i><sub>2</sub> = 1.50
+      </span>
+    </div>
+  </header>
+
+  <div class="paviz__comparison">
+    <section
+      class="paviz__panel"
+      aria-labelledby="paviz-normal-title"
+    >
+      <div class="paviz__panel-head">
+        <h4 class="paviz__panel-title" id="paviz-normal-title">
+          Normal incidence
+        </h4>
+
+        <span class="paviz__panel-kicker">
+          no preferred transverse axis
+        </span>
+      </div>
+
+      <svg
+        class="paviz__diagram"
+        viewBox="0 0 580 340"
+        role="img"
+        aria-label="A normally incident ray and a centered transverse polarization plane with two freely rotatable basis directions"
+      >
+        <defs>
+          <marker
+            data-normal-arrow-marker
+            markerWidth="9"
+            markerHeight="9"
+            refX="8"
+            refY="4.5"
+            orient="auto"
+          >
+            <path
+              d="M0,0 L9,4.5 L0,9 Z"
+              fill="var(--pa-ink)"
+            ></path>
+          </marker>
+
+          <marker
+            data-basis-arrow-marker
+            markerWidth="8"
+            markerHeight="8"
+            refX="7"
+            refY="4"
+            orient="auto-start-reverse"
+          >
+            <path
+              d="M0,0 L8,4 L0,8 Z"
+              fill="var(--pa-accent)"
+            ></path>
+          </marker>
+        </defs>
+
+        <rect
+          x="0"
+          y="0"
+          width="325"
+          height="340"
+          fill="var(--pa-surface)"
+        ></rect>
+
+        <rect
+          x="327"
+          y="0"
+          width="253"
+          height="340"
+          fill="var(--pa-accent-soft)"
+          opacity="0.42"
+        ></rect>
+
+        <line
+          x1="326"
+          y1="34"
+          x2="326"
+          y2="306"
+          stroke="var(--pa-border)"
+          stroke-width="2"
+        ></line>
+
+        <text
+          class="paviz__svg-secondary"
+          x="24"
+          y="28"
+          font-size="12"
+          font-weight="800"
+        >
+          medium 1 · n₁
+        </text>
+
+        <text
+          class="paviz__svg-secondary"
+          x="438"
+          y="28"
+          font-size="12"
+          font-weight="800"
+        >
+          medium 2 · n₂
+        </text>
+
+        <text
+          x="164"
+          y="62"
+          text-anchor="middle"
+          class="pa-svg-accent"
+          font-size="12"
+          font-weight="800"
+        >
+          any rotated transverse basis
+        </text>
+
+        <line
+          x1="58"
+          y1="170"
+          x2="94"
+          y2="170"
+          stroke="var(--pa-ink)"
+          stroke-width="2.6"
+        ></line>
+
+        <line
+          data-normal-ray
+          x1="234"
+          y1="170"
+          x2="518"
+          y2="170"
+          stroke="var(--pa-ink)"
+          stroke-width="2.6"
+        ></line>
+
+        <text
+          class="paviz__svg-secondary"
+          x="370"
+          y="151"
+          font-size="11"
+        >
+          ray along the layer normal
+        </text>
+
+        <g aria-hidden="true">
+          <ellipse
+            cx="164"
+            cy="170"
+            rx="62"
+            ry="88"
+            fill="var(--pa-surface-muted)"
+            stroke="var(--pa-accent-border)"
+            stroke-width="1.6"
+          ></ellipse>
+
+          <ellipse
+            cx="164"
+            cy="170"
+            rx="47"
+            ry="69"
+            fill="none"
+            stroke="var(--pa-border)"
+            stroke-width="1.1"
+            stroke-dasharray="5 6"
+          ></ellipse>
+
+          <line
+            data-basis-a
+            x1="164"
+            y1="116"
+            x2="164"
+            y2="224"
+            stroke="var(--pa-accent)"
+            stroke-width="2.25"
+          ></line>
+
+          <line
+            data-basis-b
+            x1="128"
+            y1="200"
+            x2="200"
+            y2="140"
+            stroke="var(--pa-accent)"
+            stroke-width="2.25"
+          ></line>
+
+          <circle
+            cx="164"
+            cy="170"
+            r="4.2"
+            fill="var(--pa-accent)"
+          ></circle>
+        </g>
+
+        <text
+          x="164"
+          y="282"
+          text-anchor="middle"
+          font-size="11"
+        >
+          no direction in this plane is preferred
+        </text>
+      </svg>
+
+      <div class="paviz__diagram-note">
+        Both polarizations reduce to the same rule:
+        <strong>
+          <i>Y</i><sub>TE</sub>
+          =
+          <i>Y</i><sub>TM</sub>
+          =
+          <i>n</i>
+        </strong>.
+        Rotating the transverse basis changes only its names, not the
+        reflection strength.
+      </div>
+    </section>
+
+    <section
+      class="paviz__panel"
+      aria-labelledby="paviz-oblique-title"
+    >
+      <div class="paviz__panel-head">
+        <h4 class="paviz__panel-title" id="paviz-oblique-title">
+          Oblique incidence
+        </h4>
+
+        <span class="paviz__panel-kicker">
+          plane of incidence = page
+        </span>
+      </div>
+
+      <svg
+        class="paviz__diagram"
+        data-geometry
+        viewBox="0 0 620 360"
+        role="img"
+        aria-label="An oblique ray at a dielectric interface, with TE out of the page and TM in the page"
+      >
+        <defs>
+          <marker
+            data-ray-arrow-marker
+            markerWidth="9"
+            markerHeight="9"
+            refX="8"
+            refY="4.5"
+            orient="auto"
+          >
+            <path
+              d="M0,0 L9,4.5 L0,9 Z"
+              fill="var(--pa-ink)"
+            ></path>
+          </marker>
+        </defs>
+
+        <rect
+          x="0"
+          y="0"
+          width="309"
+          height="360"
+          fill="var(--pa-surface)"
+        ></rect>
+
+        <rect
+          x="311"
+          y="0"
+          width="309"
+          height="360"
+          fill="var(--pa-accent-soft)"
+          opacity="0.42"
+        ></rect>
+
+        <line
+          x1="310"
+          y1="32"
+          x2="310"
+          y2="328"
+          stroke="var(--pa-border)"
+          stroke-width="2"
+        ></line>
+
+        <line
+          x1="42"
+          y1="174"
+          x2="578"
+          y2="174"
+          stroke="var(--pa-border)"
+          stroke-width="1.5"
+          stroke-dasharray="6 6"
+        ></line>
+
+        <text
+          class="paviz__svg-secondary"
+          x="22"
+          y="28"
+          font-size="12"
+          font-weight="800"
+        >
+          medium 1 · n₁
+        </text>
+
+        <text
+          class="paviz__svg-secondary"
+          x="448"
+          y="28"
+          font-size="12"
+          font-weight="800"
+        >
+          medium 2 · n₂
+        </text>
+
+        <text
+          class="paviz__svg-secondary"
+          x="455"
+          y="158"
+          font-size="11"
+        >
+          interface normal
+        </text>
+
+        <path
+          data-inc-ray
+          fill="none"
+          stroke="var(--pa-ink)"
+          stroke-width="2.8"
+        ></path>
+
+        <path
+          data-ref-ray
+          fill="none"
+          stroke="var(--pa-muted)"
+          stroke-width="1.9"
+          stroke-dasharray="6 5"
+        ></path>
+
+        <path
+          data-trn-ray
+          fill="none"
+          stroke="var(--pa-ink)"
+          stroke-width="2.8"
+        ></path>
+
+        <path
+          data-theta1-arc
+          fill="none"
+          stroke="var(--pa-accent)"
+          stroke-width="2"
+        ></path>
+
+        <path
+          data-theta2-arc
+          fill="none"
+          stroke="var(--pa-accent)"
+          stroke-width="2"
+        ></path>
+
+        <text
+          data-theta1
+          class="pa-svg-accent"
+          font-size="13"
+          font-weight="900"
+        >
+          θ₁
+        </text>
+
+        <text
+          data-theta2
+          class="pa-svg-accent"
+          font-size="13"
+          font-weight="900"
+        >
+          θ₂
+        </text>
+
+        <!--
+          These two badges intentionally use the exact same symbols as
+          the legend below. No SVG arrow marker is used for TM.
+        -->
+        <g data-te-symbol aria-hidden="true">
+          <rect
+            x="-14"
+            y="-14"
+            width="28"
+            height="28"
+            fill="var(--pa-surface)"
+            stroke="var(--pa-te)"
+            stroke-width="1.6"
+          ></rect>
+
+          <text
+            x="0"
+            y="1"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            class="pa-svg-te"
+            font-size="19"
+            font-weight="900"
+          >
+            ⊙
+          </text>
+        </g>
+
+        <g data-tm-symbol aria-hidden="true">
+          <rect
+            x="-14"
+            y="-14"
+            width="28"
+            height="28"
+            fill="var(--pa-surface)"
+            stroke="var(--pa-tm)"
+            stroke-width="1.6"
+          ></rect>
+
+          <text
+            x="0"
+            y="1"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            class="pa-svg-tm"
+            font-size="20"
+            font-weight="900"
+          >
+            ↔
+          </text>
+        </g>
+
+        <circle
+          cx="310"
+          cy="174"
+          r="4.5"
+          fill="var(--pa-ink)"
+        ></circle>
+      </svg>
+
+      <div class="paviz__diagram-note">
+        The ray and the layer normal now define one fixed plane.
+
+        <div class="paviz__key" aria-label="Polarization key">
+          <div class="paviz__key-item">
+            <span class="paviz__key-symbol">⊙</span>
+
+            <span class="paviz__key-copy">
+              <strong>TE</strong>
+              <i>E</i> is perpendicular to the page.
+            </span>
+          </div>
+
+          <div class="paviz__key-item">
+            <span
+              class="paviz__key-symbol paviz__key-symbol--tm"
+            >
+              ↔
+            </span>
+
+            <span class="paviz__key-copy">
+              <strong>TM</strong>
+              <i>E</i> lies in the page.
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="paviz__controls">
+    <label>
+      <span class="paviz__slider-row">
+        <span>
+          incident angle <i>θ</i><sub>1</sub>
+        </span>
+
+        <output data-angle-output>45.0°</output>
+      </span>
+
+      <input
+        class="paviz__range"
+        data-angle
+        type="range"
+        min="0"
+        max="78"
+        step="0.1"
+        value="45"
+        aria-label="Incident angle in degrees"
+      >
+    </label>
+
+    <div class="paviz__buttons" aria-label="Angle shortcuts">
+      <button
+        class="paviz__button"
+        type="button"
+        data-set-angle="0"
+      >
+        normal
+      </button>
+
+      <button
+        class="paviz__button"
+        type="button"
+        data-set-brewster
+      >
+        Brewster
+      </button>
+
+      <button
+        class="paviz__button"
+        type="button"
+        data-set-angle="70"
+      >
+        grazing
+      </button>
+    </div>
+  </div>
+
+  <div class="paviz__responses">
+    <article class="paviz__mode paviz__mode--te">
+      <div class="paviz__mode-head">
+        <span class="paviz__mode-badge">TE</span>
+
+        <div class="paviz__mode-rule">
+          <strong>
+            <i>Y</i><sub>TE</sub>
+            =
+            <i>n</i> cos <i>θ</i>
+          </strong>
+
+          <span>
+            the cosine multiplies the refractive index
+          </span>
+        </div>
+
+        <div class="paviz__reflection">
+          <span class="paviz__reflection-label">
+            reflection strength
+          </span>
+
+          <span class="paviz__reflection-value" data-rte>
+            0.303
+          </span>
+        </div>
+      </div>
+
+      <div class="paviz__mode-body">
+        <div class="paviz__bar-row">
+          <span class="paviz__bar-label">
+            <i>Y</i><sub>1,TE</sub>
+          </span>
+
+          <span class="paviz__track">
+            <span
+              class="paviz__fill"
+              data-te-y1-bar
+            ></span>
+          </span>
+
+          <span class="paviz__bar-value" data-te-y1>
+            0.707
+          </span>
+        </div>
+
+        <div class="paviz__bar-row">
+          <span class="paviz__bar-label">
+            <i>Y</i><sub>2,TE</sub>
+          </span>
+
+          <span class="paviz__track">
+            <span
+              class="paviz__fill"
+              data-te-y2-bar
+            ></span>
+          </span>
+
+          <span class="paviz__bar-value" data-te-y2>
+            1.323
+          </span>
+        </div>
+
+        <div class="paviz__formula">
+          <strong>
+            |<i>r</i><sub>TE</sub>|
+          </strong>
+          =
+          |<i>Y</i><sub>1,TE</sub>
+          −
+          <i>Y</i><sub>2,TE</sub>|
+          /
+          (<i>Y</i><sub>1,TE</sub>
+          +
+          <i>Y</i><sub>2,TE</sub>)
+        </div>
+      </div>
+    </article>
+
+    <article class="paviz__mode paviz__mode--tm">
+      <div class="paviz__mode-head">
+        <span class="paviz__mode-badge">TM</span>
+
+        <div class="paviz__mode-rule">
+          <strong>
+            <i>Y</i><sub>TM</sub>
+            =
+            <i>n</i> / cos <i>θ</i>
+          </strong>
+
+          <span>
+            the cosine moves to the denominator
+          </span>
+        </div>
+
+        <div class="paviz__reflection">
+          <span class="paviz__reflection-label">
+            reflection strength
+          </span>
+
+          <span class="paviz__reflection-value" data-rtm>
+            0.092
+          </span>
+        </div>
+      </div>
+
+      <div class="paviz__mode-body">
+        <div class="paviz__bar-row">
+          <span class="paviz__bar-label">
+            <i>Y</i><sub>1,TM</sub>
+          </span>
+
+          <span class="paviz__track">
+            <span
+              class="paviz__fill"
+              data-tm-y1-bar
+            ></span>
+          </span>
+
+          <span class="paviz__bar-value" data-tm-y1>
+            1.414
+          </span>
+        </div>
+
+        <div class="paviz__bar-row">
+          <span class="paviz__bar-label">
+            <i>Y</i><sub>2,TM</sub>
+          </span>
+
+          <span class="paviz__track">
+            <span
+              class="paviz__fill"
+              data-tm-y2-bar
+            ></span>
+          </span>
+
+          <span class="paviz__bar-value" data-tm-y2>
+            1.701
+          </span>
+        </div>
+
+        <div class="paviz__formula">
+          <strong>
+            |<i>r</i><sub>TM</sub>|
+          </strong>
+          =
+          |<i>Y</i><sub>1,TM</sub>
+          −
+          <i>Y</i><sub>2,TM</sub>|
+          /
+          (<i>Y</i><sub>1,TM</sub>
+          +
+          <i>Y</i><sub>2,TM</sub>)
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <section
+    class="paviz__plot"
+    aria-labelledby="paviz-plot-title"
+  >
+    <div class="paviz__plot-head">
+      <div>
+        <h4 class="paviz__panel-title" id="paviz-plot-title">
+          The same interface develops two angular responses
+        </h4>
+
+        <span class="paviz__panel-kicker">
+          the curves coincide only at normal incidence
+        </span>
+      </div>
+
+      <div class="paviz__legend" aria-label="Plot legend">
+        <span class="paviz__legend-item">
+          <span class="paviz__swatch"></span>
+          TE&nbsp;
+          <span data-legend-rte>0.303</span>
+        </span>
+
+        <span class="paviz__legend-item">
+          <span
+            class="paviz__swatch paviz__swatch--tm"
+          ></span>
+          TM&nbsp;
+          <span data-legend-rtm>0.092</span>
+        </span>
+      </div>
+    </div>
+
+    <svg
+      data-plot
+      viewBox="0 0 960 280"
+      role="img"
+      aria-label="TE and TM reflection amplitude magnitudes versus incident angle"
+    >
+      <g data-grid></g>
+
+      <path
+        data-te-curve
+        fill="none"
+        stroke="var(--pa-te)"
+        stroke-width="3"
+      ></path>
+
+      <path
+        data-tm-curve
+        fill="none"
+        stroke="var(--pa-tm)"
+        stroke-width="3"
+      ></path>
+
+      <line
+        data-brewster-line
+        y1="34"
+        y2="224"
+        stroke="var(--pa-accent-border)"
+        stroke-width="1.4"
+        stroke-dasharray="5 5"
+      ></line>
+
+      <text
+        data-brewster-label
+        y="25"
+        text-anchor="middle"
+        font-size="11"
+        font-weight="800"
+      >
+        Brewster
+      </text>
+
+      <line
+        data-angle-line
+        y1="34"
+        y2="224"
+        stroke="var(--pa-ink)"
+        stroke-width="1"
+        opacity="0.35"
+      ></line>
+
+      <circle
+        data-te-point
+        r="5"
+        fill="var(--pa-te)"
+        stroke="var(--pa-surface)"
+        stroke-width="2"
+      ></circle>
+
+      <circle
+        data-tm-point
+        r="5"
+        fill="var(--pa-tm)"
+        stroke="var(--pa-surface)"
+        stroke-width="2"
+      ></circle>
+
+      <text
+        x="480"
+        y="268"
+        text-anchor="middle"
+        font-size="12"
+      >
+        incident angle θ₁
+      </text>
+
+      <text
+        class="paviz__plot-y-label"
+        x="18"
+        y="129"
+        transform="rotate(-90 18 129)"
+        text-anchor="middle"
+        font-size="12"
+      >
+        reflection strength |r|
+      </text>
+    </svg>
+  </section>
+
+  <footer class="paviz__takeaway">
+    <span class="paviz__takeaway-mark">→</span>
+
+    <p data-takeaway>
+      At 45.0°, the TE and TM admittances no longer make the same
+      pair. The interface therefore reflects the two polarizations
+      with different strengths.
+    </p>
+  </footer>
+</section>
+
+<script>
+  (() => {
+    const roots = document.querySelectorAll(
+      "[data-paviz]:not([data-paviz-ready])"
+    );
+
+    roots.forEach((root, rootIndex) => {
+      root.setAttribute("data-paviz-ready", "");
+
+      const n1 = 1.0;
+      const n2 = 1.5;
+      const deg = Math.PI / 180;
+      const brewsterDeg = Math.atan(n2 / n1) / deg;
+      const uid =
+        `paviz-${rootIndex}-${Math.random()
+          .toString(36)
+          .slice(2, 8)}`;
+
+      const q = (selector) => root.querySelector(selector);
+      const angle = q("[data-angle]");
+      const angleOutput = q("[data-angle-output]");
+
+      function assignMarker(
+        markerSelector,
+        targetSelector,
+        attribute,
+        suffix
+      ) {
+        const marker = q(markerSelector);
+        const target = q(targetSelector);
+
+        if (!marker || !target) {
+          return;
+        }
+
+        const id = `${uid}-${suffix}`;
+        marker.id = id;
+        target.setAttribute(attribute, `url(#${id})`);
+      }
+
+      assignMarker(
+        "[data-normal-arrow-marker]",
+        "[data-normal-ray]",
+        "marker-end",
+        "normal-arrow"
+      );
+
+      assignMarker(
+        "[data-basis-arrow-marker]",
+        "[data-basis-a]",
+        "marker-start",
+        "basis-arrow"
+      );
+
+      const basisArrowId =
+        q("[data-basis-arrow-marker]").id;
+
+      q("[data-basis-a]").setAttribute(
+        "marker-end",
+        `url(#${basisArrowId})`
+      );
+
+      q("[data-basis-b]").setAttribute(
+        "marker-start",
+        `url(#${basisArrowId})`
+      );
+
+      q("[data-basis-b]").setAttribute(
+        "marker-end",
+        `url(#${basisArrowId})`
+      );
+
+      assignMarker(
+        "[data-ray-arrow-marker]",
+        "[data-inc-ray]",
+        "marker-end",
+        "ray-arrow"
+      );
+
+      const rayArrowId =
+        q("[data-ray-arrow-marker]").id;
+
+      q("[data-trn-ray]").setAttribute(
+        "marker-end",
+        `url(#${rayArrowId})`
+      );
+
+      function setText(selector, value) {
+        const node = q(selector);
+
+        if (node) {
+          node.textContent = value;
+        }
+      }
+
+      function opticalState(theta1Deg) {
+        const theta1 = theta1Deg * deg;
+
+        const theta2 = Math.asin(
+          Math.min(
+            1,
+            (n1 / n2) * Math.sin(theta1)
+          )
+        );
+
+        const c1 = Math.cos(theta1);
+        const c2 = Math.cos(theta2);
+
+        const yTe1 = n1 * c1;
+        const yTe2 = n2 * c2;
+        const yTm1 = n1 / c1;
+        const yTm2 = n2 / c2;
+
+        return {
+          theta1,
+          theta2,
+          theta1Deg,
+          theta2Deg: theta2 / deg,
+          yTe1,
+          yTe2,
+          yTm1,
+          yTm2,
+          rTe: Math.abs(
+            (yTe1 - yTe2) / (yTe1 + yTe2)
+          ),
+          rTm: Math.abs(
+            (yTm1 - yTm2) / (yTm1 + yTm2)
+          )
+        };
+      }
+
+      function pointOnRay(cx, cy, dx, dy, distance) {
+        return {
+          x: cx + dx * distance,
+          y: cy + dy * distance
+        };
+      }
+
+      function rayToBounds(
+        cx,
+        cy,
+        dx,
+        dy,
+        bounds,
+        inset = 0
+      ) {
+        const candidates = [];
+        const epsilon = 1e-8;
+
+        if (dx > epsilon) {
+          candidates.push(
+            (bounds.right - cx) / dx
+          );
+        }
+
+        if (dx < -epsilon) {
+          candidates.push(
+            (bounds.left - cx) / dx
+          );
+        }
+
+        if (dy > epsilon) {
+          candidates.push(
+            (bounds.bottom - cy) / dy
+          );
+        }
+
+        if (dy < -epsilon) {
+          candidates.push(
+            (bounds.top - cy) / dy
+          );
+        }
+
+        const positive = candidates.filter(
+          (value) => value > 0
+        );
+
+        const distance = Math.max(
+          0,
+          Math.min(...positive) - inset
+        );
+
+        return pointOnRay(
+          cx,
+          cy,
+          dx,
+          dy,
+          distance
+        );
+      }
+
+      function arcPath(
+        cx,
+        cy,
+        radius,
+        startAngle,
+        endAngle
+      ) {
+        if (
+          Math.abs(endAngle - startAngle) < 0.01
+        ) {
+          return "";
+        }
+
+        const p1 = pointOnRay(
+          cx,
+          cy,
+          Math.cos(startAngle),
+          Math.sin(startAngle),
+          radius
+        );
+
+        const p2 = pointOnRay(
+          cx,
+          cy,
+          Math.cos(endAngle),
+          Math.sin(endAngle),
+          radius
+        );
+
+        const largeArc =
+          Math.abs(endAngle - startAngle) > Math.PI
+            ? 1
+            : 0;
+
+        const sweep =
+          endAngle > startAngle ? 1 : 0;
+
+        return [
+          `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`,
+          `A ${radius} ${radius}`,
+          `0 ${largeArc} ${sweep}`,
+          `${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
+        ].join(" ");
+      }
+
+      function placeText(
+        node,
+        point,
+        visible = true
+      ) {
+        node.setAttribute(
+          "x",
+          point.x.toFixed(2)
+        );
+
+        node.setAttribute(
+          "y",
+          point.y.toFixed(2)
+        );
+
+        node.setAttribute(
+          "text-anchor",
+          "middle"
+        );
+
+        node.setAttribute(
+          "dominant-baseline",
+          "middle"
+        );
+
+        node.style.opacity =
+          visible ? "1" : "0";
+      }
+
+      function updateGeometry(state) {
+        const cx = 310;
+        const cy = 174;
+
+        const bounds = {
+          left: 42,
+          right: 578,
+          top: 42,
+          bottom: 318
+        };
+
+        const incidentDirection = {
+          x: Math.cos(state.theta1),
+          y: Math.sin(state.theta1)
+        };
+
+        const sourceDirection = {
+          x: -incidentDirection.x,
+          y: -incidentDirection.y
+        };
+
+        const reflectedDirection = {
+          x: -Math.cos(state.theta1),
+          y: Math.sin(state.theta1)
+        };
+
+        const transmittedDirection = {
+          x: Math.cos(state.theta2),
+          y: Math.sin(state.theta2)
+        };
+
+        const source = rayToBounds(
+          cx,
+          cy,
+          sourceDirection.x,
+          sourceDirection.y,
+          bounds,
+          8
+        );
+
+        const reflected = rayToBounds(
+          cx,
+          cy,
+          reflectedDirection.x,
+          reflectedDirection.y,
+          bounds,
+          8
+        );
+
+        const transmitted = rayToBounds(
+          cx,
+          cy,
+          transmittedDirection.x,
+          transmittedDirection.y,
+          bounds,
+          8
+        );
+
+        q("[data-inc-ray]").setAttribute(
+          "d",
+          [
+            `M ${source.x.toFixed(2)}`,
+            `${source.y.toFixed(2)}`,
+            `L ${cx} ${cy}`
+          ].join(" ")
+        );
+
+        q("[data-ref-ray]").setAttribute(
+          "d",
+          [
+            `M ${cx} ${cy}`,
+            `L ${reflected.x.toFixed(2)}`,
+            `${reflected.y.toFixed(2)}`
+          ].join(" ")
+        );
+
+        q("[data-trn-ray]").setAttribute(
+          "d",
+          [
+            `M ${cx} ${cy}`,
+            `L ${transmitted.x.toFixed(2)}`,
+            `${transmitted.y.toFixed(2)}`
+          ].join(" ")
+        );
+
+        q("[data-ref-ray]").style.opacity =
+          state.theta1Deg < 1 ? "0" : "1";
+
+        q("[data-theta1-arc]").setAttribute(
+          "d",
+          arcPath(
+            cx,
+            cy,
+            52,
+            Math.PI,
+            Math.PI + state.theta1
+          )
+        );
+
+        q("[data-theta2-arc]").setAttribute(
+          "d",
+          arcPath(
+            cx,
+            cy,
+            52,
+            0,
+            state.theta2
+          )
+        );
+
+        const theta1Point = pointOnRay(
+          cx,
+          cy,
+          Math.cos(
+            Math.PI + state.theta1 / 2
+          ),
+          Math.sin(
+            Math.PI + state.theta1 / 2
+          ),
+          71
+        );
+
+        const theta2Point = pointOnRay(
+          cx,
+          cy,
+          Math.cos(state.theta2 / 2),
+          Math.sin(state.theta2 / 2),
+          71
+        );
+
+        placeText(
+          q("[data-theta1]"),
+          theta1Point,
+          state.theta1Deg >= 2
+        );
+
+        placeText(
+          q("[data-theta2]"),
+          theta2Point,
+          state.theta1Deg >= 2
+        );
+
+        const sourceDistance = Math.hypot(
+          source.x - cx,
+          source.y - cy
+        );
+
+        const normal = {
+          x: -incidentDirection.y,
+          y: incidentDirection.x
+        };
+
+        const teBase = pointOnRay(
+          cx,
+          cy,
+          sourceDirection.x,
+          sourceDirection.y,
+          sourceDistance * 0.58
+        );
+
+        const tePoint = pointOnRay(
+          teBase.x,
+          teBase.y,
+          normal.x,
+          normal.y,
+          24
+        );
+
+        q("[data-te-symbol]").setAttribute(
+          "transform",
+          `translate(${tePoint.x.toFixed(2)} ${tePoint.y.toFixed(2)})`
+        );
+
+        const tmBase = pointOnRay(
+          cx,
+          cy,
+          sourceDirection.x,
+          sourceDirection.y,
+          sourceDistance * 0.34
+        );
+
+        const tmPoint = pointOnRay(
+          tmBase.x,
+          tmBase.y,
+          normal.x,
+          normal.y,
+          -24
+        );
+
+        q("[data-tm-symbol]").setAttribute(
+          "transform",
+          `translate(${tmPoint.x.toFixed(2)} ${tmPoint.y.toFixed(2)})`
+        );
+      }
+
+      function setBar(selector, value) {
+        const node = q(selector);
+
+        if (!node) {
+          return;
+        }
+
+        const maxAdmittance = 5.0;
+
+        const width = Math.max(
+          2,
+          Math.min(
+            100,
+            (value / maxAdmittance) * 100
+          )
+        );
+
+        node.style.width = `${width}%`;
+      }
+
+      const plotBounds = {
+        left: 68,
+        right: 910,
+        top: 34,
+        bottom: 224
+      };
+
+      const plotWidth =
+        plotBounds.right - plotBounds.left;
+
+      const plotHeight =
+        plotBounds.bottom - plotBounds.top;
+
+      const maxAngle = 78;
+      const maxR = 0.75;
+
+      function plotX(thetaDeg) {
+        return (
+          plotBounds.left +
+          (thetaDeg / maxAngle) * plotWidth
+        );
+      }
+
+      function plotY(reflection) {
+        return (
+          plotBounds.bottom -
+          (
+            Math.min(maxR, reflection) /
+            maxR
+          ) *
+          plotHeight
+        );
+      }
+
+      function buildPlot() {
+        const grid = q("[data-grid]");
+        const parts = [];
+
+        [0, 20, 40, 60, 78].forEach(
+          (tick) => {
+            const x = plotX(tick);
+
+            parts.push(
+              `<line
+                x1="${x}"
+                x2="${x}"
+                y1="${plotBounds.top}"
+                y2="${plotBounds.bottom}"
+                stroke="var(--pa-border)"
+                stroke-width="1"
+                opacity="0.58"
+              ></line>`
+            );
+
+            parts.push(
+              `<text
+                x="${x}"
+                y="246"
+                text-anchor="middle"
+                font-size="11"
+              >${tick}°</text>`
+            );
+          }
+        );
+
+        [0, 0.2, 0.4, 0.6].forEach(
+          (tick) => {
+            const y = plotY(tick);
+
+            parts.push(
+              `<line
+                x1="${plotBounds.left}"
+                x2="${plotBounds.right}"
+                y1="${y}"
+                y2="${y}"
+                stroke="var(--pa-border)"
+                stroke-width="1"
+                opacity="0.58"
+              ></line>`
+            );
+
+            parts.push(
+              `<text
+                class="paviz__plot-y-tick"
+                x="56"
+                y="${y + 4}"
+                text-anchor="end"
+                font-size="11"
+              >${tick.toFixed(1)}</text>`
+            );
+          }
+        );
+
+        parts.push(
+          `<line
+            x1="${plotBounds.left}"
+            x2="${plotBounds.right}"
+            y1="${plotBounds.bottom}"
+            y2="${plotBounds.bottom}"
+            stroke="var(--pa-ink)"
+            stroke-width="1.35"
+          ></line>`
+        );
+
+        parts.push(
+          `<line
+            x1="${plotBounds.left}"
+            x2="${plotBounds.left}"
+            y1="${plotBounds.top}"
+            y2="${plotBounds.bottom}"
+            stroke="var(--pa-ink)"
+            stroke-width="1.35"
+          ></line>`
+        );
+
+        grid.innerHTML = parts.join("");
+
+        const tePath = [];
+        const tmPath = [];
+
+        for (
+          let current = 0;
+          current <= maxAngle;
+          current += 0.4
+        ) {
+          const state = opticalState(current);
+
+          tePath.push(
+            [
+              tePath.length ? "L" : "M",
+              plotX(current).toFixed(2),
+              plotY(state.rTe).toFixed(2)
+            ].join(" ")
+          );
+
+          tmPath.push(
+            [
+              tmPath.length ? "L" : "M",
+              plotX(current).toFixed(2),
+              plotY(state.rTm).toFixed(2)
+            ].join(" ")
+          );
+        }
+
+        q("[data-te-curve]").setAttribute(
+          "d",
+          tePath.join(" ")
+        );
+
+        q("[data-tm-curve]").setAttribute(
+          "d",
+          tmPath.join(" ")
+        );
+
+        const brewsterX =
+          plotX(brewsterDeg);
+
+        q("[data-brewster-line]").setAttribute(
+          "x1",
+          brewsterX.toFixed(2)
+        );
+
+        q("[data-brewster-line]").setAttribute(
+          "x2",
+          brewsterX.toFixed(2)
+        );
+
+        q("[data-brewster-label]").setAttribute(
+          "x",
+          brewsterX.toFixed(2)
+        );
+      }
+
+      function updatePlot(state) {
+        const x = plotX(state.theta1Deg);
+
+        q("[data-angle-line]").setAttribute(
+          "x1",
+          x.toFixed(2)
+        );
+
+        q("[data-angle-line]").setAttribute(
+          "x2",
+          x.toFixed(2)
+        );
+
+        q("[data-te-point]").setAttribute(
+          "cx",
+          x.toFixed(2)
+        );
+
+        q("[data-te-point]").setAttribute(
+          "cy",
+          plotY(state.rTe).toFixed(2)
+        );
+
+        q("[data-tm-point]").setAttribute(
+          "cx",
+          x.toFixed(2)
+        );
+
+        q("[data-tm-point]").setAttribute(
+          "cy",
+          plotY(state.rTm).toFixed(2)
+        );
+      }
+
+      function updateShortcutState(value) {
+        root
+          .querySelectorAll(".paviz__button")
+          .forEach((button) => {
+            let active = false;
+
+            if (
+              button.hasAttribute(
+                "data-set-brewster"
+              )
+            ) {
+              active =
+                Math.abs(
+                  value - brewsterDeg
+                ) < 0.15;
+            } else if (
+              button.hasAttribute(
+                "data-set-angle"
+              )
+            ) {
+              active =
+                Math.abs(
+                  value -
+                  Number(
+                    button.getAttribute(
+                      "data-set-angle"
+                    )
+                  )
+                ) < 0.15;
+            }
+
+            button.setAttribute(
+              "aria-pressed",
+              active ? "true" : "false"
+            );
+          });
+      }
+
+      function update() {
+        const state = opticalState(
+          Number(angle.value)
+        );
+
+        angleOutput.textContent =
+          `${state.theta1Deg.toFixed(1)}°`;
+
+        setText(
+          "[data-rte]",
+          state.rTe.toFixed(3)
+        );
+
+        setText(
+          "[data-rtm]",
+          state.rTm.toFixed(3)
+        );
+
+        setText(
+          "[data-legend-rte]",
+          state.rTe.toFixed(3)
+        );
+
+        setText(
+          "[data-legend-rtm]",
+          state.rTm.toFixed(3)
+        );
+
+        setText(
+          "[data-te-y1]",
+          state.yTe1.toFixed(3)
+        );
+
+        setText(
+          "[data-te-y2]",
+          state.yTe2.toFixed(3)
+        );
+
+        setText(
+          "[data-tm-y1]",
+          state.yTm1.toFixed(3)
+        );
+
+        setText(
+          "[data-tm-y2]",
+          state.yTm2.toFixed(3)
+        );
+
+        setBar(
+          "[data-te-y1-bar]",
+          state.yTe1
+        );
+
+        setBar(
+          "[data-te-y2-bar]",
+          state.yTe2
+        );
+
+        setBar(
+          "[data-tm-y1-bar]",
+          state.yTm1
+        );
+
+        setBar(
+          "[data-tm-y2-bar]",
+          state.yTm2
+        );
+
+        updateGeometry(state);
+        updatePlot(state);
+        updateShortcutState(
+          state.theta1Deg
+        );
+
+        const takeaway =
+          q("[data-takeaway]");
+
+        const nearNormal =
+          state.theta1Deg < 0.5;
+
+        const nearBrewster =
+          Math.abs(
+            state.theta1Deg - brewsterDeg
+          ) < 0.35;
+
+        if (nearNormal) {
+          takeaway.innerHTML =
+            "<strong>At normal incidence</strong>, " +
+            "both rules reduce to " +
+            "<i>Y</i> = <i>n</i>. " +
+            "The two reflection strengths are " +
+            "therefore identical.";
+        } else if (nearBrewster) {
+          takeaway.innerHTML =
+            `<strong>At the Brewster angle ` +
+            `(${brewsterDeg.toFixed(1)}°)</strong>, ` +
+            `the two TM admittances match, so the ` +
+            `TM reflected amplitude vanishes. ` +
+            `TE still sees a finite mismatch.`;
+        } else {
+          takeaway.innerHTML =
+            `At <strong>` +
+            `${state.theta1Deg.toFixed(1)}°` +
+            `</strong>, TE gives ` +
+            `|<i>r</i>| = ${state.rTe.toFixed(3)} ` +
+            `while TM gives ` +
+            `|<i>r</i>| = ${state.rTm.toFixed(3)}. ` +
+            `The difference comes entirely from ` +
+            `the two angular admittance rules.`;
+        }
+      }
+
+      buildPlot();
+      update();
+
+      angle.addEventListener(
+        "input",
+        update
+      );
+
+      root
+        .querySelectorAll("[data-set-angle]")
+        .forEach((button) => {
+          button.addEventListener(
+            "click",
+            () => {
+              angle.value =
+                button.getAttribute(
+                  "data-set-angle"
+                );
+
+              update();
+            }
+          );
+        });
+
+      q("[data-set-brewster]")
+        .addEventListener(
+          "click",
+          () => {
+            angle.value =
+              brewsterDeg.toFixed(1);
+
+            update();
+          }
+        );
+    });
+  })();
+</script>
+<script>
+  (function () {
+    let frame = 0;
+    function reportHeight() {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(function () {
+        frame = 0;
+        const height = Math.ceil(Math.max(
+          document.documentElement.scrollHeight,
+          document.body ? document.body.scrollHeight : 0
+        ));
+        try { if (window.frameElement) window.frameElement.style.height = height + 'px'; } catch (_) {}
+        try {
+          window.parent.postMessage({ type: 'article-visualization:resize', height: height }, '*');
+          window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, '*');
+        } catch (_) {}
+      });
+    }
+    window.addEventListener('load', reportHeight);
+    window.addEventListener('resize', reportHeight, { passive: true });
+    document.addEventListener('input', reportHeight, { passive: true });
+    document.addEventListener('click', reportHeight, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(reportHeight).observe(document.documentElement);
+    reportHeight();
+  }());
+</script>
+</body>
+</html>
