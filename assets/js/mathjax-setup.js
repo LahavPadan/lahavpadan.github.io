@@ -48,15 +48,11 @@
   /* Guided-reading articles skip both cache-restore and cache-write.
      Two reasons:
 
-     1. Race with DOM restructuring. guided-reading.js restructures
-        .article-prose (wraps chapters, prepares disclosures, builds
-        the TOC) on DOMContentLoaded so the "article route" appears
-        immediately instead of waiting for MathJax typesetting. If we
-        then cache-restored from a snapshot taken *before* that
-        restructuring, we'd wipe out guided-reading's work. If we
-        cached *after* it, the restructured DOM in sessionStorage
-        would be huge and awkward to invalidate. Simpler: don't
-        cache these at all.
+     1. Guided pages are restructured before MathJax scans them so the
+        article route appears immediately and equation source ranges stay
+        stable. Restoring a cached pre- or post-restructure snapshot would
+        either wipe out that structure or duplicate a very large generated
+        DOM. Simpler: do not cache guided pages.
 
      2. Memory. These are also the math-heaviest articles
         (elliptic-curves, 4G, coupled-modes), whose fully-typeset
@@ -129,6 +125,14 @@
   window.__lahavMathPrep = function () {
     var prose = document.querySelector('.article-prose');
     if (!prose) return;
+
+    /* Guided mode must establish its final DOM structure before MathJax scans
+       delimiter ranges. Doing this in MathJax's own pre-scan hook makes the
+       ordering deterministic: the article route appears immediately, and no
+       equation can be inserted later into a chapter it no longer belongs to. */
+    if (typeof window.__lahavPrepareGuidedReading === 'function') {
+      window.__lahavPrepareGuidedReading();
+    }
 
     /* Step 1: heal any kramdown-mangled inline math. Runs on the live DOM
        regardless of whether we later restore from cache. */

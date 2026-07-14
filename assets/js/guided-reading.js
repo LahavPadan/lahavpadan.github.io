@@ -2,6 +2,7 @@
   "use strict";
 
   const TOP_OFFSET = 150;
+  const DESKTOP_RAIL_QUERY = "(min-width: 1121px)";
 
   const slugify = (value) =>
     value
@@ -45,12 +46,9 @@
   }
 
   function wrapChapters(prose) {
-    /* Work with childNodes rather than children. Kramdown normally wraps
-       display equations in paragraphs, but a few valid Markdown/HTML mixes
-       leave whitespace or raw math delimiters as direct text nodes. Moving
-       every node after the first h2 guarantees that MathJax cannot leave an
-       equation behind at the root of .article-prose, where it would appear
-       after the chapter that originally contained it. */
+    /* This runs before MathJax scans the page. Moving the source nodes first
+       removes the race that previously left a typeset equation at the end of
+       the article, while still allowing the guided layout to appear at once. */
     const children = Array.from(prose.childNodes);
     const chapters = [];
     let currentChapter = null;
@@ -219,7 +217,8 @@
   function wireMobileToc() {
     const button = document.querySelector(".post-toc-toggle");
     const toc = document.getElementById("post-toc");
-    if (!button || !toc) return;
+    if (!button || !toc || button.dataset.tocWired === "true") return;
+    button.dataset.tocWired = "true";
 
     const close = () => {
       button.setAttribute("aria-expanded", "false");
@@ -255,77 +254,100 @@
     const progress = document.querySelector(".reading-progress > span");
     const number = document.querySelector(".reading-status__number");
     const title = document.querySelector(".reading-status__title");
-    const headings = chapters.map((chapter) => chapter.querySelector(":scope > h2"));
-    let ticking = false;
+    const headings = chapters
+      .map((chapter) => chapter.querySelector(":scope > h2"))
+      .filter(Boolean);
+
+    let offsets = [];
     let activeIndex = -1;
+    let activeToc = null;
+    let updateFrame = 0;
+    let measureFrame = 0;
 
-    const update = () => {
-      ticking = false;
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-      if (progress) progress.style.transform = `scaleX(${Math.min(1, scrollTop / maxScroll)})`;
+    const locateChapter = (position) => {
+      let low = 0;
+      let high = offsets.length - 1;
+      let result = 0;
+      while (low <= high) {
+        const middle = (low + high) >> 1;
+        if (offsets[middle] <= position) {
+          result = middle;
+          low = middle + 1;
+        } else {
+          high = middle - 1;
+        }
+      }
+      return result;
+    };
 
-      let current = 0;
-      headings.forEach((heading, index) => {
-        if (heading.getBoundingClientRect().top <= TOP_OFFSET) current = index;
-      });
+    const setActive = (index) => {
+      if (index === activeIndex) return;
+      activeIndex = index;
 
-      if (current === activeIndex) return;
-      activeIndex = current;
-      const chapter = chapters[current];
+      const chapter = chapters[index];
       if (!chapter) return;
-
       if (number) number.textContent = `§ ${chapter.dataset.chapterNumber}`;
       if (title) title.textContent = chapter.dataset.chapterTitle;
 
-      linkMap.forEach(({ item, link }) => {
-        item.classList.remove("is-current");
-        link.classList.remove("is-active");
-        link.removeAttribute("aria-current");
-      });
-      const active = linkMap.get(headings[current]);
-      if (active) {
-        active.item.classList.add("is-current");
-        active.link.classList.add("is-active");
-        active.link.setAttribute("aria-current", "location");
-        active.item.scrollIntoView({ block: "nearest" });
+      if (activeToc) {
+        activeToc.item.classList.remove("is-current");
+        activeToc.link.classList.remove("is-active");
+        activeToc.link.removeAttribute("aria-current");
+      }
+
+      activeToc = linkMap.get(headings[index]) || null;
+      if (!activeToc) return;
+      activeToc.item.classList.add("is-current");
+      activeToc.link.classList.add("is-active");
+      activeToc.link.setAttribute("aria-current", "location");
+
+      if (window.matchMedia(DESKTOP_RAIL_QUERY).matches) {
+        activeToc.item.scrollIntoView({ block: "nearest" });
       }
     };
 
+    const update = () => {
+      updateFrame = 0;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      if (progress) progress.style.transform = `scaleX(${Math.min(1, scrollTop / maxScroll)})`;
+      if (offsets.length) setActive(locateChapter(scrollTop + TOP_OFFSET));
+    };
+
     const requestUpdate = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(update);
+      if (!updateFrame) updateFrame = window.requestAnimationFrame(update);
+    };
+
+    const measure = () => {
+      measureFrame = 0;
+      offsets = headings.map((heading) => heading.getBoundingClientRect().top + window.scrollY);
+      update();
+    };
+
+    const requestMeasure = () => {
+      if (measureFrame) window.cancelAnimationFrame(measureFrame);
+      measureFrame = window.requestAnimationFrame(measure);
     };
 
     window.addEventListener("scroll", requestUpdate, { passive: true });
-    window.addEventListener("resize", requestUpdate, { passive: true });
-    update();
+    window.addEventListener("resize", requestMeasure, { passive: true });
+    window.addEventListener("load", requestMeasure, { once: true });
+    document.addEventListener("lahav:math-ready", requestMeasure, { once: true });
+    document.addEventListener("lahav:visualization-resize", requestMeasure);
+    if (document.fonts?.ready) document.fonts.ready.then(requestMeasure).catch(() => {});
+
+    measure();
   }
 
-  let initialized = false;
-  let scrollWired = false;
+  let preparedState = null;
+  let interactionsWired = false;
 
-  /* DOM restructuring and TOC rendering.
-
-     On math-heavy guided articles this deliberately runs *after* MathJax.
-     MathJax records source-node ranges while it scans the document. Moving
-     those nodes into chapter/subsection wrappers during the scan creates a
-     timing-dependent failure in which the final SVG equation is inserted at
-     the end of the chapter (sometimes after the chapter navigation) rather
-     than where its delimiters appeared. Waiting for `lahav:math-ready` makes
-     the typeset DOM stable before any structural move and removes that race.
-
-     Articles without MathJax still initialize immediately. */
-  function init() {
-    if (initialized) return;
+  function prepareGuidedReading() {
+    if (preparedState) return preparedState;
 
     const page = document.querySelector(".post-page--guided");
     const prose = page?.querySelector(".article-prose[data-reading-mode='guided']");
-    if (!page || !prose) return;
-
-    initialized = true;
-    prose.dataset.guidedReady = "true";
+    if (!page || !prose) return null;
 
     const internalTitle = directChildren(prose, "h1")[0];
     if (internalTitle) internalTitle.classList.add("article-internal-title");
@@ -336,56 +358,41 @@
     chapters.forEach(wrapSubsections);
     const disclosures = prepareSemanticDisclosures(prose);
     ensureHeadingIds(prose);
-
     const linkMap = buildToc(chapters);
+
+    prose.dataset.guidedReady = "true";
+    preparedState = { page, prose, chapters, disclosures, linkMap };
+
+    /* Make the fast structural pass observable to MathJax and to any article
+       enhancement that needs the final chapter containers. */
+    document.dispatchEvent(new CustomEvent("lahav:guided-ready"));
+    return preparedState;
+  }
+
+  function wireInteractions() {
+    if (interactionsWired) return;
+    const state = prepareGuidedReading();
+    if (!state) return;
+    interactionsWired = true;
+
     wireMobileToc();
-    wirePrintDisclosureState(disclosures);
-
-    /* Phase 2 — scroll-spy.
-       Deferred until MathJax has finished so that heading
-       bounding-rect offsets reflect final equation heights. Without
-       this wait, the "current chapter" indicator lags behind the
-       reader on pages where math pushes headings down after the
-       initial render. A fallback timeout ensures the spy still wires
-       up even if MathJax fails to load. */
-    const wireScroll = () => {
-      if (scrollWired) return;
-      scrollWired = true;
-      wireScrollState(chapters, linkMap);
-    };
-
-    if (document.documentElement.dataset.mathReady === "true") {
-      wireScroll();
-    } else if (document.getElementById("MathJax-script")) {
-      document.addEventListener("lahav:math-ready", wireScroll, { once: true });
-      window.setTimeout(wireScroll, 8000);
-    } else {
-      wireScroll();
-    }
+    wirePrintDisclosureState(state.disclosures);
+    wireScrollState(state.chapters, state.linkMap);
   }
 
-  function initWhenArticleIsStable() {
-    const start = () => {
-      if (document.documentElement.dataset.mathReady === "true" ||
-          !document.getElementById("MathJax-script")) {
-        init();
-        return;
-      }
+  /* MathJax calls this during its pre-scan hook. That guarantees all chapter,
+     subsection, and disclosure moves finish before MathJax records source
+     ranges, so there is no equation-placement race and no need to hide the
+     guided layout until typesetting completes. */
+  window.__lahavPrepareGuidedReading = function () {
+    const state = prepareGuidedReading();
+    wireInteractions();
+    return state;
+  };
 
-      document.addEventListener("lahav:math-ready", init, { once: true });
-      /* A failed CDN request must not leave the page without its reading
-         layout. Eight seconds matches the existing scroll-spy fallback and
-         is long enough for a slow MathJax load without reintroducing the
-         normal successful-load race. */
-      window.setTimeout(init, 8000);
-    };
-
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", start, { once: true });
-    } else {
-      start();
-    }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", wireInteractions, { once: true });
+  } else {
+    wireInteractions();
   }
-
-  initWhenArticleIsStable();
 })();

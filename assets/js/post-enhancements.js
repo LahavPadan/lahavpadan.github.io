@@ -414,11 +414,15 @@
       style.setProperty(name, exact[name]);
     });
 
-    /* The visualizations were authored at different times and therefore use
-       several names for the same semantic roles. Point all of those names at
-       one palette supplied by the containing article. Distinct diagram roles
-       still receive light/dark variants, but every one is derived from the
-       article accent instead of carrying a separate hard-coded scheme. */
+    /* Aliases are stable references to the exact variables above, so they only
+       need to be installed once per iframe document. Theme switching then
+       updates eleven values instead of rewriting the full compatibility map. */
+    if (root.dataset.articleVisualizationAliasesReady === 'true') return;
+
+    /* All diagram roles inherit from the article palette. The variables only
+       have to live on the iframe root; copying the entire declaration set onto
+       every top-level child caused a full visualization re-style on each theme
+       switch and was the main source of the visible dark/light-mode pause. */
     var aliases = {
       '--page': 'var(--viz-page)',
       '--paper': 'var(--viz-surface)',
@@ -551,68 +555,79 @@
     Object.keys(aliases).forEach(function (name) {
       style.setProperty(name, aliases[name]);
     });
-
-    var declarations = [];
-    Object.keys(exact).forEach(function (name) {
-      declarations.push(name + ':' + exact[name] + ' !important');
-    });
-    Object.keys(aliases).forEach(function (name) {
-      declarations.push(name + ':' + aliases[name] + ' !important');
-    });
-    return declarations.join(';') + ';';
+    root.dataset.articleVisualizationAliasesReady = 'true';
   }
 
-  function syncVisualizationTheme(frame) {
+  function visualizationPaletteSignature(palette) {
+    return [
+      palette.theme, palette.page, palette.surface, palette.surfaceMuted,
+      palette.ink, palette.muted, palette.border, palette.borderStrong,
+      palette.accent, palette.accentSoft, palette.accentBorder, palette.accentInk
+    ].join('|');
+  }
+
+  function syncVisualizationTheme(frame, suppliedPalette) {
     var doc;
     try { doc = frame.contentDocument; }
     catch (_e) { return; }
     if (!doc || !doc.documentElement || !doc.body) return;
 
-    var palette = currentVisualizationPalette();
+    var palette = suppliedPalette || currentVisualizationPalette();
+    var signature = visualizationPaletteSignature(palette);
     var root = doc.documentElement;
+    if (frame.dataset.visualizationPalette === signature &&
+        root.dataset.theme === palette.theme) return;
+
     root.dataset.theme = palette.theme;
     root.style.colorScheme = palette.theme;
-    var themeDeclarations = setVisualizationVariables(root, palette);
+    setVisualizationVariables(root, palette);
 
-    /* A few older standalone visualizations hard-coded html/body backgrounds
-       rather than using variables. This small same-origin override makes the
-       iframe canvas exactly match the article's light or dark page. */
+    /* CSS custom properties inherit from :root. Only the canvas itself needs
+       an !important override for older visualizations that hard-coded a body
+       background; keeping this style tiny avoids a document-wide re-style. */
     var override = doc.getElementById('article-visualization-theme-override');
     if (!override) {
       override = doc.createElement('style');
       override.id = 'article-visualization-theme-override';
+      override.textContent =
+        'html,body{background:var(--viz-page)!important;color:var(--viz-ink)!important;color-scheme:inherit;}';
       (doc.head || root).appendChild(override);
     }
-    override.textContent =
-      ':root,body,body>:not(script):not(style){' + themeDeclarations + '}' +
-      'html,body{background:var(--viz-page)!important;color:var(--viz-ink)!important;color-scheme:inherit;}';
+
     frame.style.backgroundColor = palette.page;
+    frame.dataset.visualizationPalette = signature;
   }
 
-  function visualizationContentHeight(frame) {
+  function visualizationContentHeight(frame, deepScan) {
     var doc;
     try { doc = frame.contentDocument; }
     catch (_e) { return 0; }
-    if (!doc || !doc.body) return 0;
+    if (!doc || !doc.body || !doc.documentElement) return 0;
 
-    var win = frame.contentWindow;
-    var maxBottom = 0;
-    each(doc.body.children, function (node) {
-      if (!node || /^(SCRIPT|STYLE|LINK)$/.test(node.tagName)) return;
-      var style = win.getComputedStyle(node);
-      if (style.display === 'none' || style.position === 'fixed') return;
-      var rect = node.getBoundingClientRect();
-      if (!isFinite(rect.bottom)) return;
-      var marginBottom = parseFloat(style.marginBottom) || 0;
-      maxBottom = Math.max(maxBottom, rect.bottom + win.scrollY + marginBottom);
-    });
+    var root = doc.documentElement;
+    var body = doc.body;
+    var maxBottom = Math.max(
+      root.scrollHeight, root.offsetHeight, root.clientHeight,
+      body.scrollHeight, body.offsetHeight, body.clientHeight
+    );
 
-    if (!maxBottom) {
-      var bodyRect = doc.body.getBoundingClientRect();
-      maxBottom = bodyRect.bottom + win.scrollY;
+    /* One geometric scan after load catches older diagrams whose final card is
+       absolutely positioned outside normal flow. ResizeObserver and explicit
+       postMessage heights handle subsequent interaction without repeating this
+       expensive child-by-child computed-style walk. */
+    if (deepScan) {
+      var win = frame.contentWindow;
+      each(body.children, function (node) {
+        if (!node || /^(SCRIPT|STYLE|LINK)$/.test(node.tagName)) return;
+        var style = win.getComputedStyle(node);
+        if (style.display === 'none' || style.position === 'fixed') return;
+        var rect = node.getBoundingClientRect();
+        if (!isFinite(rect.bottom)) return;
+        var marginBottom = parseFloat(style.marginBottom) || 0;
+        maxBottom = Math.max(maxBottom, rect.bottom + win.scrollY + marginBottom);
+      });
     }
-    var bodyStyle = win.getComputedStyle(doc.body);
-    maxBottom += parseFloat(bodyStyle.paddingBottom) || 0;
+
     return Math.ceil(maxBottom);
   }
 
@@ -625,25 +640,67 @@
     if (!allowShrink && height <= current + 3) return;
     if (Math.abs(height - current) < 3) return;
     frame.style.height = height + 'px';
+    document.dispatchEvent(new CustomEvent('lahav:visualization-resize', {
+      detail: { frame: frame, height: height }
+    }));
   }
 
-  function measureVisualizationFrame(frame) {
+  function measureVisualizationFrame(frame, deepScan) {
     syncVisualizationTheme(frame);
-    applyVisualizationHeight(frame, visualizationContentHeight(frame), false);
+    applyVisualizationHeight(frame, visualizationContentHeight(frame, deepScan), false);
   }
 
   function wireVisualizationFrame(frame) {
     if (!frame || frame.dataset.visualizationWired === 'true') return;
     frame.dataset.visualizationWired = 'true';
 
-    var measure = function () {
-      measureVisualizationFrame(frame);
-      window.setTimeout(function () { measureVisualizationFrame(frame); }, 80);
-      window.setTimeout(function () { measureVisualizationFrame(frame); }, 350);
-      window.setTimeout(function () { measureVisualizationFrame(frame); }, 1200);
-    };
-    frame.addEventListener('load', measure);
-    if (frame.contentDocument && frame.contentDocument.readyState === 'complete') measure();
+    var measureFrame = 0;
+    var needsDeepScan = false;
+
+    function scheduleMeasure(deepScan) {
+      needsDeepScan = needsDeepScan || Boolean(deepScan);
+      if (measureFrame) return;
+      measureFrame = window.requestAnimationFrame(function () {
+        measureFrame = 0;
+        var deep = needsDeepScan;
+        needsDeepScan = false;
+        measureVisualizationFrame(frame, deep);
+      });
+    }
+
+    function installResizeObserver() {
+      var doc;
+      try { doc = frame.contentDocument; }
+      catch (_e) { return; }
+      if (!doc || !doc.body || !doc.documentElement) return;
+
+      if (frame.__lahavVisualizationResizeObserver) {
+        frame.__lahavVisualizationResizeObserver.disconnect();
+      }
+
+      var ViewResizeObserver = frame.contentWindow && frame.contentWindow.ResizeObserver;
+      if (ViewResizeObserver) {
+        var observer = new ViewResizeObserver(function () { scheduleMeasure(false); });
+        observer.observe(doc.documentElement);
+        observer.observe(doc.body);
+        frame.__lahavVisualizationResizeObserver = observer;
+      }
+
+      if (doc.fonts && doc.fonts.ready) {
+        doc.fonts.ready.then(function () { scheduleMeasure(true); }).catch(function () {});
+      }
+    }
+
+    function loaded() {
+      delete frame.dataset.visualizationPalette;
+      syncVisualizationTheme(frame);
+      installResizeObserver();
+      scheduleMeasure(true);
+      window.setTimeout(function () { scheduleMeasure(true); }, 260);
+    }
+
+    frame.addEventListener('load', loaded);
+    if (frame.contentDocument && frame.contentDocument.readyState === 'complete') loaded();
   }
 
   function initVisualizationResizing() {
@@ -651,9 +708,7 @@
     each(document.querySelectorAll(selector), wireVisualizationFrame);
 
     /* Messages remain the most accurate source for interactive controls that
-       change a visualization after load. Match the source window rather than
-       maintaining a brittle allow-list of message type names, since several
-       older figures used their own names. */
+       change a visualization after load. */
     window.addEventListener('message', function (event) {
       if (event.origin !== window.location.origin) return;
       var data = event.data;
@@ -664,12 +719,9 @@
       each(document.querySelectorAll(selector), function (frame) {
         if (frame.contentWindow !== event.source) return;
         applyVisualizationHeight(frame, height, true);
-        syncVisualizationTheme(frame);
       });
     });
 
-    /* Visualizations can be inserted after MathJax becomes ready, so wire new
-       iframes as they appear. */
     if (window.MutationObserver) {
       new MutationObserver(function (records) {
         records.forEach(function (record) {
@@ -681,10 +733,15 @@
         });
       }).observe(document.body, { childList: true, subtree: true });
 
+      var themeFrame = 0;
       new MutationObserver(function () {
-        each(document.querySelectorAll(selector), function (frame) {
-          syncVisualizationTheme(frame);
-          window.setTimeout(function () { measureVisualizationFrame(frame); }, 60);
+        if (themeFrame) return;
+        themeFrame = window.requestAnimationFrame(function () {
+          themeFrame = 0;
+          var palette = currentVisualizationPalette();
+          each(document.querySelectorAll(selector), function (frame) {
+            syncVisualizationTheme(frame, palette);
+          });
         });
       }).observe(document.documentElement, {
         attributes: true,
@@ -1050,8 +1107,6 @@
     initFormulaCopying();
     initFormulaSelectionCopy();
     initImageLightbox();
-    watchForArticleReplacement();
-
     document.addEventListener('lahav:math-ready', integrateArticleVisualizations, { once: true });
     window.addEventListener('load', integrateArticleVisualizations, { once: true });
   }
