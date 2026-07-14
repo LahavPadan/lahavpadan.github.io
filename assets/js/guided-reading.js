@@ -3,6 +3,7 @@
 
   const TOP_OFFSET = 150;
   const DESKTOP_RAIL_QUERY = "(min-width: 1121px)";
+  const MATH_IGNORE_CLASS = "tex2jax_ignore";
 
   const slugify = (value) =>
     value
@@ -152,16 +153,56 @@
         node = next;
       }
 
+      const containsMath = /(?:\$\$|\\\[|\\\(|\$[^$\n])/.test(body.textContent);
+      const canDeferMath = Boolean(document.getElementById("MathJax-script"));
+      const originalHint = hint.textContent;
+
+      /* A closed <details> body is display:none.  Letting MathJax process a
+         large hidden derivation gives the SVG renderer no reliable width to
+         measure against; on the 4G article this was the reason equations from
+         §3.4 could later appear detached at the end of the page.  Keep the raw
+         TeX out of the initial document scan and typeset this exact body, in
+         place, the first time it becomes visible.  This also removes a large
+         amount of work from the initial render of guided articles. */
+      if (!details.open && containsMath && canDeferMath) {
+        body.classList.add(MATH_IGNORE_CLASS);
+        body.dataset.deferredMath = "true";
+      }
+
       details.append(summary, body);
       details.addEventListener("toggle", () => {
-        /* MathJax normally typesets closed <details> content during the initial
-           document pass. Only request a local pass when the block genuinely
-           contains unprocessed delimiters; re-typesetting every opened proof is
-           expensive and can duplicate output after a DOM race. */
-        if (!details.open || details.querySelector("mjx-container")) return;
-        if (window.MathJax?.typesetPromise && /(?:\$|\\\[|\\\()/.test(body.textContent)) {
-          window.MathJax.typesetPromise([body]).catch(() => {});
+        document.dispatchEvent(new CustomEvent("lahav:guided-layout-change"));
+
+        /* Keep the body measurable until its first local MathJax pass ends.
+           A rapid second click must not hide it halfway through SVG layout. */
+        if (!details.open && body.dataset.mathPending === "true") {
+          details.open = true;
+          return;
         }
+
+        if (!details.open || body.dataset.deferredMath !== "true" ||
+            body.dataset.mathPending === "true") return;
+
+        body.dataset.mathPending = "true";
+        body.classList.remove(MATH_IGNORE_CLASS);
+        details.classList.add("is-typesetting");
+        details.setAttribute("aria-busy", "true");
+        hint.textContent = "rendering equations";
+
+        const typeset = typeof window.__lahavTypesetDeferredMath === "function"
+          ? window.__lahavTypesetDeferredMath(body)
+          : Promise.resolve();
+
+        Promise.resolve(typeset).catch((error) => {
+          console.error("Unable to typeset guided disclosure", error);
+        }).finally(() => {
+          delete body.dataset.deferredMath;
+          delete body.dataset.mathPending;
+          details.classList.remove("is-typesetting");
+          details.removeAttribute("aria-busy");
+          hint.textContent = originalHint;
+          document.dispatchEvent(new CustomEvent("lahav:guided-layout-change"));
+        });
       });
       start.replaceWith(details);
       end.remove();
@@ -348,6 +389,8 @@
     window.addEventListener("resize", requestMeasure, { passive: true });
     window.addEventListener("load", requestMeasure, { once: true });
     document.addEventListener("lahav:math-ready", requestMeasure, { once: true });
+    document.addEventListener("lahav:deferred-math-ready", requestMeasure);
+    document.addEventListener("lahav:guided-layout-change", requestMeasure);
     document.addEventListener("lahav:visualization-resize", requestMeasure);
     if (document.fonts?.ready) document.fonts.ready.then(requestMeasure).catch(() => {});
 

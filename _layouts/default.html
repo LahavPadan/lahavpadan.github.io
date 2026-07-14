@@ -88,7 +88,12 @@
         },
         svg: { fontCache: 'global' },
         options: {
-          skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+          skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+          /* Closed guided disclosures carry this class until the reader opens
+             them.  MathJax must not measure equations while their parent is
+             display:none: hidden measurement is what made some SVG equations
+             detach visually and appear at the end of long guided articles. */
+          ignoreHtmlClass: 'tex2jax_ignore'
         },
         startup: {
           pageReady: function () {

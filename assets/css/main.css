@@ -1832,6 +1832,15 @@ kbd {
   border-top: 1px solid color-mix(in srgb, var(--disclosure-border) 70%, transparent);
   background: color-mix(in srgb, var(--surface) 58%, transparent);
 }
+.guided-disclosure.is-typesetting .guided-disclosure__body {
+  /* Keep the disclosure measurable for MathJax while hiding the raw TeX that
+     exists for the brief interval between opening and local typesetting. */
+  min-height: 5.5rem;
+  visibility: hidden;
+}
+.guided-disclosure.is-typesetting > .guided-disclosure__summary {
+  pointer-events: none;
+}
 .guided-disclosure__body > :first-child {
   margin-top: 1rem;
 }

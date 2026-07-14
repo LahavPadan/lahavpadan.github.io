@@ -226,6 +226,77 @@
     appendDisplayCopyButton(shell);
   }
 
+  function stampMathSources(root) {
+    if (!root || !window.MathJax || !MathJax.startup || !MathJax.startup.document) return;
+    var items = MathJax.startup.document.math.toArray();
+    items.forEach(function (item) {
+      var typesetRoot = item.typesetRoot;
+      if (!typesetRoot || typeof item.math !== 'string') return;
+      if (root !== typesetRoot && !root.contains(typesetRoot)) return;
+      if (!typesetRoot.hasAttribute('data-tex')) {
+        typesetRoot.setAttribute('data-tex', item.math);
+      }
+    });
+  }
+
+  function decorateMathRoot(root) {
+    if (!root) return;
+    var prose = root.matches && root.matches('.article-prose')
+      ? root
+      : document.querySelector('.article-prose');
+    var guided = isGuidedReadingPage(prose);
+
+    stampMathSources(root);
+    var containers = root.querySelectorAll('mjx-container[data-tex]');
+    containers.forEach(function (c) {
+      var display = c.getAttribute('display') === 'true';
+
+      if (!guided) attachSelectableSource(c);
+      if (display) wrapDisplay(c);
+      else decorateInline(c, guided);
+    });
+  }
+
+  var deferredTypesetQueue = Promise.resolve();
+
+  function waitForInitialMathJax() {
+    if (window.MathJax && MathJax.startup && MathJax.startup.promise &&
+        typeof MathJax.startup.promise.then === 'function') {
+      return MathJax.startup.promise;
+    }
+    if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+      return Promise.resolve();
+    }
+    return new Promise(function (resolve) {
+      document.addEventListener('lahav:math-ready', resolve, { once: true });
+    });
+  }
+
+  /* Typeset one disclosure only after it has become visible.  Calls are
+     serialized because MathJax's document is asynchronous and not re-entrant;
+     opening two derivations quickly must never start two competing render
+     passes over the same document. */
+  window.__lahavTypesetDeferredMath = function (root) {
+    if (!root) return Promise.resolve();
+    root.classList.remove('tex2jax_ignore');
+
+    deferredTypesetQueue = deferredTypesetQueue.catch(function () {
+      /* A failed earlier disclosure must not permanently poison the queue. */
+    }).then(function () {
+      return waitForInitialMathJax();
+    }).then(function () {
+      if (!window.MathJax || typeof MathJax.typesetPromise !== 'function') return;
+      return MathJax.typesetPromise([root]);
+    }).then(function () {
+      decorateMathRoot(root);
+      document.dispatchEvent(new CustomEvent('lahav:deferred-math-ready', {
+        detail: { root: root }
+      }));
+    });
+
+    return deferredTypesetQueue;
+  };
+
   window.__lahavMathPost = function () {
     var prose = document.querySelector('.article-prose');
     if (!prose) return;
@@ -234,30 +305,7 @@
        copy handlers in post-enhancements.js have it to hand. On a cache-
        restore path this is a no-op (the cached HTML already carries the
        attribute); on the initial-typeset path we're the sole writer. */
-    if (window.MathJax && MathJax.startup && MathJax.startup.document) {
-      var items = MathJax.startup.document.math.toArray();
-      items.forEach(function (item) {
-        if (item.typesetRoot && typeof item.math === 'string'
-            && !item.typesetRoot.hasAttribute('data-tex')) {
-          item.typesetRoot.setAttribute('data-tex', item.math);
-        }
-      });
-    }
-
-    var guided = isGuidedReadingPage(prose);
-    var containers = prose.querySelectorAll('mjx-container[data-tex]');
-    containers.forEach(function (c) {
-      var display = c.getAttribute('display') === 'true';
-
-      /* The selectable helper span is useful on shorter posts, but on guided
-         pages it adds one extra DOM node per expression. Those pages retain
-         click-to-copy for inline formulas and a visible copy button for every
-         display formula, so the helper can be omitted without losing the main
-         copy affordances. */
-      if (!guided) attachSelectableSource(c);
-      if (display) wrapDisplay(c);
-      else decorateInline(c, guided);
-    });
+    decorateMathRoot(prose);
 
     prose.setAttribute('data-math-decorated', 'true');
     writeCache(prose);
