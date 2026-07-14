@@ -354,7 +354,7 @@
   function integrateArticleVisualizations() {
     var prose = document.querySelector('.article-prose');
     var path = window.location.pathname.replace(/\/+$/, '');
-    if (prose) {
+    if (prose && prose.dataset.articleVisualizationsIntegrated !== 'true') {
       if (path.indexOf('/posts/coupled-modes-bragg-structures-and-photonic-bandgaps') !== -1) {
         integrateCoupled(prose);
       } else if (path.indexOf('/posts/elliptic-curves') !== -1) {
@@ -362,6 +362,7 @@
       } else if (path.indexOf('/posts/orthogonal-transforms-as-characters-and-representations') !== -1) {
         integrateOrthogonal(prose);
       }
+      prose.dataset.articleVisualizationsIntegrated = 'true';
     }
     integrateWhoami();
   }
@@ -558,6 +559,12 @@
     root.dataset.articleVisualizationAliasesReady = 'true';
   }
 
+  var visualizationViewportObserver = null;
+
+  function frameIsNearViewport(frame) {
+    return !visualizationViewportObserver || frame.dataset.visualizationNearViewport === 'true';
+  }
+
   function visualizationPaletteSignature(palette) {
     return [
       palette.theme, palette.page, palette.surface, palette.surfaceMuted,
@@ -577,6 +584,12 @@
     var root = doc.documentElement;
     if (frame.dataset.visualizationPalette === signature &&
         root.dataset.theme === palette.theme) return;
+
+    /* Theme propagation changes colours only, never geometry. Suppress the
+       ResizeObserver echo caused by the iframe style recalculation; measuring
+       every diagram again was the main pause after toggling dark/light mode. */
+    frame.__lahavIgnoreVisualizationResizeUntil =
+      (window.performance && performance.now ? performance.now() : Date.now()) + 220;
 
     root.dataset.theme = palette.theme;
     root.style.colorScheme = palette.theme;
@@ -646,7 +659,9 @@
   }
 
   function measureVisualizationFrame(frame, deepScan) {
-    syncVisualizationTheme(frame);
+    /* Theme synchronization is handled on iframe load, theme mutation, and
+       viewport entry. Keeping it out of the resize path avoids forced parent
+       getComputedStyle reads every time an internal control changes height. */
     applyVisualizationHeight(frame, visualizationContentHeight(frame, deepScan), false);
   }
 
@@ -680,7 +695,11 @@
 
       var ViewResizeObserver = frame.contentWindow && frame.contentWindow.ResizeObserver;
       if (ViewResizeObserver) {
-        var observer = new ViewResizeObserver(function () { scheduleMeasure(false); });
+        var observer = new ViewResizeObserver(function () {
+          var now = window.performance && performance.now ? performance.now() : Date.now();
+          if (now < (frame.__lahavIgnoreVisualizationResizeUntil || 0)) return;
+          scheduleMeasure(false);
+        });
         observer.observe(doc.documentElement);
         observer.observe(doc.body);
         frame.__lahavVisualizationResizeObserver = observer;
@@ -700,11 +719,42 @@
     }
 
     frame.addEventListener('load', loaded);
-    if (frame.contentDocument && frame.contentDocument.readyState === 'complete') loaded();
+
+    /* A newly-created lazy iframe initially exposes a complete about:blank
+       document. Treating that as the real load caused duplicate theming,
+       observers and deep measurements before the visualization even started. */
+    try {
+      if (frame.contentDocument &&
+          frame.contentDocument.readyState === 'complete' &&
+          frame.contentWindow.location.href !== 'about:blank') loaded();
+    } catch (_error) {}
+
+    if (visualizationViewportObserver) visualizationViewportObserver.observe(frame);
   }
 
+  var visualizationResizingInitialized = false;
+
   function initVisualizationResizing() {
+    if (visualizationResizingInitialized) return;
+    visualizationResizingInitialized = true;
+
     var selector = 'iframe[data-article-visualization]';
+
+    if ('IntersectionObserver' in window) {
+      visualizationViewportObserver = new IntersectionObserver(function (entries) {
+        var palette = null;
+        entries.forEach(function (entry) {
+          var frame = entry.target;
+          var near = entry.isIntersecting || entry.intersectionRatio > 0;
+          frame.dataset.visualizationNearViewport = near ? 'true' : 'false';
+          if (near) {
+            if (!palette) palette = currentVisualizationPalette();
+            syncVisualizationTheme(frame, palette);
+          }
+        });
+      }, { rootMargin: '800px 0px' });
+    }
+
     each(document.querySelectorAll(selector), wireVisualizationFrame);
 
     /* Messages remain the most accurate source for interactive controls that
@@ -734,14 +784,27 @@
       }).observe(document.body, { childList: true, subtree: true });
 
       var themeFrame = 0;
+      var themeTimer = 0;
       new MutationObserver(function () {
         if (themeFrame) return;
         themeFrame = window.requestAnimationFrame(function () {
           themeFrame = 0;
-          var palette = currentVisualizationPalette();
-          each(document.querySelectorAll(selector), function (frame) {
-            syncVisualizationTheme(frame, palette);
-          });
+          if (themeTimer) window.clearTimeout(themeTimer);
+
+          /* Let the parent page paint its new palette first. Iframe propagation
+             runs in the next task, so the theme button never waits behind
+             cross-document style recalculation. */
+          themeTimer = window.setTimeout(function () {
+            themeTimer = 0;
+            var palette = currentVisualizationPalette();
+
+            /* Update diagrams in or near the viewport. Off-screen iframes keep
+               their old palette until IntersectionObserver brings them close
+               to view, avoiding a synchronous restyle of the entire article. */
+            each(document.querySelectorAll(selector), function (frame) {
+              if (frameIsNearViewport(frame)) syncVisualizationTheme(frame, palette);
+            });
+          }, 0);
         });
       }).observe(document.documentElement, {
         attributes: true,
@@ -1098,17 +1161,40 @@
     window.setTimeout(function () { observer.disconnect(); }, 12000);
   }
 
-  function boot() {
+  function bootVisualizations() {
     integrateArticleVisualizations();
     initVisualizationResizing();
+  }
+
+  function scheduleVisualizationBoot() {
+    if (document.documentElement.dataset.visualizationsBootScheduled === 'true') return;
+    document.documentElement.dataset.visualizationsBootScheduled = 'true';
+
+    /* Keep article mutation out of MathJax's scan/typeset window, and let the
+       browser paint the reading shell before running the article-specific text
+       searches. Previously the same integration pass ran at DOMContentLoaded,
+       math-ready and window.load, repeatedly scanning very long guided posts. */
+    window.requestAnimationFrame(function () {
+      window.setTimeout(bootVisualizations, 0);
+    });
+  }
+
+  function boot() {
     if (!document.querySelector('.post-page--guided')) {
       initTocSpy(buildToc());
     }
     initFormulaCopying();
     initFormulaSelectionCopy();
     initImageLightbox();
-    document.addEventListener('lahav:math-ready', integrateArticleVisualizations, { once: true });
-    window.addEventListener('load', integrateArticleVisualizations, { once: true });
+
+    if (document.getElementById('MathJax-script') &&
+        document.documentElement.dataset.mathReady !== 'true') {
+      document.addEventListener('lahav:math-ready', scheduleVisualizationBoot, { once: true });
+      /* CDN failure should not permanently suppress otherwise-static diagrams. */
+      window.setTimeout(scheduleVisualizationBoot, 5000);
+    } else {
+      scheduleVisualizationBoot();
+    }
   }
 
   if (document.readyState === 'loading') {

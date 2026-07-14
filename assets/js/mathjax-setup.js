@@ -145,8 +145,15 @@
     }
   };
 
-  function decorateInline(container) {
+  function decorateInline(container, lightweight) {
     container.setAttribute('data-copy-math-inline', '');
+
+    /* Guided articles can contain hundreds of inline expressions. Giving every
+       one a tab stop, tooltip and ARIA button role creates an enormous focus /
+       accessibility tree and noticeably delays both first render and global
+       theme recalculation. Pointer copy still works through the data attribute;
+       the full keyboard affordance remains on ordinary-sized posts. */
+    if (lightweight) return;
     container.setAttribute('role', 'button');
     container.setAttribute('tabindex', '0');
     container.setAttribute('aria-label', 'Copy formula');
@@ -173,15 +180,8 @@
     container.appendChild(src);
   }
 
-  function wrapDisplay(container) {
-    if (!container.parentNode) return;
-    if (container.parentNode.classList &&
-        container.parentNode.classList.contains('math-copy-shell')) return;
-    var shell = document.createElement('div');
-    shell.className = 'math-copy-shell';
-    container.parentNode.insertBefore(shell, container);
-    shell.appendChild(container);
-
+  function appendDisplayCopyButton(shell) {
+    if (shell.querySelector(':scope > .math-copy-button')) return;
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'math-copy-button';
@@ -189,6 +189,41 @@
     btn.setAttribute('aria-label', 'Copy formula TeX source');
     btn.textContent = 'copy tex';
     shell.appendChild(btn);
+  }
+
+  function isEquationOnlyParagraph(parent, container) {
+    if (!parent || parent.nodeType !== 1 || parent.tagName !== 'P') return false;
+    for (var node = parent.firstChild; node; node = node.nextSibling) {
+      if (node === container) continue;
+      if (node.nodeType === 3 && !node.nodeValue.trim()) continue;
+      return false;
+    }
+    return true;
+  }
+
+  function wrapDisplay(container) {
+    if (!container.parentNode) return;
+    var parent = container.parentNode;
+    if (parent.classList && parent.classList.contains('math-copy-shell')) {
+      appendDisplayCopyButton(parent);
+      return;
+    }
+
+    /* Kramdown normally places a display delimiter in its own paragraph. Turn
+       that existing paragraph into the shell instead of moving MathJax's
+       typesetRoot after typesetting. Avoiding the move is both faster and,
+       more importantly, keeps MathJax's source/output ownership stable. */
+    if (isEquationOnlyParagraph(parent, container)) {
+      parent.classList.add('math-copy-shell');
+      appendDisplayCopyButton(parent);
+      return;
+    }
+
+    var shell = document.createElement('div');
+    shell.className = 'math-copy-shell';
+    parent.insertBefore(shell, container);
+    shell.appendChild(container);
+    appendDisplayCopyButton(shell);
   }
 
   window.__lahavMathPost = function () {
@@ -209,18 +244,26 @@
       });
     }
 
+    var guided = isGuidedReadingPage(prose);
     var containers = prose.querySelectorAll('mjx-container[data-tex]');
     containers.forEach(function (c) {
-      attachSelectableSource(c);
-      if (c.getAttribute('display') === 'true') wrapDisplay(c);
-      else decorateInline(c);
+      var display = c.getAttribute('display') === 'true';
+
+      /* The selectable helper span is useful on shorter posts, but on guided
+         pages it adds one extra DOM node per expression. Those pages retain
+         click-to-copy for inline formulas and a visible copy button for every
+         display formula, so the helper can be omitted without losing the main
+         copy affordances. */
+      if (!guided) attachSelectableSource(c);
+      if (display) wrapDisplay(c);
+      else decorateInline(c, guided);
     });
 
+    prose.setAttribute('data-math-decorated', 'true');
     writeCache(prose);
 
-    /* Guided-reading waits for this signal before it restructures a math-heavy
-       article. Keep it after decoration and cache writing so chapter offsets
-       are measured from the final equation DOM. */
+    /* The guided hierarchy is already final before MathJax scans it. This event
+       now only asks scroll/visualization code to refresh final measurements. */
     document.documentElement.dataset.mathReady = 'true';
     document.dispatchEvent(new CustomEvent('lahav:math-ready'));
   };

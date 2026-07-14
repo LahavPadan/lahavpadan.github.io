@@ -45,39 +45,6 @@
     return { number, title };
   }
 
-  function wrapChapters(prose) {
-    /* This runs before MathJax scans the page. Moving the source nodes first
-       removes the race that previously left a typeset equation at the end of
-       the article, while still allowing the guided layout to appear at once. */
-    const children = Array.from(prose.childNodes);
-    const chapters = [];
-    let currentChapter = null;
-
-    children.forEach((child) => {
-      if (child.nodeType === Node.ELEMENT_NODE && child.matches("h2")) {
-        currentChapter = document.createElement("section");
-        currentChapter.className = "article-chapter";
-        child.before(currentChapter);
-        chapters.push(currentChapter);
-      }
-      if (currentChapter) currentChapter.append(child);
-    });
-
-    chapters.forEach((chapter, index) => {
-      const heading = directChildren(chapter, "h2")[0];
-      if (!heading) return;
-
-      const meta = parseChapterHeading(heading, index);
-      chapter.dataset.chapterNumber = meta.number;
-      chapter.dataset.chapterTitle = meta.title;
-
-      const firstParagraph = directChildren(chapter, "p")[0];
-      if (firstParagraph) firstParagraph.classList.add("chapter-lead");
-    });
-
-    return chapters;
-  }
-
   function wrapSubsections(chapter) {
     const children = Array.from(chapter.children);
     const subsections = [];
@@ -96,9 +63,51 @@
     return subsections;
   }
 
-  function prepareSemanticDisclosures(prose) {
+  /* Build the entire guided hierarchy while it is detached from the live page,
+     then commit it with one DOM insertion. The previous implementation moved
+     every paragraph, equation delimiter and figure through the rendered tree
+     one at a time. On long articles that forced repeated mutation/layout work
+     and also gave MathJax a chance to retain stale source positions. */
+  function buildGuidedStructure(prose) {
+    const source = document.createDocumentFragment();
+    const originalNodes = Array.from(prose.childNodes);
+    source.append(...originalNodes);
+
+    const output = document.createDocumentFragment();
+    const chapters = [];
+    let currentChapter = null;
+
+    Array.from(source.childNodes).forEach((child) => {
+      if (child.nodeType === Node.ELEMENT_NODE && child.matches("h2")) {
+        currentChapter = document.createElement("section");
+        currentChapter.className = "article-chapter";
+        output.append(currentChapter);
+        chapters.push(currentChapter);
+      }
+
+      if (currentChapter) currentChapter.append(child);
+      else output.append(child);
+    });
+
+    chapters.forEach((chapter, index) => {
+      const heading = directChildren(chapter, "h2")[0];
+      if (!heading) return;
+
+      const meta = parseChapterHeading(heading, index);
+      chapter.dataset.chapterNumber = meta.number;
+      chapter.dataset.chapterTitle = meta.title;
+
+      const firstParagraph = directChildren(chapter, "p")[0];
+      if (firstParagraph) firstParagraph.classList.add("chapter-lead");
+      wrapSubsections(chapter);
+    });
+
+    return { output, chapters };
+  }
+
+  function prepareSemanticDisclosures(root) {
     const disclosures = [];
-    const starts = Array.from(prose.querySelectorAll(".guided-fold-start"));
+    const starts = Array.from(root.querySelectorAll(".guided-fold-start"));
 
     starts.forEach((start, index) => {
       const parent = start.parentElement;
@@ -145,8 +154,13 @@
 
       details.append(summary, body);
       details.addEventListener("toggle", () => {
-        if (details.open && window.MathJax?.typesetPromise) {
-          window.MathJax.typesetPromise([details]).catch(() => {});
+        /* MathJax normally typesets closed <details> content during the initial
+           document pass. Only request a local pass when the block genuinely
+           contains unprocessed delimiters; re-typesetting every opened proof is
+           expensive and can duplicate output after a DOM race. */
+        if (!details.open || details.querySelector("mjx-container")) return;
+        if (window.MathJax?.typesetPromise && /(?:\$|\\\[|\\\()/.test(body.textContent)) {
+          window.MathJax.typesetPromise([body]).catch(() => {});
         }
       });
       start.replaceWith(details);
@@ -154,13 +168,13 @@
       disclosures.push(details);
     });
 
-    prose.querySelectorAll(".guided-fold-start, .guided-fold-end").forEach((marker) => marker.remove());
+    root.querySelectorAll(".guided-fold-start, .guided-fold-end").forEach((marker) => marker.remove());
     return disclosures;
   }
 
-  function ensureHeadingIds(prose) {
+  function ensureHeadingIds(root) {
     const used = new Set();
-    prose.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach((heading) => {
+    root.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach((heading) => {
       const current = heading.id || slugify(heading.textContent);
       heading.id = uniqueId(current, used);
     });
@@ -171,7 +185,7 @@
     const list = document.getElementById("post-toc-list");
     if (!toc || !list) return new Map();
 
-    list.textContent = "";
+    const fragment = document.createDocumentFragment();
     const linkMap = new Map();
 
     chapters.forEach((chapter) => {
@@ -206,9 +220,10 @@
         });
         item.append(sublist);
       }
-      list.append(item);
+      fragment.append(item);
     });
 
+    list.replaceChildren(fragment);
     toc.hidden = false;
     toc.dataset.tocReady = "true";
     return linkMap;
@@ -341,6 +356,7 @@
 
   let preparedState = null;
   let interactionsWired = false;
+  let interactionTimer = 0;
 
   function prepareGuidedReading() {
     if (preparedState) return preparedState;
@@ -349,22 +365,26 @@
     const prose = page?.querySelector(".article-prose[data-reading-mode='guided']");
     if (!page || !prose) return null;
 
-    const internalTitle = directChildren(prose, "h1")[0];
+    const structure = buildGuidedStructure(prose);
+    const internalTitle = directChildren(structure.output, "h1")[0];
     if (internalTitle) internalTitle.classList.add("article-internal-title");
 
-    directChildren(prose, "hr").forEach((rule) => rule.classList.add("chapter-divider-source"));
-    ensureHeadingIds(prose);
-    const chapters = wrapChapters(prose);
-    chapters.forEach(wrapSubsections);
-    const disclosures = prepareSemanticDisclosures(prose);
-    ensureHeadingIds(prose);
-    const linkMap = buildToc(chapters);
+    directChildren(structure.output, "hr").forEach((rule) => rule.classList.add("chapter-divider-source"));
+    const disclosures = prepareSemanticDisclosures(structure.output);
+    ensureHeadingIds(structure.output);
 
+    /* One live-tree commit. MathJax never sees the source nodes in transit. */
+    prose.replaceChildren(structure.output);
     prose.dataset.guidedReady = "true";
-    preparedState = { page, prose, chapters, disclosures, linkMap };
 
-    /* Make the fast structural pass observable to MathJax and to any article
-       enhancement that needs the final chapter containers. */
+    preparedState = {
+      page,
+      prose,
+      chapters: structure.chapters,
+      disclosures,
+      linkMap: null
+    };
+
     document.dispatchEvent(new CustomEvent("lahav:guided-ready"));
     return preparedState;
   }
@@ -375,24 +395,38 @@
     if (!state) return;
     interactionsWired = true;
 
+    state.linkMap = buildToc(state.chapters);
     wireMobileToc();
     wirePrintDisclosureState(state.disclosures);
     wireScrollState(state.chapters, state.linkMap);
   }
 
-  /* MathJax calls this during its pre-scan hook. That guarantees all chapter,
-     subsection, and disclosure moves finish before MathJax records source
-     ranges, so there is no equation-placement race and no need to hide the
-     guided layout until typesetting completes. */
+  function scheduleInteractions() {
+    if (interactionsWired || interactionTimer) return;
+    interactionTimer = window.setTimeout(() => {
+      interactionTimer = 0;
+      wireInteractions();
+    }, 0);
+  }
+
+  /* MathJax invokes this after DOMContentLoaded but before its document scan.
+     Only the indispensable structural pass runs here. TOC construction and
+     scroll observers are deferred to the next task so the browser can paint
+     the article shell without waiting for non-critical navigation work. */
   window.__lahavPrepareGuidedReading = function () {
     const state = prepareGuidedReading();
-    wireInteractions();
+    scheduleInteractions();
     return state;
   };
 
+  function boot() {
+    prepareGuidedReading();
+    scheduleInteractions();
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", wireInteractions, { once: true });
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
   } else {
-    wireInteractions();
+    boot();
   }
 })();
