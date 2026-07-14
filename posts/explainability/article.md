@@ -176,8 +176,8 @@ The set-valued convention at zero is not a workaround — it is what the KKT con
 
 **What KKT is, briefly.** The KKT conditions are the first-order optimality conditions for constrained optimization. For an *unconstrained* smooth problem, "the gradient vanishes at the optimum" is the whole story. Once we add either constraints or non-smooth penalties (like $\|\beta\|_1$), the plain gradient equation isn't quite right — at the optimum, the gradient of the loss can be *balanced* against a contribution from the constraint or penalty rather than vanishing outright. KKT formalizes this balance:
 
-- At an unconstrained smooth minimum: $\nabla L(\beta^*) = 0$.
-- At the minimum of $L(\beta) + \lambda \lVert\beta\rVert_1$: $\nabla L(\beta^*)$ is cancelled by a term from the subdifferential of $\lVert\beta\rVert_1$, giving $0 \in \nabla L(\beta^*) + \lambda\,\partial\lVert\beta^*\rVert_1$.
+- At an unconstrained smooth minimum: $\nabla L(\beta^{*}) = 0$.
+- At the minimum of $L(\beta) + \lambda \lVert\beta\rVert_1$: $\nabla L(\beta^{*})$ is cancelled by a term from the subdifferential of $\lVert\beta\rVert_1$, giving $0 \in \nabla L(\beta^{*}) + \lambda\,\partial\lVert\beta^{*}\rVert_1$.
 
 The subdifferential is the tool that makes this precise when the penalty has corners.
 
@@ -339,15 +339,15 @@ There are two types of feature importance:
 
     - **Feature engineering:** Report back to the model engineer how strongly the engineered features influenced the model.
 
-      **How?** Check the magnitudes of the importances assigned to engineered features.
+      > **How?** Check the magnitudes of the importances assigned to engineered features.
 
     - **Detect information leakage:** Identify features that inadvertently encode information from the target labels.
 
-      **How?** These features show up as unusually important.
+      > **How?** These features show up as unusually important.
 
     - **Uncover unwanted feature dependencies:** Detect dependencies that should not exist in the model's representation.
 
-      **How?** In permutation feature importance (PFI, §"Permutation Feature Importance"), for instance, a large accuracy decrease can occur because permutation breaks the correlation structure and creates out-of-distribution examples on which the model performs poorly.
+      > **How?** In permutation feature importance (PFI, §"Permutation Feature Importance"), for instance, a large accuracy decrease can occur because permutation breaks the correlation structure and creates out-of-distribution examples on which the model performs poorly.
 
 2. **Local interpretation** (§"Local Interpretation" ahead). This type of feature importance focuses on one prediction. The importances are computed *online*: the model is evaluated repeatedly on perturbed versions of the example to estimate the contribution of each feature.
 
@@ -355,7 +355,7 @@ There are two types of feature importance:
 
     - **Evaluate prediction trustworthiness:** The explanation shows which features most influenced the decision. Agreement with domain knowledge can help assess whether the prediction is plausible.
 
-      **How?** Check whether the feature importances align with domain knowledge for the specific prediction being explained.
+      > **How?** Check whether the feature importances align with domain knowledge for the specific prediction being explained.
 
 ---
 
@@ -972,8 +972,10 @@ $$
 
 _It turns out that by requiring some axioms on $\phi_j(x)$,
 their solution will be **unique** - the one and only shapley-values!_
+
 The first axiom (efficiency) will be our optimization constraint on $\phi_j(x)$.
 The rest (symmetry, monotonicity), will be conditioned on $f(x)$!
+
 #### Axioms:
 
 1. **Efficiency:** $w_{\{1, \ldots, N\}}(x) = \sum_{j=1}^N \phi_j(x) = f_{\{1, \ldots, N\}}(x) - f_\emptyset(x)$
