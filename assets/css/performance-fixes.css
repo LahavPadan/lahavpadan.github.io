@@ -17,6 +17,61 @@
   margin: 1.7em 0;
 }
 
+/* -- Formula copy: selectable TeX overlay --------------------- */
+/* mathjax-setup.js injects a <span class="mjx-source"> into every
+   typeset mjx-container with the raw LaTeX inside. The overlay is
+   absolutely positioned to fill the same box as the SVG glyphs so
+   drag-select over the equation area actually creates a text
+   selection — browsers won't select the SVG glyphs on their own,
+   which is why plain Ctrl+C over an equation used to come out
+   empty.
+
+   The overlay sits *above* the SVG in DOM order (and therefore in
+   z-order, since absolutely-positioned children stack above static
+   siblings by default). That means the mousedown that starts a drag
+   lands on the overlay, whose `user-select: text` opts it into the
+   browser's selection machinery. The text is transparent-on-
+   transparent so nothing shows visually, but the `::selection`
+   background highlight still paints over the equation area, which
+   is what makes the drag *look* like it's selecting the formula.
+
+   The overlay deliberately keeps its default `pointer-events: auto`.
+   Setting it to `none` would let the mousedown fall through to the
+   SVG (which has no text nodes) and no selection would start —
+   exactly the failure this overlay is meant to fix. Regular clicks
+   land on the overlay too, but they bubble to the mjx-container, so
+   the click-to-copy handler in post-enhancements.js keeps working
+   via event delegation (event.target.closest('mjx-container…')). */
+mjx-container[data-tex] {
+  position: relative;
+}
+mjx-container[data-tex] > .mjx-source {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  overflow: hidden;
+  color: transparent;
+  background: transparent;
+  font-size: 1em;
+  line-height: 1.2;
+  white-space: pre;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+/* Match the accent tint the rest of the page uses so a drag over an
+   equation looks like a drag over prose. */
+mjx-container[data-tex] > .mjx-source::selection {
+  background: var(--accent-soft, rgba(125, 218, 173, 0.4));
+  color: transparent;
+}
+mjx-container[data-tex] > .mjx-source::-moz-selection {
+  background: var(--accent-soft, rgba(125, 218, 173, 0.4));
+  color: transparent;
+}
+
 .article-prose .math-copy-shell > mjx-container[display="true"] {
   margin: 0 !important;
   padding-right: 5.8rem;
@@ -178,35 +233,26 @@ mjx-container[data-copy-math-inline]:focus-visible {
 }
 
 /* -- Image lightbox ------------------------------------------- */
-/* post-enhancements.js wraps every content image in a semantic
-   <button class="image-zoom-trigger">. The button carries the block-
-   flow margin so the image sits where the plain <img> used to; the
-   image inside is stripped of its own margin to match. Clicking the
-   button opens a fixed-position overlay whose backdrop, close button,
-   and Escape key all dismiss it. */
-.article-prose .image-zoom-trigger {
-  display: block;
-  width: fit-content;
-  max-width: 100%;
-  margin: 2em auto;
-  padding: 0;
-  border: 0;
-  background: transparent;
+/* post-enhancements.js uses event delegation on .article-prose to
+   catch clicks on any content image and open a fixed-position
+   overlay. No per-image DOM wrapping is done at boot, because
+   mathjax-setup.js's cache-restore step can replace .article-prose
+   innerHTML wholesale — anything we'd installed as an ancestor
+   would be silently thrown away. The cursor and hover ring are
+   applied directly to the img here so the affordance survives
+   whatever DOM the cached HTML puts in place. */
+.article-prose img {
   cursor: zoom-in;
-  transition: box-shadow 100ms linear, transform 100ms linear;
+  transition: box-shadow 100ms linear;
 }
-
-.article-prose .image-zoom-trigger > img {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  margin: 0;
-  border: 1px solid var(--border);
-  background: var(--surface);
+.article-prose a img,
+.article-prose .image-no-zoom img {
+  /* Images inside anchors keep their link semantics; opt-out class
+     available for anything that shouldn't be a zoom trigger. */
+  cursor: pointer;
 }
-
-.article-prose .image-zoom-trigger:hover,
-.article-prose .image-zoom-trigger:focus-visible {
+.article-prose img:hover,
+.article-prose img:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--post-accent, var(--accent));
 }
@@ -273,5 +319,5 @@ body.has-lightbox {
 
 @media (prefers-reduced-motion: reduce) {
   .lightbox { animation: none; }
-  .article-prose .image-zoom-trigger { transition: none; }
+  .article-prose img { transition: none; }
 }

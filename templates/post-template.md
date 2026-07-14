@@ -7,6 +7,8 @@ tags:
   - machine learning
 entry_type: comprehensive # Use either `brief` or `comprehensive`.
 math: true
+# Add `reading_mode: guided` only for genuinely long, chapter-based articles.
+# Ordinary posts automatically use the compatible standard article format.
 ---
 
 Start with the shortest explanation of the problem.
@@ -19,7 +21,7 @@ Use ordinary Markdown. Obsidian previews standard Markdown images too:
 
 For inline math, write $a^2+b^2=c^2$.
 
-For display math:
+For display math, give the equation its own paragraph:
 
 $$
 \nabla f(\mathbf{x}) = 0.

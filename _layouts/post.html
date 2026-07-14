@@ -10,7 +10,16 @@ layout: default
 {% unless post_accent %}
   {% assign post_accent = page.tags | first %}
 {% endunless %}
-<article class="post-page shell{% if is_cyber %} post-page--cyber{% endif %}{% if post_accent %} post-page--accent-{{ post_accent | slugify }}{% endif %}">
+{% assign guided_reading = false %}
+{% if page.reading_mode == "guided" %}
+  {% assign guided_reading = true %}
+{% endif %}
+
+<article class="post-page shell{% if is_cyber %} post-page--cyber{% endif %}{% if post_accent %} post-page--accent-{{ post_accent | slugify }}{% endif %}{% if guided_reading %} post-page--guided{% endif %}">
+  {% if guided_reading %}
+    <div class="reading-progress" aria-hidden="true"><span></span></div>
+  {% endif %}
+
   <header class="post-page__header">
     <div class="post-page__meta">
       <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%B %-d, %Y" }}</time>
@@ -27,22 +36,56 @@ layout: default
       </div>
     {% endif %}
   </header>
+
   <div class="post-page__rule" aria-hidden="true"></div>
-  {% if entry_type == "comprehensive" %}
-    {%- comment -%}
-      Empty TOC shell. post-enhancements.js populates it from the article's
-      h2/h3/h4 headings, then wires up a rAF-throttled scroll-spy that reads
-      pre-measured heading offsets via binary search — far cheaper than firing
-      an IntersectionObserver callback for every heading on every scroll frame.
-    {%- endcomment -%}
-    <nav class="post-toc" id="post-toc" aria-label="Table of contents" hidden>
-      <p class="post-toc__title">on this page</p>
-      <ol class="post-toc__list" id="post-toc-list"></ol>
-    </nav>
+
+  {% if guided_reading %}
+    <div class="post-reading-layout">
+      {% if entry_type == "comprehensive" %}
+        <aside class="post-reading-rail" aria-label="Article navigation">
+          <button class="post-toc-toggle" type="button" aria-expanded="false" aria-controls="post-toc">
+            <span>Article contents</span>
+            <span aria-hidden="true">⌄</span>
+          </button>
+          <nav class="post-toc" id="post-toc" aria-label="Table of contents">
+            <p class="post-toc__title">article route</p>
+            <ol class="post-toc__list" id="post-toc-list"></ol>
+          </nav>
+        </aside>
+      {% endif %}
+
+      <div class="post-reading-main">
+        <div class="reading-status" aria-live="polite">
+          <div class="reading-status__chapter">
+            <span class="reading-status__number"></span>
+            <span class="reading-status__title"></span>
+          </div>
+          <button class="reading-status__disclosures" type="button">Open supporting details</button>
+        </div>
+
+        <div class="article-prose{% if is_cyber %} article-prose--cyber{% endif %}"
+             data-reading-mode="guided"
+             data-article-url="{{ page.url }}"
+             data-build-version="{{ site.time | date: '%s' }}">
+          {{ content }}
+        </div>
+      </div>
+    </div>
+  {% else %}
+    {% if entry_type == "comprehensive" %}
+      <nav class="post-toc" id="post-toc" aria-label="Table of contents" hidden>
+        <p class="post-toc__title">on this page</p>
+        <ol class="post-toc__list" id="post-toc-list"></ol>
+      </nav>
+    {% endif %}
+    <div class="article-prose{% if is_cyber %} article-prose--cyber{% endif %}"
+         data-article-url="{{ page.url }}"
+         data-build-version="{{ site.time | date: '%s' }}">
+      {{ content }}
+    </div>
   {% endif %}
-  <div class="article-prose{% if is_cyber %} article-prose--cyber{% endif %}"
-       data-article-url="{{ page.url }}"
-       data-build-version="{{ site.time | date: '%s' }}">
-    {{ content }}
-  </div>
 </article>
+
+{% if guided_reading %}
+  <script defer src="{{ '/assets/js/guided-reading.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
+{% endif %}

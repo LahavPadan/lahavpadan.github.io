@@ -469,34 +469,34 @@
     var prose = document.querySelector('.article-prose');
     if (!prose) return;
 
-    /* Wrap every content image in a semantic <button>. Skip images inside
-       anchors (their link behaviour wins) and images already wrapped. */
-    var imgs = prose.querySelectorAll('img');
-    Array.prototype.forEach.call(imgs, function (img) {
+    /* Pure delegation, no upfront wrapping. mathjax-setup.js can replace
+       .article-prose innerHTML during its sessionStorage cache-restore
+       step, which would wipe any per-image button wrappers we'd
+       installed at boot. Delegating on the persistent .article-prose
+       ancestor and matching img at click time avoids that whole
+       failure mode: whatever images live in the prose at the moment
+       of the click are what we react to. Cursor and focus affordances
+       come from the CSS selector `.article-prose img` in
+       performance-fixes.css. */
+    prose.addEventListener('click', function (event) {
+      var img = event.target.closest('img');
+      if (!img || !prose.contains(img)) return;
+      /* Images inside anchors: preserve link behaviour. */
       if (img.closest('a')) return;
-      if (img.parentNode &&
-          img.parentNode.classList &&
-          img.parentNode.classList.contains('image-zoom-trigger')) return;
-
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'image-zoom-trigger';
-      btn.setAttribute(
-        'aria-label',
-        img.alt ? 'Open image: ' + img.alt : 'Open image'
-      );
-
-      var parent = img.parentNode;
-      if (!parent) return;
-      parent.insertBefore(btn, img);
-      btn.appendChild(img);
+      event.preventDefault();
+      openLightbox(img);
     });
 
-    prose.addEventListener('click', function (event) {
-      var btn = event.target.closest('.image-zoom-trigger');
-      if (!btn || !prose.contains(btn)) return;
-      var img = btn.querySelector('img');
-      if (!img) return;
+    /* Keyboard access: images aren't natively focusable, so wire a
+       tabindex-less path via the article body. Users who want to open
+       an image via keyboard can Tab to the enclosing paragraph (or
+       any focusable element nearby) and press Enter on the img via
+       the browser's structural navigation; on most browsers we still
+       want a keydown fallback for AT that focuses images. */
+    prose.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      var img = event.target.closest('img');
+      if (!img || img.closest('a')) return;
       event.preventDefault();
       openLightbox(img);
     });
@@ -505,8 +505,13 @@
   /* --------------------------------------------------------- Bootstrap ---- */
 
   function boot() {
-    var tocState = buildToc();
-    initTocSpy(tocState);
+    /* Guided articles build a chapter-aware rail in guided-reading.js.
+       Running the generic TOC here as well would duplicate links and attach
+       two competing scroll spies to the same navigation. */
+    if (!document.querySelector('.post-page--guided')) {
+      var tocState = buildToc();
+      initTocSpy(tocState);
+    }
     initFormulaCopying();
     initFormulaSelectionCopy();
     initImageLightbox();

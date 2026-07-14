@@ -120,6 +120,26 @@
     container.setAttribute('title', 'click to copy TeX');
   }
 
+  /* Inject a hidden, selectable TeX overlay into a typeset container.
+     The overlay sits absolutely inside the mjx-container so drag-select
+     over the equation region actually creates a text selection (browsers
+     don't select MathJax's SVG glyphs on their own), and the browser's
+     native copy path carries the LaTeX along. The overlay's text is
+     transparent-on-transparent so the SVG stays the only visible thing;
+     `pointer-events: none` keeps the click-to-copy affordance on the
+     mjx-container itself intact. Idempotent — safe to re-run after a
+     cache restore even if the overlay is already in place. */
+  function attachSelectableSource(container) {
+    if (container.querySelector(':scope > .mjx-source')) return;
+    var tex = container.getAttribute('data-tex');
+    if (typeof tex !== 'string' || !tex) return;
+    var display = container.getAttribute('display') === 'true';
+    var src = document.createElement('span');
+    src.className = 'mjx-source';
+    src.textContent = display ? '$$' + tex + '$$' : '$' + tex + '$';
+    container.appendChild(src);
+  }
+
   function wrapDisplay(container) {
     if (!container.parentNode) return;
     if (container.parentNode.classList &&
@@ -158,10 +178,17 @@
 
     var containers = prose.querySelectorAll('mjx-container[data-tex]');
     containers.forEach(function (c) {
+      attachSelectableSource(c);
       if (c.getAttribute('display') === 'true') wrapDisplay(c);
       else decorateInline(c);
     });
 
     writeCache(prose);
+
+    /* Guided-reading waits for this signal before it restructures a math-heavy
+       article. Keep it after decoration and cache writing so chapter offsets
+       are measured from the final equation DOM. */
+    document.documentElement.dataset.mathReady = 'true';
+    document.dispatchEvent(new CustomEvent('lahav:math-ready'));
   };
 }());
