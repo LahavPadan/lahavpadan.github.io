@@ -356,7 +356,17 @@
   }
 
   let initialized = false;
+  let scrollWired = false;
 
+  /* Phase 1 — DOM restructuring and TOC rendering.
+     Runs as soon as the article HTML is in the DOM. Does not depend
+     on MathJax having finished typesetting: the chapter/subsection
+     wrapping, disclosure preparation, and TOC generation all read
+     h2/h3 text content, which is stable from the raw markdown output.
+     Splitting this out of the MathJax-ready path is what makes the
+     "article route" appear immediately on math-heavy pages
+     (elliptic-curves, coupled-modes) instead of waiting several
+     seconds for hundreds of equations to typeset first. */
   function init() {
     if (initialized) return;
 
@@ -382,23 +392,31 @@
     wireMobileToc();
     wireDisclosureControl(disclosures);
     wirePrintDisclosureState(disclosures);
-    wireScrollState(chapters, linkMap);
+
+    /* Phase 2 — scroll-spy.
+       Deferred until MathJax has finished so that heading
+       bounding-rect offsets reflect final equation heights. Without
+       this wait, the "current chapter" indicator lags behind the
+       reader on pages where math pushes headings down after the
+       initial render. A fallback timeout ensures the spy still wires
+       up even if MathJax fails to load. */
+    const wireScroll = () => {
+      if (scrollWired) return;
+      scrollWired = true;
+      wireScrollState(chapters, linkMap);
+    };
+
+    if (document.documentElement.dataset.mathReady === "true") {
+      wireScroll();
+    } else if (document.getElementById("MathJax-script")) {
+      document.addEventListener("lahav:math-ready", wireScroll, { once: true });
+      window.setTimeout(wireScroll, 8000);
+    } else {
+      wireScroll();
+    }
   }
 
   function initWhenArticleIsStable() {
-    const hasMathJax = Boolean(document.getElementById("MathJax-script"));
-
-    /* MathJax may restore a cached article-body snapshot. Waiting for its
-       completion event prevents us from wiring listeners to DOM nodes that
-       are about to be replaced, and means heading offsets are measured only
-       after equations have reached their final height. */
-    if (hasMathJax && document.documentElement.dataset.mathReady !== "true") {
-      document.addEventListener("lahav:math-ready", init, { once: true });
-      /* Network failure must not leave the article without navigation. */
-      window.addEventListener("load", () => window.setTimeout(init, 1800), { once: true });
-      return;
-    }
-
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", init, { once: true });
     } else {

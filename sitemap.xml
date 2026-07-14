@@ -25,12 +25,29 @@ sitemap: false
   same filter the home page uses to list entries. We add /, /whoami/,
   and every such post. `<lastmod>` prefers `last_modified_at` when set
   and falls back to `date`.
+
+  Backup-file defence:
+  Files like `posts/4g/index.md.before-combined-site-update-…` carry
+  `layout: post` in their front matter and, since Jekyll processes any
+  file with front matter regardless of extension, get treated as
+  duplicate posts. `_config.yml` now excludes `**/*.before-*` and
+  friends so those files never reach `_site`, but as belt-and-braces
+  we also filter their URLs out of the sitemap by rejecting anything
+  whose URL contains `.before-`, `.bak`, or `.orig`. A single leftover
+  is enough for Search Console to refuse the whole file.
 {%- endcomment -%}
-{%- assign posts = site.pages
+{%- assign posts_raw = site.pages
       | where: "layout", "post"
       | sort: "date"
       | reverse
 -%}
+{%- assign posts = "" | split: "" -%}
+{%- for post in posts_raw -%}
+  {%- assign url = post.url -%}
+  {%- unless url contains ".before-" or url contains ".bak" or url contains ".orig" -%}
+    {%- assign posts = posts | push: post -%}
+  {%- endunless -%}
+{%- endfor -%}
 {%- assign latest_post = posts | first -%}
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

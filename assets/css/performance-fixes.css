@@ -17,59 +17,55 @@
   margin: 1.7em 0;
 }
 
-/* -- Formula copy: selectable TeX overlay --------------------- */
+/* -- Formula copy: selectable TeX source ---------------------- */
 /* mathjax-setup.js injects a <span class="mjx-source"> into every
-   typeset mjx-container with the raw LaTeX inside. The overlay is
-   absolutely positioned to fill the same box as the SVG glyphs so
-   drag-select over the equation area actually creates a text
-   selection — browsers won't select the SVG glyphs on their own,
-   which is why plain Ctrl+C over an equation used to come out
-   empty.
+   typeset mjx-container with the raw LaTeX inside. The span is
+   visually hidden but participates in the browser's native text
+   selection, so when a reader drag-selects a paragraph that
+   contains an equation, selection.toString() includes `$tex$` and
+   Ctrl+C copies it. The copy-event handler in post-enhancements.js
+   also intercepts the copy and produces the same text in browsers
+   that fire the event.
 
-   The overlay sits *above* the SVG in DOM order (and therefore in
-   z-order, since absolutely-positioned children stack above static
-   siblings by default). That means the mousedown that starts a drag
-   lands on the overlay, whose `user-select: text` opts it into the
-   browser's selection machinery. The text is transparent-on-
-   transparent so nothing shows visually, but the `::selection`
-   background highlight still paints over the equation area, which
-   is what makes the drag *look* like it's selecting the formula.
-
-   The overlay deliberately keeps its default `pointer-events: auto`.
-   Setting it to `none` would let the mousedown fall through to the
-   SVG (which has no text nodes) and no selection would start —
-   exactly the failure this overlay is meant to fix. Regular clicks
-   land on the overlay too, but they bubble to the mjx-container, so
-   the click-to-copy handler in post-enhancements.js keeps working
-   via event delegation (event.target.closest('mjx-container…')). */
-mjx-container[data-tex] {
-  position: relative;
-}
-mjx-container[data-tex] > .mjx-source {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: block;
-  overflow: hidden;
-  color: transparent;
-  background: transparent;
-  font-size: 1em;
-  line-height: 1.2;
-  white-space: pre;
-  user-select: text;
-  -webkit-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
-}
-/* Match the accent tint the rest of the page uses so a drag over an
-   equation looks like a drag over prose. */
-mjx-container[data-tex] > .mjx-source::selection {
-  background: var(--accent-soft, rgba(125, 218, 173, 0.4));
-  color: transparent;
-}
-mjx-container[data-tex] > .mjx-source::-moz-selection {
-  background: var(--accent-soft, rgba(125, 218, 173, 0.4));
-  color: transparent;
+   Why "sr-only" instead of an absolute overlay:
+   an overlay filling the mjx-container looked cleaner (it would
+   highlight the equation area during drag-select), but browsers
+   are inconsistent about starting a text selection from a mouse-
+   down on an absolutely-positioned element that sits above an
+   SVG — Chrome sometimes falls through to the SVG (which has no
+   text nodes and therefore blocks selection start), Firefox on
+   some builds respects `user-select: text` but only after the
+   drag has already left the box, and Safari treats scroll
+   containers around the mjx-container as if they were selection
+   boundaries. The Wikipedia pattern below (1px clipped, absolute
+   positioned, still in normal document order) is the industry-
+   standard fix: selection.toString() DOES include the text
+   because the span isn't `display: none` and isn't marked
+   `user-select: none`, but the span never renders visually. It
+   works uniformly across engines. The trade-off is that drag-
+   selecting *only* the equation region no longer highlights it
+   visibly — that's a lost affordance we accept in exchange for
+   reliably-working copy. Copy still works via drag-over-prose-
+   containing-math, and clicking the equation still copies its
+   TeX via the click handler in post-enhancements.js. */
+.mjx-source {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  /* Opt into the selection machinery — the crucial line. Anything
+     with `user-select: none` here would drop the span from
+     selection.toString(), silently defeating the point of the
+     hidden text. */
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
 }
 
 .article-prose .math-copy-shell > mjx-container[display="true"] {

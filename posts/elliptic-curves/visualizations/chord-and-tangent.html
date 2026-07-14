@@ -11,6 +11,15 @@
 (()=>{const svg=document.querySelector('svg'),U=document.querySelector('#upper'),L=document.querySelector('#lower'),line=document.querySelector('#line'),refl=document.querySelector('#reflect'),marks=document.querySelector('#marks');const sx=x=>350+x*120,sy=y=>260-y*82,f=x=>x*x*x-x+1;function path(sign){let d='',on=false;for(let x=-2.35;x<=2.35;x+=.012){const v=f(x);if(v<0){on=false;continue}const y=sign*Math.sqrt(v),X=sx(x),Y=sy(y);d+=(on?'L':'M')+X.toFixed(1)+' '+Y.toFixed(1)+' ';on=true}return d}U.setAttribute('d',path(1));L.setAttribute('d',path(-1));function circle(x,y,c,label,dx=10,dy=-10){return `<circle class="point ${c}" cx="${sx(x)}" cy="${sy(y)}" r="7"/><text class="label" x="${sx(x)+dx}" y="${sy(y)+dy}">${label}</text>`}function intersectLine(m,b,exclude=[]){const roots=[];let lastX=-2.5,last=(m*lastX+b)**2-f(lastX);for(let x=-2.495;x<=2.5;x+=.005){const v=(m*x+b)**2-f(x);if(v===0||v*last<0){let a=lastX,c=x;for(let i=0;i<35;i++){const q=(a+c)/2,w=(m*q+b)**2-f(q);if(w*((m*a+b)**2-f(a))<=0)c=q;else a=q}const r=(a+c)/2;if(!roots.some(z=>Math.abs(z-r)<.02)&&!exclude.some(z=>Math.abs(z-r)<.02))roots.push(r)}last=v;lastX=x}return roots}function render(mode){document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));let P,Q,m,b,R,S;if(mode==='add'){P={x:-1.65,y:Math.sqrt(f(-1.65))};Q={x:.18,y:Math.sqrt(f(.18))};m=(Q.y-P.y)/(Q.x-P.x);b=P.y-m*P.x;R={x:intersectLine(m,b,[P.x,Q.x])[0]};R.y=m*R.x+b;S={x:R.x,y:-R.y};document.querySelector('#title').textContent='A chord determines the third intersection; reflection gives the sum.';document.querySelector('#relation').textContent='R = −(P + Q)';document.querySelector('#relation-copy').textContent='The third intersection and the sum share an x-coordinate and have opposite y-coordinates.';document.querySelector('#s1').innerHTML='<b>Draw the chord.</b><br>The line is fixed by P and Q.';document.querySelector('#s3').innerHTML='<b>Reflect R.</b><br>The reflected point is P + Q.';document.querySelector('#formula').innerHTML='m = (y<sub>Q</sub> − y<sub>P</sub>)/(x<sub>Q</sub> − x<sub>P</sub>)<br>x<sub>P+Q</sub> = m² − x<sub>P</sub> − x<sub>Q</sub>';marks.innerHTML=circle(P.x,P.y,'input','P',-28,-12)+circle(Q.x,Q.y,'input','Q')+circle(R.x,R.y,'third','R')+circle(S.x,S.y,'sum','P + Q',10,24)}else{P={x:-.58,y:Math.sqrt(f(-.58))};m=(3*P.x*P.x-1)/(2*P.y);b=P.y-m*P.x;R={x:intersectLine(m,b,[P.x])[0]};R.y=m*R.x+b;S={x:R.x,y:-R.y};document.querySelector('#title').textContent='At one point, replace the chord by the tangent.';document.querySelector('#relation').textContent='R = −2P';document.querySelector('#relation-copy').textContent='The tangent counts P twice; its remaining intersection is reflected to obtain 2P.';document.querySelector('#s1').innerHTML='<b>Draw the tangent.</b><br>Use the curve’s local slope at P.';document.querySelector('#s3').innerHTML='<b>Reflect R.</b><br>The reflected point is 2P.';document.querySelector('#formula').innerHTML='m = (3x<sub>P</sub>² + a)/(2y<sub>P</sub>)<br>x<sub>2P</sub> = m² − 2x<sub>P</sub>';marks.innerHTML=circle(P.x,P.y,'input','P',-26,-12)+circle(R.x,R.y,'third','R')+circle(S.x,S.y,'sum','2P',10,24)}line.setAttribute('x1',sx(-2.45));line.setAttribute('y1',sy(m*(-2.45)+b));line.setAttribute('x2',sx(2.45));line.setAttribute('y2',sy(m*2.45+b));refl.setAttribute('x1',sx(R.x));refl.setAttribute('y1',sy(R.y));refl.setAttribute('x2',sx(S.x));refl.setAttribute('y2',sy(S.y))}document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>render(b.dataset.mode)));render('add')})();
 </script>
 <script data-article-visualization-bridge>
+/* Height-sync bridge with the parent article page. This version is
+   drift-free: it never adds a fudge factor to the reported height, it
+   never writes window.frameElement.style.height directly (which
+   raced with the parent's own write), and it measures the article
+   content (`.viz`) rather than `document.body`/`document.documentElement`,
+   whose scrollHeight follows the viewport height and therefore fed
+   back into itself once the parent applied the reported number.
+   A last-reported memo cheaply de-dupes identical measurements so we
+   don't send a message on every animation frame. */
 (() => {
   const root = document.documentElement;
   const syncTheme = () => {
@@ -19,17 +28,52 @@
       if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
     } catch (_) {}
   };
+  let lastReported = 0;
   const report = () => {
-    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
-    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
-    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+    /* Measure the article content itself rather than body/documentElement.
+       body.scrollHeight and root.scrollHeight both include the viewport's
+       own dimensions once the iframe has been sized by the parent, so
+       reading them creates a feedback loop with the parent's iframe.style.
+       .viz sits at the top of the flow, doesn't depend on viewport height,
+       and gives a stable content measurement. */
+    const target = document.querySelector(".viz") || document.body;
+    const rect = target.getBoundingClientRect();
+    const height = Math.max(1, Math.ceil(rect.bottom + window.scrollY));
+    /* De-dup identical reports without any accumulating fudge. The parent
+       has its own hysteresis, but sending fewer messages avoids waking
+       its handler needlessly. */
+    if (Math.abs(height - lastReported) < 2) return;
+    lastReported = height;
+    try {
+      window.parent.postMessage(
+        { type: "article-visualization:resize", height },
+        window.location.origin
+      );
+    } catch (_) {}
   };
   syncTheme();
-  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  try {
+    new MutationObserver(() => { syncTheme(); report(); })
+      .observe(window.parent.document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-theme"],
+      });
+  } catch (_) {}
   window.addEventListener("load", report, { once: true });
-  window.addEventListener("resize", report);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
-  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  /* Deliberately do NOT listen for `resize` on the iframe's own window.
+     That event fires whenever the parent applies iframe.style.height,
+     which turns any tiny mismatch between our measurement and the
+     applied value into a feedback loop that grows on every frame. */
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(report).catch(() => {});
+  }
+  if ("ResizeObserver" in window) {
+    /* Observe the content, not the body. Watching body reflects the
+       viewport (which the parent controls) back into our height
+       report — that was the runaway. */
+    const target = document.querySelector(".viz") || document.body;
+    new ResizeObserver(report).observe(target);
+  }
   requestAnimationFrame(report);
 })();
 </script>

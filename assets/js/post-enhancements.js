@@ -367,6 +367,33 @@
   }
 
   function initVisualizationResizing() {
+    /* Guards against the "iframe grows by 2px forever" bug.
+
+       Every article-visualization iframe includes a bridge script that
+       measures its own body/root scrollHeight, adds a fudge of `+2`
+       "to avoid a scrollbar", and posts the number back for the parent
+       to apply as `iframe.style.height`. Independently, that bridge
+       also runs a ResizeObserver on the body, which fires when the
+       iframe's viewport height changes (parent-driven resizes bubble
+       into the child as a body resize). Combined, the sequence is:
+
+         child measures H → posts H+2 → parent sets iframe = H+2
+         → child's body ResizeObserver fires → child measures H+2
+         → posts H+4 → parent sets iframe = H+4 → ... forever
+
+       That's the "drifting whitespace below the visualization until
+       infinity" the reader sees. Fixing every child's bridge script
+       is safer as a one-off cleanup but doesn't help older cached
+       copies of the visualization HTML that browsers may serve after
+       a redeploy, and doesn't help future visualizations that get
+       copy-pasted from the old pattern. So we harden the parent side
+       here: ignore sub-6-pixel deltas from the current height. The
+       real content-change signal easily exceeds that; the +2 drift
+       never does. Combined with the child-side cleanup (see
+       posts/*/visualizations/*.html), this makes the whole path
+       double-safe. */
+    var HYSTERESIS_PX = 6;
+
     window.addEventListener('message', function (event) {
       if (event.origin !== window.location.origin) return;
       var data = event.data;
@@ -379,7 +406,13 @@
       if (!isFinite(height) || height <= 0) return;
       height = Math.max(320, Math.min(3000, Math.ceil(height)));
       each(document.querySelectorAll('iframe[data-article-visualization]'), function (frame) {
-        if (frame.contentWindow === event.source) frame.style.height = height + 'px';
+        if (frame.contentWindow !== event.source) return;
+        /* Skip micro-adjustments that don't reflect real content
+           changes. This is the drift guard: even if the child
+           reports height+2 forever, we never grow. */
+        var currentHeight = frame.offsetHeight;
+        if (Math.abs(height - currentHeight) < HYSTERESIS_PX) return;
+        frame.style.height = height + 'px';
       });
     });
   }

@@ -960,6 +960,15 @@
   </script>
 
 <script data-article-visualization-bridge>
+/* Height-sync bridge with the parent article page. This version is
+   drift-free: it never adds a fudge factor to the reported height, it
+   never writes window.frameElement.style.height directly (which
+   raced with the parent's own write), and it measures the article
+   content (`.viz`) rather than `document.body`/`document.documentElement`,
+   whose scrollHeight follows the viewport height and therefore fed
+   back into itself once the parent applied the reported number.
+   A last-reported memo cheaply de-dupes identical measurements so we
+   don't send a message on every animation frame. */
 (() => {
   const root = document.documentElement;
   const syncTheme = () => {
@@ -968,17 +977,52 @@
       if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
     } catch (_) {}
   };
+  let lastReported = 0;
   const report = () => {
-    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
-    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
-    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+    /* Measure the article content itself rather than body/documentElement.
+       body.scrollHeight and root.scrollHeight both include the viewport's
+       own dimensions once the iframe has been sized by the parent, so
+       reading them creates a feedback loop with the parent's iframe.style.
+       .viz sits at the top of the flow, doesn't depend on viewport height,
+       and gives a stable content measurement. */
+    const target = document.querySelector(".viz") || document.body;
+    const rect = target.getBoundingClientRect();
+    const height = Math.max(1, Math.ceil(rect.bottom + window.scrollY));
+    /* De-dup identical reports without any accumulating fudge. The parent
+       has its own hysteresis, but sending fewer messages avoids waking
+       its handler needlessly. */
+    if (Math.abs(height - lastReported) < 2) return;
+    lastReported = height;
+    try {
+      window.parent.postMessage(
+        { type: "article-visualization:resize", height },
+        window.location.origin
+      );
+    } catch (_) {}
   };
   syncTheme();
-  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  try {
+    new MutationObserver(() => { syncTheme(); report(); })
+      .observe(window.parent.document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-theme"],
+      });
+  } catch (_) {}
   window.addEventListener("load", report, { once: true });
-  window.addEventListener("resize", report);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
-  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  /* Deliberately do NOT listen for `resize` on the iframe's own window.
+     That event fires whenever the parent applies iframe.style.height,
+     which turns any tiny mismatch between our measurement and the
+     applied value into a feedback loop that grows on every frame. */
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(report).catch(() => {});
+  }
+  if ("ResizeObserver" in window) {
+    /* Observe the content, not the body. Watching body reflects the
+       viewport (which the parent controls) back into our height
+       report — that was the runaway. */
+    const target = document.querySelector(".viz") || document.body;
+    new ResizeObserver(report).observe(target);
+  }
   requestAnimationFrame(report);
 })();
 </script>

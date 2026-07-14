@@ -45,6 +45,30 @@
 
   var CACHE_PREFIX = 'lahav-math-cache:v2:';
 
+  /* Guided-reading articles skip both cache-restore and cache-write.
+     Two reasons:
+
+     1. Race with DOM restructuring. guided-reading.js restructures
+        .article-prose (wraps chapters, prepares disclosures, builds
+        the TOC) on DOMContentLoaded so the "article route" appears
+        immediately instead of waiting for MathJax typesetting. If we
+        then cache-restored from a snapshot taken *before* that
+        restructuring, we'd wipe out guided-reading's work. If we
+        cached *after* it, the restructured DOM in sessionStorage
+        would be huge and awkward to invalidate. Simpler: don't
+        cache these at all.
+
+     2. Memory. These are also the math-heaviest articles
+        (elliptic-curves, 4G, coupled-modes), whose fully-typeset
+        innerHTML is the single biggest per-tab memory item on the
+        site. sessionStorage of that size effectively doubles the
+        memory footprint until the tab closes. Skipping the cache
+        here is the largest single reduction available without
+        changing MathJax's renderer. */
+  function isGuidedReadingPage(root) {
+    return root && root.getAttribute('data-reading-mode') === 'guided';
+  }
+
   function cacheKey() {
     var prose = document.querySelector('.article-prose');
     if (!prose) return null;
@@ -78,6 +102,7 @@
   }
 
   function tryRestoreCache(root) {
+    if (isGuidedReadingPage(root)) return false;
     var key = cacheKey();
     if (!key) return false;
     var cached = safeSessionGet(key);
@@ -87,13 +112,17 @@
   }
 
   function writeCache(root) {
+    if (isGuidedReadingPage(root)) return;
     var key = cacheKey();
     if (!key) return;
     /* Only cache once MathJax has finished — the container has SVG glyphs and
        styling attributes at this point, so restoring on next load looks
-       identical without waiting for typesetting. */
+       identical without waiting for typesetting. Cap at ~500 KB (down from
+       1.5 MB) to keep per-tab memory small on the middle-sized articles
+       where caching still makes sense. Bigger articles fall through this
+       cap and re-typeset on refresh instead of doubling their footprint. */
     var html = root.innerHTML;
-    if (html.length > 1500000) return; // ~1.5 MB soft cap
+    if (html.length > 500000) return;
     safeSessionSet(key, html);
   }
 

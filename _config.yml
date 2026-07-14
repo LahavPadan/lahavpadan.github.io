@@ -43,3 +43,14 @@ exclude:
   - node_modules
   - vendor
   - .github
+  # Backup/scratch files: any *.before-* or *.bak leftover shouldn't
+  # end up in _site. Jekyll processes files with YAML front matter
+  # regardless of extension, so if a `posts/foo/index.md.before-…`
+  # exists it will otherwise be treated as a page and clone the post.
+  # Google Search Console has been rejecting the sitemap because
+  # these backup URLs are unreachable or double-listed alongside the
+  # real post. Keep this list tight: patterns not extensions.
+  - "**/*.before-*"
+  - "**/*.bak"
+  - "**/*.orig"
+  - "**/*~"
