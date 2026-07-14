@@ -1,14 +1,8 @@
 /**
- * MathJax preparation for article pages.
+ * Stable MathJax preparation for article pages.
  *
- * The script has only two responsibilities:
- *   1. repair the two server-rendered Markdown shapes that MathJax cannot
- *      safely consume as authored blocks;
- *   2. make guided reading construct its final DOM before MathJax scans it.
- *
- * After typesetting, equation nodes are left entirely to MathJax. They are
- * never wrapped, reparented, duplicated, cached, decorated, or made into
- * custom copy controls.
+ * Display math is separated while it is still raw TeX. MathJax output is never
+ * reparented, wrapped, cached, duplicated, or restored from sessionStorage.
  */
 (function () {
   'use strict';
@@ -17,32 +11,34 @@
     return document.querySelector('.article-prose');
   }
 
-  /**
-   * Kramdown can interpret an underscore inside single-dollar math as an
-   * emphasis delimiter and emit an <em> node containing the remaining dollar
-   * delimiter. Reconstruct only that malformed shape; ordinary emphasis is
-   * untouched.
-   */
+  function purgeLegacyMathCaches() {
+    try {
+      for (var i = window.sessionStorage.length - 1; i >= 0; i -= 1) {
+        var key = window.sessionStorage.key(i);
+        if (key && key.indexOf('lahav-math-cache:') === 0) {
+          window.sessionStorage.removeItem(key);
+        }
+      }
+    } catch (_error) {
+      // sessionStorage can be unavailable in private or restricted contexts.
+    }
+  }
+
   function repairMangledInlineMath(root) {
     var nodes = Array.prototype.slice.call(root.querySelectorAll('em'));
-
     nodes.reverse().forEach(function (node) {
       var text = node.textContent || '';
       if (text.indexOf('$') === -1 || !node.parentNode) return;
       node.parentNode.replaceChild(document.createTextNode('_' + text + '_'), node);
     });
-
     root.normalize();
   }
 
   function hasRenderableContent(html) {
     if (!html || !html.trim()) return false;
-
     var template = document.createElement('template');
     template.innerHTML = html;
-
     if ((template.content.textContent || '').trim()) return true;
-
     return Boolean(template.content.querySelector(
       'img,svg,video,audio,iframe,object,embed,br,hr,input,button'
     ));
@@ -51,12 +47,10 @@
   function nextDisplayDelimiter(html, from) {
     var dollar = html.indexOf('$$', from);
     var bracket = html.indexOf('\\[', from);
-
     if (dollar === -1 && bracket === -1) return null;
     if (dollar !== -1 && (bracket === -1 || dollar < bracket)) {
       return { index: dollar, open: '$$', close: '$$' };
     }
-
     return { index: bracket, open: '\\[', close: '\\]' };
   }
 
@@ -64,18 +58,14 @@
     var segments = [];
     var cursor = 0;
     var found = false;
-
     while (cursor < html.length) {
       var marker = nextDisplayDelimiter(html, cursor);
-
       if (!marker) {
         segments.push({ type: 'text', html: html.slice(cursor) });
         break;
       }
-
       var end = html.indexOf(marker.close, marker.index + marker.open.length);
       if (end === -1) return null;
-
       found = true;
       segments.push({ type: 'text', html: html.slice(cursor, marker.index) });
       segments.push({
@@ -84,7 +74,6 @@
       });
       cursor = end + marker.close.length;
     }
-
     return found ? segments : null;
   }
 
@@ -94,12 +83,6 @@
     return clone;
   }
 
-  /**
-   * A display expression followed immediately by prose can be emitted by
-   * Kramdown as one <p>. Split that paragraph before guided reading and before
-   * MathJax. This is the only block relocation in this file, and it happens
-   * while the DOM still contains raw TeX delimiters—not MathJax output.
-   */
   function normalizeDisplayMathBlocks(root) {
     var paragraphs = Array.prototype.slice.call(root.querySelectorAll('p'));
     var changed = 0;
@@ -114,7 +97,6 @@
       var meaningful = segments.filter(function (segment) {
         return segment.type === 'math' || hasRenderableContent(segment.html);
       });
-
       if (!meaningful.some(function (segment) { return segment.type === 'math'; })) {
         return;
       }
@@ -126,7 +108,6 @@
 
       var fragment = document.createDocumentFragment();
       var firstOutput = true;
-
       meaningful.forEach(function (segment) {
         var block = cloneParagraphShell(paragraph, firstOutput);
         firstOutput = false;
@@ -134,7 +115,6 @@
         if (segment.type === 'math') block.classList.add('math-source-block');
         fragment.appendChild(block);
       });
-
       paragraph.parentNode.replaceChild(fragment, paragraph);
       changed += 1;
     });
@@ -146,6 +126,7 @@
     var prose = articleRoot();
     if (!prose) return;
 
+    purgeLegacyMathCaches();
     repairMangledInlineMath(prose);
     normalizeDisplayMathBlocks(prose);
 

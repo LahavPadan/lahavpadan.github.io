@@ -54,7 +54,7 @@
   {%- comment -%}
 Guided reading builds the final semantic article structure before MathJax scans it. MathJax then typesets that DOM once; rendered equations are not moved or cached.
 {%- endcomment -%}
-  <script src="{{ '/assets/js/mathjax-setup.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
+  <script src="{{ '/assets/js/mathjax-setup.js' | relative_url }}?v=20260714-placement-math-fix-v2" defer></script>
   <script>
   window.MathJax = {
   tex: {
@@ -109,6 +109,6 @@ Guided reading builds the final semantic article structure before MathJax scans 
   </main>
   <footer class="site-footer shell">Lahav Padan <span aria-hidden="true">·</span> looking into the internals</footer>
   <script src="{{ '/assets/js/site.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
-  <script src="{{ '/assets/js/post-enhancements.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
+  <script src="{{ '/assets/js/post-enhancements.js' | relative_url }}?v=20260714-placement-math-fix-v2" defer></script>
 </body>
 </html>

@@ -17,6 +17,8 @@ Take two masses $m$, one at displacement $x_A$ and one at displacement $x_B$, ea
 <iframe
   class="article-visualization"
   data-article-visualization="responsive"
+  data-visualization-key="coupled-oscillators"
+  data-placement-version="20260714-placement-math-fix-v2"
   src="./visualizations/coupled-oscillators.html"
   title="Inspect the endpoint motion of two masses joined by a coupling spring"
   loading="lazy"
@@ -202,6 +204,8 @@ At exact tuning, those two combinations can be read directly from the spring mot
 <iframe
   class="article-visualization"
   data-article-visualization="responsive"
+  data-visualization-key="exact-tuning-modes"
+  data-placement-version="20260714-placement-math-fix-v2"
   src="./visualizations/exact-tuning-modes.html"
   title="Common and differential normal modes at exact tuning"
   loading="lazy"
@@ -228,9 +232,13 @@ The same mixing angle will recur in every $2\times2$ problem below. It measures 
 
 Any $2 \times 2$ Hermitian matrix can be written as a real linear combination of the identity and the three Pauli matrices,
 
-$$H = c_0\, I + c_x \sigma_x + c_y \sigma_y + c_z \sigma_z,$$
+$$
+H = c_0\, I + c_x \sigma_x + c_y \sigma_y + c_z \sigma_z,
+$$
 
-$$\sigma_x = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}, \quad \sigma_y = \begin{pmatrix} 0 & -i \\ i & 0 \end{pmatrix}, \quad \sigma_z = \begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}.$$
+$$
+\sigma_x = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}, \quad \sigma_y = \begin{pmatrix} 0 & -i \\ i & 0 \end{pmatrix}, \quad \sigma_z = \begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}.
+$$
 
 Each Pauli component has a specific physical meaning that is universal across the problems considered here, and it is worth committing them to memory at this stage.
 
@@ -244,11 +252,15 @@ Each Pauli component has a specific physical meaning that is universal across th
 
 The eigenvalues of the full Hermitian matrix are
 
-$$\omega_\pm^2 = c_0 \pm \sqrt{c_x^2 + c_y^2 + c_z^2},$$
+$$
+\omega_\pm^2 = c_0 \pm \sqrt{c_x^2 + c_y^2 + c_z^2},
+$$
 
 with $\omega^2$ retained from § 0.2 since all subsequent physical instances will identify $c_0$ with a mean-frequency-squared and $c_x, c_y, c_z$ with coupling-frequency-squared scales. The gap is
 
-$$\Delta \equiv \omega_+^2 - \omega_-^2 = 2\sqrt{c_x^2 + c_y^2 + c_z^2}.$$
+$$
+\Delta \equiv \omega_+^2 - \omega_-^2 = 2\sqrt{c_x^2 + c_y^2 + c_z^2}.
+$$
 
 Reading this: $c_z$ (detuning) and $(c_x, c_y)$ (couplings) combine in Euclidean quadrature to set the gap. At **exact tuning** ($c_z = 0$) the gap collapses to $2\sqrt{c_x^2 + c_y^2}$. This is the smallest gap achievable for a given pair of couplings, because the quantity under the square root then omits the $c_z^2$ term entirely and cannot be reduced further by any choice of operating point — increasing $|c_z|$ only makes the gap larger. Either coupling ($c_x$ or $c_y$) alone is enough to open a gap; both together add in quadrature.
 
@@ -267,8 +279,10 @@ This is a hyperbola in the $(\delta,\omega^2-\bar\omega^2)$ plane. The two branc
 <iframe
   class="article-visualization"
   data-article-visualization="responsive"
+  data-visualization-key="eigenvalue-gap"
+  data-placement-version="20260714-placement-math-fix-v2"
   src="./visualizations/eigenvalue-gap.html"
-  title="How coupling changes a crossing into an avoided crossing"
+  title="The selected-detuning eigenvalue separation and minimum gap"
   loading="lazy"
   scrolling="no"
 ></iframe>
@@ -295,8 +309,10 @@ Keeping the sign of $q$ displays the two propagation directions. Plotting $q^2$ 
 <iframe
   class="article-visualization"
   data-article-visualization="responsive"
+  data-visualization-key="hyperbola-propagation"
+  data-placement-version="20260714-placement-math-fix-v2"
   src="./visualizations/hyperbola-propagation.html"
-  title="Propagation, evanescence, and the same relation in three coordinate views"
+  title="Reading propagation and evanescence from the dispersion hyperbola"
   loading="lazy"
   scrolling="no"
 ></iframe>
@@ -339,11 +355,15 @@ After rearrangement, $p^2c^2=E^2-m^2c^4$, which has the same threshold structure
 
 For a wavepacket concentrated in frequency around $\omega$ (or in detuning around $\delta$), the transported energy moves at the **group velocity**
 
-$$v_g \equiv \frac{d\omega}{dq}.$$
+$$
+v_g \equiv \frac{d\omega}{dq}.
+$$
 
 Differentiating the hyperbola $q^2 = \delta^2 - \kappa^2$ (using $d\delta = d\omega$ in every setting where the detuning is proportional to $\omega$, up to a constant factor absorbed into units) gives
 
-$$v_g = \frac{d\delta}{dq} = \frac{q}{\delta}.$$
+$$
+v_g = \frac{d\delta}{dq} = \frac{q}{\delta}.
+$$
 
 Reading this:
 
@@ -357,7 +377,9 @@ The group velocity is a universal concept for any dispersion curve $\omega(q)$; 
 
 The rate at which the slope itself changes — the **group velocity dispersion** or **GVD**,
 
-$$\text{GVD} \equiv \frac{d^2 q}{d\omega^2} \propto \frac{d}{d\delta}\left(\frac{1}{v_g}\right),$$
+$$
+\text{GVD} \equiv \frac{d^2 q}{d\omega^2} \propto \frac{d}{d\delta}\left(\frac{1}{v_g}\right),
+$$
 
 diverges at the gap edge for the same reason $v_g$ vanishes there: the hyperbola has vertical tangent. A finite-bandwidth pulse near the band edge acquires enormous frequency-dependent phase and stretches in time. This effect is what chirped Bragg gratings (§ 12) exploit for pulse compression.
 
@@ -367,11 +389,15 @@ Everything up to here has assumed real eigenvalues, corresponding to lossless pr
 
 Write the permittivity $\varepsilon = \varepsilon' + i\varepsilon''$ and the wavenumber $k = \omega\sqrt\varepsilon/c$; expanding for small $\varepsilon''$,
 
-$$k \approx \frac{\omega}{c}\sqrt{\varepsilon'} + \frac{i\omega}{2c}\frac{\varepsilon''}{\sqrt{\varepsilon'}} = k' + \frac{i}{2}\alpha,$$
+$$
+k \approx \frac{\omega}{c}\sqrt{\varepsilon'} + \frac{i\omega}{2c}\frac{\varepsilon''}{\sqrt{\varepsilon'}} = k' + \frac{i}{2}\alpha,
+$$
 
 with $\alpha = \omega\varepsilon''/(c\sqrt{\varepsilon'})$ the intensity absorption coefficient. A wave $e^{ikz}$ propagates as
 
-$$e^{ikz} = e^{ik' z}\, e^{-\alpha z / 2}.$$
+$$
+e^{ikz} = e^{ik' z}\, e^{-\alpha z / 2}.
+$$
 
 The real part $\varepsilon'$ shifts the phase velocity ($n = \sqrt{\varepsilon'}$, refractive index in the usual sense); the imaginary part $\varepsilon''$ produces exponential attenuation ($\alpha > 0$) or amplification ($\alpha < 0$, i.e., **gain**, obtained in an inverted medium such as a semiconductor laser junction — § 10). The signs are set by the sign convention for the time-harmonic factor ($e^{-i\omega t}$ here); flipping the convention flips the sign of $\varepsilon''$.
 
@@ -391,23 +417,31 @@ The following sections all specialize the framework of § 0 to a spatial wave pr
 
 Start with the two curl equations of Maxwell in a linear, isotropic, source-free medium:
 
-$$\nabla \times \mathbf{E} = -\partial_t \mathbf{B}, \qquad \nabla \times \mathbf{H} = \partial_t \mathbf{D}.$$
+$$
+\nabla \times \mathbf{E} = -\partial_t \mathbf{B}, \qquad \nabla \times \mathbf{H} = \partial_t \mathbf{D}.
+$$
 
 We assume the material is **nonmagnetic**, meaning its permeability equals the vacuum value $\mathbf{B} = \mu_0 \mathbf{H}$. This holds for every dielectric medium discussed in §§ 2–4 and §§ 7–10 (glasses, semiconductors, transparent dielectrics), because atomic magnetic moments cannot follow the electromagnetic field at $10^{14}$ Hz — the same inertial cutoff that will reappear in § 5 when we ask why ferromagnetic resonance dies at optical frequencies. § 5 is the one section in which $\mu \neq \mu_0$ matters.
 
 Take the curl of Faraday's law, substitute Ampère's law, and use $\mathbf{D} = \varepsilon_0 \varepsilon(\mathbf{r}) \mathbf{E}$:
 
-$$\nabla \times (\nabla \times \mathbf{E}) = -\mu_0 \partial_t (\nabla \times \mathbf{H}) = -\mu_0 \varepsilon_0 \varepsilon\, \partial_t^2 \mathbf{E}.$$
+$$
+\nabla \times (\nabla \times \mathbf{E}) = -\mu_0 \partial_t (\nabla \times \mathbf{H}) = -\mu_0 \varepsilon_0 \varepsilon\, \partial_t^2 \mathbf{E}.
+$$
 
 For a time-harmonic field $\mathbf{E}(\mathbf{r}, t) = \mathbf{E}(\mathbf{r})\, e^{-i\omega t}$, the double time derivative gives $-\omega^2$. The curl-of-curl identity is
 
-$$\nabla \times (\nabla \times \mathbf{E}) = \nabla(\nabla \cdot \mathbf{E}) - \nabla^2 \mathbf{E}.$$
+$$
+\nabla \times (\nabla \times \mathbf{E}) = \nabla(\nabla \cdot \mathbf{E}) - \nabla^2 \mathbf{E}.
+$$
 
 The first term $\nabla(\nabla \cdot \mathbf{E})$ vanishes for a homogeneous medium (Gauss's law $\nabla \cdot \mathbf{D} = 0$ combined with constant $\varepsilon$ gives $\nabla \cdot \mathbf{E} = 0$), but not for a $\varepsilon(\mathbf{r})$ that varies: an inhomogeneous $\varepsilon$ generates polarization-charge gradients that give $\mathbf{E}$ a nonzero longitudinal component, and dropping this term is a real approximation.
 
 Restrict to two situations in which dropping it is legitimate: propagation along a direction transverse to a $z$-only-varying medium (the field polarization is perpendicular to $\nabla \varepsilon$), and normal incidence onto a 1D layered stack. Under these conditions the wave equation reduces to a **scalar Helmholtz equation** — Helmholtz because we have fixed the frequency, scalar because we have projected to one field component, source-free because we assumed no charges or currents:
 
-$$\frac{d^2 E(z)}{dz^2} + \frac{\omega^2}{c^2}\, \varepsilon(z)\, E(z) = 0, \qquad c^2 \equiv \frac{1}{\mu_0 \varepsilon_0}.$$
+$$
+\frac{d^2 E(z)}{dz^2} + \frac{\omega^2}{c^2}\, \varepsilon(z)\, E(z) = 0, \qquad c^2 \equiv \frac{1}{\mu_0 \varepsilon_0}.
+$$
 
 This is the equation that governs §§ 2–10.
 
@@ -417,15 +451,21 @@ Matter is composed of positive nuclei and negative electron clouds; an electric 
 
 Aggregate over many atoms per unit volume, and define the **polarization density**
 
-$$\mathbf{P}(\mathbf{r}) \equiv \text{net dipole moment per unit volume at } \mathbf{r}.$$
+$$
+\mathbf{P}(\mathbf{r}) \equiv \text{net dipole moment per unit volume at } \mathbf{r}.
+$$
 
 For a linear, isotropic medium the response is linear in the field:
 
-$$\mathbf{P} = \varepsilon_0 \chi \mathbf{E},$$
+$$
+\mathbf{P} = \varepsilon_0 \chi \mathbf{E},
+$$
 
 which defines the **electric susceptibility** $\chi$. The displacement field is then the sum of the vacuum contribution and the material's polarization:
 
-$$\mathbf{D} \;\equiv\; \varepsilon_0 \mathbf{E} + \mathbf{P} \;=\; \varepsilon_0 (1 + \chi) \mathbf{E} \;\equiv\; \varepsilon_0 \varepsilon\, \mathbf{E}, \qquad \varepsilon \equiv 1 + \chi.$$
+$$
+\mathbf{D} \;\equiv\; \varepsilon_0 \mathbf{E} + \mathbf{P} \;=\; \varepsilon_0 (1 + \chi) \mathbf{E} \;\equiv\; \varepsilon_0 \varepsilon\, \mathbf{E}, \qquad \varepsilon \equiv 1 + \chi.
+$$
 
 So the permittivity is "one plus the material's electric response." Gases have $\chi$ close to zero; glasses have $\chi \sim 1.4$; semiconductors have $\chi \sim 10$; metals have complex $\chi$ that can be enormous. Later mentions of "modulation $\Delta\varepsilon$" in a photonic device refer literally to a spatial variation of this atomic-scale polarizability.
 
@@ -441,7 +481,9 @@ When the medium absorbs or amplifies, $\varepsilon$ acquires an imaginary part. 
 
 Specialize now to a medium whose permittivity is periodic in space with period $\Lambda$: $\varepsilon(z + \Lambda) = \varepsilon(z)$. The wave equation from § 1 becomes
 
-$$\mathcal{L}\, E(z) \equiv \left(\frac{d^2}{dz^2} + \frac{\omega^2}{c^2} \varepsilon(z)\right) E(z) = 0,$$
+$$
+\mathcal{L}\, E(z) \equiv \left(\frac{d^2}{dz^2} + \frac{\omega^2}{c^2} \varepsilon(z)\right) E(z) = 0,
+$$
 
 with the crucial feature that the differential operator $\mathcal{L}$ commutes with the translation operator $T_\Lambda$ defined by $(T_\Lambda f)(z) = f(z + \Lambda)$. This section derives the consequence — every solution decomposes into Bloch waves, indexed by a wavevector defined modulo the reciprocal-lattice vector $G = 2\pi/\Lambda$.
 
@@ -451,7 +493,9 @@ Look for solutions on which $T_\Lambda$ acts by a scalar: $\psi(z + \Lambda) = \
 
 The functional equation $\psi(z + \Lambda) = e^{ik\Lambda}\psi(z)$ has solutions of the form
 
-$$\psi(z) = e^{ikz}\, u(z), \qquad u(z + \Lambda) = u(z).$$
+$$
+\psi(z) = e^{ikz}\, u(z), \qquad u(z + \Lambda) = u(z).
+$$
 
 Justification: factor $e^{ikz}$ out of any candidate $\psi$ by defining $u(z) \equiv e^{-ikz}\psi(z)$; the shift condition $\psi(z+\Lambda) = e^{ik\Lambda}\psi(z)$ then translates to $u(z+\Lambda) = u(z)$, no more and no less. So every eigenfunction of $T_\Lambda$ with eigenvalue $e^{ik\Lambda}$ is a plane wave times a periodic function; conversely, every such object is an eigenfunction.
 
@@ -471,7 +515,9 @@ For a linear second-order ODE, specifying the initial values $E(0)$ and $E'(0)$ 
 
 Because $\varepsilon(z)$ is periodic, $\mathcal{L}$ and $T_\Lambda$ commute: shifting a periodic-coefficient ODE by one period gives an ODE with the *same* coefficients. Applying $T_\Lambda$ to a solution $E$ of $\mathcal{L}\, E = 0$ then gives another solution:
 
-$$\mathcal{L}(T_\Lambda E) = T_\Lambda(\mathcal{L} E) = T_\Lambda(0) = 0.$$
+$$
+\mathcal{L}(T_\Lambda E) = T_\Lambda(\mathcal{L} E) = T_\Lambda(0) = 0.
+$$
 
 So $T_\Lambda$ maps the solution space into itself.
 
@@ -491,11 +537,15 @@ Each eigenvalue produces one Bloch-form solution, and their linear combinations 
 
 Because $u(z)$ is periodic, expand it in a Fourier series:
 
-$$u(z) = \sum_{n \in \mathbb{Z}} u_n\, e^{i n G z}, \qquad G \equiv 2\pi/\Lambda.$$
+$$
+u(z) = \sum_{n \in \mathbb{Z}} u_n\, e^{i n G z}, \qquad G \equiv 2\pi/\Lambda.
+$$
 
 Then
 
-$$\psi(z) = e^{ikz} u(z) = \sum_n u_n\, e^{i(k + nG) z}.$$
+$$
+\psi(z) = e^{ikz} u(z) = \sum_n u_n\, e^{i(k + nG) z}.
+$$
 
 The Bloch wave at wavenumber $k$ is a superposition of plane waves at wavenumbers $k + nG$ for all integers $n$. This is best read as **aliasing**: on a lattice with period $\Lambda$, one cannot tell a wave of wavenumber $k$ apart from waves of wavenumber $k + nG$, because they agree at every lattice site (any two of them differ by $e^{inG\Lambda} = e^{in\cdot 2\pi} = 1$ at $z = m\Lambda$). Every wavenumber $k$ and every wavenumber $k + nG$ leave the same footprint on the lattice, and the medium cannot distinguish between them. Formally: $e^{i(k+G)z}\cdot u(z) = e^{ikz}\cdot [e^{iGz} u(z)]$ and $e^{iGz}u(z)$ is another $\Lambda$-periodic function, so the "Bloch wave at $k+G$" is the same Bloch wave as at $k$ — different labels for the same object. So **$k$ is defined modulo $G$**: the natural domain is the **first Brillouin zone** $k \in (-\pi/\Lambda, \pi/\Lambda]$, or by convention $[0, G)$. In dispersion plots, the free-space parabola $\omega = ck$ (which was one-to-one) gets **folded** back into the Brillouin zone at each crossing of $k = \pm\pi/\Lambda$ — an aliasing artifact of the periodicity, and the geometric mechanism that later opens gaps at each folding point.
 
@@ -519,11 +569,15 @@ Consider a periodic stack of parallel scattering planes separated by distance $\
 
 Two waves reflect off two adjacent planes; the wave that penetrates one plane spacing before reflecting travels an extra path of $2\Lambda\sin\theta$ (each in-going leg contributes $\Lambda\sin\theta$). For the two reflections to interfere constructively at the detector, the extra path must equal an integer number of wavelengths:
 
-$$m\lambda_{\text{medium}} = 2\Lambda\sin\theta, \qquad m = 1, 2, 3, \ldots$$
+$$
+m\lambda_{\text{medium}} = 2\Lambda\sin\theta, \qquad m = 1, 2, 3, \ldots
+$$
 
 Expressing in the vacuum wavelength $\lambda_0 = n_{\text{avg}}\lambda_{\text{medium}}$:
 
-$$m\lambda_0 = 2 n_{\text{avg}} \Lambda \sin\theta.$$
+$$
+m\lambda_0 = 2 n_{\text{avg}} \Lambda \sin\theta.
+$$
 
 The integer $m$ is the **order** of diffraction. The formula is intuitive but has two limitations that motivate the next two derivations: it treats the reflection as if it happened at discrete planes, and it does not answer why no Bragg reflection exists for $\lambda > 2n_{\text{avg}}\Lambda$ or what the width of the resulting stopband is.
 
@@ -531,15 +585,21 @@ The integer $m$ is the **order** of diffraction. The formula is intuitive but ha
 
 For a monochromatic wave at frequency $\omega$ in a medium of average permittivity $\bar\varepsilon$, the wavevector magnitude is fixed by the dispersion relation $|\mathbf{k}| = \omega\sqrt{\bar\varepsilon}/c \equiv k$. A scattering process that reflects the wave from wavevector $\mathbf{k}_{\text{in}}$ to $\mathbf{k}_{\text{out}}$ is called **elastic** if $|\mathbf{k}_{\text{out}}| = |\mathbf{k}_{\text{in}}|$: the wavelength is preserved because the periodic lattice cannot absorb or emit any energy — it is static. Momentum is not conserved with the lattice, however: the lattice can absorb any momentum that is a **reciprocal-lattice vector**
 
-$$\mathbf{G}_m = m\, \mathbf{G}_1, \qquad |\mathbf{G}_1| = \frac{2\pi}{\Lambda}, \quad m \in \mathbb{Z}.$$
+$$
+\mathbf{G}_m = m\, \mathbf{G}_1, \qquad |\mathbf{G}_1| = \frac{2\pi}{\Lambda}, \quad m \in \mathbb{Z}.
+$$
 
 So the momentum-conservation rule for scattering by a periodic medium reads
 
-$$\mathbf{k}_{\text{out}} = \mathbf{k}_{\text{in}} + \mathbf{G}_m.$$
+$$
+\mathbf{k}_{\text{out}} = \mathbf{k}_{\text{in}} + \mathbf{G}_m.
+$$
 
 Combined with elasticity $|\mathbf{k}_{\text{out}}| = |\mathbf{k}_{\text{in}}| = k$, this fixes the two vectors on an isosceles triangle of side $k$ and one side of length $|m G_1|$. Geometry gives
 
-$$m G_1 = 2 k \sin\theta \implies m\lambda_0 = 2 n_{\text{avg}} \Lambda \sin\theta,$$
+$$
+m G_1 = 2 k \sin\theta \implies m\lambda_0 = 2 n_{\text{avg}} \Lambda \sin\theta,
+$$
 
 the same formula as Picture 1.
 
@@ -547,33 +607,43 @@ the same formula as Picture 1.
 
 The Bloch structure of § 2 already told us that any solution of the wave equation in a periodic medium has the form $E(z) = e^{ikz} u(z)$ with $u$ periodic. Fourier-expand $u$ (Bloch's completeness argument permits this at once), so
 
-$$E(z) = \sum_{n \in \mathbb{Z}} E_n\, e^{i(k+nG_1) z}.$$
+$$
+E(z) = \sum_{n \in \mathbb{Z}} E_n\, e^{i(k+nG_1) z}.
+$$
 
 The index $n$ labels reciprocal-lattice shifts of the driving wavenumber $k$; each $E_n$ is the amplitude of the "aliased" plane wave at wavenumber $k+nG_1$, in the sense of the folding argument of § 2. Similarly, the modulation is periodic and expands as
 
-$$\varepsilon(z) = \sum_m \varepsilon_m\, e^{i m G_1 z},$$
+$$
+\varepsilon(z) = \sum_m \varepsilon_m\, e^{i m G_1 z},
+$$
 
 with $\varepsilon_0 = \bar\varepsilon$ the average and $\varepsilon_m$ for $m \neq 0$ the strengths of the higher spatial harmonics.
 
 Substitute into the Helmholtz equation $E'' + (\omega/c)^2 \varepsilon(z) E = 0$. The second derivative brings down $-(k+nG_1)^2$ on each Fourier component of $E$; the product $\varepsilon(z) E(z)$ is a convolution in Fourier space (the Fourier coefficient of a product is the convolution of the Fourier coefficients), so
 
-$$\varepsilon(z) E(z) = \sum_n \left(\sum_p \varepsilon_p E_{n-p}\right) e^{i(k+nG_1)z}.$$
+$$
+\varepsilon(z) E(z) = \sum_n \left(\sum_p \varepsilon_p E_{n-p}\right) e^{i(k+nG_1)z}.
+$$
 
 Matching coefficients of $e^{i(k+nG_1)z}$ on both sides of the wave equation gives, for each $n$,
 
-$$\left[(k+nG_1)^2 - \frac{\omega^2}{c^2}\bar\varepsilon\right] E_n \;=\; \frac{\omega^2}{c^2} \sum_{m \neq 0} \varepsilon_m\, E_{n-m}.$$
+$$
+\left[(k+nG_1)^2 - \frac{\omega^2}{c^2}\bar\varepsilon\right] E_n \;=\; \frac{\omega^2}{c^2} \sum_{m \neq 0} \varepsilon_m\, E_{n-m}.
+$$
 
 This is the **master equation**: an infinite system of linear equations coupling the $E_n$'s to one another through the Fourier coefficients of the modulation.
 
 Written as an infinite matrix, with rows and columns indexed by $n$, the left side puts on-shell energies $D_n \equiv (k+nG_1)^2 - (\omega/c)^2\bar\varepsilon$ on the diagonal, and the right side puts the modulation-coupling entries $\varepsilon_{n-n'}$ (times $(\omega/c)^2$) in the off-diagonals:
 
-$$\begin{pmatrix}
+$$
+\begin{pmatrix}
 \ddots & \vdots       & \vdots       & \vdots      \\
 \cdots & D_{-1}       & \varepsilon_1 & \varepsilon_2 & \cdots \\
 \cdots & \varepsilon_1 & D_{0}        & \varepsilon_1 & \cdots \\
 \cdots & \varepsilon_2 & \varepsilon_1 & D_{+1}      & \cdots \\
        & \vdots       & \vdots       & \vdots      & \ddots
-\end{pmatrix} \begin{pmatrix} \vdots \\ E_{-1} \\ E_{0} \\ E_{+1} \\ \vdots \end{pmatrix} = 0.$$
+\end{pmatrix} \begin{pmatrix} \vdots \\ E_{-1} \\ E_{0} \\ E_{+1} \\ \vdots \end{pmatrix} = 0.
+$$
 
 The diagonal $D_n$ is the "detuning" of Fourier mode $n$ from being an on-shell plane wave in the average medium; the off-diagonal $\varepsilon_p$ is the "coupling" between mode $n$ and mode $n - p$, which physically transfers a wavenumber-$pG_1$ momentum kick from the lattice to the wave. This is the same structure as the $2\times 2$ of § 0, extended to infinitely many modes and populated by a specific mechanism: the periodic index modulation.
 
@@ -603,15 +673,21 @@ Real atomic planes are not motionless: at any temperature (including absolute ze
 
 Let plane $j$ sit at $z_j + \Delta_j$ where $z_j = j\Lambda$ is its nominal position and $\Delta_j$ is a small random fluctuation. The wave scattered off plane $j$ carries a phase factor $e^{i m G_1 (z_j + \Delta_j)}$; the $z_j$ part is the coherent Bragg phase and the $\Delta_j$ part is the noise. The scattered amplitude summed over $N$ planes is
 
-$$A \propto \sum_j e^{i m G_1 z_j}\, e^{i m G_1 \Delta_j}.$$
+$$
+A \propto \sum_j e^{i m G_1 z_j}\, e^{i m G_1 \Delta_j}.
+$$
 
 The observed intensity is $|A|^2 = \sum_{j,\ell} e^{i m G_1(z_j - z_\ell)} \langle e^{i m G_1(\Delta_j - \Delta_\ell)}\rangle$, where the angle brackets are the thermal average. For independent Gaussian-distributed $\Delta_j$ with mean zero and variance $u_{\text{rms}}^2$, the average of $e^{i m G_1 \Delta_j}$ is $e^{-\frac12 m^2 G_1^2 u_{\text{rms}}^2}$ (moment-generating function of a Gaussian). The cross-terms $j \neq \ell$ pick up two independent Gaussian averages, giving $e^{-m^2 G_1^2 u_{\text{rms}}^2}$; the diagonal terms $j = \ell$ give 1 and contribute incoherently. Splitting the sum,
 
-$$|A|^2 = N + \big|\sum_j e^{i m G_1 z_j}\big|^2\, e^{-m^2 G_1^2 u_{\text{rms}}^2} - N \cdot e^{-m^2 G_1^2 u_{\text{rms}}^2}.$$
+$$
+|A|^2 = N + \big|\sum_j e^{i m G_1 z_j}\big|^2\, e^{-m^2 G_1^2 u_{\text{rms}}^2} - N \cdot e^{-m^2 G_1^2 u_{\text{rms}}^2}.
+$$
 
 The coherent (constructive) piece — the "Bragg peak" — is the middle term: it is the noise-free coherent intensity multiplied by the **Debye–Waller factor**
 
-$$e^{-m^2 G_1^2\, u_{\text{rms}}^2}$$
+$$
+e^{-m^2 G_1^2\, u_{\text{rms}}^2}
+$$
 
 — a Gaussian suppression in $m^2$. For $m = 833$, $G_1 = 2\pi/a$, and $u_{\text{rms}} = 0.01\,\text{nm}$, the exponent is of order $10^5$: complete washout.
 
@@ -637,15 +713,21 @@ The master equation of § 3 was an infinite system: one linear equation per Four
 
 Start with a real sinusoidal modulation
 
-$$\varepsilon(z) = \bar\varepsilon + \Delta\varepsilon\cos(G_1 z), \qquad G_1 = 2\pi/\Lambda,$$
+$$
+\varepsilon(z) = \bar\varepsilon + \Delta\varepsilon\cos(G_1 z), \qquad G_1 = 2\pi/\Lambda,
+$$
 
 with peak-to-peak modulation depth $\Delta\varepsilon$ small relative to the average $\bar\varepsilon$. Using $\cos\theta = (e^{i\theta} + e^{-i\theta})/2$,
 
-$$\varepsilon(z) = \bar\varepsilon + \frac{\Delta\varepsilon}{2}\, e^{iG_1 z} + \frac{\Delta\varepsilon}{2}\, e^{-iG_1 z}.$$
+$$
+\varepsilon(z) = \bar\varepsilon + \frac{\Delta\varepsilon}{2}\, e^{iG_1 z} + \frac{\Delta\varepsilon}{2}\, e^{-iG_1 z}.
+$$
 
 Reading off the Fourier coefficients in the notation of § 3,
 
-$$\varepsilon_0 = \bar\varepsilon, \qquad \varepsilon_{+1} = \varepsilon_{-1} = \frac{\Delta\varepsilon}{2}, \qquad \varepsilon_m = 0 \text{ for } |m| \geq 2.$$
+$$
+\varepsilon_0 = \bar\varepsilon, \qquad \varepsilon_{+1} = \varepsilon_{-1} = \frac{\Delta\varepsilon}{2}, \qquad \varepsilon_m = 0 \text{ for } |m| \geq 2.
+$$
 
 A pure cosine has exactly two nonzero Fourier components (at $\pm 1$), each of amplitude $\Delta\varepsilon/2$; the "0" case is the arithmetic average. Every subsequent formula will treat $\varepsilon_1$ as the peak spatial harmonic of the modulation.
 
@@ -653,13 +735,17 @@ A pure cosine has exactly two nonzero Fourier components (at $\pm 1$), each of a
 
 The natural reference wavevector for first-order backscattering is
 
-$$k_B \equiv G_1/2 = \pi/\Lambda,$$
+$$
+k_B \equiv G_1/2 = \pi/\Lambda,
+$$
 
 the wavenumber whose free-space wavelength satisfies the classical Bragg condition of § 3 at $\theta = 90°$: substituting $m = 1$ and $\sin\theta = 1$ gives $\lambda_0 = 2n_{\text{avg}}\Lambda$, or in in-medium wavelength terms, $2 k_B = 2\pi/\lambda_{\text{medium}} \cdot 2n_{\text{avg}}\Lambda \cdot n_{\text{avg}}/(n_{\text{avg}}) = G_1$ — the reciprocal-lattice vector $G_1$ is exactly the round-trip momentum transfer that the grating imparts at first-order backscattering. So a wave with $k \approx k_B$ can be scattered by a $G_1$ kick into a wave at $k - G_1 = k - 2k_B \approx -k_B$: the backward wave.
 
 Now examine the master equation matrix of § 3 for a wave at $k \approx k_B$. The diagonal at row $n$ is
 
-$$D_n = (k + n G_1)^2 - \frac{\omega^2}{c^2}\bar\varepsilon,$$
+$$
+D_n = (k + n G_1)^2 - \frac{\omega^2}{c^2}\bar\varepsilon,
+$$
 
 i.e., the discrepancy between the aliased wavenumber $k + nG_1$ and the free-space wavenumber in the *average* medium. A mode is "near resonance" — it can carry appreciable amplitude — when its $D_n$ is small; a mode is "off resonance" — it is suppressed — when its $D_n$ is large in absolute value. Take $k \approx k_B$ and compute:
 
@@ -677,11 +763,15 @@ i.e., the discrepancy between the aliased wavenumber $k + nG_1$ and the free-spa
 
 Take any off-resonant mode, say $E_{+1}$, and solve its master equation row for $E_{+1}$ in terms of the others:
 
-$$D_{+1}\, E_{+1} \;=\; \frac{\omega^2}{c^2}\left(\varepsilon_1 E_0 + \varepsilon_{-1} E_{+2} + \ldots\right).$$
+$$
+D_{+1}\, E_{+1} \;=\; \frac{\omega^2}{c^2}\left(\varepsilon_1 E_0 + \varepsilon_{-1} E_{+2} + \ldots\right).
+$$
 
 Since $\varepsilon_m = 0$ for $|m| \geq 2$, only the $\varepsilon_{\pm 1}$ terms survive, coupling $E_{+1}$ to $E_0$ (via $\varepsilon_1$) and to $E_{+2}$ (via $\varepsilon_{-1}$). At leading order, dropping the further-off-resonant $E_{+2}$,
 
-$$E_{+1} \;\approx\; \frac{(\omega/c)^2 \varepsilon_1}{D_{+1}} E_0 \;\approx\; \frac{k_B^2 \cdot (\Delta\varepsilon/2)}{\bar\varepsilon \cdot 8 k_B^2} E_0 \;=\; \frac{\Delta\varepsilon}{16\,\bar\varepsilon}\, E_0,$$
+$$
+E_{+1} \;\approx\; \frac{(\omega/c)^2 \varepsilon_1}{D_{+1}} E_0 \;\approx\; \frac{k_B^2 \cdot (\Delta\varepsilon/2)}{\bar\varepsilon \cdot 8 k_B^2} E_0 \;=\; \frac{\Delta\varepsilon}{16\,\bar\varepsilon}\, E_0,
+$$
 
 using the **on-shell approximation** $(\omega/c)^2 \bar\varepsilon \approx k_B^2$ (the driving frequency is close to the reference frequency, where an unperturbed free wave in the average medium has wavenumber $k_B$; "on shell" is the standard field-theory phrase for "satisfying the free dispersion relation"). So $E_{+1}$ is smaller than $E_0$ by a factor of $\Delta\varepsilon/(16\bar\varepsilon)$: at $\Delta\varepsilon/\bar\varepsilon = 0.01$, $E_{+1}$ is 1600× smaller than $E_0$, and its contribution to the physics of the near-resonant sector is negligible.
 
@@ -693,7 +783,9 @@ In summary, at first order in $\Delta\varepsilon/\bar\varepsilon$, only $E_0$ an
 
 Retaining only $E_0$ and $E_{-1}$ in the master-equation matrix — and noting that inside the two-mode block only $\varepsilon_{\pm 1} = \Delta\varepsilon/2$ appears (the $\varepsilon_0 = \bar\varepsilon$ is absorbed into the diagonals) — one gets the **truncated master equation**
 
-$$\begin{pmatrix} k^2 - (\omega/c)^2\bar\varepsilon & \; -(\omega/c)^2\, \Delta\varepsilon/2 \\ -(\omega/c)^2\, \Delta\varepsilon/2 & \; (k - 2k_B)^2 - (\omega/c)^2\bar\varepsilon \end{pmatrix} \begin{pmatrix} E_0 \\ E_{-1} \end{pmatrix} = 0.$$
+$$
+\begin{pmatrix} k^2 - (\omega/c)^2\bar\varepsilon & \; -(\omega/c)^2\, \Delta\varepsilon/2 \\ -(\omega/c)^2\, \Delta\varepsilon/2 & \; (k - 2k_B)^2 - (\omega/c)^2\bar\varepsilon \end{pmatrix} \begin{pmatrix} E_0 \\ E_{-1} \end{pmatrix} = 0.
+$$
 
 The off-diagonal is real and symmetric: it is the coupling $\varepsilon_{-1}$ appearing at row 0, column $-1$ (which by Fourier conjugacy equals $\varepsilon_{+1}$ appearing at row $-1$, column 0), each times $(\omega/c)^2$.
 
@@ -707,17 +799,23 @@ This truncated matrix is a Hermitian $2 \times 2$ eigenvalue problem in the fram
 
 Compute each. The half-sum of the two diagonals is
 
-$$c_0 = \frac{k^2 + (k - 2k_B)^2}{2} - (\omega/c)^2\bar\varepsilon \approx k_B^2 - (\omega/c)^2\bar\varepsilon \quad \text{(near reference)},$$
+$$
+c_0 = \frac{k^2 + (k - 2k_B)^2}{2} - (\omega/c)^2\bar\varepsilon \approx k_B^2 - (\omega/c)^2\bar\varepsilon \quad \text{(near reference)},
+$$
 
 which vanishes on-shell — a uniform shift, irrelevant to the gap. The half-difference is
 
-$$c_z = \frac{k^2 - (k - 2k_B)^2}{2} = 2k_B(k - k_B) + O((k - k_B)^2) \approx 2 k_B \, \delta, \qquad \boxed{\;\delta \equiv k - k_B.\;}$$
+$$
+c_z = \frac{k^2 - (k - 2k_B)^2}{2} = 2k_B(k - k_B) + O((k - k_B)^2) \approx 2 k_B \, \delta, \qquad \boxed{\;\delta \equiv k - k_B.\;}
+$$
 
 So the detuning in the framework's sense is proportional to the deviation of the driving wavenumber from the Bragg wavenumber; a linear function that vanishes at exact Bragg.
 
 The off-diagonal is $-(\omega/c)^2\,\Delta\varepsilon/2$: real, so $c_x = -(\omega/c)^2\Delta\varepsilon/2 \approx -k_B^2 \Delta\varepsilon/(2\bar\varepsilon)$ and $c_y = 0$. Dividing $c_x$ by the same $2k_B$ factor that made $c_z$ proportional to $\delta$, one gets the natural coupling coefficient
 
-$$\kappa \equiv \frac{k_B \Delta\varepsilon}{4\bar\varepsilon} = \frac{\pi \Delta n}{\lambda_B},$$
+$$
+\kappa \equiv \frac{k_B \Delta\varepsilon}{4\bar\varepsilon} = \frac{\pi \Delta n}{\lambda_B},
+$$
 
 with $\Delta n = \Delta\varepsilon/(2n_{\text{avg}})$ and $\lambda_B = 2n_{\text{avg}}\Lambda$.
 
@@ -727,7 +825,9 @@ Same Pauli slots as the coupled pendulum of § 0.1 (which also had $c_z \neq 0$,
 
 Substituting into the § 0.5 hyperbola,
 
-$$\boxed{\;q^2 = \delta^2 - \kappa^2,\;}$$
+$$
+\boxed{\;q^2 = \delta^2 - \kappa^2,\;}
+$$
 
 where $q$ is the wavenumber of the Bloch mode measured from the Bragg wavenumber $k_B$.
 
@@ -747,7 +847,9 @@ The two-wave truncation, read through the framework, is the complete first-order
 
 The amplitude-suppression argument above required the ratio $\Delta\varepsilon/\bar\varepsilon$ to be small relative to the *detuning ratio* $|D_n|/k_B^2$ for every off-resonant mode. This gives the quantitative validity condition
 
-$$\frac{\Delta\varepsilon}{\bar\varepsilon} \ll \frac{|D_n|}{k_B^2} = \begin{cases} 8 & \text{for } n = +1 \\ 4|n|^2 - 1 & \text{for higher } n \end{cases}$$
+$$
+\frac{\Delta\varepsilon}{\bar\varepsilon} \ll \frac{|D_n|}{k_B^2} = \begin{cases} 8 & \text{for } n = +1 \\ 4|n|^2 - 1 & \text{for higher } n \end{cases}
+$$
 
 The tightest constraint comes from the closest off-resonant mode ($n = +1$), giving $\Delta\varepsilon/\bar\varepsilon \ll 8$. For $\Delta\varepsilon/\bar\varepsilon = 0.01$ (a typical fiber Bragg grating), corrections are of order $10^{-3}$: the two-wave approximation is essentially exact. For $\Delta\varepsilon/\bar\varepsilon = 0.3$ (an aggressive multilayer stack) corrections start to matter, and the exact transfer-matrix treatment of § 8 becomes necessary.
 
@@ -765,7 +867,9 @@ This section deals only with the theory of the gyromagnetic material; the device
 
 Angular momentum $\vec{L}$ obeys a first-order equation of motion. If a torque $\vec\tau$ acts on a spinning body, then
 
-$$\frac{d\vec{L}}{dt} = \vec\tau.$$
+$$
+\frac{d\vec{L}}{dt} = \vec\tau.
+$$
 
 Unlike Newton's law for linear motion ($\vec{F} = m\ddot{\vec{r}}$, second order), this equation is first order in time — angular momentum plays the role of position and there is no separate "velocity of angular momentum." This is why gyroscopes precess rather than oscillate.
 
@@ -775,21 +879,29 @@ For a torque of the form $\vec\tau = \vec{a} \times \vec{L}$ with constant $\vec
 
 A charged spinning body is a current loop and hence a magnetic dipole; the two are proportional:
 
-$$\vec\mu = \gamma\, \vec{L}, \qquad \gamma \equiv \text{gyromagnetic ratio}.$$
+$$
+\vec\mu = \gamma\, \vec{L}, \qquad \gamma \equiv \text{gyromagnetic ratio}.
+$$
 
 For a classical charged particle of mass $m$ and charge $q$, $\gamma = q/(2m)$; for an electron spin (a quantum-mechanical property), $\gamma_e = -g_e e/(2m_e)$ with $g_e \approx 2$. Numerically $\gamma_e/(2\pi) \approx 28\,\text{GHz/T}$: a bias of 1 tesla gives a natural frequency in the low microwave band. This is the reason ferrite devices are useful at microwave frequencies but not at optical frequencies (§ 5.7).
 
 In an external magnetic field $\vec{B}$, the torque on a magnetic moment is $\vec\tau = \vec\mu\times\vec{B}$. Substituting $\vec\mu = \gamma\vec{L}$ into $d\vec{L}/dt = \vec\tau$ and multiplying by $\gamma$,
 
-$$\frac{d\vec\mu}{dt} = \gamma\, \vec\mu\times\vec{B}.$$
+$$
+\frac{d\vec\mu}{dt} = \gamma\, \vec\mu\times\vec{B}.
+$$
 
 For a static field $\vec{B} = B_0\hat z$, $\vec\mu$ precesses around $\hat z$ at the **Larmor frequency**
 
-$$\omega_0 = \gamma B_0.$$
+$$
+\omega_0 = \gamma B_0.
+$$
 
 Aggregate over the many magnetic moments in a unit volume to define the **magnetization** $\vec{M}$ (total magnetic moment per unit volume). Because each $\vec\mu$ obeys the same equation, so does $\vec{M}$:
 
-$$\frac{d\vec{M}}{dt} = \gamma\, \vec{M}\times\vec{B}.$$
+$$
+\frac{d\vec{M}}{dt} = \gamma\, \vec{M}\times\vec{B}.
+$$
 
 This is the **magnetization equation of motion**. (Historically named the Bloch equation, after a different Bloch than the one behind Bloch's theorem for periodic media in § 2; the naming coincidence is unfortunate but the theorems are unrelated.)
 
@@ -797,7 +909,9 @@ This is the **magnetization equation of motion**. (Historically named the Bloch 
 
 Apply a large static bias $\vec{B}_0 = B_0\hat z$ that fully saturates the ferrite: all moments align with $\hat z$, giving $\vec{M} = M_s\hat z$ with $M_s$ the **saturation magnetization**. Superpose a small time-varying field $\vec b(t) = \vec b\, e^{i\omega t}$ with $|\vec b|\ll B_0$; the magnetization responds with a small transverse deviation $\vec m(t) = \vec m\, e^{i\omega t}$ with $|\vec m|\ll M_s$:
 
-$$\vec M(t) = M_s \hat z + \vec m(t), \qquad \vec B(t) = B_0 \hat z + \vec b(t).$$
+$$
+\vec M(t) = M_s \hat z + \vec m(t), \qquad \vec B(t) = B_0 \hat z + \vec b(t).
+$$
 
 Only the transverse components of $\vec b$ produce any response. A component along $\hat z$ contributes to the torque as $\vec\mu\times(b_z\hat z) = 0$ (parallel vectors), and moreover cannot magnetize further because $\vec M$ is saturated. So only $b_x, b_y$ matter.
 
@@ -805,23 +919,33 @@ Only the transverse components of $\vec b$ produce any response. A component alo
 
 Substitute into the equation of motion, expand the cross product, and drop the doubly-small term $\vec m\times\vec b$ (linearization). In the frequency domain ($d/dt \to i\omega$):
 
-$$i\omega \vec m = \omega_M\, \hat z\times\vec b + \omega_0\, \vec m\times\hat z,$$
+$$
+i\omega \vec m = \omega_M\, \hat z\times\vec b + \omega_0\, \vec m\times\hat z,
+$$
 
 with $\omega_0 = \gamma B_0$ and $\omega_M = \gamma M_s$. Component by component:
 
-$$i\omega\, m_x = -\omega_M b_y + \omega_0 m_y,$$
+$$
+i\omega\, m_x = -\omega_M b_y + \omega_0 m_y,
+$$
 
-$$i\omega\, m_y = \omega_M b_x - \omega_0 m_x.$$
+$$
+i\omega\, m_y = \omega_M b_x - \omega_0 m_x.
+$$
 
 Solve this linear $2\times 2$ system for $(m_x, m_y)$ in terms of $(b_x, b_y)$:
 
-$$\vec m = \hat\chi\, \vec b, \qquad \hat\chi = \frac{1}{\omega_0^2 - \omega^2}\begin{pmatrix} \omega_0\omega_M & -i\omega\omega_M \\ i\omega\omega_M & \omega_0\omega_M \end{pmatrix}.$$
+$$
+\vec m = \hat\chi\, \vec b, \qquad \hat\chi = \frac{1}{\omega_0^2 - \omega^2}\begin{pmatrix} \omega_0\omega_M & -i\omega\omega_M \\ i\omega\omega_M & \omega_0\omega_M \end{pmatrix}.
+$$
 
 <div class="guided-fold-end"></div>
 
 The permeability tensor is $\hat\mu = \mu_0(I + \hat\chi)$; absorbing $\mu_0$ into units,
 
-$$\boxed{\;\hat\mu_r = \begin{pmatrix} \mu & -i\kappa_P \\ i\kappa_P & \mu \end{pmatrix},\;}$$
+$$
+\boxed{\;\hat\mu_r = \begin{pmatrix} \mu & -i\kappa_P \\ i\kappa_P & \mu \end{pmatrix},\;}
+$$
 
 with the diagonal $\mu = 1 + \omega_0\omega_M/(\omega_0^2 - \omega^2)$ and the antisymmetric imaginary off-diagonal $\kappa_P = \omega\omega_M/(\omega_0^2 - \omega^2)$. This is the **Polder tensor**. (The subscript $_P$ distinguishes the Polder coupling from the Bragg coupling of § 4 — see § 5.4 below.)
 
@@ -845,19 +969,25 @@ Since $c_x = c_z = 0$ and $c_y = \kappa_P$, § 0's general formula $\lambda_\pm 
 
 The Polder tensor is diagonal in the CP basis:
 
-$$\hat\mu_{\text{CP}} = \begin{pmatrix} \mu_+ & 0 \\ 0 & \mu_- \end{pmatrix}.$$
+$$
+\hat\mu_{\text{CP}} = \begin{pmatrix} \mu_+ & 0 \\ 0 & \mu_- \end{pmatrix}.
+$$
 
 Why CP is the natural eigenbasis: the gyromagnetic medium has axial rotation symmetry around the bias direction $\hat z$, so any tensor consistent with this symmetry must be diagonal in a basis invariant under axial rotations — and the two states invariant under rotation around $\hat z$ (up to a global phase) are RCP and LCP.
 
 Substituting the explicit forms and simplifying, one gets
 
-$$\mu_+ = 1 + \frac{\omega_M}{\omega_0 - \omega}, \qquad \mu_- = 1 + \frac{\omega_M}{\omega_0 + \omega}.$$
+$$
+\mu_+ = 1 + \frac{\omega_M}{\omega_0 - \omega}, \qquad \mu_- = 1 + \frac{\omega_M}{\omega_0 + \omega}.
+$$
 
 The RCP permeability $\mu_+$ has a pole at $\omega = \omega_0$: **ferromagnetic resonance (FMR)**. The LCP permeability $\mu_-$ has no such resonance. Physically: the RF field co-rotating with the natural precession of the spins can push the precession efficiently, driving a resonance; the counter-rotating field pushes at the wrong phase every cycle and drives no response.
 
 Since the refractive index for propagation along $\hat z$ is $n = \sqrt{\varepsilon\mu_r/\mu_0}$, the two CP components see two different refractive indices,
 
-$$n_\pm = \sqrt{\varepsilon (\mu \pm \kappa_P)/\mu_0},$$
+$$
+n_\pm = \sqrt{\varepsilon (\mu \pm \kappa_P)/\mu_0},
+$$
 
 and propagate at different phase velocities. This is the mechanism of Faraday rotation.
 
@@ -865,21 +995,29 @@ and propagate at different phase velocities. This is the mechanism of Faraday ro
 
 A linearly polarized wave along $\hat z$ decomposes as an equal superposition of RCP and LCP,
 
-$$\vec E_{\text{lin}}(z=0) = \tfrac12(\vec E_+ + \vec E_-).$$
+$$
+\vec E_{\text{lin}}(z=0) = \tfrac12(\vec E_+ + \vec E_-).
+$$
 
 After distance $z$, each acquires its own phase $k_\pm z$:
 
-$$\vec E(z) = \tfrac12(\vec E_+\, e^{ik_+ z} + \vec E_-\, e^{ik_- z}).$$
+$$
+\vec E(z) = \tfrac12(\vec E_+\, e^{ik_+ z} + \vec E_-\, e^{ik_- z}).
+$$
 
 The sum's linear-polarization direction depends on the relative phase between the two components, and this phase increases by $\Delta k\cdot z = (k_+ - k_-) z$ as the wave propagates. Because the two CP components rotate in opposite senses in the transverse plane, a differential phase produces a rotation of the linear polarization by half the differential phase,
 
-$$\theta_F(z) = \tfrac12 (k_+ - k_-)\, z = \frac{\omega}{2c}(n_+ - n_-)\, z.$$
+$$
+\theta_F(z) = \tfrac12 (k_+ - k_-)\, z = \frac{\omega}{2c}(n_+ - n_-)\, z.
+$$
 
 This is the **Faraday rotation angle**.
 
 For non-resonant operation ($|\omega - \omega_0|$ far from any pole), $n_+ - n_-$ is linear in the bias field $B_0$, and one writes
 
-$$\theta_F = V\, B_0\, L,$$
+$$
+\theta_F = V\, B_0\, L,
+$$
 
 where $V$ is the **Verdet constant** of the material and $L$ the propagation distance. Verdet constants vary by many orders of magnitude across candidate materials; § 11 covers the materials selection.
 
@@ -891,7 +1029,9 @@ This is the property that makes Faraday-based devices useful. Consider a wave re
 
 The antisymmetry $\chi_{xy} = -\chi_{yx}$ in the Polder tensor is not accidental. Onsager reciprocity — a statistical-mechanical constraint valid for any linear response — requires
 
-$$\chi_{ij}(\vec B) = \chi_{ji}(-\vec B).$$
+$$
+\chi_{ij}(\vec B) = \chi_{ji}(-\vec B).
+$$
 
 This is time-reversal symmetry: reversing time flips the sign of the magnetic field but leaves the response otherwise the same. At $\vec B = 0$ this forces $\chi_{ij}(0) = \chi_{ji}(0)$: an unbiased medium has a *symmetric* susceptibility tensor — hence $c_y = 0$ for every unbiased problem in the framework.
 
@@ -905,7 +1045,9 @@ Treat a bound electron as a mass on a spring with resonant frequency $\omega_e$ 
 
 The magnitude of the splitting is $\Delta\omega_e \sim eB_0/m_e$: linear in the bias, as required for a $\sigma_y$ realization. The resulting tensorial structure is identical to the Polder tensor,
 
-$$\hat\varepsilon = \begin{pmatrix} \varepsilon & -i\xi \\ i\xi & \varepsilon \end{pmatrix},$$
+$$
+\hat\varepsilon = \begin{pmatrix} \varepsilon & -i\xi \\ i\xi & \varepsilon \end{pmatrix},
+$$
 
 with $\xi$ the bound-electron off-diagonal (proportional to $B_0$ times a material-specific factor). Everything else in this section — CP eigenmodes, split refractive indices, Faraday rotation, non-reciprocity, the Onsager constraint — applies with $\hat\mu \to \hat\varepsilon$ and $\kappa_P \to \xi$. § 11 will address the two regimes (microwave / spin, optical / bound electron) with a common device architecture and separate materials selection.
 
@@ -929,7 +1071,9 @@ The gap of § 0 has two edges: an upper one at $\delta = +\kappa$ and a lower on
 
 Rewrite the hyperbola with $\delta \to \omega$ (the driving frequency) and $\kappa \to \omega_c$ (the coupling now labeled as a cutoff frequency):
 
-$$q^2 = \frac{\omega^2 - \omega_c^2}{v^2}.$$
+$$
+q^2 = \frac{\omega^2 - \omega_c^2}{v^2}.
+$$
 
 Here $v$ is the propagation speed at high frequencies (far above cutoff). Reading the formula:
 
@@ -939,6 +1083,8 @@ Here $v$ is the propagation speed at high frequencies (far above cutoff). Readin
 <iframe
   class="article-visualization"
   data-article-visualization="responsive"
+  data-visualization-key="cutoff-propagation"
+  data-placement-version="20260714-placement-math-fix-v2"
   src="./visualizations/cutoff-propagation.html"
   title="How one cutoff dispersion curve separates propagating, threshold, and evanescent regimes"
   loading="lazy"
@@ -951,15 +1097,21 @@ Every setting below is this formula with a specific mechanism setting $\omega_c$
 
 A rectangular metallic waveguide of transverse dimension $a$ (in the direction perpendicular to propagation) supports transverse modes with quantized wavevector $k_\perp = m\pi/a$ for integer $m$. The wave equation in vacuum reads
 
-$$\left(-\nabla^2 - \frac{\omega^2}{c^2}\right)E = 0.$$
+$$
+\left(-\nabla^2 - \frac{\omega^2}{c^2}\right)E = 0.
+$$
 
 Separating variables into a transverse-mode function times $e^{ik_z z}$ gives
 
-$$k_z^2 = \frac{\omega^2}{c^2} - k_\perp^2.$$
+$$
+k_z^2 = \frac{\omega^2}{c^2} - k_\perp^2.
+$$
 
 Identify $q \to k_z$, $\omega/c \to \omega/v$ with $v = c$, and $\omega_c/c \to k_\perp = m\pi/a$: same hyperbola. The cutoff frequency of the $m$-th transverse mode is
 
-$$\omega_c = \frac{m\pi c}{a}.$$
+$$
+\omega_c = \frac{m\pi c}{a}.
+$$
 
 Physical origin of the coupling: the metallic walls impose $E_\parallel = 0$ at $x = 0, a$, which forces the transverse field to vibrate at least once between them (the fundamental $m = 1$ mode has half a wavelength in the transverse dimension). Any driving frequency low enough that the wave "wants" a smaller transverse wavenumber than $k_\perp$ cannot fit — evanescent.
 
@@ -967,11 +1119,15 @@ Physical origin of the coupling: the metallic walls impose $E_\parallel = 0$ at 
 
 Electrons in a plasma (or a metal) respond to an applied field but with inertia. Their response is captured by the Drude permittivity
 
-$$\varepsilon(\omega) = 1 - \frac{\omega_p^2}{\omega^2}, \qquad \omega_p^2 = \frac{n_e e^2}{m_e \varepsilon_0},$$
+$$
+\varepsilon(\omega) = 1 - \frac{\omega_p^2}{\omega^2}, \qquad \omega_p^2 = \frac{n_e e^2}{m_e \varepsilon_0},
+$$
 
 with $n_e$ the electron number density and $\omega_p$ the **plasma frequency**. Substituting into the free-space dispersion $k^2 = \omega^2\varepsilon/c^2$,
 
-$$k^2 = \frac{\omega^2 - \omega_p^2}{c^2}.$$
+$$
+k^2 = \frac{\omega^2 - \omega_p^2}{c^2}.
+$$
 
 Same hyperbola. The cutoff is $\omega_c = \omega_p$. Physical origin of the coupling: the free-electron plasma has a natural collective oscillation at $\omega_p$, and an electromagnetic wave below $\omega_p$ is fully screened out — the electrons rearrange themselves to cancel the applied field within a skin depth $c/\omega_p$. This is why metals reflect visible light: the plasma frequency of typical metals is in the ultraviolet, so all frequencies below UV are below cutoff and are reflected. It is also why the ionosphere reflects short-wave radio: the ionospheric plasma frequency ($\sim 10$ MHz) is above short-wave frequencies and below the frequencies that go through to space.
 
@@ -979,7 +1135,9 @@ Same hyperbola. The cutoff is $\omega_c = \omega_p$. Physical origin of the coup
 
 A relativistic scalar particle of mass $m$ has energy–momentum relation
 
-$$E^2 = (pc)^2 + (mc^2)^2, \qquad \text{equivalently} \qquad p^2 = \frac{E^2 - m^2c^4}{c^2}.$$
+$$
+E^2 = (pc)^2 + (mc^2)^2, \qquad \text{equivalently} \qquad p^2 = \frac{E^2 - m^2c^4}{c^2}.
+$$
 
 Identify $q \to p/\hbar$, $\omega \to E/\hbar$, $\omega_c \to mc^2/\hbar$: same hyperbola. The cutoff is set by the **rest energy** of the particle, $\hbar\omega_c = mc^2$. Physical origin: producing a particle at rest requires an energy input of $mc^2$; any driving with less energy cannot excite the field. Below cutoff there is no propagating particle; the field is Yukawa-suppressed (the "evanescent decay" of § 0.6 in the relativistic setting). This is what makes short-range forces mediated by massive particles fall off exponentially with distance, with the exponential decay length equal to the Compton wavelength $\hbar/(mc)$.
 
@@ -1018,7 +1176,9 @@ None of these adds new algebra to § 0 — they are geometric readings of the sa
 
 At the Bragg wavenumber ($k = k_B$, hence $\delta = 0$), the two-wave truncation reduces to the pure-coupling problem $H = \kappa \sigma_x$: the diagonal has been zeroed by choice of reference wavenumber, and only the off-diagonal is left. Its eigenvalues are $\pm\kappa$ — the two band-edge frequencies above and below the reference — and its eigenvectors are the equal-mixture combinations
 
-$$(A, B) = (1, 1)/\sqrt 2 \quad \text{and} \quad (A, B) = (1, -1)/\sqrt 2.$$
+$$
+(A, B) = (1, 1)/\sqrt 2 \quad \text{and} \quad (A, B) = (1, -1)/\sqrt 2.
+$$
 
 Translated to real-space fields via $E(z) = A\, e^{ik_B z} + B\, e^{-ik_B z}$:
 
@@ -1033,7 +1193,9 @@ The two standing waves have their intensity maxima at complementary positions in
 
 The Helmholtz equation from § 1, $E'' + (\omega/c)^2\varepsilon(z) E = 0$, can be rewritten as an eigenvalue problem for $\omega^2$:
 
-$$\omega^2 = c^2 \frac{-\int E^* E''\, dz}{\int \varepsilon(z)|E(z)|^2\, dz}.$$
+$$
+\omega^2 = c^2 \frac{-\int E^* E''\, dz}{\int \varepsilon(z)|E(z)|^2\, dz}.
+$$
 
 This is a Rayleigh-quotient form; the eigenvalues correspond to stationary points of this quotient over trial fields. Reading the quotient: for a fixed shape of $E(z)$ (fixed numerator), a larger weighted $\int \varepsilon|E|^2$ gives a *smaller* $\omega^2$.
 
@@ -1063,8 +1225,10 @@ Both reflected amplitudes therefore return with total phase $\pi$ and add constr
 <iframe
   class="article-visualization"
   data-article-visualization="responsive"
+  data-visualization-key="fresnel-quarter-wave-phase"
+  data-placement-version="20260714-placement-math-fix-v2"
   src="./visualizations/fresnel-quarter-wave-phase.html"
-  title="Fresnel phase and quarter-wave propagation phase compared at one return plane"
+  title="Interface reflection phase and quarter-wave propagation phase compared at one return plane"
   loading="lazy"
   scrolling="no"
 ></iframe>
@@ -1168,6 +1332,8 @@ They show why the finite problem cannot be represented by one decaying exponenti
 <iframe
   class="article-visualization"
   data-article-visualization="responsive"
+  data-visualization-key="bragg-mirror-penetration"
+  data-placement-version="20260714-placement-math-fix-v2"
   src="./visualizations/bragg-mirror-penetration.html"
   title="Infinite-medium decay, finite-boundary envelopes, and Bragg-mirror reflectivity"
   loading="lazy"
@@ -1192,7 +1358,9 @@ Take a mirror at exactly its design wavelength $\lambda_0$: each quarter-wave la
 
 Now shine the same mirror with a wavelength $\lambda$ that is off by 1%, so $\lambda = 0.99 \lambda_0$. The round-trip phase per layer is
 
-$$\phi_{\text{RT}} = 2 k d = 2\left(\frac{2\pi n}{\lambda}\right)\left(\frac{\lambda_0}{4n}\right) = \pi\frac{\lambda_0}{\lambda} \approx 1.01\pi.$$
+$$
+\phi_{\text{RT}} = 2 k d = 2\left(\frac{2\pi n}{\lambda}\right)\left(\frac{\lambda_0}{4n}\right) = \pi\frac{\lambda_0}{\lambda} \approx 1.01\pi.
+$$
 
 Each layer contributes a phase *error* of $0.01\pi \approx 2°$ — small. But the wave enters the stack and accumulates error across many layers:
 
@@ -1218,15 +1386,21 @@ Sections 2–4 answered the eigenvalue question in $k$-space: given a frequency 
 
 The wave equation from § 1 is second-order in $z$; a second-order linear ODE has a two-dimensional solution space parameterized by initial conditions $E(z_0)$ and $E'(z_0)$. Define the **local state**
 
-$$\mathbf{v}(z) = \begin{pmatrix} E(z) \\ E'(z) \end{pmatrix}.$$
+$$
+\mathbf{v}(z) = \begin{pmatrix} E(z) \\ E'(z) \end{pmatrix}.
+$$
 
 The wave equation rewrites as a first-order system
 
-$$\frac{d\mathbf{v}}{dz} = A(z)\, \mathbf{v}, \qquad A(z) = \begin{pmatrix} 0 & 1 \\ -(\omega/c)^2\varepsilon(z) & 0 \end{pmatrix}.$$
+$$
+\frac{d\mathbf{v}}{dz} = A(z)\, \mathbf{v}, \qquad A(z) = \begin{pmatrix} 0 & 1 \\ -(\omega/c)^2\varepsilon(z) & 0 \end{pmatrix}.
+$$
 
 Because the ODE is linear, its solution defines a linear map from initial state to final state: for any two points $z_0, z_1$ there is a $2\times 2$ matrix $T(z_0, z_1)$ such that
 
-$$\mathbf{v}(z_1) = T(z_0, z_1)\, \mathbf{v}(z_0).$$
+$$
+\mathbf{v}(z_1) = T(z_0, z_1)\, \mathbf{v}(z_0).
+$$
 
 This is the **transfer matrix**. It is defined for *any* $\varepsilon(z)$, not just periodic — the same 2×2 solution space that Bloch's theorem in § 2 used to prove the completeness of Bloch waves.
 
@@ -1234,18 +1408,24 @@ This is the **transfer matrix**. It is defined for *any* $\varepsilon(z)$, not j
 
 The most useful property: transfer matrices compose by multiplication. Breaking $[z_0, z_n]$ into subintervals,
 
-$$T(z_0, z_n) = T(z_{n-1}, z_n)\, T(z_{n-2}, z_{n-1})\, \cdots\, T(z_0, z_1).$$
+$$
+T(z_0, z_n) = T(z_{n-1}, z_n)\, T(z_{n-2}, z_{n-1})\, \cdots\, T(z_0, z_1).
+$$
 
 For a periodic medium with unit-cell transfer matrix $T_{\text{cell}}$, propagation through $N$ unit cells is $T_{\text{cell}}^N$: matrix power replaces ODE integration through the long structure.
 
 The matrix $A(z)$ has zero trace, and a standard theorem on linear ODEs states that if $A$ is traceless then $\det T(z_0, z)$ is conserved. At $z = z_0$ the transfer matrix is the identity with $\det = 1$, so $\det T \equiv 1$ everywhere. Physically, the conserved quantity is the **Wronskian**
 
-$$W(z) = E_1(z) E_2'(z) - E_2(z) E_1'(z)$$
+$$
+W(z) = E_1(z) E_2'(z) - E_2(z) E_1'(z)
+$$
 
 of any two solutions $E_1, E_2$; it is proportional to the Poynting flux of any coherent superposition of the two and its preservation is energy conservation in a lossless medium. Matrices with $\det = 1$ form the group $SL(2, \mathbb{R})$ (or $SL(2, \mathbb{C})$ if losses are present), and everything below is the representation theory of $SL(2, \mathbb{R})$ applied to wave propagation.
 <iframe
   class="article-visualization"
   data-article-visualization="responsive"
+  data-visualization-key="transfer-matrix-cascade"
+  data-placement-version="20260714-placement-math-fix-v2"
   src="./visualizations/transfer-matrix-cascade.html"
   title="A local wave state propagated by one transfer matrix and then by a cascade of layer matrices"
   loading="lazy"
@@ -1256,7 +1436,9 @@ of any two solutions $E_1, E_2$; it is proportional to the Poynting flux of any 
 
 For a periodic medium, the Bloch waves of § 2 are the eigenvectors of the unit-cell transfer matrix — states that reproduce themselves up to a factor after one period. The eigenvalues satisfy
 
-$$\lambda^2 - \text{tr}(T)\, \lambda + 1 = 0 \implies \lambda = \frac{\text{tr}(T) \pm \sqrt{\text{tr}(T)^2 - 4}}{2}.$$
+$$
+\lambda^2 - \text{tr}(T)\, \lambda + 1 = 0 \implies \lambda = \frac{\text{tr}(T) \pm \sqrt{\text{tr}(T)^2 - 4}}{2}.
+$$
 
 Two cases distinguished by the sign of the discriminant:
 
@@ -1264,7 +1446,9 @@ Two cases distinguished by the sign of the discriminant:
 
 Discriminant negative; $\lambda$ complex-conjugate pair with $|\lambda_1| = |\lambda_2| = 1$ (product is $\det T = 1$). Write $\lambda_{1,2} = e^{\pm iK\Lambda}$; then
 
-$$\cos(K\Lambda) = \frac{1}{2}\text{tr}(T),$$
+$$
+\cos(K\Lambda) = \frac{1}{2}\text{tr}(T),
+$$
 
 which defines the **Bloch wavenumber** $K$ for that frequency — the same $K$ that Bloch's theorem produced abstractly in § 2.
 
@@ -1286,13 +1470,17 @@ Consider the alternating-layer Bragg structure with high and low index $n_H, n_L
 
 In each homogeneous layer the wave equation is $E'' + k_i^2 E = 0$ with $k_i = \omega n_i/c$. Integrating the ODE gives the layer transfer matrix
 
-$$T_i = \begin{pmatrix} \cos(k_i d_i) & (1/k_i)\sin(k_i d_i) \\ -k_i \sin(k_i d_i) & \cos(k_i d_i) \end{pmatrix}, \qquad \det T_i = \cos^2 + \sin^2 = 1.$$
+$$
+T_i = \begin{pmatrix} \cos(k_i d_i) & (1/k_i)\sin(k_i d_i) \\ -k_i \sin(k_i d_i) & \cos(k_i d_i) \end{pmatrix}, \qquad \det T_i = \cos^2 + \sin^2 = 1.
+$$
 
 The unit cell is one high layer followed by one low layer, so $T_{\text{cell}} = T_L T_H$.
 
 At the design wavelength satisfying quarter-wave thickness ($k_i d_i = \pi/2$), each $T_i$ simplifies to $\begin{pmatrix} 0 & 1/k_i \\ -k_i & 0\end{pmatrix}$, and the product is
 
-$$T_{\text{cell}} = \begin{pmatrix} -k_H/k_L & 0 \\ 0 & -k_L/k_H \end{pmatrix} = \begin{pmatrix} -n_H/n_L & 0 \\ 0 & -n_L/n_H \end{pmatrix}.$$
+$$
+T_{\text{cell}} = \begin{pmatrix} -k_H/k_L & 0 \\ 0 & -k_L/k_H \end{pmatrix} = \begin{pmatrix} -n_H/n_L & 0 \\ 0 & -n_L/n_H \end{pmatrix}.
+$$
 
 <div class="guided-fold-end"></div>
 
@@ -1326,7 +1514,9 @@ The standard DBR alternates high-index and low-index layers, each of optical thi
 
 For a stack of $N$ high-low bilayer periods plus a final high layer between substrate index $n_s$ and incident medium $n_0$, at the design wavelength the closed-form reflectivity is
 
-$$R = \left(\frac{n_0\, n_L^{2N} - n_s\, n_H^{2N}}{n_0\, n_L^{2N} + n_s\, n_H^{2N}}\right)^2.$$
+$$
+R = \left(\frac{n_0\, n_L^{2N} - n_s\, n_H^{2N}}{n_0\, n_L^{2N} + n_s\, n_H^{2N}}\right)^2.
+$$
 
 The formula comes from taking the transfer-matrix product analytically at the quarter-wave point (§ 8.4). For $n_H/n_L$ substantially above 1, $R$ saturates at essentially unity for $N \sim 10$; for lower contrasts $N$ must grow. Concretely:
 - GaAs/AlAs semiconductor DBR, $n_H/n_L \approx 1.15$: needs $N = 25$–30 periods;
@@ -1336,11 +1526,15 @@ The formula comes from taking the transfer-matrix product analytically at the qu
 
 Section 4 gave the coupling constant of a sinusoidal grating with peak-to-peak index modulation $\Delta n$ as $\kappa = \pi \Delta n/\lambda_B$. A square-wave modulation (real DBR) is a Fourier series with fundamental coefficient $4/\pi$ times the peak-to-peak amplitude, so the effective coupling at the fundamental Bragg wavelength is
 
-$$\kappa_{\text{DBR}} = \frac{2 \Delta n}{\lambda_0}, \qquad \Delta n \equiv n_H - n_L.$$
+$$
+\kappa_{\text{DBR}} = \frac{2 \Delta n}{\lambda_0}, \qquad \Delta n \equiv n_H - n_L.
+$$
 
 The stopband width in frequency (from § 4) is $\Delta\omega = 2\kappa v_g$, giving a fractional bandwidth
 
-$$\frac{\Delta\omega}{\omega_0} = \frac{4}{\pi}\frac{\Delta n}{n_{\text{avg}}}.$$
+$$
+\frac{\Delta\omega}{\omega_0} = \frac{4}{\pi}\frac{\Delta n}{n_{\text{avg}}}.
+$$
 
 For $\Delta n/n_{\text{avg}} = 0.5$ (high-contrast dielectric stack), the fractional bandwidth is around 60%: a very broadband mirror. For semiconductor DBRs with $\Delta n/n_{\text{avg}} \sim 0.05$, it is around 6% — adequate for the narrow-linewidth needs of a single-mode laser but not for broadband applications.
 
@@ -1360,6 +1554,8 @@ At normal incidence, both polarizations of the incoming wave see the same reflec
 <iframe
   class="article-visualization"
   data-article-visualization="responsive"
+  data-visualization-key="oblique-bragg-phase"
+  data-placement-version="20260714-placement-math-fix-v2"
   src="./visualizations/oblique-bragg-phase.html"
   title="Why oblique incidence shifts the Bragg wavelength through the normal wavevector component"
   loading="lazy"
@@ -1368,12 +1564,16 @@ At normal incidence, both polarizations of the incoming wave see the same reflec
 
 The Fresnel coefficients at the interface between $n_1$ and $n_2$ are
 
-$$r_{\text{TE}} = \frac{n_1\cos\theta_1 - n_2\cos\theta_2}{n_1\cos\theta_1 + n_2\cos\theta_2}, \qquad r_{\text{TM}} = \frac{n_2\cos\theta_1 - n_1\cos\theta_2}{n_2\cos\theta_1 + n_1\cos\theta_2}.$$
+$$
+r_{\text{TE}} = \frac{n_1\cos\theta_1 - n_2\cos\theta_2}{n_1\cos\theta_1 + n_2\cos\theta_2}, \qquad r_{\text{TM}} = \frac{n_2\cos\theta_1 - n_1\cos\theta_2}{n_2\cos\theta_1 + n_1\cos\theta_2}.
+$$
 
 The two are equal at $\theta_i = 0$; they diverge with angle. Critically, $r_{\text{TM}}$ vanishes at the **Brewster angle** $\theta_B = \arctan(n_2/n_1)$, at which TM light passes through the interface with zero reflection.
 <iframe
   class="article-visualization"
   data-article-visualization="responsive"
+  data-visualization-key="te-tm-boundary-admittance"
+  data-placement-version="20260714-placement-math-fix-v2"
   src="./visualizations/te-tm-boundary-admittance.html"
   title="How oblique incidence distinguishes TE and TM boundary admittances"
   loading="lazy"
@@ -1384,6 +1584,8 @@ The consequence for a DBR: when the in-medium angle approaches Brewster's angle,
 <iframe
   class="article-visualization"
   data-article-visualization="responsive"
+  data-visualization-key="brewster-stopband-closure"
+  data-placement-version="20260714-placement-math-fix-v2"
   src="./visualizations/brewster-stopband-closure.html"
   title="Why TE reflection increments accumulate while the TM stopband closes at Brewster incidence"
   loading="lazy"
@@ -1428,7 +1630,9 @@ The 1D density of photonic modes per unit frequency is $\rho(\omega) = 1/(\pi v_
 
 The band-edge modes are standing waves concentrated in complementary regions of the grating unit cell (§ 7.1); if the gain material is placed at the intensity maxima of one mode, the effective gain per unit length seen by that mode is
 
-$$\gamma_{\text{eff}} = \gamma_0 \frac{\int_{\text{gain region}}|E|^2\, dz}{\int |E|^2\, dz},$$
+$$
+\gamma_{\text{eff}} = \gamma_0 \frac{\int_{\text{gain region}}|E|^2\, dz}{\int |E|^2\, dz},
+$$
 
 which can exceed the volume-averaged gain by a substantial factor. When the gain (in the high-index material, i.e., the quantum wells) sits at the intensity maxima of the low-frequency band-edge mode (cosine standing wave, from § 7.1), that mode wins.
 
@@ -1448,7 +1652,9 @@ The defect mode of the $\lambda/4$-shifted DFB is exactly analogous to a bound s
 
 The modulation of $\varepsilon(z) = \bar\varepsilon + \Delta\varepsilon(z)$ decomposes into real (index) and imaginary (gain–loss) parts:
 
-$$\Delta\varepsilon(z) = \Delta\varepsilon'(z) + i\, \Delta\varepsilon''(z).$$
+$$
+\Delta\varepsilon(z) = \Delta\varepsilon'(z) + i\, \Delta\varepsilon''(z).
+$$
 
 Real semiconductor DFBs have both components in general, and the two produce dramatically different behavior:
 
@@ -1494,8 +1700,10 @@ The symbol $\mathcal P$ denotes a Cauchy principal value: a symmetric interval a
 <iframe
   class="article-visualization"
   data-article-visualization="responsive"
+  data-visualization-key="kramers-kronig"
+  data-placement-version="20260714-placement-math-fix-v2"
   src="./visualizations/kramers-kronig.html"
-  title="Causality, the contour argument, and the Kramers–Kronig transform pair"
+  title="Causality linking the real and imaginary response spectra"
   loading="lazy"
   scrolling="no"
 ></iframe>
@@ -1508,7 +1716,9 @@ In a semiconductor DFB, current injection into a gain-modulated region simultane
 
 The DFB linewidth is set by cavity Q, gain, and the coupling between amplitude and phase noise via the carrier-density-dependent index (parametrized by the Henry linewidth-enhancement factor $\alpha_H$). The **Schawlow–Townes linewidth** including the Henry factor is
 
-$$\Delta\nu_{\text{ST}} = \frac{\pi h\nu\, (\Delta\nu_c)^2\, n_{sp}}{P_{\text{out}}}(1 + \alpha_H^2),$$
+$$
+\Delta\nu_{\text{ST}} = \frac{\pi h\nu\, (\Delta\nu_c)^2\, n_{sp}}{P_{\text{out}}}(1 + \alpha_H^2),
+$$
 
 with $\Delta\nu_c$ the cold-cavity linewidth, $n_{sp}$ the spontaneous-emission factor, and $P_{\text{out}}$ the output power. Typical high-power DFBs achieve 100 kHz to 1 MHz — hundreds of times narrower than a flat-mirror multi-mode laser. External-cavity DFBs and DBR lasers with long external gratings push this below 1 kHz for coherent-optical communication.
 
@@ -1579,7 +1789,9 @@ A magnetic RF field entering a good conductor produces circulating induced curre
 
 At microwave frequencies ($\omega \sim 10^{10}\,\text{Hz}$), the induced eddy currents at the surface of a metal are so intense that they cancel the applied magnetic field within a thin surface layer — the **skin depth**
 
-$$\delta_{\text{skin}} = \sqrt{2/(\mu\sigma\omega)}.$$
+$$
+\delta_{\text{skin}} = \sqrt{2/(\mu\sigma\omega)}.
+$$
 
 For iron at 10 GHz, $\delta_{\text{skin}} \sim 1\,\mu\text{m}$: the RF field cannot penetrate more than a micron into the bulk. So most of an iron-based circulator's magnetic material would be invisible to the RF wave and its Polder gyrotropy inaccessible. Worse, the eddy currents dissipate the RF energy as heat at rate $J^2/\sigma$, which would melt any high-power device.
 
@@ -1589,7 +1801,9 @@ For iron at 10 GHz, $\delta_{\text{skin}} \sim 1\,\mu\text{m}$: the RF field can
 
 The Larmor equation of § 5.1 predicts undamped precession forever. Real ferrites have finite linewidths. To describe this, add a phenomenological damping term perpendicular to $\vec M$ that pushes the precession toward alignment with $\vec B$:
 
-$$\frac{d\vec M}{dt} = \gamma\, \vec M\times\vec B - \frac{\alpha}{M_s}\, \vec M\times\frac{d\vec M}{dt}.$$
+$$
+\frac{d\vec M}{dt} = \gamma\, \vec M\times\vec B - \frac{\alpha}{M_s}\, \vec M\times\frac{d\vec M}{dt}.
+$$
 
 This is the **Landau–Lifshitz–Gilbert (LLG) equation**. The dimensionless **Gilbert damping** $\alpha$ (small: $\sim 10^{-5}$ for high-quality YIG, larger for lossy materials) measures how quickly angular momentum leaks from the spins to the lattice.
 
@@ -1597,7 +1811,9 @@ This is the **Landau–Lifshitz–Gilbert (LLG) equation**. The dimensionless **
 
 Linearizing the LLG equation as in § 5.2, the resonant denominator $\omega_0^2 - \omega^2$ acquires a small imaginary part $\to (\omega_0 - \omega) + i\alpha\omega$ near resonance, so
 
-$$|\chi_-(\omega)|^2 \propto \frac{1}{(\omega_0 - \omega)^2 + (\alpha\omega)^2}.$$
+$$
+|\chi_-(\omega)|^2 \propto \frac{1}{(\omega_0 - \omega)^2 + (\alpha\omega)^2}.
+$$
 
 This is a **Lorentzian** of full width at half maximum $\Delta\omega \approx 2\alpha\omega_0$: the FMR linewidth is directly proportional to the Gilbert damping, and this is how it is measured.
 
@@ -1667,7 +1883,9 @@ The coupled-mode theory of § 4 was worked out for a forward-and-backward wave p
 
 The coupled-mode equations are
 
-$$\frac{dA_1}{dz} = i\delta A_1 + i\kappa A_2, \qquad \frac{dA_2}{dz} = -i\delta A_2 + i\kappa A_1,$$
+$$
+\frac{dA_1}{dz} = i\delta A_1 + i\kappa A_2, \qquad \frac{dA_2}{dz} = -i\delta A_2 + i\kappa A_1,
+$$
 
 which look superficially like § 4's counter-propagating case but with a critical sign difference in the second equation: both $A$'s have coefficients of the same sign, not opposite signs. The consequence is that $d(|A_1|^2 + |A_2|^2)/dz = 0$: total power is *conserved between the two modes* (both are forward-propagating and neither escapes), and energy sloshes back and forth periodically along the grating.
 
@@ -1681,7 +1899,9 @@ A powerful use of periodic modulation appears in **nonlinear optics**. Consider 
 
 The Bragg-inspired trick: modulate the sign of $\chi^{(2)}(z)$ periodically with spatial period $\Lambda = 2\pi/\Delta k$. Each half-period, the induced polarization sign is inverted so that it re-syncs with the free-space second-harmonic wave. Fourier-decomposing the modulation,
 
-$$\chi^{(2)}(z) = \sum_m \chi_m^{(2)} e^{imG z}, \qquad G = 2\pi/\Lambda,$$
+$$
+\chi^{(2)}(z) = \sum_m \chi_m^{(2)} e^{imG z}, \qquad G = 2\pi/\Lambda,
+$$
 
 each Fourier component provides a "grating momentum" $mG$ available to compensate a specific phase mismatch. Choosing $\Lambda$ so that $G = \Delta k$ compensates the fundamental mismatch: the polarization now drives a wave at $2\omega$ with an effective wavevector $2k(\omega) + G = k(2\omega)$, and perfect phase matching is recovered *through momentum contribution from the grating*.
 
@@ -1697,7 +1917,9 @@ Every result so far has been 1D: one direction of propagation, one direction of 
 
 The Bloch-theorem foundation of § 2 extends immediately to any dimension: for a medium with $\varepsilon(\mathbf{r} + \mathbf{R}) = \varepsilon(\mathbf{r})$ for lattice vectors $\mathbf{R}$, the Bloch waves are
 
-$$\mathbf{E}(\mathbf{r}) = e^{i\mathbf{k}\cdot\mathbf{r}}\, \mathbf{u}_{\mathbf{k}}(\mathbf{r}),$$
+$$
+\mathbf{E}(\mathbf{r}) = e^{i\mathbf{k}\cdot\mathbf{r}}\, \mathbf{u}_{\mathbf{k}}(\mathbf{r}),
+$$
 
 with $\mathbf{u}_{\mathbf{k}}$ periodic with the same lattice. The wavevector $\mathbf{k}$ lives in the Brillouin zone, a fundamental domain for the equivalence $\mathbf{k} \sim \mathbf{k} + \mathbf{G}$.
 
@@ -1732,11 +1954,15 @@ The mathematical framework of a wave in a periodic potential is the same for ele
 
 The **Kronig-Penney model** is the simplest 1D electron-in-periodic-potential system: an electron with wave function $\psi$ satisfies
 
-$$-\frac{\hbar^2}{2m} \psi''(z) + V(z) \psi(z) = E \psi(z), \qquad V(z + \Lambda) = V(z).$$
+$$
+-\frac{\hbar^2}{2m} \psi''(z) + V(z) \psi(z) = E \psi(z), \qquad V(z + \Lambda) = V(z).
+$$
 
 Compare with the photonic wave equation
 
-$$E''(z) + \frac{\omega^2}{c^2} \varepsilon(z) E(z) = 0.$$
+$$
+E''(z) + \frac{\omega^2}{c^2} \varepsilon(z) E(z) = 0.
+$$
 
 Structurally identical: a second-order ODE with a periodic coefficient. The Bloch-theorem analysis, the appearance of bands and gaps, the meaning of the Brillouin-zone edge as the location of the first bandgap — all of this transfers between the two systems.
 

@@ -84,7 +84,13 @@
   }
 
   function alreadyInserted(root, key) {
-    return Boolean(root && root.querySelector('[data-visualization-key="' + key + '"]'));
+    if (!root) return false;
+    if (root.querySelector('[data-visualization-key="' + key + '"]')) return true;
+    return Boolean(root.querySelector(
+      'iframe[src$="/' + key + '.html"], ' +
+      'iframe[src*="/' + key + '.html?"], ' +
+      'iframe[src*="/' + key + '.html#"]'
+    ));
   }
 
   function insertAfter(anchor, frame) {
