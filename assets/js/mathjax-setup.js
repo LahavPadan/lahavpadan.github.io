@@ -1,66 +1,24 @@
 /**
- * Runs alongside MathJax on posts where `math: true`. Two hooks:
+ * Stable MathJax integration for article pages.
  *
- *   window.__lahavMathPrep()  — called from the head of `startup.pageReady`,
- *     after DOMContentLoaded but before MathJax scans the DOM for math
- *     delimiters. (Not `startup.ready`, which can fire before DOM ready
- *     when the MathJax bundle is served from cache.)
+ * The important ordering rule is:
  *
- *   window.__lahavMathPost()  — called after MathJax's `pageReady` resolves,
- *     i.e. after all typesetting is done.
+ *   raw Markdown HTML
+ *     -> repair mangled inline math
+ *     -> split display math away from neighbouring prose
+ *     -> build the guided-reading hierarchy
+ *     -> let MathJax scan and typeset that final DOM
  *
- * The prep step fixes two things:
- *
- *   1. Kramdown intra-word emphasis mangles inline math like
- *      `Y$_3$Fe$_5$O$_{12}$`: the first `_` (inside `$_3$`) matches the `_`
- *      inside `$_{12}$` as an emphasis pair, so the HTML server-side becomes
- *      `Y$<em>3$Fe$_5$O$</em>{12}$`. MathJax then sees a text stream with an
- *      `<em>` boundary in the middle of a math region and either drops the
- *      element letters (Ga, O, Fe…) or renders a mash-up like `Y$3_5{12}^{3+}$`.
- *      This affects the "LaTeX broken inside tables" issue in the coupled-modes
- *      and Taylor posts, and also stray inline math in bulleted lists. The
- *      repair walks `<em>` elements inside `.article-prose` and, wherever an
- *      `<em>`'s text contains a `$`, replaces the element with the plain
- *      `_content_` string that the article source actually intended. That
- *      leaves genuine emphasis (which never contains `$`) untouched.
- *
- *   2. On a repeat visit to the same article we may have a fully-typeset
- *      snapshot of `.article-prose` in sessionStorage. Restoring it before
- *      MathJax starts turns typesetting into a no-op — the mjx-container SVG
- *      is already in the DOM. Cache key is (URL, build-version) so publishing
- *      new content automatically invalidates the cache.
- *
- * The post step:
- *
- *   - Copies each math item's TeX source onto its typeset root via a
- *     `data-tex` attribute, so the copy handlers in post-enhancements.js can
- *     read it back.
- *   - Marks inline math with `data-copy-math-inline` + keyboard affordances so
- *     click/enter/space copies the source (handler lives in post-enhancements.js).
- *   - Wraps display math in `<div class="math-copy-shell">` with a copy button.
- *   - Writes the typeset article body to sessionStorage for the next visit.
+ * MathJax output is never reparented after typesetting. Reparenting an
+ * mjx-container invalidates the source/output ownership recorded by MathJax
+ * and is the mechanism that can leave equations visually collected at the
+ * end of a long article.
  */
 (function () {
   'use strict';
 
-  var CACHE_PREFIX = 'lahav-math-cache:v2:';
+  var CACHE_PREFIX = 'lahav-math-cache:v3:';
 
-  /* Guided-reading articles skip both cache-restore and cache-write.
-     Two reasons:
-
-     1. Guided pages are restructured before MathJax scans them so the
-        article route appears immediately and equation source ranges stay
-        stable. Restoring a cached pre- or post-restructure snapshot would
-        either wipe out that structure or duplicate a very large generated
-        DOM. Simpler: do not cache guided pages.
-
-     2. Memory. These are also the math-heaviest articles
-        (elliptic-curves, 4G, coupled-modes), whose fully-typeset
-        innerHTML is the single biggest per-tab memory item on the
-        site. sessionStorage of that size effectively doubles the
-        memory footprint until the tab closes. Skipping the cache
-        here is the largest single reduction available without
-        changing MathJax's renderer. */
   function isGuidedReadingPage(root) {
     return root && root.getAttribute('data-reading-mode') === 'guided';
   }
@@ -80,21 +38,121 @@
 
   function safeSessionSet(key, value) {
     try { window.sessionStorage.setItem(key, value); }
-    catch (_e) { /* quota, private-mode — ignore */ }
+    catch (_e) { /* quota/private mode: rendering must still work */ }
   }
 
   function repairMangledMath(root) {
-    /* Unwrap <em> elements whose text content contains `$`. Those are almost
-       certainly kramdown emphasis errors that split an inline-math run. */
     var ems = root.querySelectorAll('em');
     for (var i = ems.length - 1; i >= 0; i--) {
       var em = ems[i];
       var text = em.textContent;
       if (text.indexOf('$') === -1) continue;
-      var replacement = document.createTextNode('_' + text + '_');
-      em.parentNode.replaceChild(replacement, em);
+      em.parentNode.replaceChild(document.createTextNode('_' + text + '_'), em);
     }
     root.normalize();
+  }
+
+  function hasRenderableContent(html) {
+    if (!html || !html.trim()) return false;
+    var template = document.createElement('template');
+    template.innerHTML = html;
+    if (template.content.textContent.trim()) return true;
+    return Boolean(template.content.querySelector(
+      'img,svg,video,audio,iframe,object,embed,br,hr,input,button'
+    ));
+  }
+
+  function nextDisplayOpen(html, from) {
+    var dollar = html.indexOf('$$', from);
+    var bracket = html.indexOf('\\[', from);
+    if (dollar === -1 && bracket === -1) return null;
+    if (dollar !== -1 && (bracket === -1 || dollar < bracket)) {
+      return { index: dollar, open: '$$', close: '$$' };
+    }
+    return { index: bracket, open: '\\[', close: '\\]' };
+  }
+
+  function parseDisplaySegments(html) {
+    var segments = [];
+    var cursor = 0;
+    var found = false;
+
+    while (cursor < html.length) {
+      var marker = nextDisplayOpen(html, cursor);
+      if (!marker) {
+        segments.push({ type: 'text', html: html.slice(cursor) });
+        break;
+      }
+
+      var end = html.indexOf(marker.close, marker.index + marker.open.length);
+      if (end === -1) return null; // Never rewrite malformed/unbalanced source.
+
+      found = true;
+      segments.push({ type: 'text', html: html.slice(cursor, marker.index) });
+      segments.push({
+        type: 'math',
+        html: html.slice(marker.index, end + marker.close.length)
+      });
+      cursor = end + marker.close.length;
+    }
+
+    return found ? segments : null;
+  }
+
+  function cloneParagraphShell(source, keepId) {
+    var clone = source.cloneNode(false);
+    if (!keepId) clone.removeAttribute('id');
+    return clone;
+  }
+
+  /**
+   * Kramdown can legally emit this source as one paragraph when no blank line
+   * follows the closing delimiter:
+   *
+   *   <p>$$ ... $$The next sentence...</p>
+   *
+   * That is exactly the shape present around the equations in §0.2. Split it
+   * before MathJax scans the page. Every display expression then owns a stable
+   * block in normal document flow; no post-typeset relocation is necessary.
+   */
+  function normalizeDisplayMathBlocks(root) {
+    var paragraphs = Array.prototype.slice.call(root.querySelectorAll('p'));
+    var changed = 0;
+
+    paragraphs.forEach(function (paragraph) {
+      if (!paragraph.parentNode) return;
+      if (paragraph.closest('pre, code, script, style, textarea')) return;
+
+      var segments = parseDisplaySegments(paragraph.innerHTML);
+      if (!segments) return;
+
+      var meaningful = segments.filter(function (segment) {
+        return segment.type === 'math' || hasRenderableContent(segment.html);
+      });
+      if (!meaningful.some(function (segment) { return segment.type === 'math'; })) return;
+
+      /* A paragraph containing only one display expression is already stable. */
+      if (meaningful.length === 1 && meaningful[0].type === 'math') {
+        paragraph.classList.add('math-source-block');
+        return;
+      }
+
+      var fragment = document.createDocumentFragment();
+      var firstOutput = true;
+
+      meaningful.forEach(function (segment) {
+        var block = cloneParagraphShell(paragraph, firstOutput);
+        firstOutput = false;
+        block.innerHTML = segment.html;
+        if (segment.type === 'math') block.classList.add('math-source-block');
+        fragment.appendChild(block);
+      });
+
+      paragraph.parentNode.replaceChild(fragment, paragraph);
+      changed += 1;
+    });
+
+    if (changed) root.setAttribute('data-math-blocks-normalized', String(changed));
   }
 
   function tryRestoreCache(root) {
@@ -111,12 +169,6 @@
     if (isGuidedReadingPage(root)) return;
     var key = cacheKey();
     if (!key) return;
-    /* Only cache once MathJax has finished — the container has SVG glyphs and
-       styling attributes at this point, so restoring on next load looks
-       identical without waiting for typesetting. Cap at ~500 KB (down from
-       1.5 MB) to keep per-tab memory small on the middle-sized articles
-       where caching still makes sense. Bigger articles fall through this
-       cap and re-typeset on refresh instead of doubling their footprint. */
     var html = root.innerHTML;
     if (html.length > 500000) return;
     safeSessionSet(key, html);
@@ -126,20 +178,15 @@
     var prose = document.querySelector('.article-prose');
     if (!prose) return;
 
-    /* Guided mode must establish its final DOM structure before MathJax scans
-       delimiter ranges. Doing this in MathJax's own pre-scan hook makes the
-       ordering deterministic: the article route appears immediately, and no
-       equation can be inserted later into a chapter it no longer belongs to. */
+    /* These passes operate on the raw server-rendered Markdown DOM. */
+    repairMangledMath(prose);
+    normalizeDisplayMathBlocks(prose);
+
+    /* Guided reading now receives already-separated, stable math blocks. */
     if (typeof window.__lahavPrepareGuidedReading === 'function') {
       window.__lahavPrepareGuidedReading();
     }
 
-    /* Step 1: heal any kramdown-mangled inline math. Runs on the live DOM
-       regardless of whether we later restore from cache. */
-    repairMangledMath(prose);
-
-    /* Step 2: if the previous visit left a typeset snapshot, drop it in.
-       MathJax will still walk the DOM but will find no unprocessed math. */
     if (tryRestoreCache(prose)) {
       prose.setAttribute('data-math-restored', 'true');
     }
@@ -147,12 +194,6 @@
 
   function decorateInline(container, lightweight) {
     container.setAttribute('data-copy-math-inline', '');
-
-    /* Guided articles can contain hundreds of inline expressions. Giving every
-       one a tab stop, tooltip and ARIA button role creates an enormous focus /
-       accessibility tree and noticeably delays both first render and global
-       theme recalculation. Pointer copy still works through the data attribute;
-       the full keyboard affordance remains on ordinary-sized posts. */
     if (lightweight) return;
     container.setAttribute('role', 'button');
     container.setAttribute('tabindex', '0');
@@ -160,15 +201,6 @@
     container.setAttribute('title', 'click to copy TeX');
   }
 
-  /* Inject a hidden, selectable TeX overlay into a typeset container.
-     The overlay sits absolutely inside the mjx-container so drag-select
-     over the equation region actually creates a text selection (browsers
-     don't select MathJax's SVG glyphs on their own), and the browser's
-     native copy path carries the LaTeX along. The overlay's text is
-     transparent-on-transparent so the SVG stays the only visible thing;
-     `pointer-events: none` keeps the click-to-copy affordance on the
-     mjx-container itself intact. Idempotent — safe to re-run after a
-     cache restore even if the overlay is already in place. */
   function attachSelectableSource(container) {
     if (container.querySelector(':scope > .mjx-source')) return;
     var tex = container.getAttribute('data-tex');
@@ -181,6 +213,7 @@
   }
 
   function appendDisplayCopyButton(shell) {
+    if (!shell || shell.nodeType !== 1) return;
     if (shell.querySelector(':scope > .math-copy-button')) return;
     var btn = document.createElement('button');
     btn.type = 'button';
@@ -201,117 +234,61 @@
     return true;
   }
 
-  function wrapDisplay(container) {
+  /**
+   * Add the copy shell in place. The fallback deliberately does not move the
+   * mjx-container: even malformed/mixed markup remains in its authored parent.
+   */
+  function decorateDisplay(container) {
     if (!container.parentNode) return;
     var parent = container.parentNode;
+
     if (parent.classList && parent.classList.contains('math-copy-shell')) {
       appendDisplayCopyButton(parent);
       return;
     }
 
-    /* Kramdown normally places a display delimiter in its own paragraph. Turn
-       that existing paragraph into the shell instead of moving MathJax's
-       typesetRoot after typesetting. Avoiding the move is both faster and,
-       more importantly, keeps MathJax's source/output ownership stable. */
     if (isEquationOnlyParagraph(parent, container)) {
       parent.classList.add('math-copy-shell');
       appendDisplayCopyButton(parent);
       return;
     }
 
-    var shell = document.createElement('div');
-    shell.className = 'math-copy-shell';
-    parent.insertBefore(shell, container);
-    shell.appendChild(container);
-    appendDisplayCopyButton(shell);
+    if (parent.nodeType === 1) {
+      parent.classList.add('math-copy-shell', 'math-copy-shell--mixed');
+      appendDisplayCopyButton(parent);
+    }
   }
 
-  function stampMathSources(root) {
-    if (!root || !window.MathJax || !MathJax.startup || !MathJax.startup.document) return;
-    var items = MathJax.startup.document.math.toArray();
-    items.forEach(function (item) {
-      var typesetRoot = item.typesetRoot;
-      if (!typesetRoot || typeof item.math !== 'string') return;
-      if (root !== typesetRoot && !root.contains(typesetRoot)) return;
-      if (!typesetRoot.hasAttribute('data-tex')) {
-        typesetRoot.setAttribute('data-tex', item.math);
+  function stampMathSources() {
+    if (!window.MathJax || !MathJax.startup || !MathJax.startup.document) return;
+    var math = MathJax.startup.document.math;
+    if (!math || typeof math.toArray !== 'function') return;
+
+    math.toArray().forEach(function (item) {
+      if (!item.typesetRoot || typeof item.math !== 'string') return;
+      if (!item.typesetRoot.hasAttribute('data-tex')) {
+        item.typesetRoot.setAttribute('data-tex', item.math);
       }
     });
   }
-
-  function decorateMathRoot(root) {
-    if (!root) return;
-    var prose = root.matches && root.matches('.article-prose')
-      ? root
-      : document.querySelector('.article-prose');
-    var guided = isGuidedReadingPage(prose);
-
-    stampMathSources(root);
-    var containers = root.querySelectorAll('mjx-container[data-tex]');
-    containers.forEach(function (c) {
-      var display = c.getAttribute('display') === 'true';
-
-      if (!guided) attachSelectableSource(c);
-      if (display) wrapDisplay(c);
-      else decorateInline(c, guided);
-    });
-  }
-
-  var deferredTypesetQueue = Promise.resolve();
-
-  function waitForInitialMathJax() {
-    if (window.MathJax && MathJax.startup && MathJax.startup.promise &&
-        typeof MathJax.startup.promise.then === 'function') {
-      return MathJax.startup.promise;
-    }
-    if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
-      return Promise.resolve();
-    }
-    return new Promise(function (resolve) {
-      document.addEventListener('lahav:math-ready', resolve, { once: true });
-    });
-  }
-
-  /* Typeset one disclosure only after it has become visible.  Calls are
-     serialized because MathJax's document is asynchronous and not re-entrant;
-     opening two derivations quickly must never start two competing render
-     passes over the same document. */
-  window.__lahavTypesetDeferredMath = function (root) {
-    if (!root) return Promise.resolve();
-    root.classList.remove('tex2jax_ignore');
-
-    deferredTypesetQueue = deferredTypesetQueue.catch(function () {
-      /* A failed earlier disclosure must not permanently poison the queue. */
-    }).then(function () {
-      return waitForInitialMathJax();
-    }).then(function () {
-      if (!window.MathJax || typeof MathJax.typesetPromise !== 'function') return;
-      return MathJax.typesetPromise([root]);
-    }).then(function () {
-      decorateMathRoot(root);
-      document.dispatchEvent(new CustomEvent('lahav:deferred-math-ready', {
-        detail: { root: root }
-      }));
-    });
-
-    return deferredTypesetQueue;
-  };
 
   window.__lahavMathPost = function () {
     var prose = document.querySelector('.article-prose');
     if (!prose) return;
 
-    /* Stamp the original TeX source onto each typeset container so the
-       copy handlers in post-enhancements.js have it to hand. On a cache-
-       restore path this is a no-op (the cached HTML already carries the
-       attribute); on the initial-typeset path we're the sole writer. */
-    decorateMathRoot(prose);
+    stampMathSources();
+
+    var guided = isGuidedReadingPage(prose);
+    var containers = prose.querySelectorAll('mjx-container[data-tex]');
+    containers.forEach(function (container) {
+      var display = container.getAttribute('display') === 'true';
+      if (!guided) attachSelectableSource(container);
+      if (display) decorateDisplay(container);
+      else decorateInline(container, guided);
+    });
 
     prose.setAttribute('data-math-decorated', 'true');
     writeCache(prose);
-
-    /* The guided hierarchy is already final before MathJax scans it. This event
-       now only asks scroll/visualization code to refresh final measurements. */
     document.documentElement.dataset.mathReady = 'true';
     document.dispatchEvent(new CustomEvent('lahav:math-ready'));
   };
