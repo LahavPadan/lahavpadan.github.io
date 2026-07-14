@@ -2266,3 +2266,18 @@ body.has-lightbox {
   }
 }
 
+/* Guided disclosure math ownership ---------------------------------------
+   Closed disclosures are excluded from MathJax's initial scan. Their raw
+   source is processed in the disclosure body, in place, on first open. */
+.guided-disclosure__body[data-math-state="typesetting"] {
+  visibility: hidden;
+}
+
+.guided-disclosure[aria-busy="true"] .guided-disclosure__summary {
+  cursor: progress;
+}
+
+.guided-disclosure__body > .math-source-block {
+  max-width: 100%;
+}
+/* End guided disclosure math ownership ---------------------------------- */

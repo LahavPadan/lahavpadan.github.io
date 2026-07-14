@@ -25,10 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   {% if page.math %}
-  {%- comment -%}
-  Preconnect + preload so the MathJax bundle starts downloading in parallel
-  with the article's HTML, instead of only after the CSS+font parse finishes.
-  {%- endcomment -%}
+  
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preload" as="script" crossorigin
   href="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js">
@@ -42,64 +39,55 @@
   document.documentElement.dataset.theme = saved || system;
   }());
   </script>
-  {% if page.reading_mode == "guided" %}
-  {%- comment -%}
-  Guided-reading must be defined before MathJax enters its startup path.
-  `defer` keeps parsing non-blocking while preserving execution order and
-  guaranteeing execution before DOMContentLoaded.
-  {%- endcomment -%}
-  <script defer src="{{ '/assets/js/guided-reading.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
-  {% endif %}
-  {% if page.math %}
-  {%- comment -%}
-Guided reading builds the final semantic article structure before MathJax scans it. MathJax then typesets that DOM once; rendered equations are not moved or cached.
-{%- endcomment -%}
-  <script src="{{ '/assets/js/mathjax-setup.js' | relative_url }}?v=20260714-placement-math-fix-v2" defer></script>
-  <script>
+
+{% if page.reading_mode == "guided" %}
+<script
+  defer
+  src="{{ '/assets/js/guided-reading.js' | relative_url }}?v=20260714-guided-math-ownership-v1"
+></script>
+{% endif %}
+
+{% if page.math %}
+<script
+  defer
+  src="{{ '/assets/js/mathjax-setup.js' | relative_url }}?v=20260714-guided-math-ownership-v1"
+></script>
+<script>
   window.MathJax = {
-  tex: {
-  inlineMath: [['$', '$'], ['\\(', '\\)']],
-  displayMath: [['$$', '$$'], ['\\[', '\\]']]
-  },
-  svg: { fontCache: 'global' },
-  options: {
-  skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-  /* Closed guided disclosures carry this class until the reader opens
-  them. MathJax must not measure equations while their parent is
-  display:none: hidden measurement is what made some SVG equations
-  detach visually and appear at the end of long guided articles. */
-  ignoreHtmlClass: 'tex2jax_ignore'
-  },
-  startup: {
-  pageReady: function () {
-  /* MathJax may call our custom pageReady while the HTML parser is
-  still in the body. Calling the preparation hook at that point
-  used to do nothing (the article did not exist yet), after which
-  MathJax scanned one DOM and guided-reading moved another. The
-  stale source ranges are what produced equations collected at the
-  end of the article. Wait explicitly for DOMContentLoaded, then
-  restructure once, and only then start MathJax's document scan. */
-  var domReady = document.readyState === 'loading'
-  ? new Promise(function (resolve) {
-  document.addEventListener('DOMContentLoaded', resolve, { once: true });
-  })
-  : Promise.resolve();
-  return domReady.then(function () {
-  if (typeof window.__lahavMathPrep === 'function') {
-  window.__lahavMathPrep();
-  }
-  return MathJax.startup.defaultPageReady();
-  }).then(function () {
-  if (typeof window.__lahavMathPost === 'function') {
-  window.__lahavMathPost();
-  }
-  });
-  }
-  }
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true
+    },
+    options: {
+      ignoreHtmlClass: 'tex2jax_ignore',
+      processHtmlClass: 'tex2jax_process'
+    },
+    svg: {
+      fontCache: 'global'
+    },
+    startup: {
+      ready: () => {
+        if (typeof window.__lahavMathPrep === 'function') {
+          window.__lahavMathPrep();
+        }
+        MathJax.startup.defaultReady();
+      },
+      pageReady: () => MathJax.startup.defaultPageReady().then(() => {
+        if (typeof window.__lahavMathPost === 'function') {
+          window.__lahavMathPost();
+        }
+      })
+    }
   };
-  </script>
-  <script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
-  {% endif %}
+</script>
+<script
+  defer
+  id="MathJax-script"
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"
+></script>
+{% endif %}
+
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>

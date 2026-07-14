@@ -1,142 +1,255 @@
 /**
- * Stable MathJax preparation for article pages.
+ * MathJax preparation for article pages.
  *
- * Display math is separated while it is still raw TeX. MathJax output is never
- * reparented, wrapped, cached, duplicated, or restored from sessionStorage.
+ * Ownership rule:
+ * - guided-reading.js constructs chapters, subsections and disclosures first;
+ * - MathJax scans that final DOM once;
+ * - closed disclosure bodies are excluded from the initial scan and are
+ *   typeset in place when first opened;
+ * - rendered MathJax nodes are never cached, cloned, wrapped or reparented.
  */
 (function () {
-  'use strict';
+  "use strict";
+
+  let prepared = false;
+  let copyWired = false;
+  let deferredTypesetQueue = Promise.resolve();
 
   function articleRoot() {
-    return document.querySelector('.article-prose');
+    return document.querySelector(".article-prose");
   }
 
-  function purgeLegacyMathCaches() {
+  function clearLegacyMathCache() {
     try {
-      for (var i = window.sessionStorage.length - 1; i >= 0; i -= 1) {
-        var key = window.sessionStorage.key(i);
-        if (key && key.indexOf('lahav-math-cache:') === 0) {
-          window.sessionStorage.removeItem(key);
+      const prefixes = ["lahav-math-cache:", "lahav:math-cache:"];
+      for (let i = sessionStorage.length - 1; i >= 0; i -= 1) {
+        const key = sessionStorage.key(i) || "";
+        if (prefixes.some((prefix) => key.startsWith(prefix))) {
+          sessionStorage.removeItem(key);
         }
       }
     } catch (_error) {
-      // sessionStorage can be unavailable in private or restricted contexts.
+      /* Storage can be unavailable in private/security-restricted contexts. */
     }
   }
 
   function repairMangledInlineMath(root) {
-    var nodes = Array.prototype.slice.call(root.querySelectorAll('em'));
-    nodes.reverse().forEach(function (node) {
-      var text = node.textContent || '';
-      if (text.indexOf('$') === -1 || !node.parentNode) return;
-      node.parentNode.replaceChild(document.createTextNode('_' + text + '_'), node);
+    const nodes = Array.from(root.querySelectorAll("em"));
+    nodes.reverse().forEach((node) => {
+      const text = node.textContent || "";
+      if (text.indexOf("$") === -1 || !node.parentNode) return;
+      node.parentNode.replaceChild(document.createTextNode(`_${text}_`), node);
     });
     root.normalize();
   }
 
   function hasRenderableContent(html) {
     if (!html || !html.trim()) return false;
-    var template = document.createElement('template');
+    const template = document.createElement("template");
     template.innerHTML = html;
-    if ((template.content.textContent || '').trim()) return true;
-    return Boolean(template.content.querySelector(
-      'img,svg,video,audio,iframe,object,embed,br,hr,input,button'
-    ));
+    if ((template.content.textContent || "").trim()) return true;
+    return Boolean(
+      template.content.querySelector(
+        "img,svg,video,audio,iframe,object,embed,br,hr,input,button"
+      )
+    );
   }
 
   function nextDisplayDelimiter(html, from) {
-    var dollar = html.indexOf('$$', from);
-    var bracket = html.indexOf('\\[', from);
+    const dollar = html.indexOf("$$", from);
+    const bracket = html.indexOf("\\[", from);
     if (dollar === -1 && bracket === -1) return null;
     if (dollar !== -1 && (bracket === -1 || dollar < bracket)) {
-      return { index: dollar, open: '$$', close: '$$' };
+      return { index: dollar, open: "$$", close: "$$" };
     }
-    return { index: bracket, open: '\\[', close: '\\]' };
+    return { index: bracket, open: "\\[", close: "\\]" };
   }
 
   function parseDisplaySegments(html) {
-    var segments = [];
-    var cursor = 0;
-    var found = false;
+    const segments = [];
+    let cursor = 0;
+    let found = false;
+
     while (cursor < html.length) {
-      var marker = nextDisplayDelimiter(html, cursor);
+      const marker = nextDisplayDelimiter(html, cursor);
       if (!marker) {
-        segments.push({ type: 'text', html: html.slice(cursor) });
+        segments.push({ type: "text", html: html.slice(cursor) });
         break;
       }
-      var end = html.indexOf(marker.close, marker.index + marker.open.length);
+
+      const end = html.indexOf(marker.close, marker.index + marker.open.length);
       if (end === -1) return null;
+
       found = true;
-      segments.push({ type: 'text', html: html.slice(cursor, marker.index) });
+      segments.push({ type: "text", html: html.slice(cursor, marker.index) });
       segments.push({
-        type: 'math',
-        html: html.slice(marker.index, end + marker.close.length)
+        type: "math",
+        html: html.slice(marker.index, end + marker.close.length),
       });
       cursor = end + marker.close.length;
     }
+
     return found ? segments : null;
   }
 
   function cloneParagraphShell(source, keepId) {
-    var clone = source.cloneNode(false);
-    if (!keepId) clone.removeAttribute('id');
+    const clone = source.cloneNode(false);
+    if (!keepId) clone.removeAttribute("id");
     return clone;
   }
 
+  /*
+   * Kramdown can emit a display expression and neighbouring prose in one <p>.
+   * Split only the raw delimiter form, before guided reading and before
+   * MathJax. No rendered equation node is ever moved.
+   */
   function normalizeDisplayMathBlocks(root) {
-    var paragraphs = Array.prototype.slice.call(root.querySelectorAll('p'));
-    var changed = 0;
+    const paragraphs = Array.from(root.querySelectorAll("p"));
+    let changed = 0;
 
-    paragraphs.forEach(function (paragraph) {
+    paragraphs.forEach((paragraph) => {
       if (!paragraph.parentNode) return;
-      if (paragraph.closest('pre, code, script, style, textarea')) return;
+      if (paragraph.closest("pre, code, script, style, textarea")) return;
 
-      var segments = parseDisplaySegments(paragraph.innerHTML);
+      const segments = parseDisplaySegments(paragraph.innerHTML);
       if (!segments) return;
 
-      var meaningful = segments.filter(function (segment) {
-        return segment.type === 'math' || hasRenderableContent(segment.html);
-      });
-      if (!meaningful.some(function (segment) { return segment.type === 'math'; })) {
+      const meaningful = segments.filter(
+        (segment) => segment.type === "math" || hasRenderableContent(segment.html)
+      );
+      if (!meaningful.some((segment) => segment.type === "math")) return;
+
+      if (meaningful.length === 1 && meaningful[0].type === "math") {
+        paragraph.classList.add("math-source-block");
         return;
       }
 
-      if (meaningful.length === 1 && meaningful[0].type === 'math') {
-        paragraph.classList.add('math-source-block');
-        return;
-      }
+      const fragment = document.createDocumentFragment();
+      let firstOutput = true;
 
-      var fragment = document.createDocumentFragment();
-      var firstOutput = true;
-      meaningful.forEach(function (segment) {
-        var block = cloneParagraphShell(paragraph, firstOutput);
+      meaningful.forEach((segment) => {
+        const block = cloneParagraphShell(paragraph, firstOutput);
         firstOutput = false;
         block.innerHTML = segment.html;
-        if (segment.type === 'math') block.classList.add('math-source-block');
+        if (segment.type === "math") block.classList.add("math-source-block");
         fragment.appendChild(block);
       });
+
       paragraph.parentNode.replaceChild(fragment, paragraph);
       changed += 1;
     });
 
-    if (changed) root.setAttribute('data-math-blocks-normalized', String(changed));
+    if (changed) root.dataset.mathBlocksNormalized = String(changed);
   }
 
+  function stampMathSources(root) {
+    const mathDocument = window.MathJax?.startup?.document;
+    if (!root || !mathDocument?.math?.toArray) return;
+
+    mathDocument.math.toArray().forEach((item) => {
+      const container = item.typesetRoot;
+      if (!container || typeof item.math !== "string") return;
+      if (container !== root && !root.contains(container)) return;
+      container.dataset.tex = item.math;
+      container.dataset.copyMath = "true";
+      container.setAttribute("tabindex", "0");
+      container.setAttribute("role", "button");
+      container.setAttribute("aria-label", "Copy formula TeX source");
+      container.setAttribute("title", "click to copy TeX");
+    });
+  }
+
+  async function copyMath(container) {
+    const tex = container?.dataset?.tex;
+    if (!tex) return;
+    const display = container.getAttribute("display") === "true";
+    const source = display ? `$$\n${tex}\n$$` : `$${tex}$`;
+    try {
+      await navigator.clipboard.writeText(source);
+      container.dataset.copied = "true";
+      window.setTimeout(() => delete container.dataset.copied, 900);
+    } catch (_error) {
+      /* Clipboard permission can be denied; leave the equation untouched. */
+    }
+  }
+
+  function wireMathCopy() {
+    if (copyWired) return;
+    copyWired = true;
+
+    document.addEventListener("click", (event) => {
+      const container = event.target.closest?.("mjx-container[data-copy-math='true']");
+      if (container) copyMath(container);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const container = event.target.closest?.("mjx-container[data-copy-math='true']");
+      if (!container) return;
+      event.preventDefault();
+      copyMath(container);
+    });
+  }
+
+  function decorateMathRoot(root) {
+    stampMathSources(root);
+    wireMathCopy();
+  }
+
+  function waitForInitialMathJax() {
+    const promise = window.MathJax?.startup?.promise;
+    if (promise && typeof promise.then === "function") return promise;
+    if (window.MathJax?.typesetPromise) return Promise.resolve();
+    return new Promise((resolve) => {
+      document.addEventListener("lahav:math-ready", resolve, { once: true });
+    });
+  }
+
+  window.__lahavTypesetDeferredMath = function (root) {
+    if (!root) return Promise.resolve();
+
+    deferredTypesetQueue = deferredTypesetQueue
+      .catch(() => {})
+      .then(waitForInitialMathJax)
+      .then(() => {
+        root.classList.remove("tex2jax_ignore");
+        root.classList.add("tex2jax_process");
+        if (!window.MathJax?.typesetPromise) return undefined;
+        return window.MathJax.typesetPromise([root]);
+      })
+      .then(() => {
+        root.classList.remove("tex2jax_process");
+        decorateMathRoot(root);
+        document.dispatchEvent(
+          new CustomEvent("lahav:deferred-math-ready", { detail: { root } })
+        );
+      });
+
+    return deferredTypesetQueue;
+  };
+
+  window.__lahavDecorateMath = decorateMathRoot;
+
   window.__lahavMathPrep = function () {
-    var prose = articleRoot();
+    if (prepared) return;
+    prepared = true;
+
+    clearLegacyMathCache();
+    const prose = articleRoot();
     if (!prose) return;
 
-    purgeLegacyMathCaches();
     repairMangledInlineMath(prose);
     normalizeDisplayMathBlocks(prose);
 
-    if (typeof window.__lahavPrepareGuidedReading === 'function') {
+    if (typeof window.__lahavPrepareGuidedReading === "function") {
       window.__lahavPrepareGuidedReading();
     }
   };
 
   window.__lahavMathPost = function () {
-    document.documentElement.dataset.mathReady = 'true';
-    document.dispatchEvent(new CustomEvent('lahav:math-ready'));
+    const prose = articleRoot();
+    if (prose) decorateMathRoot(prose);
+    document.documentElement.dataset.mathReady = "true";
+    document.dispatchEvent(new CustomEvent("lahav:math-ready"));
   };
-}());
+})();

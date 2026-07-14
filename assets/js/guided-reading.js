@@ -1,428 +1,534 @@
-/**
- * Guided reading for long-form posts.
- *
- * The authored article remains the source of truth. This script derives only
- * semantic reading structure from existing headings and explicit fold markers.
- * It does not inspect, move, cache, or typeset MathJax output.
- */
-(function () {
-  'use strict';
+(() => {
+  "use strict";
 
-  var TOP_OFFSET = 150;
-  var DESKTOP_RAIL_QUERY = '(min-width: 1121px)';
+  const TOP_OFFSET = 150;
+  const DESKTOP_RAIL_QUERY = "(min-width: 1121px)";
+  const MATH_IGNORE_CLASS = "tex2jax_ignore";
+  const MATH_PROCESS_CLASS = "tex2jax_process";
 
-  function slugify(value) {
-    return String(value || '')
+  const slugify = (value) =>
+    value
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/[^a-z0-9\s-]/g, "")
       .trim()
-      .replace(/\s+/g, '-') || 'section';
-  }
+      .replace(/\s+/g, "-") || "section";
 
-  function uniqueId(base, used) {
-    var candidate = base;
-    var suffix = 2;
-    while (used.has(candidate)) candidate = base + '-' + suffix++;
+  const uniqueId = (base, used) => {
+    let candidate = base;
+    let suffix = 2;
+    while (used.has(candidate)) candidate = `${base}-${suffix++}`;
     used.add(candidate);
     return candidate;
-  }
+  };
 
-  function directChildren(root, selector) {
-    return Array.prototype.filter.call(root.children, function (child) {
-      return child.matches(selector);
-    });
-  }
+  const directChildren = (element, selector) =>
+    Array.from(element.children).filter((child) => child.matches(selector));
 
-  function parseChapterHeading(heading, index) {
-    var text = (heading.textContent || '').trim();
-    var match = text.match(/^§\s*([^\.\s]+(?:\.[^\.\s]+)*)\.?\s*(.*)$/);
+  function parseChapterHeading(heading, fallbackIndex) {
+    const original = heading.textContent.trim();
+    const match = original.match(/^§\s*([0-9]+[A-Z]?)\.\s*(.+)$/i);
+    const number = match ? match[1] : String(fallbackIndex + 1);
+    const title = match ? match[2] : original;
 
-    return {
-      number: match ? match[1] : String(index + 1),
-      title: match && match[2] ? match[2] : text
-    };
-  }
+    heading.dataset.originalTitle = original;
+    heading.dataset.chapterNumber = number;
+    heading.dataset.chapterTitle = title;
+    heading.textContent = "";
 
-  function formatChapterHeading(heading, chapter) {
-    heading.textContent = '';
+    const numberNode = document.createElement("span");
+    numberNode.className = "chapter-heading__number";
+    numberNode.textContent = `§ ${number}`;
 
-    var number = document.createElement('span');
-    number.className = 'chapter-heading__number';
-    number.textContent = '§ ' + chapter.number;
+    const titleNode = document.createElement("span");
+    titleNode.className = "chapter-heading__title";
+    titleNode.textContent = title;
 
-    var title = document.createElement('span');
-    title.className = 'chapter-heading__title';
-    title.textContent = chapter.title;
-
-    heading.append(number, title);
+    heading.append(numberNode, titleNode);
+    return { number, title };
   }
 
   function wrapSubsections(chapter) {
-    var children = Array.prototype.slice.call(chapter.children);
-    var current = null;
-    var subsections = [];
+    const children = Array.from(chapter.children);
+    const subsections = [];
+    let current = null;
 
-    children.forEach(function (child) {
-      if (child.matches('h3')) {
-        current = document.createElement('section');
-        current.className = 'article-subsection';
+    children.forEach((child) => {
+      if (child.matches("h3")) {
+        current = document.createElement("section");
+        current.className = "article-subsection";
         child.before(current);
         subsections.push(current);
       }
-
-      if (current) current.appendChild(child);
+      if (current) current.append(child);
     });
 
     return subsections;
   }
 
-  /**
-   * Construct the complete hierarchy in a detached fragment, then commit once.
-   * MathJax has not typeset yet, so no rendered equation node can be displaced.
+  /*
+   * Build chapters in a detached fragment, but deliberately do not build the
+   * subsection wrappers yet. Guided folds must claim their authored nodes
+   * first. This prevents a later structural wrapper from changing the sibling
+   * relationship between a fold marker and the display equations it owns.
    */
   function buildGuidedStructure(prose) {
-    var source = document.createDocumentFragment();
-    source.append.apply(source, Array.prototype.slice.call(prose.childNodes));
+    const source = document.createDocumentFragment();
+    source.append(...Array.from(prose.childNodes));
 
-    var output = document.createDocumentFragment();
-    var chapters = [];
-    var currentChapter = null;
+    const output = document.createDocumentFragment();
+    const chapters = [];
+    let currentChapter = null;
 
-    Array.prototype.slice.call(source.childNodes).forEach(function (node) {
-      if (node.nodeType === 1 && node.matches('h2')) {
-        currentChapter = document.createElement('section');
-        currentChapter.className = 'article-chapter';
-        currentChapter.appendChild(node);
+    Array.from(source.childNodes).forEach((child) => {
+      if (child.nodeType === Node.ELEMENT_NODE && child.matches("h2")) {
+        currentChapter = document.createElement("section");
+        currentChapter.className = "article-chapter";
+        output.append(currentChapter);
         chapters.push(currentChapter);
-        output.appendChild(currentChapter);
-      } else if (currentChapter) {
-        currentChapter.appendChild(node);
-      } else {
-        output.appendChild(node);
       }
+
+      if (currentChapter) currentChapter.append(child);
+      else output.append(child);
     });
 
-    chapters.forEach(function (chapter, index) {
-      var heading = chapter.querySelector(':scope > h2');
+    chapters.forEach((chapter, index) => {
+      const heading = directChildren(chapter, "h2")[0];
       if (!heading) return;
 
-      var parsed = parseChapterHeading(heading, index);
-      chapter.dataset.chapterNumber = parsed.number;
-      chapter.dataset.chapterTitle = parsed.title;
-      formatChapterHeading(heading, parsed);
+      const meta = parseChapterHeading(heading, index);
+      chapter.dataset.chapterNumber = meta.number;
+      chapter.dataset.chapterTitle = meta.title;
 
-      var subsections = wrapSubsections(chapter);
-      var firstParagraph = Array.prototype.find.call(chapter.children, function (node) {
-        return node.matches('p');
-      });
-      if (firstParagraph) firstParagraph.classList.add('chapter-lead');
-
-      subsections.forEach(function (subsection) {
-        var subheading = subsection.querySelector(':scope > h3');
-        if (subheading) subheading.dataset.guidedSubsection = 'true';
-      });
+      const firstParagraph = directChildren(chapter, "p")[0];
+      if (firstParagraph) firstParagraph.classList.add("chapter-lead");
     });
 
-    return { output: output, chapters: chapters };
+    return { output, chapters };
   }
 
-  function makeDisclosureSummary(label, tone) {
-    var summary = document.createElement('summary');
-    summary.className = 'guided-disclosure__summary';
-
-    var icon = document.createElement('span');
-    icon.className = 'guided-disclosure__icon';
-    icon.setAttribute('aria-hidden', 'true');
-
-    var title = document.createElement('span');
-    title.className = 'guided-disclosure__label';
-    title.textContent = label;
-
-    var hint = document.createElement('span');
-    hint.className = 'guided-disclosure__hint';
-    hint.textContent = tone === 'proof' ? 'proof' : 'derivation';
-
-    summary.append(icon, title, hint);
-    return summary;
+  function containsRawMath(root) {
+    return /(?:\$\$|\\\[|\\\(|\$[^$\n])/.test(root.textContent || "");
   }
 
-  function prepareSemanticDisclosures(prose) {
-    var disclosures = [];
-    var starts = Array.prototype.slice.call(
-      prose.querySelectorAll('.guided-fold-start')
-    );
+  async function typesetDeferredDisclosure(details, body, hint) {
+    if (body.dataset.mathState === "ready" || body.dataset.mathState === "typesetting") {
+      return;
+    }
 
-    starts.forEach(function (start) {
-      if (!start.parentNode) return;
+    body.dataset.mathState = "typesetting";
+    details.setAttribute("aria-busy", "true");
+    if (hint) hint.textContent = "rendering derivation";
 
-      var parent = start.parentNode;
-      var end = start.nextElementSibling;
-      while (end && !end.classList.contains('guided-fold-end')) {
+    try {
+      if (typeof window.__lahavTypesetDeferredMath !== "function") {
+        await new Promise((resolve) => {
+          document.addEventListener("lahav:math-ready", resolve, { once: true });
+        });
+      }
+
+      if (!details.open) {
+        body.dataset.mathState = "deferred";
+        return;
+      }
+
+      if (typeof window.__lahavTypesetDeferredMath === "function") {
+        await window.__lahavTypesetDeferredMath(body);
+      } else if (window.MathJax?.typesetPromise) {
+        body.classList.remove(MATH_IGNORE_CLASS);
+        body.classList.add(MATH_PROCESS_CLASS);
+        await window.MathJax.typesetPromise([body]);
+        body.classList.remove(MATH_PROCESS_CLASS);
+      }
+
+      body.dataset.mathState = "ready";
+      delete body.dataset.deferredMath;
+    } catch (error) {
+      body.dataset.mathState = "error";
+      console.error("Guided disclosure MathJax pass failed", error);
+    } finally {
+      details.removeAttribute("aria-busy");
+      if (hint) {
+        hint.textContent =
+          details.dataset.tone === "proof" ? "proof detail" : "supporting derivation";
+      }
+      document.dispatchEvent(new CustomEvent("lahav:guided-layout-change"));
+    }
+  }
+
+  function prepareSemanticDisclosures(root) {
+    const disclosures = [];
+    const starts = Array.from(root.querySelectorAll(".guided-fold-start"));
+
+    starts.forEach((start, index) => {
+      const parent = start.parentElement;
+      if (!parent) return;
+
+      let end = start.nextElementSibling;
+      while (end && !end.classList.contains("guided-fold-end")) {
         end = end.nextElementSibling;
       }
-      if (!end || end.parentNode !== parent) return;
+      if (!end || end.parentElement !== parent) return;
 
-      var tone = start.dataset.tone === 'proof' ? 'proof' : 'derivation';
-      var label = start.dataset.label ||
-        (tone === 'proof' ? 'Supporting proof' : 'Supporting derivation');
+      const details = document.createElement("details");
+      const tone = start.dataset.tone || "supporting";
+      details.className = `guided-disclosure guided-disclosure--${tone}`;
+      details.id = `supporting-detail-${index + 1}`;
+      details.dataset.tone = tone;
+      details.open = start.dataset.open === "true";
 
-      var details = document.createElement('details');
-      details.className = 'guided-disclosure guided-disclosure--' + tone;
-      if (start.dataset.open === 'true') details.open = true;
+      const summary = document.createElement("summary");
+      summary.className = "guided-disclosure__summary";
 
-      var body = document.createElement('div');
-      body.className = 'guided-disclosure__body';
+      const icon = document.createElement("span");
+      icon.className = "guided-disclosure__icon";
+      icon.setAttribute("aria-hidden", "true");
 
-      details.append(makeDisclosureSummary(label, tone), body);
-      parent.insertBefore(details, start);
+      const label = document.createElement("span");
+      label.className = "guided-disclosure__label";
+      label.textContent = start.dataset.label || "Supporting detail";
 
-      var node = start.nextSibling;
+      const hint = document.createElement("span");
+      hint.className = "guided-disclosure__hint";
+      hint.textContent = tone === "proof" ? "proof detail" : "supporting derivation";
+
+      summary.append(icon, label, hint);
+
+      const body = document.createElement("div");
+      body.className = "guided-disclosure__body";
+
+      let node = start.nextSibling;
       while (node && node !== end) {
-        var next = node.nextSibling;
-        body.appendChild(node);
+        const next = node.nextSibling;
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          node.dataset.guidedFoldOwner = details.id;
+        }
+        body.append(node);
         node = next;
       }
 
-      start.remove();
+      const deferMath =
+        !details.open &&
+        containsRawMath(body) &&
+        Boolean(document.getElementById("MathJax-script"));
+
+      if (deferMath) {
+        body.classList.add(MATH_IGNORE_CLASS);
+        body.dataset.deferredMath = "true";
+        body.dataset.mathState = "deferred";
+      }
+
+      details.append(summary, body);
+
+      /*
+       * A second click while MathJax is laying out SVG inside the newly-opened
+       * body would hide the only measurable container halfway through the pass.
+       * Ignore that click for the few milliseconds in which ownership is being
+       * finalized.
+       */
+      summary.addEventListener("click", (event) => {
+        if (body.dataset.mathState === "typesetting") event.preventDefault();
+      });
+
+      details.addEventListener("toggle", () => {
+        document.dispatchEvent(new CustomEvent("lahav:guided-layout-change"));
+        if (details.open && body.dataset.deferredMath === "true") {
+          typesetDeferredDisclosure(details, body, hint);
+        }
+      });
+
+      start.replaceWith(details);
       end.remove();
       disclosures.push(details);
     });
 
+    root
+      .querySelectorAll(".guided-fold-start, .guided-fold-end")
+      .forEach((marker) => marker.remove());
+
     return disclosures;
   }
 
-  function ensureHeadingIds(prose) {
-    var used = new Set();
-
-    prose.querySelectorAll('[id]').forEach(function (node) {
-      if (node.id) used.add(node.id);
+  function ensureHeadingIds(root) {
+    const used = new Set();
+    root.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach((heading) => {
+      const current = heading.id || slugify(heading.textContent);
+      heading.id = uniqueId(current, used);
     });
-
-    prose.querySelectorAll('h2, h3, h4').forEach(function (heading) {
-      if (heading.id) return;
-      heading.id = uniqueId(slugify(heading.textContent), used);
-    });
-  }
-
-  function addTocLink(list, heading, className, number) {
-    var item = document.createElement('li');
-    item.className = className;
-    if (number) item.dataset.chapterNumber = number;
-
-    var link = document.createElement('a');
-    link.className = 'post-toc__link';
-    link.href = '#' + heading.id;
-    link.textContent = heading.textContent.trim();
-
-    item.appendChild(link);
-    list.appendChild(item);
-    return { item: item, link: link };
   }
 
   function buildToc(chapters) {
-    var list = document.querySelector('#post-toc-list');
-    var toc = document.querySelector('#post-toc');
-    var linkMap = new Map();
+    const toc = document.getElementById("post-toc");
+    const list = document.getElementById("post-toc-list");
+    if (!toc || !list) return new Map();
 
-    if (!list || !toc) return linkMap;
-    list.textContent = '';
+    const fragment = document.createDocumentFragment();
+    const linkMap = new Map();
 
-    chapters.forEach(function (chapter) {
-      var heading = chapter.querySelector(':scope > h2');
-      if (!heading) return;
+    chapters.forEach((chapter) => {
+      const h2 = chapter.querySelector(":scope > h2");
+      if (!h2) return;
 
-      var top = addTocLink(
-        list,
-        heading,
-        'post-toc__item post-toc__item--top',
-        chapter.dataset.chapterNumber
-      );
-      top.link.textContent = chapter.dataset.chapterTitle || heading.textContent.trim();
-      linkMap.set(heading, top);
+      const item = document.createElement("li");
+      item.className = "post-toc__item post-toc__item--top";
+      item.dataset.chapterNumber = chapter.dataset.chapterNumber;
 
-      var subheadings = chapter.querySelectorAll('.article-subsection > h3');
-      if (!subheadings.length) return;
+      const link = document.createElement("a");
+      link.className = "post-toc__link";
+      link.href = `#${h2.id}`;
+      link.textContent = chapter.dataset.chapterTitle;
+      item.append(link);
+      linkMap.set(h2, { item, link });
 
-      var sublist = document.createElement('ol');
-      sublist.className = 'post-toc__sublist';
-      top.item.appendChild(sublist);
+      const h3s = chapter.querySelectorAll(":scope > .article-subsection > h3");
+      if (h3s.length) {
+        const sublist = document.createElement("ol");
+        sublist.className = "post-toc__sublist";
 
-      subheadings.forEach(function (subheading) {
-        var sub = addTocLink(
-          sublist,
-          subheading,
-          'post-toc__item post-toc__item--sub'
-        );
-        linkMap.set(subheading, sub);
-      });
+        h3s.forEach((h3) => {
+          const subitem = document.createElement("li");
+          subitem.className = "post-toc__item post-toc__item--sub";
+
+          const sublink = document.createElement("a");
+          sublink.className = "post-toc__link";
+          sublink.href = `#${h3.id}`;
+          sublink.textContent = h3.textContent.trim();
+
+          subitem.append(sublink);
+          sublist.append(subitem);
+          linkMap.set(h3, { item: subitem, link: sublink });
+        });
+
+        item.append(sublist);
+      }
+
+      fragment.append(item);
     });
 
-    toc.dataset.tocReady = 'true';
+    list.replaceChildren(fragment);
+    toc.hidden = false;
+    toc.dataset.tocReady = "true";
     return linkMap;
   }
 
   function wireMobileToc() {
-    var button = document.querySelector('.post-toc-toggle');
-    var toc = document.querySelector('#post-toc');
-    if (!button || !toc) return;
+    const button = document.querySelector(".post-toc-toggle");
+    const toc = document.getElementById("post-toc");
+    if (!button || !toc || button.dataset.tocWired === "true") return;
 
-    function setOpen(open) {
-      button.setAttribute('aria-expanded', String(open));
-      toc.classList.toggle('is-open', open);
-    }
+    button.dataset.tocWired = "true";
+    const close = () => {
+      button.setAttribute("aria-expanded", "false");
+      toc.classList.remove("is-open");
+    };
 
-    button.addEventListener('click', function () {
-      setOpen(button.getAttribute('aria-expanded') !== 'true');
+    button.addEventListener("click", () => {
+      const open = button.getAttribute("aria-expanded") !== "true";
+      button.setAttribute("aria-expanded", String(open));
+      toc.classList.toggle("is-open", open);
     });
 
-    toc.addEventListener('click', function (event) {
-      if (event.target.closest('a')) setOpen(false);
-    });
-
-    document.addEventListener('click', function (event) {
-      if (event.target.closest('.post-reading-rail')) return;
-      setOpen(false);
+    toc.addEventListener("click", (event) => {
+      if (event.target.closest("a")) close();
     });
   }
 
   function wirePrintDisclosureState(disclosures) {
-    var previousState = [];
+    let previousState = [];
 
-    window.addEventListener('beforeprint', function () {
-      previousState = disclosures.map(function (details) { return details.open; });
-      disclosures.forEach(function (details) { details.open = true; });
+    window.addEventListener("beforeprint", () => {
+      previousState = disclosures.map((details) => details.open);
+      disclosures.forEach((details) => {
+        details.open = true;
+        const body = details.querySelector(".guided-disclosure__body");
+        const hint = details.querySelector(".guided-disclosure__hint");
+        if (body?.dataset.deferredMath === "true") {
+          typesetDeferredDisclosure(details, body, hint);
+        }
+      });
     });
 
-    window.addEventListener('afterprint', function () {
-      disclosures.forEach(function (details, index) {
-        details.open = Boolean(previousState[index]);
+    window.addEventListener("afterprint", () => {
+      disclosures.forEach((details, index) => {
+        details.open = previousState[index] ?? false;
       });
     });
   }
 
   function wireScrollState(chapters, linkMap) {
-    var progress = document.querySelector('.reading-progress > span');
-    var number = document.querySelector('.reading-status__number');
-    var title = document.querySelector('.reading-status__title');
-    var headings = chapters
-      .map(function (chapter) { return chapter.querySelector(':scope > h2'); })
+    const progress = document.querySelector(".reading-progress > span");
+    const number = document.querySelector(".reading-status__number");
+    const title = document.querySelector(".reading-status__title");
+    const headings = chapters
+      .map((chapter) => chapter.querySelector(":scope > h2"))
       .filter(Boolean);
 
-    var offsets = [];
-    var activeIndex = -1;
-    var ticking = false;
-    var needsMeasure = true;
+    let offsets = [];
+    let activeIndex = -1;
+    let activeToc = null;
+    let updateFrame = 0;
+    let measureFrame = 0;
 
-    function measure() {
-      offsets = headings.map(function (heading) {
-        return heading.getBoundingClientRect().top + window.scrollY;
-      });
-      needsMeasure = false;
-    }
-
-    function currentHeadingIndex(scrollTop) {
-      var index = 0;
-      for (var i = 0; i < offsets.length; i += 1) {
-        if (offsets[i] <= scrollTop + TOP_OFFSET) index = i;
-        else break;
+    const locateChapter = (position) => {
+      let low = 0;
+      let high = offsets.length - 1;
+      let result = 0;
+      while (low <= high) {
+        const middle = (low + high) >> 1;
+        if (offsets[middle] <= position) {
+          result = middle;
+          low = middle + 1;
+        } else {
+          high = middle - 1;
+        }
       }
-      return index;
-    }
+      return result;
+    };
 
-    function update() {
-      ticking = false;
-      if (needsMeasure) measure();
+    const setActive = (index) => {
+      if (index === activeIndex) return;
+      activeIndex = index;
+      const chapter = chapters[index];
+      if (!chapter) return;
 
-      var scrollTop = window.scrollY || document.documentElement.scrollTop;
-      var maxScroll = Math.max(
+      if (number) number.textContent = `§ ${chapter.dataset.chapterNumber}`;
+      if (title) title.textContent = chapter.dataset.chapterTitle;
+
+      if (activeToc) {
+        activeToc.item.classList.remove("is-current");
+        activeToc.link.classList.remove("is-active");
+        activeToc.link.removeAttribute("aria-current");
+      }
+
+      activeToc = linkMap.get(headings[index]) || null;
+      if (!activeToc) return;
+
+      activeToc.item.classList.add("is-current");
+      activeToc.link.classList.add("is-active");
+      activeToc.link.setAttribute("aria-current", "location");
+
+      if (window.matchMedia(DESKTOP_RAIL_QUERY).matches) {
+        activeToc.item.scrollIntoView({ block: "nearest" });
+      }
+    };
+
+    const update = () => {
+      updateFrame = 0;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const maxScroll = Math.max(
         1,
         document.documentElement.scrollHeight - window.innerHeight
       );
-
       if (progress) {
-        progress.style.transform = 'scaleX(' + Math.min(1, scrollTop / maxScroll) + ')';
+        progress.style.transform = `scaleX(${Math.min(1, scrollTop / maxScroll)})`;
       }
+      if (offsets.length) setActive(locateChapter(scrollTop + TOP_OFFSET));
+    };
 
-      if (!headings.length) return;
-      var current = currentHeadingIndex(scrollTop);
-      if (current === activeIndex) return;
-      activeIndex = current;
+    const requestUpdate = () => {
+      if (!updateFrame) updateFrame = window.requestAnimationFrame(update);
+    };
 
-      var chapter = chapters[current];
-      if (!chapter) return;
+    const measure = () => {
+      measureFrame = 0;
+      offsets = headings.map(
+        (heading) => heading.getBoundingClientRect().top + window.scrollY
+      );
+      update();
+    };
 
-      if (number) number.textContent = '§ ' + chapter.dataset.chapterNumber;
-      if (title) title.textContent = chapter.dataset.chapterTitle;
+    const requestMeasure = () => {
+      if (measureFrame) window.cancelAnimationFrame(measureFrame);
+      measureFrame = window.requestAnimationFrame(measure);
+    };
 
-      linkMap.forEach(function (entry) {
-        entry.item.classList.remove('is-current');
-        entry.link.classList.remove('is-active');
-        entry.link.removeAttribute('aria-current');
-      });
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestMeasure, { passive: true });
+    window.addEventListener("load", requestMeasure, { once: true });
+    document.addEventListener("lahav:math-ready", requestMeasure, { once: true });
+    document.addEventListener("lahav:visualization-resize", requestMeasure);
+    document.addEventListener("lahav:guided-layout-change", requestMeasure);
 
-      var active = linkMap.get(headings[current]);
-      if (!active) return;
-
-      active.item.classList.add('is-current');
-      active.link.classList.add('is-active');
-      active.link.setAttribute('aria-current', 'location');
-
-      if (window.matchMedia(DESKTOP_RAIL_QUERY).matches) {
-        active.item.scrollIntoView({ block: 'nearest' });
-      }
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(requestMeasure).catch(() => {});
     }
 
-    function requestUpdate(remeasure) {
-      if (remeasure) needsMeasure = true;
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(update);
-    }
-
-    window.addEventListener('scroll', function () { requestUpdate(false); }, { passive: true });
-    window.addEventListener('resize', function () { requestUpdate(true); }, { passive: true });
-    document.addEventListener('lahav:math-ready', function () { requestUpdate(true); });
-    document.addEventListener('lahav:visualization-resize', function () { requestUpdate(true); });
-    document.addEventListener('toggle', function (event) {
-      if (event.target.matches('.guided-disclosure')) requestUpdate(true);
-    }, true);
-
-    requestUpdate(true);
+    measure();
   }
+
+  let preparedState = null;
+  let interactionsWired = false;
+  let interactionTimer = 0;
 
   function prepareGuidedReading() {
-    var page = document.querySelector('.post-page--guided');
-    var prose = page && page.querySelector('.article-prose[data-reading-mode="guided"]');
-    if (!page || !prose || prose.dataset.guidedReady === 'true') return;
+    if (preparedState) return preparedState;
 
-    prose.dataset.guidedReady = 'true';
+    const page = document.querySelector(".post-page--guided");
+    const prose = page?.querySelector(".article-prose[data-reading-mode='guided']");
+    if (!page || !prose) return null;
 
-    var internalTitle = directChildren(prose, 'h1')[0];
-    if (internalTitle) internalTitle.classList.add('article-internal-title');
+    const structure = buildGuidedStructure(prose);
+    const internalTitle = directChildren(structure.output, "h1")[0];
+    if (internalTitle) internalTitle.classList.add("article-internal-title");
 
-    directChildren(prose, 'hr').forEach(function (rule) {
-      rule.classList.add('chapter-divider-source');
-    });
+    directChildren(structure.output, "hr").forEach((rule) =>
+      rule.classList.add("chapter-divider-source")
+    );
 
-    var structure = buildGuidedStructure(prose);
+    /* Fold ownership is established before subsection wrappers are created. */
+    const disclosures = prepareSemanticDisclosures(structure.output);
+    structure.chapters.forEach(wrapSubsections);
+    ensureHeadingIds(structure.output);
+
     prose.replaceChildren(structure.output);
+    prose.dataset.guidedReady = "true";
 
-    var disclosures = prepareSemanticDisclosures(prose);
-    ensureHeadingIds(prose);
+    preparedState = {
+      page,
+      prose,
+      chapters: structure.chapters,
+      disclosures,
+      linkMap: null,
+    };
 
-    var linkMap = buildToc(structure.chapters);
+    document.dispatchEvent(new CustomEvent("lahav:guided-ready"));
+    return preparedState;
+  }
+
+  function wireInteractions() {
+    if (interactionsWired) return;
+    const state = prepareGuidedReading();
+    if (!state) return;
+
+    interactionsWired = true;
+    state.linkMap = buildToc(state.chapters);
     wireMobileToc();
-    wirePrintDisclosureState(disclosures);
-    wireScrollState(structure.chapters, linkMap);
-
-    document.dispatchEvent(new CustomEvent('lahav:guided-ready'));
+    wirePrintDisclosureState(state.disclosures);
+    wireScrollState(state.chapters, state.linkMap);
   }
 
-  window.__lahavPrepareGuidedReading = prepareGuidedReading;
+  function scheduleInteractions() {
+    if (interactionsWired || interactionTimer) return;
+    interactionTimer = window.setTimeout(() => {
+      interactionTimer = 0;
+      wireInteractions();
+    }, 0);
+  }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', prepareGuidedReading, { once: true });
-  } else {
+  /* Called from MathJax startup.ready before the initial document scan. */
+  window.__lahavPrepareGuidedReading = function () {
+    const state = prepareGuidedReading();
+    scheduleInteractions();
+    return state;
+  };
+
+  function boot() {
     prepareGuidedReading();
+    scheduleInteractions();
   }
-}());
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
+})();
