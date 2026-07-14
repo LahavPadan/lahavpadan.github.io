@@ -1380,11 +1380,10 @@ kbd {
 /* Guided reading mode -----------------------------------------------------
    Long-form posts opt in with `reading_mode: guided`.
 
-   Colour roles are deliberately not monochromatic:
-   - the post accent remains the anchor for navigation and chapter identity;
-   - a neighbouring teal marks conceptual structure;
-   - amber marks optional derivations;
-   - violet marks proof details.
+   Every guided-reading colour is derived from the post's own accent. This
+   keeps physics, mathematics, cyber, and the other article families centred
+   on the same main colour they use in the normal reading layout, rather than
+   introducing an unrelated teal/amber/violet palette.
 
    Folding is authored semantically in the article with guided-fold markers.
    Nothing is folded merely because it crosses a word-count threshold. */
@@ -1394,20 +1393,20 @@ kbd {
   --guide-primary-soft: color-mix(in srgb, var(--post-accent-soft) 82%, var(--surface));
   --guide-primary-border: var(--post-accent-border);
 
-  --guide-secondary: #2f7d78;
-  --guide-secondary-ink: #245f5b;
-  --guide-secondary-soft: #edf8f6;
-  --guide-secondary-border: #acd8d3;
+  --guide-secondary: color-mix(in oklab, var(--guide-primary) 82%, var(--ink));
+  --guide-secondary-ink: color-mix(in oklab, var(--guide-primary-ink) 88%, var(--ink));
+  --guide-secondary-soft: color-mix(in oklab, var(--guide-primary-soft) 84%, var(--surface));
+  --guide-secondary-border: color-mix(in oklab, var(--guide-primary-border) 82%, var(--border));
 
-  --guide-warm: #a66224;
-  --guide-warm-ink: #7d4719;
-  --guide-warm-soft: #fff5e8;
-  --guide-warm-border: #e7c49c;
+  --guide-warm: color-mix(in oklab, var(--guide-primary) 68%, var(--ink));
+  --guide-warm-ink: color-mix(in oklab, var(--guide-primary-ink) 74%, var(--ink));
+  --guide-warm-soft: color-mix(in oklab, var(--guide-primary-soft) 72%, var(--surface));
+  --guide-warm-border: color-mix(in oklab, var(--guide-primary-border) 72%, var(--border));
 
-  --guide-proof: #6b5aa5;
-  --guide-proof-ink: #55448d;
-  --guide-proof-soft: #f4f1fb;
-  --guide-proof-border: #cfc5e8;
+  --guide-proof: color-mix(in oklab, var(--guide-primary) 56%, var(--ink));
+  --guide-proof-ink: color-mix(in oklab, var(--guide-primary-ink) 62%, var(--ink));
+  --guide-proof-soft: color-mix(in oklab, var(--guide-primary-soft) 62%, var(--surface));
+  --guide-proof-border: color-mix(in oklab, var(--guide-primary-border) 62%, var(--border));
 
   width: min(1240px, calc(100% - 48px));
   padding-top: clamp(48px, 7vw, 82px);
@@ -1415,21 +1414,6 @@ kbd {
 
 :root[data-theme="dark"] .post-page--guided {
   --guide-primary-soft: color-mix(in srgb, var(--post-accent-soft) 76%, var(--surface));
-
-  --guide-secondary: #87d8d0;
-  --guide-secondary-ink: #a7eee7;
-  --guide-secondary-soft: #173a38;
-  --guide-secondary-border: #3f7773;
-
-  --guide-warm: #f0bd7f;
-  --guide-warm-ink: #ffd4a4;
-  --guide-warm-soft: #3a2b1d;
-  --guide-warm-border: #7f5d38;
-
-  --guide-proof: #c9bbf3;
-  --guide-proof-ink: #dfd5ff;
-  --guide-proof-soft: #2d2740;
-  --guide-proof-border: #675b8a;
 }
 
 .post-page--guided .post-page__header {
@@ -1587,7 +1571,7 @@ kbd {
   display: flex;
   min-height: 48px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 18px;
   margin: 0 0 10px;
   padding: 8px 0 7px;
@@ -1615,21 +1599,6 @@ kbd {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.reading-status__disclosures {
-  flex: none;
-  padding: 5px 8px;
-  border: 1px solid var(--guide-warm-border);
-  border-radius: 999px;
-  background: var(--guide-warm-soft);
-  color: var(--guide-warm-ink);
-  font-size: 0.64rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-.reading-status__disclosures:hover {
-  border-color: var(--guide-warm);
-}
-.reading-status__disclosures:focus-visible,
 .post-toc-toggle:focus-visible,
 .guided-disclosure__summary:focus-visible {
   outline: 2px solid var(--guide-primary);
@@ -1908,47 +1877,6 @@ kbd {
   margin-left: -32px;
 }
 
-.chapter-navigation {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 18px;
-  margin-top: clamp(62px, 9vw, 96px);
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
-}
-.chapter-navigation__link {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-  color: var(--muted) !important;
-  text-decoration: none !important;
-}
-.chapter-navigation__link--next {
-  text-align: right;
-}
-.chapter-navigation__link span {
-  color: var(--guide-primary-ink);
-  font-size: 0.67rem;
-  letter-spacing: 0.025em;
-  text-transform: uppercase;
-}
-.chapter-navigation__link--next span {
-  color: var(--guide-secondary-ink);
-}
-.chapter-navigation__link strong {
-  overflow: hidden;
-  color: var(--muted) !important;
-  font-family: Georgia, "Times New Roman", serif !important;
-  font-size: 0.9rem !important;
-  font-weight: 400;
-  line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.chapter-navigation__link:hover strong {
-  color: var(--ink) !important;
-}
-
 @media (max-width: 980px) {
   .post-page--guided {
     width: min(860px, calc(100% - 40px));
@@ -2011,11 +1939,6 @@ kbd {
   .reading-status__title {
     display: none;
   }
-  .reading-status__disclosures {
-    max-width: 54%;
-    font-size: 0.59rem;
-    text-align: center;
-  }
   .post-page--guided .article-chapter > h2 {
     grid-template-columns: 1fr;
     gap: 8px;
@@ -2044,19 +1967,12 @@ kbd {
     max-width: 100%;
     margin-left: 0;
   }
-  .chapter-navigation {
-    grid-template-columns: 1fr;
-  }
-  .chapter-navigation__link--next {
-    text-align: left;
-  }
 }
 
 @media print {
   .reading-progress,
   .post-reading-rail,
   .reading-status,
-  .chapter-navigation,
   .guided-disclosure__summary {
     display: none !important;
   }

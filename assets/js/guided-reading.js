@@ -45,12 +45,18 @@
   }
 
   function wrapChapters(prose) {
-    const children = Array.from(prose.children);
+    /* Work with childNodes rather than children. Kramdown normally wraps
+       display equations in paragraphs, but a few valid Markdown/HTML mixes
+       leave whitespace or raw math delimiters as direct text nodes. Moving
+       every node after the first h2 guarantees that MathJax cannot leave an
+       equation behind at the root of .article-prose, where it would appear
+       after the chapter that originally contained it. */
+    const children = Array.from(prose.childNodes);
     const chapters = [];
     let currentChapter = null;
 
     children.forEach((child) => {
-      if (child.matches("h2")) {
+      if (child.nodeType === Node.ELEMENT_NODE && child.matches("h2")) {
         currentChapter = document.createElement("section");
         currentChapter.className = "article-chapter";
         child.before(currentChapter);
@@ -154,37 +160,6 @@
     return disclosures;
   }
 
-  function addChapterNavigation(chapters) {
-    chapters.forEach((chapter, index) => {
-      const nav = document.createElement("nav");
-      nav.className = "chapter-navigation";
-      nav.setAttribute("aria-label", "Chapter navigation");
-
-      const previous = chapters[index - 1];
-      const next = chapters[index + 1];
-
-      if (previous) {
-        const link = document.createElement("a");
-        link.className = "chapter-navigation__link chapter-navigation__link--previous";
-        link.href = `#${previous.querySelector("h2").id}`;
-        link.innerHTML = `<span>Previous chapter</span><strong>${previous.dataset.chapterTitle}</strong>`;
-        nav.append(link);
-      } else {
-        nav.append(document.createElement("span"));
-      }
-
-      if (next) {
-        const link = document.createElement("a");
-        link.className = "chapter-navigation__link chapter-navigation__link--next";
-        link.href = `#${next.querySelector("h2").id}`;
-        link.innerHTML = `<span>Next chapter</span><strong>${next.dataset.chapterTitle}</strong>`;
-        nav.append(link);
-      }
-
-      chapter.append(nav);
-    });
-  }
-
   function ensureHeadingIds(prose) {
     const used = new Set();
     prose.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach((heading) => {
@@ -261,33 +236,6 @@
     });
   }
 
-  function wireDisclosureControl(disclosures) {
-    const button = document.querySelector(".reading-status__disclosures");
-    if (!button) return;
-    if (!disclosures.length) {
-      button.hidden = true;
-      return;
-    }
-
-    const update = () => {
-      const allOpen = disclosures.every((details) => details.open);
-      button.textContent = allOpen
-        ? "Close supporting details"
-        : "Open supporting details";
-      button.setAttribute("aria-pressed", String(allOpen));
-    };
-
-    button.addEventListener("click", () => {
-      const shouldOpen = !disclosures.every((details) => details.open);
-      disclosures.forEach((details) => {
-        details.open = shouldOpen;
-      });
-      update();
-    });
-    disclosures.forEach((details) => details.addEventListener("toggle", update));
-    update();
-  }
-
   function wirePrintDisclosureState(disclosures) {
     let previousState = [];
     window.addEventListener("beforeprint", () => {
@@ -358,15 +306,17 @@
   let initialized = false;
   let scrollWired = false;
 
-  /* Phase 1 — DOM restructuring and TOC rendering.
-     Runs as soon as the article HTML is in the DOM. Does not depend
-     on MathJax having finished typesetting: the chapter/subsection
-     wrapping, disclosure preparation, and TOC generation all read
-     h2/h3 text content, which is stable from the raw markdown output.
-     Splitting this out of the MathJax-ready path is what makes the
-     "article route" appear immediately on math-heavy pages
-     (elliptic-curves, coupled-modes) instead of waiting several
-     seconds for hundreds of equations to typeset first. */
+  /* DOM restructuring and TOC rendering.
+
+     On math-heavy guided articles this deliberately runs *after* MathJax.
+     MathJax records source-node ranges while it scans the document. Moving
+     those nodes into chapter/subsection wrappers during the scan creates a
+     timing-dependent failure in which the final SVG equation is inserted at
+     the end of the chapter (sometimes after the chapter navigation) rather
+     than where its delimiters appeared. Waiting for `lahav:math-ready` makes
+     the typeset DOM stable before any structural move and removes that race.
+
+     Articles without MathJax still initialize immediately. */
   function init() {
     if (initialized) return;
 
@@ -387,10 +337,8 @@
     const disclosures = prepareSemanticDisclosures(prose);
     ensureHeadingIds(prose);
 
-    addChapterNavigation(chapters);
     const linkMap = buildToc(chapters);
     wireMobileToc();
-    wireDisclosureControl(disclosures);
     wirePrintDisclosureState(disclosures);
 
     /* Phase 2 — scroll-spy.
@@ -417,10 +365,25 @@
   }
 
   function initWhenArticleIsStable() {
+    const start = () => {
+      if (document.documentElement.dataset.mathReady === "true" ||
+          !document.getElementById("MathJax-script")) {
+        init();
+        return;
+      }
+
+      document.addEventListener("lahav:math-ready", init, { once: true });
+      /* A failed CDN request must not leave the page without its reading
+         layout. Eight seconds matches the existing scroll-spy fallback and
+         is long enough for a slow MathJax load without reintroducing the
+         normal successful-load race. */
+      window.setTimeout(init, 8000);
+    };
+
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", init, { once: true });
+      document.addEventListener("DOMContentLoaded", start, { once: true });
     } else {
-      init();
+      start();
     }
   }
 

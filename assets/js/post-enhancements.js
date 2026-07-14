@@ -366,56 +366,333 @@
     integrateWhoami();
   }
 
+  function cssValue(style, name, fallback) {
+    var value = style.getPropertyValue(name);
+    return value ? value.trim() : fallback;
+  }
+
+  function currentVisualizationPalette() {
+    var post = document.querySelector('.post-page') || document.documentElement;
+    var postStyle = window.getComputedStyle(post);
+    var rootStyle = window.getComputedStyle(document.documentElement);
+    var value = function (name, fallback) {
+      return cssValue(postStyle, name, cssValue(rootStyle, name, fallback));
+    };
+
+    return {
+      theme: document.documentElement.dataset.theme || 'light',
+      page: value('--page', '#fbfbf8'),
+      surface: value('--surface', '#ffffff'),
+      surfaceMuted: value('--surface-muted', '#f4f5f1'),
+      ink: value('--ink', '#1c2420'),
+      muted: value('--muted', '#667169'),
+      border: value('--border', '#d6ddd7'),
+      borderStrong: value('--border-strong', '#a6b2a9'),
+      accent: value('--post-accent', value('--accent', '#0d7659')),
+      accentSoft: value('--post-accent-soft', value('--accent-soft', '#dcefe7')),
+      accentBorder: value('--post-accent-border', value('--border-strong', '#a6b2a9')),
+      accentInk: value('--post-accent-ink', value('--accent', '#0d7659'))
+    };
+  }
+
+  function setVisualizationVariables(root, palette) {
+    var style = root.style;
+    var exact = {
+      '--viz-page': palette.page,
+      '--viz-surface': palette.surface,
+      '--viz-surface-muted': palette.surfaceMuted,
+      '--viz-ink': palette.ink,
+      '--viz-muted': palette.muted,
+      '--viz-border': palette.border,
+      '--viz-border-strong': palette.borderStrong,
+      '--viz-accent': palette.accent,
+      '--viz-accent-soft': palette.accentSoft,
+      '--viz-accent-border': palette.accentBorder,
+      '--viz-accent-ink': palette.accentInk
+    };
+    Object.keys(exact).forEach(function (name) {
+      style.setProperty(name, exact[name]);
+    });
+
+    /* The visualizations were authored at different times and therefore use
+       several names for the same semantic roles. Point all of those names at
+       one palette supplied by the containing article. Distinct diagram roles
+       still receive light/dark variants, but every one is derived from the
+       article accent instead of carrying a separate hard-coded scheme. */
+    var aliases = {
+      '--page': 'var(--viz-page)',
+      '--paper': 'var(--viz-surface)',
+      '--bg': 'var(--viz-page)',
+      '--auc-bg': 'var(--viz-page)',
+      '--tw-bg': 'var(--viz-page)',
+
+      '--surface': 'var(--viz-surface)',
+      '--panel': 'var(--viz-surface)',
+      '--auc-surface': 'var(--viz-surface)',
+      '--tw-surface': 'var(--viz-surface)',
+      '--rls-surface': 'var(--viz-surface)',
+      '--eg-surface': 'var(--viz-surface)',
+
+      '--surface-muted': 'var(--viz-surface-muted)',
+      '--surface-2': 'var(--viz-surface-muted)',
+      '--panel-2': 'var(--viz-surface-muted)',
+      '--auc-surface-soft': 'var(--viz-surface-muted)',
+      '--tw-surface-soft': 'var(--viz-surface-muted)',
+      '--rls-muted-surface': 'var(--viz-surface-muted)',
+      '--eg-surface-muted': 'var(--viz-surface-muted)',
+
+      '--ink': 'var(--viz-ink)',
+      '--text': 'var(--viz-ink)',
+      '--auc-text': 'var(--viz-ink)',
+      '--tw-text': 'var(--viz-ink)',
+      '--rls-ink': 'var(--viz-ink)',
+      '--eg-ink': 'var(--viz-ink)',
+
+      '--muted': 'var(--viz-muted)',
+      '--faint': 'color-mix(in srgb, var(--viz-muted) 76%, transparent)',
+      '--auc-muted': 'var(--viz-muted)',
+      '--auc-faint': 'color-mix(in srgb, var(--viz-muted) 76%, transparent)',
+      '--auc-gray': 'var(--viz-muted)',
+      '--auc-white': 'var(--viz-ink)',
+      '--tw-muted': 'var(--viz-muted)',
+      '--rls-muted': 'var(--viz-muted)',
+      '--eg-muted': 'var(--viz-muted)',
+
+      '--border': 'var(--viz-border)',
+      '--line': 'var(--viz-border)',
+      '--rule': 'var(--viz-border)',
+      '--grid': 'color-mix(in srgb, var(--viz-border) 72%, transparent)',
+      '--auc-grid': 'color-mix(in srgb, var(--viz-border) 72%, transparent)',
+      '--auc-line': 'var(--viz-border)',
+      '--tw-border': 'var(--viz-border)',
+      '--rls-border': 'var(--viz-border)',
+      '--eg-border': 'var(--viz-border)',
+
+      '--border-strong': 'var(--viz-border-strong)',
+      '--line-strong': 'var(--viz-border-strong)',
+      '--rule-strong': 'var(--viz-border-strong)',
+      '--rls-border-strong': 'var(--viz-border-strong)',
+
+      '--accent': 'var(--viz-accent)',
+      '--post-accent': 'var(--viz-accent)',
+      '--card-accent': 'var(--viz-accent)',
+      '--rt-accent': 'var(--viz-accent)',
+      '--eg-accent': 'var(--viz-accent)',
+      '--tw-accent': 'var(--viz-accent)',
+      '--rls-g': 'var(--viz-accent)',
+      '--auc-purple': 'var(--viz-accent)',
+      '--curve': 'var(--viz-accent)',
+      '--good': 'var(--viz-accent)',
+      '--result': 'var(--viz-accent)',
+      '--real': 'var(--viz-accent)',
+      '--positive': 'var(--viz-accent)',
+      '--ray': 'var(--viz-accent)',
+      '--field': 'var(--viz-accent)',
+      '--teal': 'var(--viz-accent)',
+      '--blue': 'var(--viz-accent)',
+
+      '--accent-ink': 'var(--viz-accent-ink)',
+      '--accent-deep': 'var(--viz-accent-ink)',
+      '--accent-strong': 'var(--viz-accent-ink)',
+      '--strong': 'var(--viz-accent-ink)',
+      '--post-accent-ink': 'var(--viz-accent-ink)',
+      '--eg-accent-border': 'var(--viz-accent-border)',
+      '--tw-accent-ink': 'var(--viz-accent-ink)',
+      '--auc-purple-strong': 'var(--viz-accent-ink)',
+      '--curve-dark': 'var(--viz-accent-ink)',
+      '--math': 'var(--viz-accent-ink)',
+
+      '--accent-soft': 'var(--viz-accent-soft)',
+      '--post-accent-soft': 'var(--viz-accent-soft)',
+      '--card-accent-soft': 'var(--viz-accent-soft)',
+      '--rt-soft': 'var(--viz-accent-soft)',
+      '--eg-accent-soft': 'var(--viz-accent-soft)',
+      '--tw-accent-soft': 'var(--viz-accent-soft)',
+      '--tw-accent-softer': 'color-mix(in srgb, var(--viz-accent-soft) 62%, var(--viz-surface))',
+      '--rls-g-soft': 'var(--viz-accent-soft)',
+      '--auc-purple-soft': 'var(--viz-accent-soft)',
+      '--auc-purple-fill': 'color-mix(in srgb, var(--viz-accent-soft) 82%, transparent)',
+      '--result-soft': 'var(--viz-accent-soft)',
+      '--real-soft': 'var(--viz-accent-soft)',
+      '--ray-soft': 'var(--viz-accent-soft)',
+      '--field-soft': 'var(--viz-accent-soft)',
+      '--teal-soft': 'var(--viz-accent-soft)',
+      '--blue-soft': 'var(--viz-accent-soft)',
+      '--soft': 'var(--viz-accent-soft)',
+
+      '--accent-border': 'var(--viz-accent-border)',
+      '--post-accent-border': 'var(--viz-accent-border)',
+      '--card-accent-border': 'var(--viz-accent-border)',
+      '--rt-border': 'var(--viz-accent-border)'
+    };
+
+    var secondary = 'color-mix(in oklab, var(--viz-accent) 68%, var(--viz-ink))';
+    var secondarySoft = 'color-mix(in srgb, var(--viz-accent-soft) 72%, var(--viz-surface))';
+    var tertiary = 'color-mix(in oklab, var(--viz-accent) 52%, var(--viz-muted))';
+    var tertiarySoft = 'color-mix(in srgb, var(--viz-accent-soft) 52%, var(--viz-surface-muted))';
+
+    [
+      '--warm', '--violet', '--path', '--turn', '--negative', '--imag',
+      '--compression', '--tangent', '--singular', '--orange', '--red',
+      '--rls-k', '--tw-blue'
+    ].forEach(function (name) { aliases[name] = secondary; });
+    [
+      '--warm-soft', '--violet-soft', '--path-soft', '--turn-soft',
+      '--imag-soft', '--compression-soft', '--orange-soft', '--red-soft',
+      '--rls-k-soft'
+    ].forEach(function (name) { aliases[name] = secondarySoft; });
+    [
+      '--third', '--gold', '--success', '--warn', '--neutral-spring'
+    ].forEach(function (name) { aliases[name] = tertiary; });
+    [
+      '--success-soft', '--warn-soft'
+    ].forEach(function (name) { aliases[name] = tertiarySoft; });
+
+    Object.keys(aliases).forEach(function (name) {
+      style.setProperty(name, aliases[name]);
+    });
+
+    var declarations = [];
+    Object.keys(exact).forEach(function (name) {
+      declarations.push(name + ':' + exact[name] + ' !important');
+    });
+    Object.keys(aliases).forEach(function (name) {
+      declarations.push(name + ':' + aliases[name] + ' !important');
+    });
+    return declarations.join(';') + ';';
+  }
+
+  function syncVisualizationTheme(frame) {
+    var doc;
+    try { doc = frame.contentDocument; }
+    catch (_e) { return; }
+    if (!doc || !doc.documentElement || !doc.body) return;
+
+    var palette = currentVisualizationPalette();
+    var root = doc.documentElement;
+    root.dataset.theme = palette.theme;
+    root.style.colorScheme = palette.theme;
+    var themeDeclarations = setVisualizationVariables(root, palette);
+
+    /* A few older standalone visualizations hard-coded html/body backgrounds
+       rather than using variables. This small same-origin override makes the
+       iframe canvas exactly match the article's light or dark page. */
+    var override = doc.getElementById('article-visualization-theme-override');
+    if (!override) {
+      override = doc.createElement('style');
+      override.id = 'article-visualization-theme-override';
+      (doc.head || root).appendChild(override);
+    }
+    override.textContent =
+      ':root,body,body>:not(script):not(style){' + themeDeclarations + '}' +
+      'html,body{background:var(--viz-page)!important;color:var(--viz-ink)!important;color-scheme:inherit;}';
+    frame.style.backgroundColor = palette.page;
+  }
+
+  function visualizationContentHeight(frame) {
+    var doc;
+    try { doc = frame.contentDocument; }
+    catch (_e) { return 0; }
+    if (!doc || !doc.body) return 0;
+
+    var win = frame.contentWindow;
+    var maxBottom = 0;
+    each(doc.body.children, function (node) {
+      if (!node || /^(SCRIPT|STYLE|LINK)$/.test(node.tagName)) return;
+      var style = win.getComputedStyle(node);
+      if (style.display === 'none' || style.position === 'fixed') return;
+      var rect = node.getBoundingClientRect();
+      if (!isFinite(rect.bottom)) return;
+      var marginBottom = parseFloat(style.marginBottom) || 0;
+      maxBottom = Math.max(maxBottom, rect.bottom + win.scrollY + marginBottom);
+    });
+
+    if (!maxBottom) {
+      var bodyRect = doc.body.getBoundingClientRect();
+      maxBottom = bodyRect.bottom + win.scrollY;
+    }
+    var bodyStyle = win.getComputedStyle(doc.body);
+    maxBottom += parseFloat(bodyStyle.paddingBottom) || 0;
+    return Math.ceil(maxBottom);
+  }
+
+  function applyVisualizationHeight(frame, rawHeight, allowShrink) {
+    var height = Number(rawHeight);
+    if (!isFinite(height) || height <= 0) return;
+    height = Math.max(240, Math.min(20000, Math.ceil(height)));
+
+    var current = frame.offsetHeight || parseFloat(frame.style.height) || 0;
+    if (!allowShrink && height <= current + 3) return;
+    if (Math.abs(height - current) < 3) return;
+    frame.style.height = height + 'px';
+  }
+
+  function measureVisualizationFrame(frame) {
+    syncVisualizationTheme(frame);
+    applyVisualizationHeight(frame, visualizationContentHeight(frame), false);
+  }
+
+  function wireVisualizationFrame(frame) {
+    if (!frame || frame.dataset.visualizationWired === 'true') return;
+    frame.dataset.visualizationWired = 'true';
+
+    var measure = function () {
+      measureVisualizationFrame(frame);
+      window.setTimeout(function () { measureVisualizationFrame(frame); }, 80);
+      window.setTimeout(function () { measureVisualizationFrame(frame); }, 350);
+      window.setTimeout(function () { measureVisualizationFrame(frame); }, 1200);
+    };
+    frame.addEventListener('load', measure);
+    if (frame.contentDocument && frame.contentDocument.readyState === 'complete') measure();
+  }
+
   function initVisualizationResizing() {
-    /* Guards against the "iframe grows by 2px forever" bug.
+    var selector = 'iframe[data-article-visualization]';
+    each(document.querySelectorAll(selector), wireVisualizationFrame);
 
-       Every article-visualization iframe includes a bridge script that
-       measures its own body/root scrollHeight, adds a fudge of `+2`
-       "to avoid a scrollbar", and posts the number back for the parent
-       to apply as `iframe.style.height`. Independently, that bridge
-       also runs a ResizeObserver on the body, which fires when the
-       iframe's viewport height changes (parent-driven resizes bubble
-       into the child as a body resize). Combined, the sequence is:
-
-         child measures H → posts H+2 → parent sets iframe = H+2
-         → child's body ResizeObserver fires → child measures H+2
-         → posts H+4 → parent sets iframe = H+4 → ... forever
-
-       That's the "drifting whitespace below the visualization until
-       infinity" the reader sees. Fixing every child's bridge script
-       is safer as a one-off cleanup but doesn't help older cached
-       copies of the visualization HTML that browsers may serve after
-       a redeploy, and doesn't help future visualizations that get
-       copy-pasted from the old pattern. So we harden the parent side
-       here: ignore sub-6-pixel deltas from the current height. The
-       real content-change signal easily exceeds that; the +2 drift
-       never does. Combined with the child-side cleanup (see
-       posts/*/visualizations/*.html), this makes the whole path
-       double-safe. */
-    var HYSTERESIS_PX = 6;
-
+    /* Messages remain the most accurate source for interactive controls that
+       change a visualization after load. Match the source window rather than
+       maintaining a brittle allow-list of message type names, since several
+       older figures used their own names. */
     window.addEventListener('message', function (event) {
       if (event.origin !== window.location.origin) return;
       var data = event.data;
       if (!data || typeof data !== 'object') return;
-      var accepted = data.type === 'article-visualization:resize' ||
-        data.type === 'article-visualization-height' ||
-        data.type === 'singular-cubic-height';
-      if (!accepted) return;
       var height = Number(data.height || data.value || data.documentHeight);
       if (!isFinite(height) || height <= 0) return;
-      height = Math.max(320, Math.min(3000, Math.ceil(height)));
-      each(document.querySelectorAll('iframe[data-article-visualization]'), function (frame) {
+
+      each(document.querySelectorAll(selector), function (frame) {
         if (frame.contentWindow !== event.source) return;
-        /* Skip micro-adjustments that don't reflect real content
-           changes. This is the drift guard: even if the child
-           reports height+2 forever, we never grow. */
-        var currentHeight = frame.offsetHeight;
-        if (Math.abs(height - currentHeight) < HYSTERESIS_PX) return;
-        frame.style.height = height + 'px';
+        applyVisualizationHeight(frame, height, true);
+        syncVisualizationTheme(frame);
       });
     });
+
+    /* Visualizations can be inserted after MathJax becomes ready, so wire new
+       iframes as they appear. */
+    if (window.MutationObserver) {
+      new MutationObserver(function (records) {
+        records.forEach(function (record) {
+          each(record.addedNodes, function (node) {
+            if (!node || node.nodeType !== 1) return;
+            if (node.matches && node.matches(selector)) wireVisualizationFrame(node);
+            each(node.querySelectorAll ? node.querySelectorAll(selector) : [], wireVisualizationFrame);
+          });
+        });
+      }).observe(document.body, { childList: true, subtree: true });
+
+      new MutationObserver(function () {
+        each(document.querySelectorAll(selector), function (frame) {
+          syncVisualizationTheme(frame);
+          window.setTimeout(function () { measureVisualizationFrame(frame); }, 60);
+        });
+      }).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme']
+      });
+    }
   }
+
 
   /* -------------------------------------------------------------- TOC ---- */
 
