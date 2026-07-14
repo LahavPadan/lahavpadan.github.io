@@ -1,6 +1,7 @@
-# 4G
 
-> Throughout, **UE** is the mobile ("user equipment," which includes phones, dongles, IoT devices), **eNodeB** is the tower (both the radio and the digital baseband processor sitting under it), and **MME/SGW/PGW/HSS** are the four principal nodes of the core; each will be introduced with what it does before it is named.
+---
+
+Throughout, **UE** is the mobile ("user equipment," which includes phones, dongles, IoT devices), **eNodeB** is the tower (both the radio and the digital baseband processor sitting under it), and **MME/SGW/PGW/HSS** are the four principal nodes of the core; each will be introduced with what it does before it is named.
 
 ---
 
@@ -120,19 +121,13 @@ A radio channel is called **flat** over a band $B$ if $B \ll B_c$ and **frequenc
 
 The idea of OFDM is to slice the wide channel into many narrow subcarriers, each so narrow that within a single subcarrier the channel is flat. The receiver then equalises each subcarrier independently, with one complex scalar.
 
-For this to be feasible, the subcarrier spacing $\Delta f$ must satisfy
-
-$$\Delta f \ll B_c.$$
-
-With $B_c \approx 200\,\text{kHz}$, a spacing of $\Delta f = 15\,\text{kHz}$ gives roughly $200/15 \approx 13$ subcarriers per coherence bandwidth, which is enough that each subcarrier sees an essentially flat channel. This is where the specific $15\,\text{kHz}$ comes from; § 4 shows the other constraints that pin the exact value.
+For this to be feasible, the subcarrier spacing $\Delta f$ must satisfy $\Delta f \ll B_c$. With $B_c \approx 200\,\text{kHz}$, a spacing of $\Delta f = 15\,\text{kHz}$ gives roughly $200/15 \approx 13$ subcarriers per coherence bandwidth, which is enough that each subcarrier sees an essentially flat channel. This is where the specific $15\,\text{kHz}$ comes from; § 4 shows the other constraints that pin the exact value.
 
 ### 3.4. The cyclic prefix as diagonalizer — the actual algebra
 
 The naming "OFDM" says "orthogonal frequency-division multiplexing" — the subcarriers are orthogonal. But when you send them through a multipath channel with delay spread, orthogonality is destroyed unless you do something specific. That specific thing is the **cyclic prefix (CP)**.
 
 The rest of this subsection derives, in one shot, why the CP is the exact structure that turns the receiver's job into "one complex division per subcarrier." The chain has three steps: (a) express the received samples as a matrix product; (b) observe that this matrix is not diagonalizable by the DFT; (c) show that the CP transforms it into a matrix that *is*.
-
-<div class="guided-fold-start" data-label="Derive why the cyclic prefix produces one scalar equation per subcarrier" data-tone="derivation"></div>
 
 #### (a) Received samples as a matrix product
 
@@ -146,11 +141,7 @@ The trouble is what happens to the samples $x[n-k]$ when $n-k$ is negative: thos
 
 #### (b) The matrix is Toeplitz, hence not DFT-diagonalizable
 
-Write the linear convolution as
-
-$$\mathbf{y} = H_{\text{lin}} \mathbf{x} + \text{(ISI from previous block)}.$$
-
-Assuming for a moment there is no previous block (or ignoring the contamination at the start), $H_{\text{lin}}$ for $N=6, L=2$ is
+Write the linear convolution as $\mathbf{y} = H_{\text{lin}} \mathbf{x} + \text{(ISI from previous block)}$. Assuming for a moment there is no previous block (or ignoring the contamination at the start), $H_{\text{lin}}$ for $N=6, L=2$ is
 
 $$H_{\text{lin}} = \begin{pmatrix}
 h_0 & 0   & 0   & 0   & 0   & 0 \\
@@ -197,21 +188,13 @@ $$H_{\text{circ}} = F^H \Lambda F, \qquad \Lambda = \operatorname{diag}(H[0], H[
 
 where $H[k] = \sum_{n=0}^{L} h[n] e^{-j 2\pi kn/N}$ is the DFT of the channel impulse response — the channel's frequency response sampled at the subcarrier frequencies.
 
-Take the DFT of the received block:
-
-$$Y = F \mathbf{y} = F H_{\text{circ}} \mathbf{x} + F \mathbf{n} = \Lambda F \mathbf{x} + F \mathbf{n} = \Lambda X + N.$$
-
-Because $\Lambda$ is diagonal, this reads componentwise as
+Take the DFT of the received block: $Y = F \mathbf{y} = F H_{\text{circ}} \mathbf{x} + F \mathbf{n} = \Lambda F \mathbf{x} + F \mathbf{n} = \Lambda X + N$. Because $\Lambda$ is diagonal, this reads componentwise as
 
 $$Y[k] = H[k] \cdot X[k] + N[k], \qquad k = 0, 1, \ldots, N-1.$$
 
-Each subcarrier is one independent scalar equation. The equaliser is one complex division—the **single-tap equaliser**:
+Each subcarrier is one independent scalar equation. The equaliser is one complex division, $\hat X[k] = Y[k] / H[k]$ — the **single-tap equaliser**.
 
-$$\hat X[k] = Y[k] / H[k].$$
-
-<div class="guided-fold-end"></div>
-
-**Where this affects LTE hardware.** The receiver's front-end is a single FFT block followed by $N$ parallel complex dividers; no equaliser tap chains, no matrix inversions per subframe. This is why a 2008 handset chipset could run a 2048-point FFT and a 1200-way divider at 15 kHz refresh, drawing tens of milliwatts, and still equalise a 20 MHz cellular channel.
+*Where this affects LTE hardware.* The receiver's front-end is a single FFT block followed by $N$ parallel complex dividers; no equaliser tap chains, no matrix inversions per subframe. This is why a 2008 handset chipset could run a 2048-point FFT and a 1200-way divider at 15 kHz refresh, drawing tens of milliwatts, and still equalise a 20 MHz cellular channel.
 
 ### 3.5. What CP length is required
 
@@ -229,11 +212,7 @@ $$T_u = \frac{1}{\Delta f}.$$
 
 This is fundamental Fourier: orthogonal sinusoids at $k \Delta f$ and $m \Delta f$ integrated over a window of length $T_u = 1/\Delta f$ produce $\delta_{km}$. Any shorter window and they overlap; any longer and you waste time.
 
-For $\Delta f = 15\,\text{kHz}$, $T_u = 66.67\,\mu\text{s}$. Total OFDM symbol length including CP is
-
-$$T_{\text{sym}} = T_u + T_{\text{CP}} \approx 71.4\,\mu\text{s}$$
-
-for normal CP.
+For $\Delta f = 15\,\text{kHz}$, $T_u = 66.67\,\mu\text{s}$. Total OFDM symbol length including CP is $T_{\text{sym}} = T_u + T_{\text{CP}} \approx 71.4\,\mu\text{s}$ for normal CP.
 
 ### 3.7. The Doppler direction
 
@@ -243,13 +222,7 @@ $$f_d = \frac{v}{c} f_c.$$
 
 At $f_c = 2\,\text{GHz}$ and $v = 350\,\text{km/h}$ (a high-speed train — LTE's design target for mobility), $f_d \approx 650\,\text{Hz}$. If the channel changes on this timescale, an OFDM symbol whose duration is comparable to $1/f_d$ will experience the channel changing *during* the symbol, breaking the assumption that the channel is constant over the FFT window. This introduces **inter-carrier interference (ICI)**: energy leaks from one subcarrier to its neighbours because the "constant $H[k]$" assumption fails.
 
-Rule of thumb: for tolerable ICI,
-
-$$\Delta f \geq 10 f_d.$$
-
-At $650\,\text{Hz}$ this demands
-
-$$\Delta f \geq 6.5\,\text{kHz}.$$
+Rule of thumb: for tolerable ICI, $\Delta f \geq 10 f_d$. At $650\,\text{Hz}$ this demands $\Delta f \geq 6.5\,\text{kHz}$.
 
 So $\Delta f$ is sandwiched between two requirements:
 
@@ -275,9 +248,7 @@ The valid justifications point *outside* LTE:
 
 Every constant below is anchored to one of these.
 
-### 4.2. Subcarrier spacing
-
-$$\Delta f = 15\,\text{kHz}$$
+### 4.2. $\Delta f = 15\,\text{kHz}$
 
 Anchors:
 
@@ -287,9 +258,7 @@ Anchors:
 
 $15\,\text{kHz}$ is the value that sits in the middle of the physics window *and* makes the FFT sample rate a clean multiple of the inherited UMTS clock.
 
-### 4.3. Symbol duration and CP length
-
-$$T_u = 66.67\,\mu\text{s}$$
+### 4.3. Symbol duration $T_u = 66.67\,\mu\text{s}$ and CP length
 
 Forced by $\Delta f = 15\,\text{kHz}$ via $T_u = 1/\Delta f$. The CP length must exceed the delay spread; for normal CP, $T_{\text{CP}} \approx 4.7\,\mu\text{s}$ works for urban macrocells. Total OFDM symbol length: $71.4\,\mu\text{s}$.
 
@@ -297,13 +266,7 @@ Forced by $\Delta f = 15\,\text{kHz}$ via $T_u = 1/\Delta f$. The CP length must
 
 Given the OFDM symbol length of $71.4\,\mu\text{s}$, seven symbols occupy $500\,\mu\text{s}$ exactly. There is no separate anchor for "7"; it is the number of symbols that fits into a slot whose length is set by the next constraint.
 
-The slot length itself is 0.5 ms because the subframe is 1 ms (§ 4.5) and dividing it into two gives HARQ some intra-subframe granularity in scheduling (particularly useful for control-region flexibility).
-
-<div class="guided-fold-start" data-label="Historical context: slot duration in UMTS" data-tone="derivation"></div>
-
-Historical note: a "slot" was a first-class scheduling unit in UMTS at 0.667 ms; the LTE choice of 0.5 ms is a compromise that gives a rounder number while keeping the same order.
-
-<div class="guided-fold-end"></div>
+The slot length itself is 0.5 ms because the subframe is 1 ms (§ 4.5) and dividing it into two gives HARQ some intra-subframe granularity in scheduling (particularly useful for control-region flexibility). Historical note: a "slot" was a first-class scheduling unit in UMTS at 0.667 ms; the LTE choice of 0.5 ms is a compromise that gives a rounder number while keeping the same order.
 
 ### 4.5. TTI = 1 ms — the silicon anchor
 
@@ -342,11 +305,7 @@ The SFN is a 10-bit counter, so it wraps every $2^{10} = 1024$ frames, i.e., eve
 
 **Why 10 bits and not 16 or 24?** Any longer counter forces more bits into the MIB (which sits on a tiny broadcast channel that must be decodable at very low SNR — § 9.1). 10 bits is enough to cover the longest DRX cycle (2.56 s, i.e. 256 frames) with room to spare, and no more.
 
-<div class="guided-fold-start" data-label="Historical context: the System Frame Number in UMTS" data-tone="derivation"></div>
-
 *Historical note.* UMTS used the same idea under a different name: **SFN** in UMTS meant "System Frame Number" too, but ticked every 10 ms *frame* (of 15 slots of 2560 chips each), also with a 12-bit counter — a slightly longer wrap (40.96 s), because UMTS had no paging occasion tighter than 640 ms and could afford it. The concept carried forward to LTE with the bit width shrunk to fit the harsher MIB budget.
-
-<div class="guided-fold-end"></div>
 
 ### 4.7. 12 subcarriers per resource block
 
@@ -682,8 +641,6 @@ Total state space needed: $168 \times 2 = 336$.
 
 The SSS occupies 62 subcarriers. A natural first thought is: use one **m-sequence** of length 63.
 
-<div class="guided-fold-start" data-label="Why m-sequences are suitable synchronization sequences" data-tone="derivation"></div>
-
 **What an m-sequence is.** An m-sequence ("maximum-length sequence") is the output of a linear feedback shift register (LFSR) whose feedback polynomial is *primitive* over $\mathrm{GF}(2)$ and whose register width is $n$ bits. It has period $2^n - 1$ — the maximum possible period for an $n$-stage LFSR. For $n = 6$ we get period 63; for $n = 5$, period 31. Two properties matter for what follows:
 
 - **Two-valued autocorrelation.** The circular autocorrelation of an m-sequence equals its length $L$ at zero lag and equals $-1$ (out of $L$) at *every* non-zero lag. This makes m-sequences ideal for detecting timing: correlating against a shifted copy gives a sharp $L$-versus-$(-1)$ ratio.
@@ -695,8 +652,6 @@ Why m-sequences and not some other pseudo-random family? Two reasons:
 - **Autocorrelation property.** The two-valued autocorrelation gives the sharpest possible peaks for time-alignment. Random-looking sequences with poor autocorrelation (e.g., truly random binary sequences) would smear the correlation peak.
 
 So one length-63 m-sequence with 63 possible cyclic shifts would give 63 possible codes. Not enough for the 336 SSS states we need, and there is no natural place to encode the subframe-parity bit inside a single m-sequence.
-
-<div class="guided-fold-end"></div>
 
 **The LTE design.** Use two shorter m-sequences of length 31, both generated from the same degree-5 primitive polynomial with different starting positions. Denote them $X$ (shift index $m_0$) and $Y$ (shift index $m_1$). Interleave them: $X$ on the even-indexed SSS subcarriers, $Y$ on the odd-indexed. The parameter space is $m_0, m_1 \in \{0, \ldots, 30\}$ — $31 \times 31 = 961$ possible pairs.
 
@@ -1009,11 +964,7 @@ This saves 16 bits of address per DCI — a nontrivial gain when the control reg
 
 ## § 12. Blind decoding and search spaces
 
-<div class="guided-fold-start" data-label="A note on where this fits" data-tone="derivation"></div>
-
-The material in this section is a low-level implementation detail: it explains *how* the UE finds its DCI on PDCCH, given that the DCI carries no explicit recipient. Readers focused on the higher-level scheduling story (§ 13) or the protocol stack (§ 14 and up) may skip § 12 on a first pass and return only when they need to understand PDCCH's decoding-budget accounting or the false-alarm math behind it.
-
-<div class="guided-fold-end"></div>
+> **A note on where this fits.** The material in this section is a low-level implementation detail: it explains *how* the UE finds its DCI on PDCCH, given that the DCI carries no explicit recipient. Readers focused on the higher-level scheduling story (§ 13) or the protocol stack (§ 14 and up) may skip § 12 on a first pass and return only when they need to understand PDCCH's decoding-budget accounting or the false-alarm math behind it.
 
 The UE does not know in advance where its DCI is, what aggregation level was used, or which DCI format it will be — but it must still decode it every subframe with a bounded number of attempts.
 
@@ -1292,21 +1243,13 @@ RoHC has three operating modes, corresponding to increasingly aggressive compres
 
 When the UE loses RoHC state (e.g., after a bad handover that decorrelated compressor and decompressor), it sends an internal NACK to the compressor; the compressor drops to IR for one packet to resync, then jumps back to SO. In steady state a VoLTE call spends 99% of its time in SO.
 
-<div class="guided-fold-start" data-label="Historical context: RoHC before LTE" data-tone="derivation"></div>
-
 *Historical comparison.* RoHC was invented by IETF (RFC 3095) partly for 3G — 3G already carried VoIP-like traffic over PDCP and needed the same compression. LTE inherited RoHC unchanged. 2G's SMS-based voice architecture never needed it, because 2G voice was circuit-switched with fixed timeslots, not IP.
-
-<div class="guided-fold-end"></div>
 
 **(4) In-sequence delivery across handovers.** During a handover, PDCP maintains sequence numbering so the target eNodeB can pick up where the source left off without gaps or duplicates.
 
 At handover the source eNodeB forwards its PDCP buffered packets to the target over X2, and the target continues numbering. The UE, on the target side, uses its PDCP receive window to reject duplicates and reorder any packets that arrived out of order (some might come via the source→target forwarding path while newer ones come directly from the target).
 
-<div class="guided-fold-start" data-label="Historical context: PDCP before LTE" data-tone="derivation"></div>
-
 *Historical comparison.* UMTS's equivalent of PDCP was also called PDCP and served the same purpose (RoHC + ciphering); the LTE version added integrity for control plane and became the anchor for handover state. GSM had nothing analogous — control-plane security was in the GSM MAC layer, and there was no comparable "packet convergence" tier because there were no packets.
-
-<div class="guided-fold-end"></div>
 
 ### 14.5. RRC — the radio-configuration protocol
 
@@ -1456,11 +1399,7 @@ The IMSI is used *inside* the network as the primary key into the HSS database. 
 
 **Why keep IMSI off the air.** The IMSI is transmitted over the air *only when absolutely necessary*: the very first attach when the UE has no GUTI, or when the MME issues an `Identity Request` because it has lost state (rare, but happens on MME failover). Otherwise the UE uses a temporary identity (GUTI). This rule matters: a passive listener who captures a UE's IMSI can correlate its movement over months and across operators. § 25.4 covers the IMSI catcher weakness — the attack that exists because this rule cannot be perfectly enforced.
 
-<div class="guided-fold-start" data-label="Historical context: IMSI continuity across generations" data-tone="derivation"></div>
-
 *Historical note.* The equivalent in GSM was the same 15-digit IMSI. The persistence of format across generations is deliberate — every SIM ever manufactured has an IMSI in this form, and interworking between generations relies on being able to look it up in the HSS/HLR.
-
-<div class="guided-fold-end"></div>
 
 ### 16.3. GUTI — the temporary routable identity (network layer, MME-scoped)
 
@@ -1484,11 +1423,7 @@ Two sub-identities are worth naming separately:
 
 **Lifetime.** The GUTI is refreshed periodically — every attach, every TAU, sometimes mid-connection. Refreshing the GUTI limits how long any observed identity can be tracked. But it is not truly ephemeral either: it survives across cells (unlike C-RNTI, below), so within one attach period the same GUTI is used for many NAS messages.
 
-<div class="guided-fold-start" data-label="Historical context: from TMSI and P-TMSI to GUTI" data-tone="derivation"></div>
-
 *Historical note.* GSM had **TMSI** (32 bits, VLR-scoped) with the same purpose. UMTS added **P-TMSI** for the packet-switched domain (SGSN-scoped). LTE unified these into the M-TMSI, and made the scoping explicit by nesting GUMMEI around it. The same idea, cleaner encoding.
-
-<div class="guided-fold-end"></div>
 
 ### 16.4. The network vs radio identifier split
 
@@ -1530,7 +1465,7 @@ Now the identifiers describing the *network topology*, not the UEs:
   - Scrambling seed (so neighbouring cells produce different scrambling sequences and mutual interference decorrelates).
   - CRS pilot position (which subcarriers carry the reference signals — offset by PCI mod 6, § 7.1).
   - PRACH root sequence selection (offset by PCI).
-
+  
   PCIs are reused geographically — the same PCI appears in many cells worldwide. **Cell planning** is the process of assigning PCIs to cells so that no two cells with the same PCI are within radio range of each other (a "PCI collision" would break scrambling decorrelation and CRS separation).
 
 - **ECI (E-UTRAN Cell Identifier)**: 28-bit ID, unique within one operator. The upper 20 bits are the **eNB ID** (identifies which eNodeB) and the lower 8 bits are the **Cell ID within eNB** (identifies which of that eNodeB's cells — up to 256, though in practice 3 for a three-sector site). This nesting mirrors the physical reality: an eNodeB hosts multiple cells; each cell is a specific sector.
@@ -1747,7 +1682,7 @@ The mechanism is **EPS-AKA (Authentication and Key Agreement)**, an inheritor of
    - $\text{XRES}$ (expected response) = $f_2(K, \text{RAND})$
    - $\text{AUTN}$ (authentication token) = SQN ⊕ AK || AMF || MAC-A, where $f_1$ computes a MAC over SQN, RAND, AMF using $K$; $f_5$ computes AK from $K$ and RAND; SQN is a sequence number preventing replay.
    - $K_{\text{ASME}}$ = derived from $K$ and RAND and the serving network's ID (so a $K_{\text{ASME}}$ used in one visited network cannot be replayed in another).
-
+   
    The HSS returns to the MME: (RAND, AUTN, XRES, $K_{\text{ASME}}$).
 
 3. MME forwards RAND and AUTN to the UE as an `Authentication Request` — over the air in cleartext (no encryption is possible yet).
@@ -1772,8 +1707,6 @@ $$\text{KDF}(K, S) = \text{HMAC-SHA-256}(K, S)$$
 
 where $K$ is the parent key (128 or 256 bits) and $S$ is a byte string encoding what kind of child key we are deriving. HMAC-SHA-256 produces 256 bits; when the derived key needs to be 128 bits (the length used by AES-128 ciphering) the low 128 bits of the HMAC output are truncated off.
 
-<div class="guided-fold-start" data-label="How LTE encodes the KDF input string" data-tone="derivation"></div>
-
 The input string $S$ has a specific structure:
 
 $$S = \text{FC} \; \| \; P_0 \; \| \; L_0 \; \| \; P_1 \; \| \; L_1 \; \| \; \ldots$$
@@ -1788,8 +1721,6 @@ Two properties of this construction matter:
 
 - **Uniqueness of derivation.** Different FCs produce cryptographically independent keys even from the same parent $K$. Compromising $K_{\text{RRCenc}}$ tells you nothing about $K_{\text{RRCint}}$ derived from the same $K_{\text{eNB}}$.
 - **Binding to context.** Because parameters like the PLMN ID and physical cell ID are hashed in, a key derived in one visited network is unusable in another, and a key derived for one cell is unusable in another. This binding provides forward security across handovers.
-
-<div class="guided-fold-end"></div>
 
 ### 18.4. The key derivation tree
 
@@ -1846,11 +1777,7 @@ Two things to note about the tree that matter operationally:
 
 There is no "$K_{\text{RRCenc,uplink}}$" and "$K_{\text{RRCenc,downlink}}$." The same key is used both ways. What distinguishes them for ciphering is the **COUNT** — a 32-bit counter of PDCP PDUs, maintained separately for uplink and downlink. Every PDCP packet contains its COUNT in the header; the receiver uses (key, COUNT, direction bit) as inputs to the cipher.
 
-Specifically, the ciphered payload of a PDCP packet is
-
-$$\text{cipher}(K_{\text{UPenc}}, \text{COUNT}, \text{DIRECTION}, \text{BEARER}, \text{LENGTH}) \oplus \text{plaintext}.$$
-
-The direction bit (0=uplink, 1=downlink) is one input to the block cipher; without it, an eavesdropper who observes both a uplink and downlink packet with the same COUNT could XOR the two ciphertexts and recover $P_{\text{UL}} \oplus P_{\text{DL}}$, which is a plaintext leak. Including direction ensures the keystream differs for the two directions.
+Specifically, the ciphered payload of a PDCP packet is $\text{cipher}(K_{\text{UPenc}}, \text{COUNT}, \text{DIRECTION}, \text{BEARER}, \text{LENGTH}) \oplus \text{plaintext}$. The direction bit (0=uplink, 1=downlink) is one input to the block cipher; without it, an eavesdropper who observes both a uplink and downlink packet with the same COUNT could XOR the two ciphertexts and recover $P_{\text{UL}} \oplus P_{\text{DL}}$, which is a plaintext leak. Including direction ensures the keystream differs for the two directions.
 
 The bearer ID is also mixed in for the same reason across bearers: two bearers using the same key but at the same COUNT would leak $P_A \oplus P_B$ otherwise.
 
@@ -2611,11 +2538,7 @@ LTE supports up to $4 \times 4$ MIMO in Release 8, growing to $8 \times 8$ in la
 
 The complex channel gain $H[k]$ on a given subcarrier is a random variable whose distribution depends on the propagation environment.
 
-- **Rayleigh fading.** No line-of-sight component. $|H|$ follows a Rayleigh distribution:
-
-  $$f(r) = \frac{r}{\sigma^2} e^{-r^2/(2\sigma^2)}.$$
-
-  Typical of dense urban with many scatterers, no direct path. RMS gain is $\sigma\sqrt{\pi/2}$.
+- **Rayleigh fading.** No line-of-sight component. $|H|$ follows a Rayleigh distribution ($f(r) = \frac{r}{\sigma^2} e^{-r^2/(2\sigma^2)}$). Typical of dense urban with many scatterers, no direct path. RMS gain is $\sigma\sqrt{\pi/2}$.
 
 - **Rician fading.** Line-of-sight component plus scatter. $|H|$ follows a Rice distribution. Parameter $K$ (the Rician K-factor) is the ratio of line-of-sight power to scatter power; $K = 0$ recovers Rayleigh, $K = \infty$ gives a constant gain.
 
@@ -2635,8 +2558,6 @@ Coherence time affects HARQ efficiency indirectly: if the channel changes betwee
 
 ### 26.4. SFN math — deriving paging occasions
 
-<div class="guided-fold-start" data-label="Derive the paging frame and paging occasion from the IMSI" data-tone="derivation"></div>
-
 The UE's specific paging occasion within its DRX cycle is determined by:
 
 - **PF (Paging Frame)** — which radio frame within the DRX cycle contains this UE's paging.
@@ -2651,8 +2572,6 @@ where $T$ is the DRX cycle length in frames (32, 64, 128, or 256), $N$ is $\min(
 $$\text{UE\_ID} = \text{IMSI} \bmod 1024.$$
 
 Different IMSIs hash to different PFs, spreading paging load across frames. A UE only listens for paging on its assigned PF/PO, saving battery — the other $\sim 90\%$ of paging subframes are irrelevant to this UE.
-
-<div class="guided-fold-end"></div>
 
 ### 26.5. The 15 MHz FFT choice — 1536 or 2048 with padding
 

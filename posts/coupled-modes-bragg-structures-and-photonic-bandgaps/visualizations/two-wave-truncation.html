@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  />
+
+  <title>Two-wave truncation from the full Fourier system</title>
+
+  <style>
+    :root {
+      --tw-bg: var(--color-bg, #fbfaf7);
+      --tw-surface: var(--color-surface, #ffffff);
+      --tw-surface-soft: var(--color-surface-2, #f6f3ee);
+
+      --tw-text: var(--color-text, #2d2925);
+      --tw-muted: var(--color-muted, #70685f);
+      --tw-border: var(--color-border, #d9d2c8);
+
+      --tw-accent: var(--color-accent, #8d2d68);
+      --tw-accent-ink: #6f1f52;
+
+      --tw-accent-soft:
+        color-mix(
+          in srgb,
+          var(--tw-accent) 9%,
+          var(--tw-surface)
+        );
+
+      --tw-accent-softer:
+        color-mix(
+          in srgb,
+          var(--tw-accent) 4%,
+          var(--tw-surface)
+        );
+
+      --tw-blue: #315f80;
+
+      --tw-serif:
+        "STIX Two Text",
+        "Iowan Old Style",
+        "Palatino Linotype",
+        "Book Antiqua",
+        Georgia,
+        serif;
+
+      --tw-sans:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      --tw-mono:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        "Liberation Mono",
+        monospace;
+
+      --tw-radius: 15px;
+      --tw-radius-small: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      padding: 32px 16px;
+      background: var(--tw-bg);
+      color: var(--tw-text);
+      font-family: var(--tw-serif);
+      line-height: 1.62;
+    }
+
+    .two-wave-viz {
+      width: min(1040px, 100%);
+      margin: 0 auto;
+      container-type: inline-size;
+    }
+
+    .two-wave-viz p {
+      margin: 0;
+    }
+
+    .two-wave-viz .viz-shell {
+      overflow: hidden;
+      border: 1px solid var(--tw-border);
+      border-radius: var(--tw-radius);
+      background: var(--tw-surface);
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.035);
+    }
+
+    /* =====================================================
+       HEADER
+       ===================================================== */
+
+    .two-wave-viz .viz-header {
+      padding: 28px 30px 24px;
+      border-bottom: 1px solid var(--tw-border);
+
+      background:
+        linear-gradient(
+          180deg,
+          color-mix(
+            in srgb,
+            var(--tw-accent) 3%,
+            var(--tw-surface)
+          ),
+          var(--tw-surface)
+        );
+    }
+
+    .two-wave-viz .eyebrow {
+      margin-bottom: 9px;
+      color: var(--tw-accent-ink);
+      font-family: var(--tw-mono);
+      font-size: 0.77rem;
+      font-weight: 750;
+      letter-spacing: 0.085em;
+      line-height: 1.25;
+      text-transform: uppercase;
+    }
+
+    .two-wave-viz h2 {
+      margin: 0 0 9px;
+      color: var(--tw-text);
+      font-family: var(--tw-sans);
+      font-size: clamp(1.45rem, 1.18rem + 1vw, 2rem);
+      line-height: 1.22;
+    }
+
+    .two-wave-viz .viz-intro {
+      max-width: 73ch;
+      color: var(--tw-muted);
+      font-size: 1rem;
+    }
+
+    .two-wave-viz .viz-content {
+      display: grid;
+      gap: 22px;
+      padding: 22px;
+    }
+
+    /* =====================================================
+       SHARED PANEL STYLES
+       ===================================================== */
+
+    .two-wave-viz .panel {
+      overflow: hidden;
+      border: 1px solid var(--tw-border);
+      border-radius: var(--tw-radius-small);
+      background: var(--tw-surface);
+    }
+
+    .two-wave-viz .panel-heading {
+      padding: 13px 17px;
+      border-bottom: 1px solid var(--tw-border);
+      background: var(--tw-surface-soft);
+      color: var(--tw-text);
+      font-family: var(--tw-mono);
+      font-size: 0.82rem;
+      font-weight: 750;
+      letter-spacing: 0.055em;
+      line-height: 1.3;
+      text-transform: uppercase;
+    }
+
+    .two-wave-viz .matrix-panel-body {
+      padding: 19px 18px 20px;
+    }
+
+    .two-wave-viz .matrix-explanation {
+      margin-bottom: 18px;
+      color: var(--tw-muted);
+      font-size: 0.98rem;
+    }
+
+    /* =====================================================
+       FULL FOURIER SYSTEM
+       ===================================================== */
+
+    .two-wave-viz .fourier-scroll {
+      width: 100%;
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scrollbar-width: thin;
+      padding: 3px 0 10px;
+    }
+
+    .two-wave-viz .fourier-equation {
+      --row-height: 58px;
+      --header-height: 43px;
+      --column-width: 78px;
+
+      display: flex;
+      width: max-content;
+      min-width: 100%;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 17px;
+      padding: 3px 8px;
+    }
+
+    /*
+      Row labels and coefficient entries use the same
+      five row tracks.
+    */
+    .two-wave-viz .matrix-window {
+      display: grid;
+      grid-template-columns: 78px auto;
+      grid-template-rows:
+        var(--header-height)
+        calc(5 * var(--row-height));
+      align-items: stretch;
+    }
+
+    /* Matrix column names */
+
+    .two-wave-viz .matrix-column-heads {
+      grid-column: 2;
+      grid-row: 1;
+
+      display: grid;
+      grid-template-columns:
+        repeat(7, var(--column-width));
+
+      align-items: end;
+      justify-items: center;
+
+      padding: 0 14px 8px;
+      color: var(--tw-accent-ink);
+      font-size: 1.02rem;
+      font-weight: 700;
+    }
+
+    .two-wave-viz .matrix-column-heads > span {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    /* Matrix row names */
+
+    .two-wave-viz .matrix-row-labels {
+      grid-column: 1;
+      grid-row: 2;
+
+      display: grid;
+      grid-template-rows:
+        repeat(5, var(--row-height));
+    }
+
+    .two-wave-viz .matrix-row-labels > span {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 13px;
+      white-space: nowrap;
+      font-size: 0.99rem;
+    }
+
+    .two-wave-viz
+      .matrix-row-labels
+      > .near-resonant-label {
+      color: var(--tw-accent-ink);
+      font-weight: 700;
+    }
+
+    /* Large coefficient-matrix brackets */
+
+    .two-wave-viz .coefficient-bracket {
+      position: relative;
+      grid-column: 2;
+      grid-row: 2;
+      padding: 0 14px;
+    }
+
+    .two-wave-viz .coefficient-bracket::before,
+    .two-wave-viz .coefficient-bracket::after {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 11px;
+      content: "";
+      border-top: 2px solid var(--tw-text);
+      border-bottom: 2px solid var(--tw-text);
+    }
+
+    .two-wave-viz .coefficient-bracket::before {
+      left: 0;
+      border-left: 2px solid var(--tw-text);
+    }
+
+    .two-wave-viz .coefficient-bracket::after {
+      right: 0;
+      border-right: 2px solid var(--tw-text);
+    }
+
+    /*
+      Columns:
+      ... | E_-2 | E_-1 | E_0 | E_+1 | E_+2 | ...
+
+      Rows:
+      n=-2, n=-1, n=0, n=+1, n=+2
+    */
+
+    .two-wave-viz .coefficient-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(7, var(--column-width));
+      grid-template-rows:
+        repeat(5, var(--row-height));
+    }
+
+    .two-wave-viz .coefficient-grid > span {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      justify-content: center;
+      padding: 0 7px;
+      white-space: nowrap;
+      font-size: 1.02rem;
+    }
+
+    /* Highlight rows n=-1 and n=0 */
+
+    .two-wave-viz
+      .coefficient-grid
+      > .near-resonant-row {
+      background:
+        color-mix(
+          in srgb,
+          var(--tw-accent) 5.5%,
+          transparent
+        );
+    }
+
+    /*
+      Retained block:
+
+                    E_-1      E_0
+        n=-1        D_-1      -C
+        n=0         -C        D_0
+    */
+
+    .two-wave-viz
+      .coefficient-grid
+      > .retained-cell {
+      position: relative;
+      z-index: 1;
+      background:
+        color-mix(
+          in srgb,
+          var(--tw-accent) 13%,
+          var(--tw-surface)
+        );
+      color: var(--tw-accent-ink);
+      font-weight: 700;
+    }
+
+    .two-wave-viz
+      .coefficient-grid
+      > .retained-top-left {
+      border-top: 1px solid var(--tw-accent);
+      border-left: 1px solid var(--tw-accent);
+    }
+
+    .two-wave-viz
+      .coefficient-grid
+      > .retained-top-right {
+      border-top: 1px solid var(--tw-accent);
+      border-right: 1px solid var(--tw-accent);
+    }
+
+    .two-wave-viz
+      .coefficient-grid
+      > .retained-bottom-left {
+      border-bottom: 1px solid var(--tw-accent);
+      border-left: 1px solid var(--tw-accent);
+    }
+
+    .two-wave-viz
+      .coefficient-grid
+      > .retained-bottom-right {
+      border-right: 1px solid var(--tw-accent);
+      border-bottom: 1px solid var(--tw-accent);
+    }
+
+    /* Amplitude vector */
+
+    .two-wave-viz .amplitude-vector-shell {
+      position: relative;
+      margin-top: var(--header-height);
+      padding: 0 14px;
+    }
+
+    .two-wave-viz .amplitude-vector-shell::before,
+    .two-wave-viz .amplitude-vector-shell::after {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 10px;
+      content: "";
+      border-top: 2px solid var(--tw-text);
+      border-bottom: 2px solid var(--tw-text);
+    }
+
+    .two-wave-viz .amplitude-vector-shell::before {
+      left: 0;
+      border-left: 2px solid var(--tw-text);
+    }
+
+    .two-wave-viz .amplitude-vector-shell::after {
+      right: 0;
+      border-right: 2px solid var(--tw-text);
+    }
+
+    .two-wave-viz .amplitude-vector {
+      display: grid;
+      width: 74px;
+      grid-template-rows:
+        repeat(5, var(--row-height));
+    }
+
+    .two-wave-viz .amplitude-vector > span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      font-size: 1.02rem;
+    }
+
+    .two-wave-viz
+      .amplitude-vector
+      > .near-resonant-amplitude {
+      background:
+        color-mix(
+          in srgb,
+          var(--tw-accent) 11%,
+          var(--tw-surface)
+        );
+      color: var(--tw-accent-ink);
+      font-weight: 700;
+    }
+
+    /* = 0 aligned to all five matrix rows */
+
+    .two-wave-viz .matrix-equals {
+      display: flex;
+      height: calc(5 * var(--row-height));
+      align-items: center;
+      justify-content: center;
+      margin-top: var(--header-height);
+      white-space: nowrap;
+      color: var(--tw-text);
+      font-size: 1.42rem;
+      font-weight: 700;
+    }
+
+    /* =====================================================
+       REDUCTION ARROW AND 2x2 BLOCK
+       ===================================================== */
+
+    .two-wave-viz .reduction {
+      display: grid;
+      justify-items: center;
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 19px;
+      border-top: 1px solid var(--tw-border);
+    }
+
+    .two-wave-viz .reduction-label {
+      color: var(--tw-accent-ink);
+      font-family: var(--tw-mono);
+      font-size: 0.83rem;
+      font-weight: 750;
+      letter-spacing: 0.045em;
+      line-height: 1.4;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .two-wave-viz .down-arrow {
+      position: relative;
+      width: 2px;
+      height: 23px;
+      background: var(--tw-accent);
+    }
+
+    .two-wave-viz .down-arrow::after {
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      width: 0;
+      height: 0;
+      content: "";
+      transform: translateX(-50%);
+      border-top: 10px solid var(--tw-accent);
+      border-right: 7px solid transparent;
+      border-left: 7px solid transparent;
+    }
+
+    .two-wave-viz .reduced-box {
+      width: min(610px, 100%);
+      overflow: hidden;
+
+      border: 1px solid
+        color-mix(
+          in srgb,
+          var(--tw-accent) 48%,
+          var(--tw-border)
+        );
+
+      border-radius: 11px;
+
+      background:
+        color-mix(
+          in srgb,
+          var(--tw-accent) 6%,
+          var(--tw-surface)
+        );
+    }
+
+    .two-wave-viz .reduced-equation-scroll {
+      width: 100%;
+      overflow-x: auto;
+      padding: 16px;
+    }
+
+    .two-wave-viz .reduced-equation {
+      display: flex;
+      width: max-content;
+      min-width: 100%;
+      align-items: center;
+      justify-content: center;
+      gap: 19px;
+      color: var(--tw-accent-ink);
+      font-size: 1.22rem;
+    }
+
+    .two-wave-viz .reduced-matrix-shell,
+    .two-wave-viz .reduced-vector-shell {
+      position: relative;
+      padding: 7px 16px;
+    }
+
+    .two-wave-viz
+      .reduced-matrix-shell::before,
+    .two-wave-viz
+      .reduced-matrix-shell::after,
+    .two-wave-viz
+      .reduced-vector-shell::before,
+    .two-wave-viz
+      .reduced-vector-shell::after {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 9px;
+      content: "";
+      border-top: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+    }
+
+    .two-wave-viz
+      .reduced-matrix-shell::before,
+    .two-wave-viz
+      .reduced-vector-shell::before {
+      left: 0;
+      border-left: 2px solid currentColor;
+    }
+
+    .two-wave-viz
+      .reduced-matrix-shell::after,
+    .two-wave-viz
+      .reduced-vector-shell::after {
+      right: 0;
+      border-right: 2px solid currentColor;
+    }
+
+    .two-wave-viz .reduced-matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 91px);
+      grid-template-rows: repeat(2, 53px);
+    }
+
+    .two-wave-viz .reduced-vector-grid {
+      display: grid;
+      grid-template-columns: 75px;
+      grid-template-rows: repeat(2, 53px);
+    }
+
+    .two-wave-viz .reduced-matrix-grid > span,
+    .two-wave-viz .reduced-vector-grid > span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      font-weight: 700;
+    }
+
+    .two-wave-viz .reduced-zero {
+      white-space: nowrap;
+      font-weight: 700;
+    }
+
+    /* =====================================================
+       EXPLANATION CARDS
+       ===================================================== */
+
+    .two-wave-viz .reason-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 17px;
+    }
+
+    .two-wave-viz .reason-card {
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid var(--tw-border);
+      border-radius: var(--tw-radius-small);
+      background: var(--tw-surface);
+    }
+
+    .two-wave-viz .reason-card-header {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 13px;
+    }
+
+    .two-wave-viz .reason-letter {
+      display: inline-flex;
+      width: 28px;
+      height: 28px;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+
+      border: 1px solid
+        color-mix(
+          in srgb,
+          var(--tw-accent) 48%,
+          var(--tw-border)
+        );
+
+      border-radius: 6px;
+      background: var(--tw-accent-softer);
+      color: var(--tw-accent-ink);
+
+      font-family: var(--tw-mono);
+      font-size: 0.84rem;
+      font-weight: 750;
+    }
+
+    .two-wave-viz .reason-card h3 {
+      margin: 0;
+      color: var(--tw-accent-ink);
+      font-family: var(--tw-mono);
+      font-size: 0.85rem;
+      letter-spacing: 0.035em;
+      line-height: 1.35;
+      text-transform: uppercase;
+    }
+
+    .two-wave-viz .reason-card p {
+      margin-bottom: 12px;
+      color: var(--tw-text);
+      font-size: 0.96rem;
+    }
+
+    .two-wave-viz .reason-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .two-wave-viz .equation-box {
+      margin: 12px 0;
+      overflow-x: auto;
+
+      border: 1px solid
+        color-mix(
+          in srgb,
+          var(--tw-accent) 42%,
+          var(--tw-border)
+        );
+
+      border-radius: 9px;
+      background: var(--tw-accent-softer);
+      color: var(--tw-accent-ink);
+
+      font-size: 1.04rem;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+      padding: 11px 12px;
+    }
+
+    .two-wave-viz .small-note {
+      color: var(--tw-muted) !important;
+      font-size: 0.9rem !important;
+    }
+
+    /* =====================================================
+       DIAGONAL-MISMATCH DIAGRAM
+       ===================================================== */
+
+    .two-wave-viz .mismatch-chart {
+      margin: 13px 0;
+      padding: 10px 8px 5px;
+      border: 1px solid var(--tw-border);
+      border-radius: 9px;
+      background: var(--tw-surface-soft);
+    }
+
+    .two-wave-viz .mismatch-chart svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    /* =====================================================
+       BOTTOM LINE — EXPLICIT HIGH-CONTRAST COLORS
+       ===================================================== */
+
+    .two-wave-viz .bottom-line {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 15px;
+
+      padding: 18px 19px;
+
+      border: 1px solid
+        color-mix(
+          in srgb,
+          var(--tw-accent) 42%,
+          var(--tw-border)
+        );
+
+      border-radius: var(--tw-radius-small);
+
+      background:
+        color-mix(
+          in srgb,
+          var(--tw-accent) 7%,
+          var(--tw-surface)
+        );
+
+      /*
+        Explicitly prevent the surrounding article theme from
+        supplying a low-contrast inherited text color.
+      */
+      color: var(--tw-text);
+    }
+
+    .two-wave-viz .check-mark {
+      display: flex;
+      width: 48px;
+      height: 48px;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+      background: var(--tw-accent);
+      color: #ffffff;
+
+      font-family: var(--tw-sans);
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .two-wave-viz .bottom-copy {
+      color: var(--tw-text);
+      opacity: 1;
+    }
+
+    .two-wave-viz .bottom-label {
+      display: block;
+      margin-bottom: 6px;
+
+      color: var(--tw-accent-ink);
+      opacity: 1;
+
+      font-family: var(--tw-mono);
+      font-size: 0.79rem;
+      font-weight: 800;
+      letter-spacing: 0.055em;
+      line-height: 1.35;
+      text-transform: uppercase;
+    }
+
+    .two-wave-viz .bottom-explanation {
+      color: var(--tw-text);
+      opacity: 1;
+
+      font-size: 1rem;
+      font-weight: 550;
+      line-height: 1.55;
+    }
+
+    .two-wave-viz .bottom-main {
+      margin-top: 4px;
+
+      color: var(--tw-accent-ink);
+      opacity: 1;
+
+      font-size: 1.16rem;
+      font-weight: 750;
+      line-height: 1.4;
+    }
+
+    /* =====================================================
+       RESPONSIVE LAYOUT
+       ===================================================== */
+
+    @container (max-width: 860px) {
+      .two-wave-viz .reason-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @container (max-width: 720px) {
+      .two-wave-viz .fourier-equation {
+        --row-height: 54px;
+        --column-width: 70px;
+      }
+
+      .two-wave-viz .matrix-window {
+        grid-template-columns: 72px auto;
+      }
+    }
+
+    @container (max-width: 540px) {
+      .two-wave-viz .viz-header {
+        padding: 22px 18px 19px;
+      }
+
+      .two-wave-viz .viz-content {
+        padding: 15px;
+      }
+
+      .two-wave-viz .matrix-panel-body {
+        padding: 16px 12px 18px;
+      }
+
+      .two-wave-viz .bottom-line {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .two-wave-viz .check-mark {
+        margin: 0 auto;
+      }
+    }
+
+    /* =====================================================
+       DARK MODE
+       ===================================================== */
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --tw-bg: var(--color-bg, #171411);
+        --tw-surface: var(--color-surface, #211d19);
+        --tw-surface-soft: var(--color-surface-2, #2a2520);
+
+        --tw-text: var(--color-text, #f0eae3);
+        --tw-muted: var(--color-muted, #c5baae);
+        --tw-border: var(--color-border, #4b433b);
+
+        --tw-accent: var(--color-accent, #d784b4);
+        --tw-accent-ink: #f0b7d8;
+
+        --tw-blue: #86b8d8;
+      }
+    }
+  </style>
+
+  <!--
+    Remove this configuration and script when the surrounding
+    article page already loads MathJax.
+  -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [
+          ["$", "$"],
+          ["\\(", "\\)"]
+        ],
+        displayMath: [
+          ["$$", "$$"],
+          ["\\[", "\\]"]
+        ]
+      },
+      svg: {
+        fontCache: "global"
+      }
+    };
+  </script>
+
+  <script
+    defer
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+  </script>
+</head>
+
+<body>
+  <section class="two-wave-viz">
+    <div class="viz-shell">
+
+      <header class="viz-header">
+        <div class="eyebrow">
+          First-order Bragg reduction
+        </div>
+
+        <h2>
+          The two-wave system is a block of the full Fourier matrix
+        </h2>
+
+        <p class="viz-intro">
+          Begin with the system that is actually being approximated.
+          The reference wavenumber identifies two near-resonant rows,
+          and the remaining rows then show why their amplitudes are
+          suppressed.
+        </p>
+      </header>
+
+      <div class="viz-content">
+
+        <!-- =================================================
+             FULL MATRIX
+             ================================================= -->
+
+        <section class="panel">
+          <div class="panel-heading">
+            Infinite coupled Fourier system — central rows shown
+          </div>
+
+          <div class="matrix-panel-body">
+            <p class="matrix-explanation">
+              Each row is the equation for one Fourier amplitude.
+              The pale rows are $n=-1$ and $n=0$; the darker square
+              is the $2\times2$ block retained at leading order.
+            </p>
+
+            <div class="fourier-scroll">
+              <div class="fourier-equation">
+
+                <div class="matrix-window">
+
+                  <div
+                    class="matrix-column-heads"
+                    aria-hidden="true"
+                  >
+                    <span>$\cdots$</span>
+                    <span>$E_{-2}$</span>
+                    <span>$E_{-1}$</span>
+                    <span>$E_0$</span>
+                    <span>$E_{+1}$</span>
+                    <span>$E_{+2}$</span>
+                    <span>$\cdots$</span>
+                  </div>
+
+                  <div class="matrix-row-labels">
+                    <span>$n=-2$</span>
+
+                    <span class="near-resonant-label">
+                      $n=-1$
+                    </span>
+
+                    <span class="near-resonant-label">
+                      $n=0$
+                    </span>
+
+                    <span>$n=+1$</span>
+                    <span>$n=+2$</span>
+                  </div>
+
+                  <div class="coefficient-bracket">
+                    <div class="coefficient-grid">
+
+                      <!-- Row n = -2 -->
+                      <span>$\cdots$</span>
+                      <span>$D_{-2}$</span>
+                      <span>$-C$</span>
+                      <span>$0$</span>
+                      <span>$0$</span>
+                      <span>$0$</span>
+                      <span>$\cdots$</span>
+
+                      <!-- Row n = -1 -->
+                      <span class="near-resonant-row">
+                        $\cdots$
+                      </span>
+
+                      <span class="near-resonant-row">
+                        $-C$
+                      </span>
+
+                      <span
+                        class="
+                          near-resonant-row
+                          retained-cell
+                          retained-top-left
+                        "
+                      >
+                        $D_{-1}$
+                      </span>
+
+                      <span
+                        class="
+                          near-resonant-row
+                          retained-cell
+                          retained-top-right
+                        "
+                      >
+                        $-C$
+                      </span>
+
+                      <span class="near-resonant-row">
+                        $0$
+                      </span>
+
+                      <span class="near-resonant-row">
+                        $0$
+                      </span>
+
+                      <span class="near-resonant-row">
+                        $\cdots$
+                      </span>
+
+                      <!-- Row n = 0 -->
+                      <span class="near-resonant-row">
+                        $\cdots$
+                      </span>
+
+                      <span class="near-resonant-row">
+                        $0$
+                      </span>
+
+                      <span
+                        class="
+                          near-resonant-row
+                          retained-cell
+                          retained-bottom-left
+                        "
+                      >
+                        $-C$
+                      </span>
+
+                      <span
+                        class="
+                          near-resonant-row
+                          retained-cell
+                          retained-bottom-right
+                        "
+                      >
+                        $D_0$
+                      </span>
+
+                      <span class="near-resonant-row">
+                        $-C$
+                      </span>
+
+                      <span class="near-resonant-row">
+                        $0$
+                      </span>
+
+                      <span class="near-resonant-row">
+                        $\cdots$
+                      </span>
+
+                      <!-- Row n = +1 -->
+                      <span>$\cdots$</span>
+                      <span>$0$</span>
+                      <span>$0$</span>
+                      <span>$-C$</span>
+                      <span>$D_{+1}$</span>
+                      <span>$-C$</span>
+                      <span>$\cdots$</span>
+
+                      <!-- Row n = +2 -->
+                      <span>$\cdots$</span>
+                      <span>$0$</span>
+                      <span>$0$</span>
+                      <span>$0$</span>
+                      <span>$-C$</span>
+                      <span>$D_{+2}$</span>
+                      <span>$\cdots$</span>
+
+                    </div>
+                  </div>
+                </div>
+
+                <div class="amplitude-vector-shell">
+                  <div class="amplitude-vector">
+                    <span>$E_{-2}$</span>
+
+                    <span class="near-resonant-amplitude">
+                      $E_{-1}$
+                    </span>
+
+                    <span class="near-resonant-amplitude">
+                      $E_0$
+                    </span>
+
+                    <span>$E_{+1}$</span>
+                    <span>$E_{+2}$</span>
+                  </div>
+                </div>
+
+                <div class="matrix-equals">
+                  $=0$
+                </div>
+              </div>
+            </div>
+
+            <!-- Reduction to the resonant block -->
+
+            <div class="reduction">
+              <div class="reduction-label">
+                Retain the highlighted resonant block
+              </div>
+
+              <div
+                class="down-arrow"
+                aria-hidden="true"
+              ></div>
+
+              <div class="reduced-box">
+                <div class="reduced-equation-scroll">
+                  <div class="reduced-equation">
+
+                    <div class="reduced-matrix-shell">
+                      <div class="reduced-matrix-grid">
+                        <span>$D_{-1}$</span>
+                        <span>$-C$</span>
+                        <span>$-C$</span>
+                        <span>$D_0$</span>
+                      </div>
+                    </div>
+
+                    <div class="reduced-vector-shell">
+                      <div class="reduced-vector-grid">
+                        <span>$E_{-1}$</span>
+                        <span>$E_0$</span>
+                      </div>
+                    </div>
+
+                    <div class="reduced-zero">
+                      $=0$
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================
+             EXPLANATION
+             ================================================= -->
+
+        <section class="reason-grid">
+
+          <article class="reason-card">
+            <div class="reason-card-header">
+              <div class="reason-letter">
+                A
+              </div>
+
+              <h3>
+                Why these two rows?
+              </h3>
+            </div>
+
+            <p>
+              The Fourier component $E_n$ has wavenumber
+              $q_n=k+nG_1$.
+            </p>
+
+            <p>
+              For first-order backscattering, choose
+              $G_1=2k_B$ and place the reference wavenumber
+              near $k_B$.
+            </p>
+
+            <div class="equation-box">
+              $q_0\approx +k_B
+              \qquad\text{and}\qquad
+              q_{-1}\approx -k_B$
+            </div>
+
+            <p>
+              The diagonal mismatch depends on $q_n^2$.
+              Therefore the two opposite wavenumbers have the
+              same free-wave value and become resonant together.
+            </p>
+
+            <div class="equation-box">
+              $D_{-1}=D_0=0
+              \quad\text{at exact Bragg}$
+            </div>
+
+            <p class="small-note">
+              A single grating step changes the forward component
+              near $+k_B$ into the backward component near $-k_B$.
+            </p>
+          </article>
+
+          <article class="reason-card">
+            <div class="reason-card-header">
+              <div class="reason-letter">
+                B
+              </div>
+
+              <h3>
+                Why not the other rows?
+              </h3>
+            </div>
+
+            <p>
+              At exact Bragg, the neighboring diagonal entries are
+              already separated from zero.
+            </p>
+
+            <div class="mismatch-chart">
+              <svg
+                viewBox="0 0 390 245"
+                role="img"
+                aria-label="
+                  Diagonal mismatch versus Fourier order.
+                  Orders minus one and zero have zero mismatch,
+                  while surrounding orders have larger mismatch.
+                "
+              >
+                <defs>
+                  <style>
+                    .tw-grid-line {
+                      stroke: #d8d0c6;
+                      stroke-width: 1;
+                      stroke-dasharray: 4 5;
+                    }
+
+                    .tw-axis-line {
+                      stroke: #4c463f;
+                      stroke-width: 1.35;
+                    }
+
+                    .tw-ordinary-stem {
+                      stroke: #315f80;
+                      stroke-width: 3;
+                    }
+
+                    .tw-resonant-stem {
+                      stroke: #8d2d68;
+                      stroke-width: 3;
+                    }
+
+                    .tw-ordinary-marker {
+                      fill: #ffffff;
+                      stroke: #315f80;
+                      stroke-width: 2.2;
+                    }
+
+                    .tw-resonant-marker {
+                      fill: #ffffff;
+                      stroke: #8d2d68;
+                      stroke-width: 2.2;
+                    }
+
+                    .tw-axis-text {
+                      fill: #5d554d;
+                      font:
+                        13px
+                        Georgia,
+                        serif;
+                    }
+
+                    .tw-value-text {
+                      fill: #315f80;
+                      font:
+                        14px
+                        Georgia,
+                        serif;
+                    }
+
+                    .tw-resonant-text {
+                      fill: #7b255b;
+                      font:
+                        700 14px
+                        Georgia,
+                        serif;
+                    }
+                  </style>
+                </defs>
+
+                <line
+                  class="tw-grid-line"
+                  x1="47"
+                  y1="35"
+                  x2="365"
+                  y2="35"
+                />
+
+                <line
+                  class="tw-grid-line"
+                  x1="47"
+                  y1="91"
+                  x2="365"
+                  y2="91"
+                />
+
+                <line
+                  class="tw-grid-line"
+                  x1="47"
+                  y1="147"
+                  x2="365"
+                  y2="147"
+                />
+
+                <line
+                  class="tw-axis-line"
+                  x1="47"
+                  y1="187"
+                  x2="365"
+                  y2="187"
+                />
+
+                <line
+                  class="tw-axis-line"
+                  x1="47"
+                  y1="187"
+                  x2="47"
+                  y2="21"
+                />
+
+                <path
+                  d="M365 187 L355 182 L355 192 Z"
+                  fill="#4c463f"
+                />
+
+                <path
+                  d="M47 21 L42 31 L52 31 Z"
+                  fill="#4c463f"
+                />
+
+                <text
+                  class="tw-axis-text"
+                  x="8"
+                  y="191"
+                >
+                  0
+                </text>
+
+                <text
+                  class="tw-axis-text"
+                  x="8"
+                  y="151"
+                >
+                  8
+                </text>
+
+                <text
+                  class="tw-axis-text"
+                  x="3"
+                  y="95"
+                >
+                  16
+                </text>
+
+                <text
+                  class="tw-axis-text"
+                  x="3"
+                  y="39"
+                >
+                  24
+                </text>
+
+                <text
+                  class="tw-axis-text"
+                  x="352"
+                  y="207"
+                >
+                  n
+                </text>
+
+                <!-- n = -2 -->
+                <line
+                  class="tw-ordinary-stem"
+                  x1="101"
+                  y1="187"
+                  x2="101"
+                  y2="147"
+                />
+
+                <rect
+                  class="tw-ordinary-marker"
+                  x="95"
+                  y="141"
+                  width="12"
+                  height="12"
+                />
+
+                <text
+                  class="tw-value-text"
+                  x="72"
+                  y="131"
+                >
+                  D₋₂ = 8
+                </text>
+
+                <!-- n = -1 -->
+                <rect
+                  class="tw-resonant-marker"
+                  x="148"
+                  y="181"
+                  width="12"
+                  height="12"
+                />
+
+                <text
+                  class="tw-resonant-text"
+                  x="127"
+                  y="173"
+                >
+                  D₋₁ = 0
+                </text>
+
+                <!-- n = 0 -->
+                <rect
+                  class="tw-resonant-marker"
+                  x="201"
+                  y="181"
+                  width="12"
+                  height="12"
+                />
+
+                <text
+                  class="tw-resonant-text"
+                  x="188"
+                  y="173"
+                >
+                  D₀ = 0
+                </text>
+
+                <!-- n = +1 -->
+                <line
+                  class="tw-ordinary-stem"
+                  x1="260"
+                  y1="187"
+                  x2="260"
+                  y2="147"
+                />
+
+                <rect
+                  class="tw-ordinary-marker"
+                  x="254"
+                  y="141"
+                  width="12"
+                  height="12"
+                />
+
+                <text
+                  class="tw-value-text"
+                  x="235"
+                  y="131"
+                >
+                  D₊₁ = 8
+                </text>
+
+                <!-- n = +2 -->
+                <line
+                  class="tw-ordinary-stem"
+                  x1="313"
+                  y1="187"
+                  x2="313"
+                  y2="35"
+                />
+
+                <rect
+                  class="tw-ordinary-marker"
+                  x="307"
+                  y="29"
+                  width="12"
+                  height="12"
+                />
+
+                <text
+                  class="tw-value-text"
+                  x="281"
+                  y="21"
+                >
+                  D₊₂ = 24
+                </text>
+
+                <text
+                  class="tw-axis-text"
+                  x="84"
+                  y="215"
+                >
+                  −2
+                </text>
+
+                <text
+                  class="tw-axis-text"
+                  x="139"
+                  y="215"
+                >
+                  −1
+                </text>
+
+                <text
+                  class="tw-axis-text"
+                  x="203"
+                  y="215"
+                >
+                  0
+                </text>
+
+                <text
+                  class="tw-axis-text"
+                  x="253"
+                  y="215"
+                >
+                  +1
+                </text>
+
+                <text
+                  class="tw-axis-text"
+                  x="306"
+                  y="215"
+                >
+                  +2
+                </text>
+              </svg>
+            </div>
+
+            <div class="equation-box">
+              $D_{-2}=D_{+1}=8k_B^2$
+            </div>
+
+            <p>
+              These rows have a large diagonal mismatch before any
+              approximation is made. They are therefore not part of
+              the resonant block.
+            </p>
+          </article>
+
+          <article class="reason-card">
+            <div class="reason-card-header">
+              <div class="reason-letter">
+                C
+              </div>
+
+              <h3>
+                How are they suppressed?
+              </h3>
+            </div>
+
+            <p>
+              Use the first discarded equation, the row $n=+1$:
+            </p>
+
+            <div class="equation-box">
+              $-C E_0+D_{+1}E_{+1}-C E_{+2}=0$
+            </div>
+
+            <p>
+              The next amplitude, $E_{+2}$, is another weak-coupling
+              step away. At leading order,
+            </p>
+
+            <div class="equation-box">
+              $E_{+1}
+              \approx
+              \frac{C}{D_{+1}}E_0$
+            </div>
+
+            <p>
+              With
+              $C\approx k_B^2\Delta\varepsilon/(2\bar{\varepsilon})$
+              and $D_{+1}\approx8k_B^2$,
+            </p>
+
+            <div class="equation-box">
+              $\frac{E_{+1}}{E_0}
+              \approx
+              \frac{C}{D_{+1}}
+              \approx
+              \frac{\Delta\varepsilon}
+                   {16\bar{\varepsilon}}$
+            </div>
+
+            <p class="small-note">
+              A large diagonal mismatch forces the off-resonant
+              amplitude to be smaller by the weak-modulation factor.
+            </p>
+          </article>
+        </section>
+
+        <!-- =================================================
+             HIGH-CONTRAST CONCLUSION
+             ================================================= -->
+
+        <section class="bottom-line">
+          <div
+            class="check-mark"
+            aria-hidden="true"
+          >
+            ✓
+          </div>
+
+          <div class="bottom-copy">
+            <span class="bottom-label">
+              Leading-order consequence
+            </span>
+
+            <div class="bottom-explanation">
+              The truncation is not guessed; it follows from the
+              structure of the full matrix.
+            </div>
+
+            <div class="bottom-main">
+              Only $E_{-1}$ and $E_0$ remain order-one amplitudes.
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </section>
+
+<script data-article-visualization-bridge>
+(() => {
+  const root = document.documentElement;
+  const syncTheme = () => {
+    try {
+      const theme = window.parent.document.documentElement.dataset.theme;
+      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+    } catch (_) {}
+  };
+  const report = () => {
+    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
+    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
+    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+  };
+  syncTheme();
+  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  window.addEventListener("load", report, { once: true });
+  window.addEventListener("resize", report);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
+  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  requestAnimationFrame(report);
+})();
+</script>
+</body>
+</html>

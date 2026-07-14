@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conceptual AUC ranking visualization</title>
+  <style>
+    html { background: #0d1511; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      padding: 20px 0 42px;
+      background: #0d1511;
+      color: #f1eee6;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    @media (prefers-color-scheme: light) {
+      html, body { background: #f6f6f2; color: #1d2520; }
+    }
+  </style>
+</head>
+<body>
+<!--
+  Conceptual AUC ranking visualization.
+  Self-contained and scoped: no external fonts, scripts, or libraries.
+  Paste this block directly into the article.
+-->
+<style>
+  .auc-proof {
+    --auc-bg: #101813;
+    --auc-surface: #131e18;
+    --auc-surface-soft: #17231c;
+    --auc-text: #f1eee6;
+    --auc-muted: #b8c0ba;
+    --auc-faint: #75817a;
+    --auc-line: #3a4a41;
+    --auc-grid: #28362f;
+    --auc-purple: #bd8bec;
+    --auc-purple-strong: #d7b4f7;
+    --auc-purple-soft: rgba(189, 139, 236, .15);
+    --auc-purple-fill: rgba(189, 139, 236, .20);
+    --auc-gray: #aab2ad;
+    --auc-white: #fffdf6;
+    color: var(--auc-text);
+    color-scheme: dark;
+    width: min(100%, 1120px);
+    margin: 2rem auto;
+    border: 1px solid var(--auc-line);
+    border-radius: 18px;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 80% 0%, rgba(189, 139, 236, .09), transparent 32%),
+      var(--auc-bg);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, .18);
+  }
+
+  .auc-proof,
+  .auc-proof * { box-sizing: border-box; }
+
+  .auc-proof__header {
+    padding: clamp(1.35rem, 3vw, 2.35rem) clamp(1.1rem, 3.5vw, 2.6rem) 1.15rem;
+  }
+
+  .auc-proof__kicker {
+    margin: 0 0 .55rem;
+    color: var(--auc-purple-strong);
+    font: 750 .76rem/1.2 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  .auc-proof h2 {
+    margin: 0;
+    max-width: 880px;
+    color: var(--auc-text);
+    font: 500 clamp(1.55rem, 3.7vw, 2.45rem)/1.14 Georgia, "Times New Roman", serif;
+    letter-spacing: -.02em;
+  }
+
+  .auc-proof__lede {
+    max-width: 830px;
+    margin: .8rem 0 0;
+    color: var(--auc-muted);
+    font: 400 clamp(.96rem, 1.65vw, 1.06rem)/1.65 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .auc-proof__relation {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 84px minmax(0, 1fr);
+    gap: 0;
+    align-items: stretch;
+    padding: .7rem clamp(.8rem, 2.5vw, 1.75rem) 1.45rem;
+  }
+
+  .auc-proof__panel {
+    min-width: 0;
+    border: 1px solid var(--auc-line);
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255,255,255,.015), transparent), var(--auc-surface);
+    overflow: hidden;
+  }
+
+  .auc-proof__panel-head {
+    min-height: 108px;
+    padding: 1.05rem 1.15rem .75rem;
+    border-bottom: 1px solid var(--auc-grid);
+  }
+
+  .auc-proof__step {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    margin: 0 0 .42rem;
+    color: var(--auc-purple-strong);
+    font: 700 .78rem/1.2 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .auc-proof__step::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--auc-purple);
+    box-shadow: 0 0 0 4px var(--auc-purple-soft);
+  }
+
+  .auc-proof__panel h3 {
+    margin: 0;
+    color: var(--auc-text);
+    font: 500 clamp(1.16rem, 2.3vw, 1.45rem)/1.25 Georgia, "Times New Roman", serif;
+  }
+
+  .auc-proof__panel-copy {
+    margin: .42rem 0 0;
+    color: var(--auc-muted);
+    font: 400 .91rem/1.55 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .auc-proof__canvas {
+    padding: .8rem .8rem .9rem;
+  }
+
+  .auc-proof svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .auc-proof__bridge {
+    display: grid;
+    place-items: center;
+    padding: 0 .5rem;
+    color: var(--auc-purple-strong);
+    text-align: center;
+  }
+
+  .auc-proof__bridge-inner {
+    display: grid;
+    justify-items: center;
+    gap: .55rem;
+    width: 100%;
+  }
+
+  .auc-proof__bridge-line {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--auc-purple), transparent);
+    position: relative;
+  }
+
+  .auc-proof__bridge-line::after {
+    content: "";
+    position: absolute;
+    right: 7px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-top: 1.5px solid var(--auc-purple);
+    border-right: 1.5px solid var(--auc-purple);
+    transform: translateY(-50%) rotate(45deg);
+  }
+
+  .auc-proof__bridge-label {
+    max-width: 74px;
+    color: var(--auc-muted);
+    font: 650 .72rem/1.35 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .auc-proof__equations {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid var(--auc-line);
+    background: var(--auc-surface-soft);
+  }
+
+  .auc-proof__equation {
+    min-width: 0;
+    padding: 1.15rem clamp(1rem, 2.6vw, 1.75rem) 1.25rem;
+  }
+
+  .auc-proof__equation + .auc-proof__equation {
+    border-left: 1px solid var(--auc-line);
+  }
+
+  .auc-proof__equation-label {
+    margin: 0 0 .42rem;
+    color: var(--auc-muted);
+    font: 700 .72rem/1.25 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+  }
+
+  .auc-proof__math {
+    margin: 0;
+    color: var(--auc-text);
+    font: 400 clamp(1rem, 2vw, 1.26rem)/1.5 Georgia, "Times New Roman", serif;
+  }
+
+  .auc-proof__math em {
+    color: var(--auc-purple-strong);
+    font-style: italic;
+  }
+
+  .auc-proof__note {
+    margin: 0;
+    padding: 1.05rem clamp(1.1rem, 3.5vw, 2.6rem) 1.25rem;
+    border-top: 1px solid var(--auc-line);
+    color: var(--auc-muted);
+    font: 400 .95rem/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .auc-proof__note strong { color: var(--auc-text); font-weight: 650; }
+
+  /* SVG styling */
+  .auc-proof svg text {
+    fill: var(--auc-text);
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .auc-proof svg .svg-serif { font-family: Georgia, "Times New Roman", serif; }
+  .auc-proof svg .svg-muted { fill: var(--auc-muted); }
+  .auc-proof svg .svg-faint { fill: var(--auc-faint); }
+  .auc-proof svg .svg-accent { fill: var(--auc-purple-strong); }
+  .auc-proof svg .svg-axis { stroke: var(--auc-line); stroke-width: 1.5; }
+  .auc-proof svg .svg-grid { stroke: var(--auc-grid); stroke-width: 1; }
+  .auc-proof svg .svg-guide { stroke: var(--auc-purple); stroke-width: 1.6; stroke-dasharray: 5 5; }
+  .auc-proof svg .svg-positive { fill: var(--auc-purple); }
+  .auc-proof svg .svg-negative { fill: var(--auc-gray); }
+  .auc-proof svg .svg-dim { opacity: .33; }
+  .auc-proof svg .svg-ring { fill: none; stroke: var(--auc-purple-strong); stroke-width: 3; }
+  .auc-proof svg .svg-roc { fill: none; stroke: var(--auc-faint); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+  .auc-proof svg .svg-segment { stroke: var(--auc-purple-strong); stroke-width: 6; stroke-linecap: round; }
+  .auc-proof svg .svg-area { fill: var(--auc-purple-fill); stroke: var(--auc-purple); stroke-width: 1.2; }
+  .auc-proof svg .svg-bracket { fill: none; stroke: var(--auc-purple); stroke-width: 1.6; }
+  .auc-proof svg .svg-dot-outline { stroke: var(--auc-surface); stroke-width: 3; }
+
+  .auc-proof [data-link="positive-set"],
+  .auc-proof [data-link="negative-strip"] {
+    transition: opacity .2s ease, filter .2s ease, transform .2s ease;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .auc-proof.is-active [data-link="positive-set"],
+  .auc-proof.is-active [data-link="negative-strip"] {
+    filter: drop-shadow(0 0 7px rgba(189, 139, 236, .45));
+  }
+
+  .auc-proof.is-active [data-link="negative-strip"] { transform: translateY(-2px); }
+
+  .auc-proof__focus-target {
+    cursor: pointer;
+    outline: none;
+  }
+
+  .auc-proof__focus-target:focus-visible .svg-ring {
+    stroke-width: 5;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .auc-proof.is-active .svg-guide {
+      animation: auc-dash 1.4s linear infinite;
+    }
+    @keyframes auc-dash { to { stroke-dashoffset: -20; } }
+  }
+
+  @media (prefers-color-scheme: light) {
+    .auc-proof {
+      --auc-bg: #fbfbf8;
+      --auc-surface: #ffffff;
+      --auc-surface-soft: #f6f3f8;
+      --auc-text: #1d2520;
+      --auc-muted: #5f6963;
+      --auc-faint: #8b948f;
+      --auc-line: #cbd2ce;
+      --auc-grid: #e7ebe8;
+      --auc-purple: #7040a8;
+      --auc-purple-strong: #5d2f92;
+      --auc-purple-soft: rgba(112, 64, 168, .10);
+      --auc-purple-fill: rgba(112, 64, 168, .14);
+      --auc-gray: #7f8883;
+      --auc-white: #ffffff;
+      color-scheme: light;
+      box-shadow: 0 18px 46px rgba(31, 40, 35, .09);
+    }
+  }
+
+  @media (max-width: 820px) {
+    .auc-proof__relation {
+      grid-template-columns: minmax(0, 1fr);
+      gap: .75rem;
+    }
+
+    .auc-proof__bridge {
+      min-height: 68px;
+      padding: .2rem 0;
+    }
+
+    .auc-proof__bridge-inner { gap: .4rem; }
+
+    .auc-proof__bridge-line {
+      width: 1px;
+      height: 34px;
+      background: linear-gradient(180deg, transparent, var(--auc-purple), transparent);
+    }
+
+    .auc-proof__bridge-line::after {
+      right: auto;
+      left: 50%;
+      top: auto;
+      bottom: 3px;
+      transform: translateX(-50%) rotate(135deg);
+    }
+
+    .auc-proof__bridge-label { max-width: none; }
+
+    .auc-proof__equations {
+      grid-template-columns: 1fr;
+    }
+
+    .auc-proof__equation + .auc-proof__equation {
+      border-left: 0;
+      border-top: 1px solid var(--auc-line);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .auc-proof { border-radius: 14px; }
+    .auc-proof__panel-head { min-height: 0; }
+    .auc-proof__canvas { padding: .6rem .45rem .75rem; }
+  }
+</style>
+
+<figure class="auc-proof" id="auc-proof-figure" aria-labelledby="auc-proof-title auc-proof-desc">
+  <figcaption class="auc-proof__header">
+    <p class="auc-proof__kicker">One negative, seen in two coordinate systems</p>
+    <h2 id="auc-proof-title">The position of a negative in the score ordering becomes a horizontal strip under the ROC curve</h2>
+    <p class="auc-proof__lede" id="auc-proof-desc">
+      There is no separate numerical trick. The score ordering tells us which positives have already been passed; the ROC curve records that same fact as its current height.
+    </p>
+  </figcaption>
+
+  <div class="auc-proof__relation">
+    <section class="auc-proof__panel" aria-labelledby="auc-order-title">
+      <header class="auc-proof__panel-head">
+        <p class="auc-proof__step">Score ordering</p>
+        <h3 id="auc-order-title">Stop when the sweep reaches a negative <span style="font-style:italic">x</span><sub>−</sub></h3>
+        <p class="auc-proof__panel-copy">Everything to its left has a strictly higher score. The purple points there are exactly the positives ranked above this negative.</p>
+      </header>
+      <div class="auc-proof__canvas">
+        <svg viewBox="0 0 520 330" role="img" aria-labelledby="order-svg-title order-svg-desc">
+          <title id="order-svg-title">A negative in a schematic score ordering</title>
+          <desc id="order-svg-desc">A selected negative lies on a score axis. Positive samples with higher score are highlighted to its left, while later samples are faded.</desc>
+
+          <text x="34" y="35" class="svg-accent" font-size="14" font-weight="700">higher score</text>
+          <text x="486" y="35" class="svg-accent" font-size="14" font-weight="700" text-anchor="end">lower score</text>
+          <line x1="34" y1="62" x2="486" y2="62" class="svg-axis" />
+          <path d="M480 56 L490 62 L480 68" fill="none" stroke="var(--auc-line)" stroke-width="1.5" />
+
+          <path d="M62 112 C62 91, 76 91, 92 91 H284 C300 91, 314 91, 314 112" class="svg-bracket" data-link="positive-set" />
+          <text x="188" y="82" class="svg-accent svg-serif" font-size="17" text-anchor="middle">positives with score greater than S(x₋)</text>
+
+          <g data-link="positive-set">
+            <circle cx="82" cy="150" r="13" class="svg-positive svg-dot-outline" />
+            <circle cx="130" cy="150" r="13" class="svg-positive svg-dot-outline" />
+            <circle cx="181" cy="150" r="13" class="svg-positive svg-dot-outline" />
+            <circle cx="236" cy="150" r="13" class="svg-positive svg-dot-outline" />
+            <circle cx="284" cy="150" r="13" class="svg-positive svg-dot-outline" />
+          </g>
+
+          <circle cx="106" cy="203" r="12" class="svg-negative svg-dot-outline" />
+          <circle cx="208" cy="203" r="12" class="svg-negative svg-dot-outline" />
+
+          <g class="auc-proof__focus-target" data-auc-focus tabindex="0" role="button" aria-label="Highlight the selected negative and its ROC strip">
+            <circle cx="330" cy="177" r="23" class="svg-ring" />
+            <circle cx="330" cy="177" r="13" class="svg-negative svg-dot-outline" />
+            <text x="330" y="220" class="svg-accent svg-serif" font-size="22" font-style="italic" text-anchor="middle">x₋</text>
+          </g>
+
+          <circle cx="379" cy="150" r="13" class="svg-positive svg-dot-outline svg-dim" />
+          <circle cx="430" cy="203" r="12" class="svg-negative svg-dot-outline svg-dim" />
+          <circle cx="467" cy="150" r="13" class="svg-positive svg-dot-outline svg-dim" />
+
+          <line x1="330" y1="118" x2="330" y2="258" class="svg-guide" />
+          <text x="330" y="281" class="svg-muted" font-size="14" font-weight="650" text-anchor="middle">the sweep is here</text>
+
+          <g transform="translate(38 296)">
+            <circle cx="0" cy="0" r="7" class="svg-positive" />
+            <text x="14" y="5" class="svg-muted" font-size="13">positive</text>
+            <circle cx="100" cy="0" r="7" class="svg-negative" />
+            <text x="114" y="5" class="svg-muted" font-size="13">negative</text>
+            <text x="452" y="5" class="svg-faint" font-size="15" text-anchor="end">schematic ordering — not a counted example</text>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <div class="auc-proof__bridge" aria-hidden="true">
+      <div class="auc-proof__bridge-inner">
+        <div class="auc-proof__bridge-label">same moment in the sweep</div>
+        <div class="auc-proof__bridge-line"></div>
+      </div>
+    </div>
+
+    <section class="auc-proof__panel" aria-labelledby="auc-roc-title">
+      <header class="auc-proof__panel-head">
+        <p class="auc-proof__step">ROC geometry</p>
+        <h3 id="auc-roc-title">At that moment, the curve has height <span style="font-style:italic">T</span>(<span style="font-style:italic">x</span><sub>−</sub>)</h3>
+        <p class="auc-proof__panel-copy">Processing this negative moves the ROC walk right without changing its height, creating one horizontal strip of area.</p>
+      </header>
+      <div class="auc-proof__canvas">
+        <svg viewBox="0 0 520 330" role="img" aria-labelledby="roc-svg-title roc-svg-desc">
+          <title id="roc-svg-title">The horizontal ROC strip contributed by one negative</title>
+          <desc id="roc-svg-desc">A schematic ROC step curve. One horizontal segment is highlighted, with height T of the selected negative and width one over the number of negatives.</desc>
+
+          <line x1="72" y1="270" x2="480" y2="270" class="svg-axis" />
+          <line x1="72" y1="270" x2="72" y2="42" class="svg-axis" />
+          <path d="M474 264 L484 270 L474 276" fill="none" stroke="var(--auc-line)" stroke-width="1.5" />
+          <path d="M66 48 L72 38 L78 48" fill="none" stroke="var(--auc-line)" stroke-width="1.5" />
+
+          <text x="476" y="300" class="svg-muted" font-size="14" text-anchor="end">false-positive rate</text>
+          <text x="24" y="160" class="svg-muted" font-size="14" text-anchor="middle" transform="rotate(-90 24 160)">true-positive rate</text>
+
+          <line x1="72" y1="215" x2="480" y2="215" class="svg-grid" />
+          <line x1="72" y1="160" x2="480" y2="160" class="svg-grid" />
+          <line x1="72" y1="105" x2="480" y2="105" class="svg-grid" />
+
+          <path d="M72 270 L72 238 L126 238 L126 202 L184 202 L184 160 L246 160 L246 132 L320 132 L320 93 L387 93 L387 67 L466 67" class="svg-roc" />
+
+          <g data-link="negative-strip">
+            <rect x="184" y="160" width="62" height="110" class="svg-area" />
+            <line x1="184" y1="160" x2="246" y2="160" class="svg-segment" />
+          </g>
+
+          <line x1="184" y1="160" x2="184" y2="270" class="svg-guide" />
+          <line x1="246" y1="160" x2="246" y2="270" class="svg-guide" />
+
+          <path d="M56 270 C45 270, 45 260, 45 250 V180 C45 170, 45 160, 56 160" class="svg-bracket" />
+          <text x="38" y="216" class="svg-accent svg-serif" font-size="20" text-anchor="middle" transform="rotate(-90 38 216)">T(x₋)</text>
+
+          <path d="M184 286 C184 298, 194 298, 204 298 H226 C236 298, 246 298, 246 286" class="svg-bracket" />
+          <text x="215" y="320" class="svg-accent svg-serif" font-size="18" text-anchor="middle">1 / |N|</text>
+
+          <circle cx="215" cy="160" r="7" fill="var(--auc-purple-strong)" stroke="var(--auc-surface)" stroke-width="3" />
+          <text x="267" y="152" class="svg-accent" font-size="14" font-weight="700">this negative moves right</text>
+          <text x="267" y="172" class="svg-muted" font-size="14">while the height stays fixed</text>
+        </svg>
+      </div>
+    </section>
+  </div>
+
+  <div class="auc-proof__equations" aria-label="Meaning of the highlighted strip">
+    <section class="auc-proof__equation">
+      <p class="auc-proof__equation-label">Its height</p>
+      <p class="auc-proof__math"><em>T(x<sub>−</sub>)</em> = the fraction of positives ranked above <em>x<sub>−</sub></em></p>
+    </section>
+    <section class="auc-proof__equation">
+      <p class="auc-proof__equation-label">Its area</p>
+      <p class="auc-proof__math">strip area = <em>T(x<sub>−</sub>)</em> · 1 / |N|</p>
+    </section>
+    <section class="auc-proof__equation">
+      <p class="auc-proof__equation-label">All strips together</p>
+      <p class="auc-proof__math"><em>AUC</em> = (1 / |N|) Σ<sub>x₋∈N</sub> <em>T(x<sub>−</sub>)</em></p>
+    </section>
+  </div>
+
+  <p class="auc-proof__note">
+    <strong>Why this becomes a pairwise statement.</strong> Every positive to the left of <em>x</em><sub>−</sub> forms one correctly ordered positive–negative pair with it. Repeating the same construction for every negative counts each possible pair exactly once.
+  </p>
+</figure>
+
+<script>
+(() => {
+  const figure = document.getElementById('auc-proof-figure');
+  if (!figure) return;
+
+  const targets = figure.querySelectorAll('[data-auc-focus], [data-link="negative-strip"]');
+  const activate = () => figure.classList.add('is-active');
+  const deactivate = () => figure.classList.remove('is-active');
+
+  targets.forEach((target) => {
+    target.addEventListener('mouseenter', activate);
+    target.addEventListener('mouseleave', deactivate);
+    target.addEventListener('focus', activate);
+    target.addEventListener('blur', deactivate);
+    target.addEventListener('click', () => figure.classList.toggle('is-active'));
+  });
+})();
+</script>
+
+<script data-article-visualization-bridge>
+(() => {
+  const root = document.documentElement;
+  const syncTheme = () => {
+    try {
+      const theme = window.parent.document.documentElement.dataset.theme;
+      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+    } catch (_) {}
+  };
+  const report = () => {
+    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
+    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
+    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+  };
+  syncTheme();
+  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  window.addEventListener("load", report, { once: true });
+  window.addEventListener("resize", report);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
+  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  requestAnimationFrame(report);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bessel modes: geometry and rigid motions</title>
+<style>
+  :root {
+    --page: #fbfbf8;
+    --surface: #ffffff;
+    --surface-muted: #f4f5f1;
+    --ink: #1c2420;
+    --muted: #667169;
+    --border: #d6ddd7;
+    --border-strong: #a6b2a9;
+    --accent: #1d61a6;
+    --accent-soft: #edf6fe;
+    --accent-border: #a9cbed;
+    --warm: #9e4b1b;
+    --warm-soft: #fff2e9;
+    --positive: #2166ac;
+    --negative: #b24733;
+    --shadow: 0 18px 50px -42px rgba(17, 46, 75, .55);
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #101511;
+      --surface: #171e19;
+      --surface-muted: #1d2720;
+      --ink: #e9efeb;
+      --muted: #a7b5aa;
+      --border: #344138;
+      --border-strong: #617168;
+      --accent: #add9ff;
+      --accent-soft: #18354e;
+      --accent-border: #4a79a4;
+      --warm: #ffcb9f;
+      --warm-soft: #40291f;
+      --positive: #72b7f2;
+      --negative: #f1987e;
+      --shadow: none;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-width: 320px;
+    background: transparent;
+    color: var(--ink);
+  }
+
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 16px;
+    line-height: 1.58;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button { font: inherit; }
+
+  .bessel-viz {
+    width: min(1120px, 100%);
+    margin: 0 auto;
+    padding: clamp(18px, 3vw, 34px);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--accent);
+    background: var(--page);
+    box-shadow: var(--shadow);
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 28px;
+    align-items: end;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-strong);
+  }
+
+  .eyebrow,
+  .step-number,
+  .mini-label,
+  .control-label,
+  .formula-label,
+  .route-tag {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    letter-spacing: .035em;
+  }
+
+  .eyebrow {
+    margin: 0 0 8px;
+    color: var(--accent);
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  h1, h2, h3, p { margin-top: 0; }
+
+  h1 {
+    max-width: 760px;
+    margin-bottom: 10px;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 500;
+    letter-spacing: -.045em;
+    line-height: 1.02;
+  }
+
+  .hero p {
+    max-width: 760px;
+    margin-bottom: 0;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.7vw, 1.12rem);
+  }
+
+  .route-key {
+    display: grid;
+    gap: 7px;
+    min-width: 180px;
+    padding: 12px 14px;
+    border: 1px solid var(--accent-border);
+    background: var(--accent-soft);
+  }
+
+  .route-key span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: .72rem;
+  }
+
+  .route-key i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .route-key span:last-child i { background: var(--warm); }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 14px 24px;
+    align-items: center;
+    padding: 18px 0;
+  }
+
+  .control-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .control-label {
+    margin-right: 4px;
+    color: var(--muted);
+    font-size: .7rem;
+    text-transform: uppercase;
+  }
+
+  .segmented {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .segmented button {
+    min-height: 34px;
+    padding: 6px 11px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  .segmented button:hover,
+  .segmented button:focus-visible {
+    border-color: var(--accent);
+    color: var(--accent);
+    outline: none;
+  }
+
+  .segmented button[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--page);
+  }
+
+  .overview {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .overview-step {
+    min-width: 0;
+    padding: 15px 16px 16px;
+    border-right: 1px solid var(--border);
+  }
+
+  .overview-step:last-child { border-right: 0; }
+
+  .step-number {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--accent);
+    font-size: .68rem;
+    font-weight: 700;
+  }
+
+  .overview-step strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: .96rem;
+  }
+
+  .overview-step p {
+    margin: 0;
+    color: var(--muted);
+    font-size: .82rem;
+    line-height: 1.45;
+  }
+
+  .section {
+    margin-top: 26px;
+  }
+
+  .section-heading {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 13px;
+    align-items: start;
+    margin-bottom: 14px;
+  }
+
+  .section-heading .step-number {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    margin: 0;
+    border: 1px solid var(--accent-border);
+    background: var(--accent-soft);
+  }
+
+  h2 {
+    margin-bottom: 4px;
+    font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+    font-weight: 500;
+    letter-spacing: -.025em;
+    line-height: 1.15;
+  }
+
+  .section-heading p {
+    margin: 0;
+    color: var(--muted);
+    font-size: .94rem;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(280px, .88fr);
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .panel {
+    min-width: 0;
+    padding: clamp(16px, 2.5vw, 22px);
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .panel--accent {
+    border-color: var(--accent-border);
+    background: linear-gradient(145deg, var(--accent-soft), var(--surface) 68%);
+  }
+
+  .panel--warm {
+    border-color: color-mix(in srgb, var(--warm) 32%, var(--border));
+    background: linear-gradient(145deg, var(--warm-soft), var(--surface) 72%);
+  }
+
+  .panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 18px;
+    align-items: baseline;
+    margin-bottom: 13px;
+  }
+
+  h3 {
+    margin-bottom: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: .92rem;
+    letter-spacing: -.02em;
+  }
+
+  .mini-label {
+    color: var(--muted);
+    font-size: .67rem;
+  }
+
+  .field-wrap {
+    position: relative;
+    width: min(100%, 520px);
+    margin: 0 auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .field-wrap canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--surface-muted);
+  }
+
+  .field-ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .field-axis {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 45%;
+    height: 1px;
+    transform-origin: left center;
+    background: color-mix(in srgb, var(--ink) 65%, transparent);
+    pointer-events: none;
+  }
+
+  .field-axis::after {
+    content: "";
+    position: absolute;
+    right: -1px;
+    top: -4px;
+    width: 8px;
+    height: 8px;
+    border-top: 1px solid var(--ink);
+    border-right: 1px solid var(--ink);
+    transform: rotate(45deg);
+  }
+
+  .field-caption {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: .79rem;
+  }
+
+  .field-caption span:last-child { text-align: right; }
+
+  .equation-stack {
+    display: grid;
+    gap: 11px;
+  }
+
+  .formula {
+    min-width: 0;
+    padding: 11px 12px;
+    border-left: 3px solid var(--accent);
+    background: color-mix(in srgb, var(--accent-soft) 72%, transparent);
+    overflow-x: auto;
+  }
+
+  .formula-label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--muted);
+    font-size: .64rem;
+    text-transform: uppercase;
+  }
+
+  .math {
+    white-space: nowrap;
+    font-family: "Cambria Math", "STIX Two Math", "Times New Roman", serif;
+    font-size: clamp(.96rem, 2vw, 1.11rem);
+  }
+
+  .arrow-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: .85rem;
+  }
+
+  .arrow-line::before {
+    content: "↓";
+    color: var(--accent);
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+  }
+
+  .plain-note {
+    margin: 14px 0 0;
+    color: var(--muted);
+    font-size: .88rem;
+  }
+
+  .profile-svg,
+  .frequency-svg,
+  .annulus-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .profile-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: .74rem;
+  }
+
+  .profile-legend span::before {
+    content: "";
+    display: inline-block;
+    width: 15px;
+    height: 2px;
+    margin-right: 6px;
+    vertical-align: .22em;
+    background: var(--accent);
+  }
+
+  .profile-legend span:last-child::before {
+    background: var(--warm);
+  }
+
+  .measure-grid {
+    display: grid;
+    grid-template-columns: minmax(230px, .78fr) minmax(0, 1.22fr);
+    gap: 16px;
+  }
+
+  .annulus-note {
+    display: grid;
+    gap: 10px;
+    align-content: center;
+  }
+
+  .annulus-note strong {
+    font-size: 1.03rem;
+  }
+
+  .annulus-note p {
+    margin: 0;
+    color: var(--muted);
+    font-size: .88rem;
+  }
+
+  .orthogonality {
+    display: grid;
+    gap: 12px;
+    align-content: center;
+  }
+
+  .orthogonality .formula {
+    border-left-color: var(--warm);
+    background: color-mix(in srgb, var(--warm-soft) 72%, transparent);
+  }
+
+  .bridge-grid {
+    display: grid;
+    grid-template-columns: minmax(260px, .92fr) minmax(0, 1.08fr);
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .frequency-wrap {
+    display: grid;
+    place-items: center;
+    min-height: 330px;
+  }
+
+  .direction-help {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: .79rem;
+    text-align: center;
+  }
+
+  .direction-help strong { color: var(--ink); }
+
+  .bridge-copy {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+
+  .bridge-copy p {
+    margin: 0;
+    color: var(--muted);
+    font-size: .9rem;
+  }
+
+  .what-moves {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+  }
+
+  .move-card {
+    padding: 10px 11px;
+    border: 1px solid var(--border);
+    background: var(--surface-muted);
+  }
+
+  .move-card strong {
+    display: block;
+    margin-bottom: 3px;
+    font-family: ui-monospace, monospace;
+    font-size: .75rem;
+  }
+
+  .move-card span {
+    color: var(--muted);
+    font-size: .78rem;
+  }
+
+  .integral-box {
+    padding: 14px;
+    border: 1px solid color-mix(in srgb, var(--warm) 42%, var(--border));
+    border-left: 4px solid var(--warm);
+    background: var(--warm-soft);
+    overflow-x: auto;
+  }
+
+  .integral-box .math {
+    display: block;
+    min-width: max-content;
+    font-size: clamp(.88rem, 1.8vw, 1.04rem);
+  }
+
+  .phase-strip {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    height: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .phase-strip span { min-width: 0; }
+
+  .conclusion {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 14px;
+    align-items: stretch;
+    margin-top: 18px;
+  }
+
+  .route-card {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .route-card:first-child { border-top: 3px solid var(--accent); }
+  .route-card:last-child { border-top: 3px solid var(--warm); }
+
+  .route-tag {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--muted);
+    font-size: .64rem;
+    text-transform: uppercase;
+  }
+
+  .route-card strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1rem;
+  }
+
+  .route-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: .83rem;
+  }
+
+  .equals {
+    display: grid;
+    place-items: center;
+    min-width: 42px;
+    color: var(--accent);
+    font-family: "Cambria Math", serif;
+    font-size: 2rem;
+  }
+
+  .final-line {
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    color: var(--muted);
+    font-size: .88rem;
+  }
+
+  .final-line strong { color: var(--ink); }
+
+  .tooltip {
+    position: fixed;
+    z-index: 20;
+    max-width: 220px;
+    padding: 7px 9px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 8px 24px -16px rgba(0,0,0,.45);
+    font-family: ui-monospace, monospace;
+    font-size: .7rem;
+    line-height: 1.4;
+    pointer-events: none;
+    transform: translate(12px, 12px);
+  }
+
+  .tooltip[hidden] { display: none; }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; align-items: start; }
+    .route-key { width: min(100%, 360px); }
+    .overview { grid-template-columns: 1fr 1fr; }
+    .overview-step:nth-child(2) { border-right: 0; }
+    .overview-step:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
+    .two-col,
+    .measure-grid,
+    .bridge-grid { grid-template-columns: 1fr; }
+    .frequency-wrap { min-height: 290px; }
+  }
+
+  @media (max-width: 560px) {
+    .bessel-viz { padding: 16px; }
+    .controls { align-items: flex-start; }
+    .control-group { width: 100%; }
+    .overview { grid-template-columns: 1fr; }
+    .overview-step,
+    .overview-step:nth-child(2) {
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .overview-step:last-child { border-bottom: 0; }
+    .field-caption { grid-template-columns: 1fr; }
+    .field-caption span:last-child { text-align: left; }
+    .what-moves { grid-template-columns: 1fr; }
+    .conclusion { grid-template-columns: 1fr; }
+    .equals { min-height: 32px; }
+    .segmented button { flex: 1 1 auto; }
+  }
+
+  .bessel-viz.panel-radial #bridge-section,
+  .bessel-viz.panel-radial #conclusion-section,
+  .bessel-viz.panel-radial #view-control-group {
+    display: none;
+  }
+
+  .bessel-viz.panel-radial #overview {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bessel-viz.panel-radial #overview .overview-step:last-child {
+    display: none;
+  }
+
+  .bessel-viz.panel-symmetry #geometry-section,
+  .bessel-viz.panel-symmetry #profile-section {
+    display: none;
+  }
+
+  .bessel-viz.panel-symmetry #overview {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  @media (max-width: 860px) {
+    .bessel-viz.panel-radial #overview,
+    .bessel-viz.panel-symmetry #overview {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .bessel-viz.panel-radial #overview,
+    .bessel-viz.panel-symmetry #overview {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<main class="bessel-viz" aria-labelledby="viz-title">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Bessel functions · one object, two routes</p>
+      <h1 id="viz-title">Why a circular geometry produces <span class="math">J<sub>ν</sub>(kr)</span></h1>
+      <p id="hero-description">The differential-equation route and the rigid-motion route are not separate facts. Both begin with waves in the plane, keep one spatial frequency <span class="math">k</span>, and isolate one angular pattern <span class="math">ν</span>.</p>
+    </div>
+    <div class="route-key" aria-label="Route key">
+      <span><i></i> geometry and separation</span>
+      <span><i></i> rigid motions and plane waves</span>
+    </div>
+  </header>
+
+  <div class="controls" aria-label="Visualization controls">
+    <div class="control-group">
+      <span class="control-label">angular pattern ν</span>
+      <div class="segmented" id="order-controls">
+        <button type="button" data-order="0" aria-pressed="true">ν = 0</button>
+        <button type="button" data-order="1" aria-pressed="false">ν = 1</button>
+        <button type="button" data-order="2" aria-pressed="false">ν = 2</button>
+        <button type="button" data-order="3" aria-pressed="false">ν = 3</button>
+      </div>
+    </div>
+    <div class="control-group" id="view-control-group">
+      <span class="control-label">plane-wave view</span>
+      <div class="segmented" id="view-controls">
+        <button type="button" data-view="single" aria-pressed="false">one direction</button>
+        <button type="button" data-view="combined" aria-pressed="true">combine every direction</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="overview" id="overview" aria-label="Construction overview">
+    <div class="overview-step">
+      <span class="step-number">01</span>
+      <strong>Write the wave equation in polar coordinates.</strong>
+      <p>A circle suggests radius <span class="math">r</span> and angle <span class="math">θ</span>.</p>
+    </div>
+    <div class="overview-step">
+      <span class="step-number">02</span>
+      <strong>Choose one angular pattern.</strong>
+      <p><span class="math">e<sup>iνθ</sup></span> repeats after one full turn only when <span class="math">ν</span> is an integer.</p>
+    </div>
+    <div class="overview-step">
+      <span class="step-number">03</span>
+      <strong>The remaining radial equation is Bessel’s equation.</strong>
+      <p>The bounded radial factor is <span class="math">J<sub>ν</sub>(kr)</span>.</p>
+    </div>
+    <div class="overview-step">
+      <span class="step-number">04</span>
+      <strong>The same mode is built from plane waves.</strong>
+      <p>Combine all directions on the frequency circle with angular pattern <span class="math">ν</span>.</p>
+    </div>
+  </section>
+
+  <section class="section" id="geometry-section" aria-labelledby="geometry-title">
+    <div class="section-heading">
+      <span class="step-number">01</span>
+      <div>
+        <h2 id="geometry-title">From a wave on a disc to the radial equation</h2>
+        <p>The drawing and the equations change together. The selected <span class="math">ν</span> controls only the angular repetition; the radial rings come from the Bessel factor.</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <article class="panel panel--accent">
+        <div class="panel-head">
+          <h3>mode on the disc</h3>
+          <span class="mini-label" id="mode-label">ν = 0 · third radial mode</span>
+        </div>
+        <div class="field-wrap" id="field-wrap">
+          <canvas id="field-canvas" width="720" height="720" aria-label="Bessel mode on a circular disc"></canvas>
+          <div class="field-ring" aria-hidden="true"></div>
+          <div class="field-axis" id="field-axis" aria-hidden="true" hidden></div>
+        </div>
+        <div class="field-caption">
+          <span><span style="color:var(--positive)">blue</span> and <span style="color:var(--negative)">rust</span> mark opposite signs</span>
+          <span id="boundary-label">the field is zero at the rim</span>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h3>separate angle from radius</h3>
+          <span class="mini-label">no group theory needed</span>
+        </div>
+        <div class="equation-stack">
+          <div class="formula">
+            <span class="formula-label">wave equation in the plane</span>
+            <span class="math">Δu + k²u = 0</span>
+          </div>
+          <div class="arrow-line">use polar coordinates and try one angular pattern</div>
+          <div class="formula">
+            <span class="formula-label">separated form</span>
+            <span class="math">u(r,θ) = R(r)e<sup>iνθ</sup></span>
+          </div>
+          <div class="arrow-line">all dependence on <span class="math">θ</span> is now explicit</div>
+          <div class="formula">
+            <span class="formula-label">radial equation</span>
+            <span class="math">r²R″ + rR′ + (k²r² − ν²)R = 0</span>
+          </div>
+          <div class="arrow-line">keep the solution that stays finite at the centre</div>
+          <div class="formula">
+            <span class="formula-label">bounded radial factor</span>
+            <span class="math">R(r) = J<sub id="formula-order">0</sub>(kr)</span>
+          </div>
+        </div>
+        <p class="plain-note">The order <span class="math">ν</span> is not an arbitrary label: it is the number of angular oscillations carried by <span class="math">e<sup>iνθ</sup></span>. Taking the real part gives <span class="math">J<sub>ν</sub>(kr)cos(νθ)</span>.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="profile-section" aria-labelledby="profile-title">
+    <div class="section-heading">
+      <span class="step-number">02</span>
+      <div>
+        <h2 id="profile-title">The radial profile and the weight <span class="math">r</span></h2>
+        <p>The factor <span class="math">r</span> in the inner product is ordinary area accounting: an outer ring contains more area than an inner ring of the same thickness.</p>
+      </div>
+    </div>
+
+    <div class="measure-grid">
+      <article class="panel">
+        <div class="panel-head">
+          <h3>equal radial thickness, unequal area</h3>
+          <span class="mini-label">polar area element</span>
+        </div>
+        <svg class="annulus-svg" viewBox="0 0 360 280" role="img" aria-label="Inner and outer annuli of equal thickness">
+          <defs>
+            <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/>
+            </marker>
+          </defs>
+          <circle cx="150" cy="140" r="112" fill="none" stroke="var(--border-strong)" stroke-width="1.5"/>
+          <circle cx="150" cy="140" r="42" fill="none" stroke="var(--accent)" stroke-width="13" opacity=".78"/>
+          <circle cx="150" cy="140" r="88" fill="none" stroke="var(--warm)" stroke-width="13" opacity=".72"/>
+          <line x1="150" y1="140" x2="238" y2="140" stroke="var(--ink)" stroke-width="1.2" marker-end="url(#arrow-blue)"/>
+          <text x="188" y="130" fill="var(--ink)" font-family="Cambria Math, serif" font-size="16">r</text>
+          <line x1="250" y1="47" x2="250" y2="60" stroke="var(--warm)" stroke-width="5"/>
+          <text x="260" y="58" fill="var(--muted)" font-family="ui-monospace, monospace" font-size="12">same dr</text>
+          <path d="M80 237 C105 220, 120 211, 129 198" fill="none" stroke="var(--accent)" stroke-width="1.2" marker-end="url(#arrow-blue)"/>
+          <text x="26" y="260" fill="var(--muted)" font-family="ui-monospace, monospace" font-size="12">short circumference</text>
+          <path d="M276 225 C257 214, 247 201, 239 188" fill="none" stroke="var(--warm)" stroke-width="1.2" marker-end="url(#arrow-blue)"/>
+          <text x="236" y="249" fill="var(--muted)" font-family="ui-monospace, monospace" font-size="12">long circumference</text>
+        </svg>
+        <div class="annulus-note">
+          <strong><span class="math">dA = r dr dθ</span></strong>
+          <p>After the angular integral is performed, the radial inner product must still count that area. This leaves the weight <span class="math">r</span>.</p>
+        </div>
+      </article>
+
+      <article class="panel panel--warm">
+        <div class="panel-head">
+          <h3>two different radial modes</h3>
+          <span class="mini-label" id="profile-label">same ν = 0</span>
+        </div>
+        <svg class="profile-svg" id="profile-svg" viewBox="0 0 620 310" role="img" aria-label="Two Bessel radial profiles"></svg>
+        <div class="profile-legend">
+          <span>second radial mode</span>
+          <span>third radial mode</span>
+        </div>
+        <div class="orthogonality">
+          <div class="formula">
+            <span class="formula-label">orthogonality on the disc</span>
+            <span class="math">∫<sub>0</sub><sup>R</sup> J<sub>ν</sub>(k<sub>m</sub>r)J<sub>ν</sub>(k<sub>n</sub>r) r dr = 0, &nbsp;m ≠ n</span>
+          </div>
+          <p class="plain-note">The positive and negative overlap cancels only after each radius is counted in proportion to the circumference of its ring.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="bridge-section" aria-labelledby="bridge-title">
+    <div class="section-heading">
+      <span class="step-number">03</span>
+      <div>
+        <h2 id="bridge-title">Now rebuild the same mode from plane waves</h2>
+        <p>This is the concrete content behind “Bessel functions from rigid motions of the plane.” Start with a fixed spatial frequency <span class="math">k</span>, not with an abstract group name.</p>
+      </div>
+    </div>
+
+    <div class="bridge-grid">
+      <article class="panel panel--warm">
+        <div class="panel-head">
+          <h3>frequency circle |ξ| = k</h3>
+          <span class="mini-label">click a direction</span>
+        </div>
+        <div class="frequency-wrap">
+          <svg class="frequency-svg" id="frequency-svg" viewBox="0 0 430 370" role="img" aria-label="Circle of plane-wave directions with fixed frequency"></svg>
+        </div>
+        <p class="direction-help" id="direction-help"><strong>All points have the same length k.</strong> Only the direction α changes.</p>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h3>what a rigid motion does</h3>
+          <span class="mini-label">and what it cannot change</span>
+        </div>
+        <div class="bridge-copy">
+          <p>A point on the frequency circle represents one plane wave</p>
+          <div class="formula">
+            <span class="formula-label">one direction α</span>
+            <span class="math">e<sup>ik r cos(θ−α)</sup></span>
+          </div>
+
+          <div class="what-moves">
+            <div class="move-card">
+              <strong>rotation</strong>
+              <span>moves the chosen direction around the circle</span>
+            </div>
+            <div class="move-card">
+              <strong>translation</strong>
+              <span>changes the plane wave by a phase factor</span>
+            </div>
+          </div>
+
+          <p>Neither operation changes the length <span class="math">k</span>. Therefore all directions on this one circle belong together.</p>
+
+          <div class="phase-strip" id="phase-strip" aria-label="Angular phase pattern around the frequency circle"></div>
+
+          <p>To isolate angular pattern <span class="math">ν</span>, combine the directions with phase <span class="math">e<sup>iνα</sup></span>:</p>
+          <div class="integral-box">
+            <span class="math">Ψ<sub>ν</sub>(r,θ) = (1/2π)∫<sub>0</sub><sup>2π</sup> e<sup>ik r cos(θ−α)</sup>e<sup>iνα</sup>dα</span>
+            <span class="math" style="margin-top:8px">= i<sup>ν</sup>e<sup>iνθ</sup>J<sub>ν</sub>(kr)</span>
+          </div>
+          <p>The angular factor is again <span class="math">e<sup>iνθ</sup></span>, and the radial factor is again <span class="math">J<sub>ν</sub>(kr)</span>. The integral has reconstructed the same separated mode.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="conclusion-section" aria-labelledby="same-title">
+    <div class="section-heading">
+      <span class="step-number">04</span>
+      <div>
+        <h2 id="same-title">The two explanations meet at the same function</h2>
+        <p>One route starts with a differential operator; the other starts with the motions that leave the plane unchanged.</p>
+      </div>
+    </div>
+
+    <div class="conclusion">
+      <article class="route-card">
+        <span class="route-tag">operator-first route</span>
+        <strong>Separate the polar wave equation.</strong>
+        <p>The radial part must solve Bessel’s equation and remain bounded at the centre.</p>
+      </article>
+      <div class="equals" aria-hidden="true">=</div>
+      <article class="route-card">
+        <span class="route-tag">symmetry-first route</span>
+        <strong>Combine a circle of equal-frequency plane waves.</strong>
+        <p>The angular component <span class="math">ν</span> has radial coefficient <span class="math">J<sub>ν</sub>(kr)</span>.</p>
+      </article>
+    </div>
+
+    <p class="final-line"><strong>Only now attach the name:</strong> rotations and translations together form the Euclidean motion group <span class="math">ISO(2)</span>. Saying that Bessel functions arise from <span class="math">ISO(2)</span> means exactly the fixed-frequency-circle construction shown above.</p>
+  </section>
+</main>
+
+<div class="tooltip" id="tooltip" hidden></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const zeros = {
+    0: [2.4048255577, 5.5200781103, 8.6537279129],
+    1: [3.8317059702, 7.0155866698, 10.1734681351],
+    2: [5.1356223018, 8.4172441404, 11.6198411721],
+    3: [6.3801618952, 9.7610231299, 13.0152007217]
+  };
+
+  const state = {
+    order: 0,
+    view: "combined",
+    alpha: 0
+  };
+
+  const root = document.querySelector(".bessel-viz");
+  const requestedPanel = (window.BESSEL_PANEL || new URLSearchParams(window.location.search).get("panel") || "combined").toLowerCase();
+  const panelMode = ["radial", "symmetry"].includes(requestedPanel) ? requestedPanel : "combined";
+  root.classList.add(`panel-${panelMode}`);
+
+  function configurePanelCopy() {
+    const title = document.getElementById("viz-title");
+    const description = document.getElementById("hero-description");
+    const cards = [...document.querySelectorAll("#overview .overview-step")];
+
+    if (panelMode === "radial") {
+      title.innerHTML = 'How a circular geometry produces <span class="math">J<sub>ν</sub>(kr)</span>';
+      description.innerHTML = 'Start from the wave equation on a disc, separate the angular pattern <span class="math">e<sup>iνθ</sup></span>, and watch the remaining radial equation become Bessel’s equation.';
+    }
+
+    if (panelMode === "symmetry") {
+      title.innerHTML = 'How a circle of plane waves rebuilds <span class="math">J<sub>ν</sub>(kr)</span>';
+      description.innerHTML = 'Start with every plane-wave direction having the same spatial frequency <span class="math">k</span>. Selecting one angular pattern around that frequency circle produces the same Bessel mode as polar separation.';
+      const symmetryCards = [
+        ["Fix the frequency length k.", "Every point on the frequency circle has the same wavelength; only its direction changes."],
+        ["Read one point as one plane wave.", "A direction α contributes e<sup>ik r cos(θ−α)</sup>."],
+        ["Combine all directions with pattern ν.", "The phase e<sup>iνα</sup> selects one angular component around the circle."],
+        ["The radial coefficient is Bessel.", "The sum becomes i<sup>ν</sup>e<sup>iνθ</sup>J<sub>ν</sub>(kr)."]
+      ];
+      cards.forEach((card, i) => {
+        const [strong, text] = symmetryCards[i];
+        card.querySelector("strong").innerHTML = strong;
+        card.querySelector("p").innerHTML = text;
+      });
+    }
+  }
+
+  configurePanelCopy();
+
+  const canvas = document.getElementById("field-canvas");
+  const ctx = canvas.getContext("2d", { alpha: false });
+  const profileSvg = document.getElementById("profile-svg");
+  const frequencySvg = document.getElementById("frequency-svg");
+  const phaseStrip = document.getElementById("phase-strip");
+  const tooltip = document.getElementById("tooltip");
+  const fieldAxis = document.getElementById("field-axis");
+
+  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  function besselJ(n, x) {
+    if (x === 0) return n === 0 ? 1 : 0;
+    const half = x / 2;
+    let leadingDenominator = 1;
+    for (let j = 2; j <= n; j += 1) leadingDenominator *= j;
+    let term = Math.pow(half, n) / leadingDenominator;
+    let sum = term;
+    const quarterX2 = x * x / 4;
+    for (let m = 0; m < 80; m += 1) {
+      term *= -quarterX2 / ((m + 1) * (m + n + 1));
+      sum += term;
+      if (Math.abs(term) < 1e-14 * Math.max(1, Math.abs(sum))) break;
+    }
+    return sum;
+  }
+
+  function hexToRgb(hex) {
+    const normalized = hex.replace("#", "").trim();
+    const full = normalized.length === 3
+      ? normalized.split("").map(c => c + c).join("")
+      : normalized;
+    const value = parseInt(full, 16);
+    return {
+      r: (value >> 16) & 255,
+      g: (value >> 8) & 255,
+      b: value & 255
+    };
+  }
+
+  function blend(a, b, t) {
+    const u = Math.max(0, Math.min(1, t));
+    return {
+      r: Math.round(a.r + (b.r - a.r) * u),
+      g: Math.round(a.g + (b.g - a.g) * u),
+      b: Math.round(a.b + (b.b - a.b) * u)
+    };
+  }
+
+  function renderField() {
+    const width = canvas.width;
+    const height = canvas.height;
+    const image = ctx.createImageData(width, height);
+    const data = image.data;
+    const radius = width * 0.49;
+    const cx = width / 2;
+    const cy = height / 2;
+    const positive = hexToRgb(css("--positive"));
+    const negative = hexToRgb(css("--negative"));
+    const neutral = hexToRgb(css("--surface-muted"));
+    const kR = zeros[state.order][2];
+    const phaseShift = state.order * Math.PI / 2;
+    const radialSamples = 4096;
+    const radialLookup = state.view === "combined"
+      ? Array.from({ length: radialSamples + 1 }, (_, i) => besselJ(state.order, kR * i / radialSamples))
+      : null;
+
+    for (let py = 0; py < height; py += 1) {
+      for (let px = 0; px < width; px += 1) {
+        const dx = (px - cx) / radius;
+        const dy = (cy - py) / radius;
+        const r = Math.hypot(dx, dy);
+        const index = (py * width + px) * 4;
+
+        if (r > 1) {
+          data[index] = neutral.r;
+          data[index + 1] = neutral.g;
+          data[index + 2] = neutral.b;
+          data[index + 3] = 255;
+          continue;
+        }
+
+        let value;
+        if (state.view === "single") {
+          const projection = dx * Math.cos(state.alpha) + dy * Math.sin(state.alpha);
+          value = Math.cos(kR * projection);
+        } else {
+          const theta = Math.atan2(dy, dx);
+          value = radialLookup[Math.min(radialSamples, Math.round(r * radialSamples))] * Math.cos(state.order * theta + phaseShift);
+        }
+
+        const magnitude = Math.pow(Math.min(1, Math.abs(value)), 0.78);
+        const target = value >= 0 ? positive : negative;
+        const color = blend(neutral, target, 0.12 + 0.83 * magnitude);
+        data[index] = color.r;
+        data[index + 1] = color.g;
+        data[index + 2] = color.b;
+        data[index + 3] = 255;
+      }
+    }
+
+    ctx.putImageData(image, 0, 0);
+    fieldAxis.hidden = state.view !== "single";
+    fieldAxis.style.transform = `rotate(${-state.alpha}rad)`;
+
+    document.getElementById("mode-label").textContent = state.view === "single"
+      ? `one plane wave · α = ${Math.round(state.alpha * 180 / Math.PI)}°`
+      : `ν = ${state.order} · third radial mode`;
+    document.getElementById("boundary-label").textContent = state.view === "single"
+      ? "parallel stripes are one plane wave"
+      : "the field is zero at the rim";
+  }
+
+  function pathFromPoints(points) {
+    return points.map((point, index) => `${index === 0 ? "M" : "L"}${point[0].toFixed(2)},${point[1].toFixed(2)}`).join(" ");
+  }
+
+  function renderProfile() {
+    const W = 620;
+    const H = 310;
+    const margin = { left: 48, right: 18, top: 20, bottom: 40 };
+    const plotW = W - margin.left - margin.right;
+    const plotH = H - margin.top - margin.bottom;
+    const yMid = margin.top + plotH / 2;
+    const yScale = plotH * 0.44;
+    const order = state.order;
+    const k2 = zeros[order][1];
+    const k3 = zeros[order][2];
+    const points2 = [];
+    const points3 = [];
+
+    for (let i = 0; i <= 320; i += 1) {
+      const r = i / 320;
+      const x = margin.left + r * plotW;
+      points2.push([x, yMid - besselJ(order, k2 * r) * yScale]);
+      points3.push([x, yMid - besselJ(order, k3 * r) * yScale]);
+    }
+
+    const ticks = [0, .25, .5, .75, 1];
+    const verticals = ticks.map(t => {
+      const x = margin.left + t * plotW;
+      return `<line x1="${x}" y1="${margin.top}" x2="${x}" y2="${margin.top + plotH}" stroke="var(--border)" stroke-width="1"/>
+        <text x="${x}" y="${H - 14}" text-anchor="middle" fill="var(--muted)" font-family="ui-monospace, monospace" font-size="11">${t === 1 ? "1 = R" : t}</text>`;
+    }).join("");
+
+    profileSvg.innerHTML = `
+      <rect x="${margin.left}" y="${margin.top}" width="${plotW}" height="${plotH}" fill="var(--surface)" stroke="var(--border)"/>
+      ${verticals}
+      <line x1="${margin.left}" y1="${yMid}" x2="${margin.left + plotW}" y2="${yMid}" stroke="var(--border-strong)" stroke-width="1.2"/>
+      <text x="18" y="${margin.top + 7}" fill="var(--muted)" font-family="Cambria Math, serif" font-size="13">Jν</text>
+      <text x="${margin.left + plotW / 2}" y="${H - 2}" text-anchor="middle" fill="var(--muted)" font-family="Cambria Math, serif" font-size="13">r / R</text>
+      <path d="${pathFromPoints(points2)}" fill="none" stroke="var(--accent)" stroke-width="2.6" vector-effect="non-scaling-stroke"/>
+      <path d="${pathFromPoints(points3)}" fill="none" stroke="var(--warm)" stroke-width="2.6" vector-effect="non-scaling-stroke"/>
+      <circle cx="${margin.left + plotW}" cy="${yMid}" r="3.3" fill="var(--accent)"/>
+      <circle cx="${margin.left + plotW}" cy="${yMid}" r="3.3" fill="var(--warm)" transform="translate(0,0)"/>
+    `;
+
+    document.getElementById("profile-label").textContent = `same ν = ${order}`;
+  }
+
+  function phaseColor(angle) {
+    const phase = state.order * angle;
+    const t = (Math.cos(phase) + 1) / 2;
+    const a = hexToRgb(css("--negative"));
+    const b = hexToRgb(css("--positive"));
+    const c = blend(a, b, t);
+    return `rgb(${c.r}, ${c.g}, ${c.b})`;
+  }
+
+  function renderPhaseStrip() {
+    phaseStrip.innerHTML = "";
+    for (let i = 0; i < 16; i += 1) {
+      const span = document.createElement("span");
+      span.style.background = phaseColor(2 * Math.PI * i / 16);
+      span.title = `phase at α = ${Math.round(360 * i / 16)}°`;
+      phaseStrip.appendChild(span);
+    }
+  }
+
+  function renderFrequencyCircle() {
+    const cx = 205;
+    const cy = 180;
+    const radius = 118;
+    const count = 24;
+    const dots = [];
+    const arrowId = "freq-arrow";
+
+    for (let i = 0; i < count; i += 1) {
+      const angle = 2 * Math.PI * i / count;
+      const x = cx + radius * Math.cos(angle);
+      const y = cy - radius * Math.sin(angle);
+      const selected = Math.abs(Math.atan2(Math.sin(angle - state.alpha), Math.cos(angle - state.alpha))) < Math.PI / count;
+      const fill = state.view === "combined" ? phaseColor(angle) : (selected ? css("--accent") : css("--surface"));
+      const stroke = selected ? css("--ink") : css("--border-strong");
+      dots.push(`<circle class="direction-dot" data-angle="${angle}" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${selected ? 8 : 6}" fill="${fill}" stroke="${stroke}" stroke-width="${selected ? 2 : 1.1}" tabindex="0" role="button" aria-label="Plane-wave direction ${Math.round(angle * 180 / Math.PI)} degrees"/>`);
+    }
+
+    const ax = cx + radius * Math.cos(state.alpha);
+    const ay = cy - radius * Math.sin(state.alpha);
+
+    frequencySvg.innerHTML = `
+      <defs>
+        <marker id="${arrowId}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+      <line x1="38" y1="${cy}" x2="376" y2="${cy}" stroke="var(--border-strong)" stroke-width="1"/>
+      <line x1="${cx}" y1="20" x2="${cx}" y2="340" stroke="var(--border-strong)" stroke-width="1"/>
+      <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="var(--warm)" stroke-width="2"/>
+      <circle cx="${cx}" cy="${cy}" r="3" fill="var(--ink)"/>
+      <line x1="${cx}" y1="${cy}" x2="${ax.toFixed(2)}" y2="${ay.toFixed(2)}" stroke="var(--accent)" stroke-width="2" marker-end="url(#${arrowId})"/>
+      ${dots.join("")}
+      <text x="382" y="${cy + 4}" fill="var(--muted)" font-family="Cambria Math, serif" font-size="13">ξₓ</text>
+      <text x="${cx + 8}" y="20" fill="var(--muted)" font-family="Cambria Math, serif" font-size="13">ξᵧ</text>
+      <text x="${cx + 52}" y="${cy - 15}" fill="var(--accent)" font-family="Cambria Math, serif" font-size="15">k</text>
+      <text x="${cx - 32}" y="${cy + radius + 38}" fill="var(--warm)" font-family="ui-monospace, monospace" font-size="12">same radius k</text>
+    `;
+
+    frequencySvg.querySelectorAll(".direction-dot").forEach(dot => {
+      const activate = () => {
+        state.alpha = Number(dot.dataset.angle);
+        state.view = "single";
+        syncViewButtons();
+        renderAll();
+      };
+      dot.addEventListener("click", activate);
+      dot.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          activate();
+        }
+      });
+      dot.addEventListener("pointermove", event => {
+        const degrees = Math.round(Number(dot.dataset.angle) * 180 / Math.PI);
+        tooltip.textContent = `one plane wave, direction α = ${degrees}°`;
+        tooltip.style.left = `${event.clientX}px`;
+        tooltip.style.top = `${event.clientY}px`;
+        tooltip.hidden = false;
+      });
+      dot.addEventListener("pointerleave", () => { tooltip.hidden = true; });
+    });
+
+    document.getElementById("direction-help").innerHTML = state.view === "single"
+      ? `<strong>Selected α = ${Math.round(state.alpha * 180 / Math.PI)}°.</strong> The disc shows this one direction as parallel stripes.`
+      : `<strong>Every direction is included.</strong> The colours around the circle show the phase pattern e<sup>iνα</sup>.`;
+  }
+
+  function syncOrderButtons() {
+    document.querySelectorAll("#order-controls button").forEach(button => {
+      button.setAttribute("aria-pressed", String(Number(button.dataset.order) === state.order));
+    });
+  }
+
+  function syncViewButtons() {
+    document.querySelectorAll("#view-controls button").forEach(button => {
+      button.setAttribute("aria-pressed", String(button.dataset.view === state.view));
+    });
+  }
+
+  function renderAll() {
+    document.getElementById("formula-order").textContent = state.order;
+    renderField();
+    renderProfile();
+    renderFrequencyCircle();
+    renderPhaseStrip();
+  }
+
+  document.querySelectorAll("#order-controls button").forEach(button => {
+    button.addEventListener("click", () => {
+      state.order = Number(button.dataset.order);
+      state.view = "combined";
+      syncOrderButtons();
+      syncViewButtons();
+      renderAll();
+    });
+  });
+
+  document.querySelectorAll("#view-controls button").forEach(button => {
+    button.addEventListener("click", () => {
+      state.view = button.dataset.view;
+      syncViewButtons();
+      renderAll();
+    });
+  });
+
+  window.addEventListener("resize", () => {
+    tooltip.hidden = true;
+  }, { passive: true });
+
+  function reportHeight() {
+    if (window.parent === window) return;
+    const height = Math.ceil(document.documentElement.scrollHeight);
+    window.parent.postMessage({
+      type: "article-visualization-height",
+      id: `bessel-${panelMode}`,
+      height
+    }, window.location.origin);
+  }
+
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(() => requestAnimationFrame(reportHeight));
+    observer.observe(document.documentElement);
+  }
+  window.addEventListener("load", reportHeight);
+
+  renderAll();
+  requestAnimationFrame(reportHeight);
+})();
+</script>
+
+<script data-article-visualization-bridge>
+(() => {
+  const root = document.documentElement;
+  const syncTheme = () => {
+    try {
+      const theme = window.parent.document.documentElement.dataset.theme;
+      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+    } catch (_) {}
+  };
+  const report = () => {
+    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
+    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
+    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+  };
+  syncTheme();
+  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  window.addEventListener("load", report, { once: true });
+  window.addEventListener("resize", report);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
+  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  requestAnimationFrame(report);
+})();
+</script>
+</body>
+</html>

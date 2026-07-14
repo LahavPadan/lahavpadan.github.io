@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Elliptic curve: from two sheets to a torus and a period lattice</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --page:#ffffff;
+  --panel:#ffffff;
+  --surface:#f6f8fa;
+  --surface-2:#eef2f5;
+  --ink:#1f2933;
+  --muted:#5d6874;
+  --faint:#7a8692;
+  --line:#d8e0e7;
+  --line-strong:#b8c4cf;
+  --blue:#2368b5;
+  --blue-soft:#dceafd;
+  --teal:#2b8b7b;
+  --teal-soft:#dceeea;
+  --orange:#d66a27;
+  --orange-soft:#f7e6d9;
+  --red:#c33b32;
+  --gold:#a07a16;
+  --shadow:0 1px 2px rgba(25,32,40,.04),0 12px 34px rgba(25,32,40,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --page:#101419;
+    --panel:#161b21;
+    --surface:#1c2229;
+    --surface-2:#232a32;
+    --ink:#eef2f6;
+    --muted:#bdc6d0;
+    --faint:#98a4b1;
+    --line:#303945;
+    --line-strong:#4b5866;
+    --blue:#68a9f2;
+    --blue-soft:#182c42;
+    --teal:#68c7b7;
+    --teal-soft:#18342f;
+    --orange:#f29b62;
+    --orange-soft:#3b281c;
+    --red:#f07b72;
+    --gold:#dfbd65;
+    --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--page);
+  color:var(--ink);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+main{max-width:1140px;margin:0 auto;padding:30px 20px 46px}
+.hero{margin:0 0 22px}
+h1{margin:0 0 10px;font-size:clamp(30px,4vw,46px);line-height:1.08;letter-spacing:-.025em;color:var(--blue)}
+.hero p{max-width:930px;margin:0;font-size:15px;line-height:1.75;color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:20px;margin:0 0 20px;overflow:hidden}
+.panel-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:17px}
+.step{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:#fff;font-weight:760;font-size:22px;flex:0 0 auto}
+.panel-head h2{margin:0;font-size:clamp(24px,3vw,34px);line-height:1.14;letter-spacing:-.02em;color:var(--blue)}
+.kicker{margin-top:5px;font-size:13px;line-height:1.5;color:var(--faint)}
+.grid-two{display:grid;grid-template-columns:minmax(290px,.41fr) minmax(0,.59fr);gap:22px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card,.figure-card,.formula-card{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.card{padding:16px}
+.figure-card{padding:14px;overflow:hidden}
+.copy{font-size:14px;line-height:1.72;color:var(--muted)}
+.copy strong{color:var(--ink)}
+.math{font-family:Cambria,"STIX Two Text","Times New Roman",Georgia,serif;color:var(--ink);font-size:20px;line-height:1.55}
+.math.big{font-size:clamp(27px,3vw,33px);line-height:1.25}
+.note{border-left:4px solid var(--blue);background:var(--blue-soft);border-radius:11px;padding:12px 14px;font-size:13.5px;line-height:1.65;color:var(--muted)}
+.note strong{color:var(--ink)}
+.note.warm{border-left-color:var(--gold);background:color-mix(in srgb,var(--gold) 11%,var(--surface))}
+.caption{font-size:12.5px;line-height:1.62;color:var(--faint);margin-top:9px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;gap:15px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{width:11px;height:11px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.flow{display:grid;place-items:center;height:34px;margin:-5px 0 8px}
+.flow svg{width:56px;height:30px}
+.mini-title{font-size:14px;font-weight:760;color:var(--ink);margin:0 0 8px}
+.formula-card{padding:17px 19px}
+.formula-card .label{font-size:13px;color:var(--faint);margin-bottom:7px}
+.formula-card .eq{font-family:Cambria,"STIX Two Text","Times New Roman",Georgia,serif;font-size:clamp(23px,3vw,33px);line-height:1.3}
+.formula-card.blue .eq{color:var(--blue)}
+.formula-card.orange .eq{color:var(--orange)}
+.cycle-grid{display:grid;grid-template-columns:minmax(0,1.24fr) minmax(285px,.76fr);gap:21px;align-items:start}
+.lattice-grid{display:grid;grid-template-columns:minmax(285px,.4fr) minmax(0,.6fr);gap:22px;align-items:start}
+
+/* The sheet-gluing construction is one continuous sequence. */
+.construction{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:34px;margin-top:2px}
+.construction-step{position:relative;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:14px;display:flex;flex-direction:column}
+.construction-step:not(:last-child)::after{
+  content:"";position:absolute;top:50%;right:-28px;width:20px;height:2px;background:var(--blue);opacity:.72
+}
+.construction-step:not(:last-child)::before{
+  content:"";position:absolute;top:calc(50% - 4px);right:-29px;border-left:8px solid var(--blue);border-top:5px solid transparent;border-bottom:5px solid transparent;opacity:.72
+}
+.stage-top{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.stage-letter{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--line-strong);font-size:12px;font-weight:800;color:var(--blue);flex:0 0 auto}
+.stage-top h3{margin:0;font-size:14px;line-height:1.3;color:var(--ink)}
+.stage-copy{min-height:66px;margin:0 0 8px;font-size:12.5px;line-height:1.58;color:var(--muted)}
+.stage-figure{margin-top:auto;border-top:1px solid var(--line);padding-top:8px}
+.mechanism{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}
+.mechanism-item{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 13px}
+.mechanism-index{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;background:var(--blue-soft);color:var(--blue)}
+.mechanism-item:nth-child(2) .mechanism-index{background:var(--orange-soft);color:var(--orange)}
+.mechanism-item strong{display:block;font-size:13px;color:var(--ink);margin-bottom:3px}
+.mechanism-item span{font-size:12.5px;line-height:1.55;color:var(--muted)}
+
+.cycle-key{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:10px}
+.cycle-key-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-width:0}
+.cycle-key-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-family:Cambria,"STIX Two Text","Times New Roman",serif;font-size:19px}
+.cycle-swatch{width:24px;height:4px;border-radius:99px;flex:0 0 auto}
+.cycle-key-item p{margin:0;font-size:12.5px;line-height:1.55;color:var(--muted)}
+.torus-frame{position:relative;isolation:isolate}
+.torus-frame::after{content:"";position:absolute;left:14%;right:14%;bottom:5%;height:10%;border-radius:50%;background:rgba(18,25,32,.12);filter:blur(12px);z-index:-1}
+
+.lattice-explanation{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.edge-pair{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:12.5px;line-height:1.55;color:var(--muted)}
+.edge-pair strong{color:var(--ink)}
+.edge-line{display:inline-block;width:23px;height:4px;border-radius:99px;margin-right:7px;vertical-align:middle}
+
+@media (max-width:980px){
+  .construction{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  .construction-step::after,.construction-step::before{display:none}
+}
+@media (max-width:880px){
+  .grid-two,.cycle-grid,.lattice-grid{grid-template-columns:1fr}
+  .panel{padding:17px}
+  .stage-copy{min-height:0}
+}
+@media (max-width:620px){
+  main{padding:20px 12px 34px}
+  .construction,.mechanism,.cycle-key,.lattice-explanation{grid-template-columns:1fr}
+  .panel-head{gap:11px}
+  .step{width:37px;height:37px;font-size:19px}
+}
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <h1>From two values of y to a torus and a period lattice</h1>
+    <p>
+      The same object is viewed in four ways. Above an ordinary x-value there are two opposite y-values. At four special x-values those choices meet. Joining the two sheets at all four places creates a surface with one handle; its two non-shrinkable loops then produce the two period directions in the u-plane.
+    </p>
+  </header>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="step">1</div>
+      <div>
+        <h2>An ordinary x-value lifts to two curve points</h2>
+        <div class="kicker">Over the complex numbers, the two choices are y and −y; “upper” and “lower” are only visual names for the two sheets</div>
+      </div>
+    </div>
+
+    <div class="grid-two">
+      <div class="stack">
+        <div class="card">
+          <div class="math big">y² = x³ + ax + b</div>
+          <div class="math">f(x) = x³ + ax + b</div>
+          <div class="copy" style="margin-top:11px">
+            Fix x = x₀. The equation becomes <strong>y² = f(x₀)</strong>. When f(x₀) ≠ 0, its two solutions are opposite:
+          </div>
+          <div class="math" style="margin-top:7px">y₀ and −y₀, where y₀² = f(x₀).</div>
+          <div class="copy" style="margin-top:11px">
+            Keeping the two choices separate gives two local copies of the x-sphere. Moving around a special x-value swaps which copy the solution belongs to, so the copies must meet there.
+          </div>
+        </div>
+
+        <div class="note">
+          <strong>The meeting values are e₁, e₂, e₃, and ∞.</strong> At each finite root eᵢ, f(eᵢ) = 0, so y = −y = 0. Infinity supplies the fourth meeting value for a cubic.
+        </div>
+      </div>
+
+      <div>
+        <div class="figure-card">
+          <svg viewBox="0 0 760 430" role="img" aria-label="Two sheets over the x-sphere, with two opposite y-values over an ordinary x and four values where the sheets meet">
+            <defs>
+              <linearGradient id="sheetA" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="color-mix(in srgb,var(--teal) 8%,var(--panel))"/>
+                <stop offset="100%" stop-color="color-mix(in srgb,var(--teal) 26%,var(--panel))"/>
+              </linearGradient>
+              <linearGradient id="sheetB" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="color-mix(in srgb,var(--orange) 8%,var(--panel))"/>
+                <stop offset="100%" stop-color="color-mix(in srgb,var(--orange) 24%,var(--panel))"/>
+              </linearGradient>
+            </defs>
+
+            <ellipse cx="376" cy="346" rx="280" ry="68" fill="var(--panel)" stroke="var(--line-strong)" stroke-width="1.5"/>
+            <line x1="136" y1="346" x2="620" y2="346" stroke="var(--ink)" stroke-width="1.35"/>
+            <path d="M620 346 l-10 -5 v10 z" fill="var(--ink)"/>
+            <text x="632" y="352" font-size="16" fill="var(--ink)" font-family="Inter,Segoe UI,sans-serif">x</text>
+            <text x="376" y="405" text-anchor="middle" font-size="14" fill="var(--muted)" font-family="Inter,Segoe UI,sans-serif">the x-plane together with its point at infinity</text>
+
+            <path d="M152 118 C219 53,319 43,400 64 C466 81,532 71,606 98 C576 131,568 170,526 193 C467 226,405 188,347 169 C281 147,221 170,174 159 C155 155,145 139,152 118 Z" fill="url(#sheetA)" stroke="var(--teal)" stroke-width="2"/>
+            <path d="M153 234 C214 195,278 193,342 211 C408 230,471 251,532 222 C564 207,596 215,618 238 C582 256,566 283,526 295 C459 316,402 282,340 274 C275 265,221 285,174 277 C155 274,145 254,153 234 Z" fill="url(#sheetB)" stroke="var(--orange)" stroke-width="2"/>
+
+            <g stroke="var(--line-strong)" stroke-width="1.15" stroke-dasharray="5 5">
+              <line x1="205" y1="346" x2="205" y2="149"/>
+              <line x1="310" y1="346" x2="310" y2="151"/>
+              <line x1="421" y1="346" x2="421" y2="156"/>
+              <line x1="555" y1="346" x2="555" y2="132"/>
+            </g>
+
+            <g fill="var(--red)">
+              <circle cx="205" cy="346" r="5.5"/><circle cx="310" cy="346" r="5.5"/><circle cx="421" cy="346" r="5.5"/><circle cx="555" cy="346" r="5.5"/>
+              <circle cx="205" cy="149" r="5.5"/><circle cx="310" cy="151" r="5.5"/><circle cx="421" cy="156" r="5.5"/><circle cx="555" cy="132" r="5.5"/>
+            </g>
+            <g font-size="19" fill="var(--ink)" font-family="Cambria,STIX Two Text,Times New Roman,serif">
+              <text x="193" y="376">e₁</text><text x="298" y="376">e₂</text><text x="409" y="376">e₃</text><text x="547" y="376">∞</text>
+            </g>
+
+            <line x1="490" y1="346" x2="490" y2="115" stroke="var(--ink)" stroke-width="1.35" stroke-dasharray="6 5"/>
+            <circle cx="490" cy="346" r="5.5" fill="var(--ink)"/>
+            <circle cx="490" cy="112" r="6" fill="var(--ink)"/>
+            <circle cx="490" cy="252" r="6" fill="var(--ink)"/>
+            <text x="477" y="376" font-size="19" fill="var(--ink)" font-family="Cambria,STIX Two Text,Times New Roman,serif">x₀</text>
+            <text x="507" y="119" font-size="20" fill="var(--ink)" font-family="Cambria,STIX Two Text,Times New Roman,serif">(x₀, y₀)</text>
+            <text x="507" y="261" font-size="20" fill="var(--ink)" font-family="Cambria,STIX Two Text,Times New Roman,serif">(x₀, −y₀)</text>
+
+            <g font-family="Inter,Segoe UI,sans-serif" font-size="14">
+              <rect x="83" y="60" width="151" height="34" rx="9" fill="var(--panel)" stroke="var(--line)"/>
+              <text x="100" y="82" fill="var(--teal)">first local sheet</text>
+              <rect x="81" y="198" width="158" height="34" rx="9" fill="var(--panel)" stroke="var(--line)"/>
+              <text x="98" y="220" fill="var(--orange)">second local sheet</text>
+            </g>
+          </svg>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--teal)"></i>first sheet</span>
+          <span><i style="background:var(--orange)"></i>second sheet</span>
+          <span><i style="background:var(--red)"></i>values where the sheets meet</span>
+        </div>
+        <div class="caption">The two black points over x₀ are distinct. At each red x-value they coincide, so those are the places where a path can pass from one sheet to the other.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="flow" aria-hidden="true">
+    <svg viewBox="0 0 56 30"><path d="M28 2 v15" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/><path d="M28 29 l-11 -11 h8 v-7 h6 v7 h8 z" fill="var(--blue)"/></svg>
+  </div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="step">2</div>
+      <div>
+        <h2>Two cross-gluings create one handle</h2>
+        <div class="kicker">The four meeting values are paired into two cuts; the second connection is what leaves a hole</div>
+      </div>
+    </div>
+
+    <div class="construction">
+      <article class="construction-step">
+        <div class="stage-top"><div class="stage-letter">A</div><h3>Pair the four meeting values</h3></div>
+        <p class="stage-copy">Draw two disjoint cuts on the x-sphere: one from e₁ to e₂, and one from e₃ to ∞. Their endpoints are exactly the four places where the sheets meet.</p>
+        <div class="stage-figure">
+          <svg viewBox="0 0 260 220" role="img" aria-label="The x-sphere with four meeting values paired by two cuts">
+            <defs><radialGradient id="sphereFill" cx="37%" cy="30%" r="75%"><stop offset="0%" stop-color="var(--panel)"/><stop offset="100%" stop-color="var(--surface-2)"/></radialGradient></defs>
+            <ellipse cx="130" cy="108" rx="78" ry="88" fill="url(#sphereFill)" stroke="var(--line-strong)" stroke-width="1.5"/>
+            <ellipse cx="130" cy="108" rx="78" ry="25" fill="none" stroke="var(--line-strong)" stroke-dasharray="5 5" opacity=".72"/>
+            <path d="M75 76 C91 49,112 46,127 68" fill="none" stroke="var(--blue)" stroke-width="8" stroke-linecap="round" opacity=".22"/>
+            <path d="M75 76 C91 49,112 46,127 68" fill="none" stroke="var(--blue)" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M157 145 C177 169,198 160,207 131" fill="none" stroke="var(--orange)" stroke-width="8" stroke-linecap="round" opacity=".22"/>
+            <path d="M157 145 C177 169,198 160,207 131" fill="none" stroke="var(--orange)" stroke-width="2.4" stroke-linecap="round"/>
+            <g fill="var(--red)"><circle cx="75" cy="76" r="5"/><circle cx="127" cy="68" r="5"/><circle cx="157" cy="145" r="5"/><circle cx="207" cy="131" r="5"/></g>
+            <g font-family="Cambria,STIX Two Text,Times New Roman,serif" font-size="17" fill="var(--ink)">
+              <text x="48" y="72">e₁</text><text x="131" y="57">e₂</text><text x="137" y="168">e₃</text><text x="216" y="137">∞</text>
+            </g>
+            <text x="130" y="207" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="Inter,Segoe UI,sans-serif">two cuts, four endpoints</text>
+          </svg>
+        </div>
+      </article>
+
+      <article class="construction-step">
+        <div class="stage-top"><div class="stage-letter">B</div><h3>Open both sheets along both cuts</h3></div>
+        <p class="stage-copy">Make the same two openings in each copy. Every opening now has two banks, one on each side of the cut.</p>
+        <div class="stage-figure">
+          <svg viewBox="0 0 260 220" role="img" aria-label="Two sheets, each opened along the same two cuts">
+            <ellipse cx="130" cy="65" rx="101" ry="37" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.7"/>
+            <ellipse cx="130" cy="157" rx="101" ry="37" fill="var(--orange-soft)" stroke="var(--orange)" stroke-width="1.7"/>
+            <g stroke-linecap="round">
+              <path d="M70 61 H117" stroke="var(--panel)" stroke-width="9"/><path d="M70 61 H117" stroke="var(--blue)" stroke-width="2.4"/>
+              <path d="M151 70 H199" stroke="var(--panel)" stroke-width="9"/><path d="M151 70 H199" stroke="var(--orange)" stroke-width="2.4"/>
+              <path d="M70 153 H117" stroke="var(--panel)" stroke-width="9"/><path d="M70 153 H117" stroke="var(--blue)" stroke-width="2.4"/>
+              <path d="M151 162 H199" stroke="var(--panel)" stroke-width="9"/><path d="M151 162 H199" stroke="var(--orange)" stroke-width="2.4"/>
+            </g>
+            <g fill="var(--red)">
+              <circle cx="70" cy="61" r="4.5"/><circle cx="117" cy="61" r="4.5"/><circle cx="151" cy="70" r="4.5"/><circle cx="199" cy="70" r="4.5"/>
+              <circle cx="70" cy="153" r="4.5"/><circle cx="117" cy="153" r="4.5"/><circle cx="151" cy="162" r="4.5"/><circle cx="199" cy="162" r="4.5"/>
+            </g>
+            <text x="130" y="21" text-anchor="middle" font-size="12" fill="var(--teal)" font-family="Inter,Segoe UI,sans-serif">first sheet</text>
+            <text x="130" y="215" text-anchor="middle" font-size="12" fill="var(--orange)" font-family="Inter,Segoe UI,sans-serif">second sheet</text>
+          </svg>
+        </div>
+      </article>
+
+      <article class="construction-step">
+        <div class="stage-top"><div class="stage-letter">C</div><h3>Glue each opening to the other sheet</h3></div>
+        <p class="stage-copy">Cross-gluing the first cut connects the sheets once. Cross-gluing the second cut connects them again by a separate route. The gap between those routes cannot be filled.</p>
+        <div class="stage-figure">
+          <svg viewBox="0 0 260 220" role="img" aria-label="Two sheets connected by two separate necks, leaving a gap between them">
+            <ellipse cx="130" cy="69" rx="91" ry="31" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
+            <ellipse cx="130" cy="157" rx="91" ry="31" fill="var(--orange-soft)" stroke="var(--orange)" stroke-width="1.6"/>
+
+            <path d="M65 79 C31 103,32 126,66 148" fill="none" stroke="var(--blue)" stroke-width="25" stroke-linecap="round" opacity=".20"/>
+            <path d="M65 79 C31 103,32 126,66 148" fill="none" stroke="var(--blue)" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M195 79 C229 103,228 126,194 148" fill="none" stroke="var(--orange)" stroke-width="25" stroke-linecap="round" opacity=".20"/>
+            <path d="M195 79 C229 103,228 126,194 148" fill="none" stroke="var(--orange)" stroke-width="2.2" stroke-linecap="round"/>
+
+            <ellipse cx="130" cy="113" rx="50" ry="26" fill="var(--panel)" stroke="var(--line-strong)" stroke-width="1.3" stroke-dasharray="5 5"/>
+            <text x="130" y="110" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="Inter,Segoe UI,sans-serif">gap between the</text>
+            <text x="130" y="126" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="Inter,Segoe UI,sans-serif">two connections</text>
+            <text x="40" y="203" font-size="11.5" fill="var(--blue)" font-family="Inter,Segoe UI,sans-serif">first join</text>
+            <text x="174" y="203" font-size="11.5" fill="var(--orange)" font-family="Inter,Segoe UI,sans-serif">second join</text>
+          </svg>
+        </div>
+      </article>
+
+      <article class="construction-step">
+        <div class="stage-top"><div class="stage-letter">D</div><h3>Round the same surface into a torus</h3></div>
+        <p class="stage-copy">No further cutting or gluing occurs. Bending and smoothing the two-connection surface turns the gap into the visible central hole of a torus.</p>
+        <div class="stage-figure torus-frame">
+          <svg id="torus-mini" viewBox="0 0 260 220" role="img" aria-label="The resulting one-handle surface drawn as a torus"></svg>
+        </div>
+      </article>
+    </div>
+
+    <div class="mechanism">
+      <div class="mechanism-item">
+        <div class="mechanism-index">1</div>
+        <div><strong>The first join only makes the surface connected</strong><span>With one route between the two sheets, the connection can still be rounded into a sphere-like surface.</span></div>
+      </div>
+      <div class="mechanism-item">
+        <div class="mechanism-index">2</div>
+        <div><strong>The second join supplies the handle</strong><span>It connects the same two sheets by another route, leaving a closed passage between the two routes. That passage is the torus hole.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="flow" aria-hidden="true">
+    <svg viewBox="0 0 56 30"><path d="M28 2 v15" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/><path d="M28 29 l-11 -11 h8 v-7 h6 v7 h8 z" fill="var(--blue)"/></svg>
+  </div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="step">3</div>
+      <div>
+        <h2>The handle has two independent loop directions</h2>
+        <div class="kicker">Both loops are drawn from the same torus coordinates, so the paths sit on the surface rather than floating beside it</div>
+      </div>
+    </div>
+
+    <div class="cycle-grid">
+      <div>
+        <div class="figure-card torus-frame">
+          <svg id="torus-large" viewBox="0 0 760 470" role="img" aria-label="A torus with one loop around its tube and another loop around its central hole"></svg>
+        </div>
+        <div class="cycle-key">
+          <div class="cycle-key-item">
+            <div class="cycle-key-head" style="color:var(--blue)"><span class="cycle-swatch" style="background:var(--blue)"></span>γ₁</div>
+            <p>Runs around the tube. It closes after circling the short direction once.</p>
+          </div>
+          <div class="cycle-key-item">
+            <div class="cycle-key-head" style="color:var(--orange)"><span class="cycle-swatch" style="background:var(--orange)"></span>γ₂</div>
+            <p>Runs around the central hole. It closes after circling the long direction once.</p>
+          </div>
+        </div>
+        <div class="caption">Solid segments face the viewer; dashed segments lie on the back of the torus. Each curve is generated from the same projected torus surface, which keeps the path and its hidden part aligned.</div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <div class="mini-title">Integrate the same differential along each loop</div>
+          <div class="math big">dx / y</div>
+          <div class="copy" style="margin-top:8px">Going once around a closed loop returns to the same curve point, but the integral may have accumulated a nonzero change.</div>
+        </div>
+        <div class="formula-card blue">
+          <div class="label">change accumulated around γ₁</div>
+          <div class="eq">ω₁ = ∮<sub>γ₁</sub> dx / y</div>
+        </div>
+        <div class="formula-card orange">
+          <div class="label">change accumulated around γ₂</div>
+          <div class="eq">ω₂ = ∮<sub>γ₂</sub> dx / y</div>
+        </div>
+        <div class="note">
+          <strong>Why exactly two period directions?</strong> Any closed route on a torus can wind some whole number of times around γ₁ and some whole number of times around γ₂. The integral therefore changes by mω₁ + nω₂.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="flow" aria-hidden="true">
+    <svg viewBox="0 0 56 30"><path d="M28 2 v15" stroke="var(--blue)" stroke-width="4" stroke-linecap="round"/><path d="M28 29 l-11 -11 h8 v-7 h6 v7 h8 z" fill="var(--blue)"/></svg>
+  </div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="step">4</div>
+      <div>
+        <h2>The two loop integrals become the two lattice vectors</h2>
+        <div class="kicker">All positions are computed from one origin and the same two vectors, so translated points and labels remain aligned</div>
+      </div>
+    </div>
+
+    <div class="lattice-grid">
+      <div class="stack">
+        <div class="card">
+          <div class="math big">u(P) = ∫<sub>P₀</sub><sup>P</sup> dx / y</div>
+          <div class="copy" style="margin-top:10px">
+            Choose a starting point P₀. Two paths from P₀ to the same endpoint P can differ by closed loops. Adding γ₁ changes u by ω₁; adding γ₂ changes it by ω₂.
+          </div>
+        </div>
+        <div class="card">
+          <div class="math">Λ = ℤω₁ + ℤω₂</div>
+          <div class="copy" style="margin-top:8px">Thus u, u + ω₁, u + ω₂, and every u + mω₁ + nω₂ describe the same point P on the curve.</div>
+        </div>
+        <div class="note">
+          <strong>The shaded parallelogram is one complete copy of the torus.</strong> Every other cell is a translated duplicate. Identifying corresponding points in all cells gives ℂ / Λ.
+        </div>
+        <div class="note warm">
+          The vectors are not parallel: they encode the two independent loop directions of the handle. A single line of repeats would describe only one periodic direction, not a torus.
+        </div>
+      </div>
+
+      <div>
+        <div class="figure-card">
+          <svg id="period-lattice" viewBox="0 0 760 500" role="img" aria-label="A period lattice generated by omega one and omega two, with four translated copies of the same point"></svg>
+        </div>
+        <div class="lattice-explanation">
+          <div class="edge-pair"><span class="edge-line" style="background:var(--blue)"></span><strong>Blue edges differ by ω₁.</strong> Identifying the left and right edge closes one torus direction.</div>
+          <div class="edge-pair"><span class="edge-line" style="background:var(--orange)"></span><strong>Orange edges differ by ω₂.</strong> Identifying the lower and upper edge closes the other direction.</div>
+        </div>
+        <div class="caption">The four black points are placed by exact vector addition from the same base point u. The dashed arrows therefore end precisely at u + ω₁ and u + ω₂ rather than being positioned by eye.</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const NS = "http://www.w3.org/2000/svg";
+
+  function el(name, attrs = {}) {
+    const node = document.createElementNS(NS, name);
+    for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+    return node;
+  }
+
+  function rotatePoint(p, ax, ay, az) {
+    let [x, y, z] = p;
+    const cz = Math.cos(az), sz = Math.sin(az);
+    [x, y] = [x * cz - y * sz, x * sz + y * cz];
+    const cx = Math.cos(ax), sx = Math.sin(ax);
+    [y, z] = [y * cx - z * sx, y * sx + z * cx];
+    const cy = Math.cos(ay), sy = Math.sin(ay);
+    [x, z] = [x * cy + z * sy, -x * sy + z * cy];
+    return [x, y, z];
+  }
+
+  function torusSample(u, v, cfg) {
+    const R = cfg.majorRadius;
+    const r = cfg.minorRadius;
+    const point = [
+      (R + r * Math.cos(v)) * Math.cos(u),
+      (R + r * Math.cos(v)) * Math.sin(u),
+      r * Math.sin(v)
+    ];
+    const normal = [Math.cos(v) * Math.cos(u), Math.cos(v) * Math.sin(u), Math.sin(v)];
+    const q = rotatePoint(point, cfg.ax, cfg.ay, cfg.az);
+    const n = rotatePoint(normal, cfg.ax, cfg.ay, cfg.az);
+    return {
+      x: cfg.cx + cfg.scale * q[0],
+      y: cfg.cy - cfg.scale * q[1],
+      depth: q[2],
+      normal: n
+    };
+  }
+
+  function pathFrom(points, close = false) {
+    if (!points.length) return "";
+    return points.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ") + (close ? " Z" : "");
+  }
+
+  function contiguousSegments(samples, predicate) {
+    const segments = [];
+    let current = [];
+    for (let i = 0; i < samples.length; i++) {
+      const a = samples[i];
+      const b = samples[(i + 1) % samples.length];
+      const keep = predicate(a, b);
+      if (keep) {
+        if (!current.length) current.push(a);
+        current.push(b);
+      } else if (current.length) {
+        segments.push(current);
+        current = [];
+      }
+    }
+    if (current.length) segments.push(current);
+    if (segments.length > 1) {
+      const first = segments[0];
+      const last = segments[segments.length - 1];
+      const firstPoint = first[0], lastPoint = last[last.length - 1];
+      const wrapped = Math.hypot(firstPoint.x - lastPoint.x, firstPoint.y - lastPoint.y) < 4;
+      if (wrapped) {
+        segments[0] = last.concat(first.slice(1));
+        segments.pop();
+      }
+    }
+    return segments;
+  }
+
+  function addMarker(defs, id, color) {
+    const marker = el("marker", {id, viewBox:"0 0 10 10", refX:"8.4", refY:"5", markerWidth:"5.5", markerHeight:"5.5", orient:"auto-start-reverse"});
+    marker.appendChild(el("path", {d:"M0 0 L10 5 L0 10 z", fill:color}));
+    defs.appendChild(marker);
+  }
+
+  function renderTorus(svg, options = {}) {
+    const large = options.large ?? false;
+    const cycles = options.cycles ?? false;
+    const cfg = {
+      cx: large ? 372 : 130,
+      cy: large ? 236 : 112,
+      scale: large ? 77 : 29.5,
+      majorRadius: 2.25,
+      minorRadius: .92,
+      ax: 1.02,
+      ay: -.16,
+      az: -.13
+    };
+    const uCount = large ? 72 : 52;
+    const vCount = large ? 28 : 20;
+    svg.replaceChildren();
+
+    const defs = el("defs");
+    addMarker(defs, `${svg.id}-arrow-blue`, "var(--blue)");
+    addMarker(defs, `${svg.id}-arrow-orange`, "var(--orange)");
+    svg.appendChild(defs);
+
+    const shadow = el("ellipse", {
+      cx:cfg.cx, cy:large ? 378 : 174,
+      rx:large ? 218 : 80, ry:large ? 25 : 10,
+      fill:"rgba(20,27,35,.13)"
+    });
+    svg.appendChild(shadow);
+
+    const gamma1 = [];
+    const gamma2 = [];
+    let backGroup = null;
+    if (cycles) {
+      const N = 260;
+      for (let i = 0; i < N; i++) {
+        const t = 2 * Math.PI * i / N;
+        gamma1.push(torusSample(.58, t, cfg));
+        gamma2.push(torusSample(t, -.03, cfg));
+      }
+      backGroup = el("g");
+      const backStyle = (color) => ({
+        fill:"none", stroke:color, "stroke-width":"5", "stroke-linecap":"round", "stroke-linejoin":"round",
+        "stroke-dasharray":"10 9", opacity:".62"
+      });
+      for (const seg of contiguousSegments(gamma1, (a,b) => (a.normal[2] + b.normal[2]) / 2 <= 0)) backGroup.appendChild(el("path", {d:pathFrom(seg), ...backStyle("var(--blue)")}));
+      for (const seg of contiguousSegments(gamma2, (a,b) => (a.normal[2] + b.normal[2]) / 2 <= 0)) backGroup.appendChild(el("path", {d:pathFrom(seg), ...backStyle("var(--orange)")}));
+    }
+
+    const quads = [];
+    const light = [-.35, -.45, .82];
+    for (let i = 0; i < uCount; i++) {
+      const u0 = 2 * Math.PI * i / uCount;
+      const u1 = 2 * Math.PI * (i + 1) / uCount;
+      for (let j = 0; j < vCount; j++) {
+        const v0 = 2 * Math.PI * j / vCount;
+        const v1 = 2 * Math.PI * (j + 1) / vCount;
+        const p = [torusSample(u0,v0,cfg),torusSample(u1,v0,cfg),torusSample(u1,v1,cfg),torusSample(u0,v1,cfg)];
+        const n = torusSample((u0+u1)/2,(v0+v1)/2,cfg).normal;
+        if (n[2] <= -.04) continue;
+        const diffuse = Math.max(0, n[0]*light[0] + n[1]*light[1] + n[2]*light[2]);
+        const mix = Math.round(19 + 43 * diffuse);
+        quads.push({
+          depth:p.reduce((s,q)=>s+q.depth,0)/4,
+          d:pathFrom(p,true),
+          fill:`color-mix(in srgb, var(--teal) ${mix}%, var(--panel))`
+        });
+      }
+    }
+    quads.sort((a,b)=>a.depth-b.depth);
+    const mesh = el("g", {"stroke":"color-mix(in srgb,var(--teal) 28%,var(--line))","stroke-width":large?".46":".34","stroke-linejoin":"round"});
+    for (const q of quads) mesh.appendChild(el("path", {d:q.d, fill:q.fill}));
+    svg.appendChild(mesh);
+    if (backGroup) svg.appendChild(backGroup);
+
+    if (cycles) {
+      const frontGroup = el("g");
+      const frontStyle = (color) => ({
+        fill:"none", stroke:color, "stroke-width":"5.4", "stroke-linecap":"round", "stroke-linejoin":"round"
+      });
+      for (const seg of contiguousSegments(gamma1, (a,b) => (a.normal[2] + b.normal[2]) / 2 > 0)) frontGroup.appendChild(el("path", {d:pathFrom(seg), ...frontStyle("var(--blue)")}));
+      for (const seg of contiguousSegments(gamma2, (a,b) => (a.normal[2] + b.normal[2]) / 2 > 0)) frontGroup.appendChild(el("path", {d:pathFrom(seg), ...frontStyle("var(--orange)")}));
+
+      function addArrow(samples, color, markerId) {
+        let best = 0;
+        for (let i = 1; i < samples.length; i++) if (samples[i].normal[2] > samples[best].normal[2]) best = i;
+        const a = samples[(best - 4 + samples.length) % samples.length];
+        const b = samples[(best + 4) % samples.length];
+        frontGroup.appendChild(el("path", {
+          d:`M${a.x.toFixed(2)},${a.y.toFixed(2)} L${b.x.toFixed(2)},${b.y.toFixed(2)}`,
+          fill:"none", stroke:color, "stroke-width":"5.4", "stroke-linecap":"round",
+          "marker-end":`url(#${markerId})`
+        }));
+      }
+      addArrow(gamma1,"var(--blue)",`${svg.id}-arrow-blue`);
+      addArrow(gamma2,"var(--orange)",`${svg.id}-arrow-orange`);
+      svg.appendChild(frontGroup);
+    }
+
+    if (!large) {
+      const label = el("text", {x:"130",y:"210","text-anchor":"middle","font-size":"12",fill:"var(--muted)","font-family":"Inter,Segoe UI,sans-serif"});
+      label.textContent = "the gap is now the central hole";
+      svg.appendChild(label);
+    }
+  }
+
+  function addTextLabel(svg, x, y, textValue, color, anchor = "start") {
+    const group = el("g");
+    const text = el("text", {x,y,"text-anchor":anchor,"font-size":"18",fill:color,"font-family":"Cambria,STIX Two Text,Times New Roman,serif"});
+    text.textContent = textValue;
+    group.appendChild(text);
+    svg.appendChild(group);
+    const box = text.getBBox();
+    const rect = el("rect", {x:(box.x-7).toFixed(1),y:(box.y-4).toFixed(1),width:(box.width+14).toFixed(1),height:(box.height+8).toFixed(1),rx:"7",fill:"var(--panel)",stroke:"var(--line)","stroke-width":"1",opacity:".96"});
+    group.insertBefore(rect,text);
+    return group;
+  }
+
+  function renderLattice(svg) {
+    svg.replaceChildren();
+    const defs = el("defs");
+    addMarker(defs,"lattice-arrow-blue","var(--blue)");
+    addMarker(defs,"lattice-arrow-orange","var(--orange)");
+    svg.appendChild(defs);
+
+    const O = {x:104,y:426};
+    const a = {x:146,y:0};
+    const b = {x:70,y:-112};
+    const P = (m,n) => ({x:O.x+m*a.x+n*b.x,y:O.y+m*a.y+n*b.y});
+
+    const axes = el("g", {stroke:"var(--ink)","stroke-width":"1.35",fill:"none"});
+    axes.appendChild(el("path", {d:"M62 446 H690"}));
+    axes.appendChild(el("path", {d:"M62 446 V42"}));
+    axes.appendChild(el("path", {d:"M690 446 l-10 -5 v10 z",fill:"var(--ink)",stroke:"none"}));
+    axes.appendChild(el("path", {d:"M62 42 l-5 10 h10 z",fill:"var(--ink)",stroke:"none"}));
+    svg.appendChild(axes);
+    const re = el("text", {x:"700",y:"452","font-size":"15",fill:"var(--ink)","font-family":"Inter,Segoe UI,sans-serif"}); re.textContent="Re(u)"; svg.appendChild(re);
+    const im = el("text", {x:"36",y:"32","font-size":"15",fill:"var(--ink)","font-family":"Inter,Segoe UI,sans-serif"}); im.textContent="Im(u)"; svg.appendChild(im);
+
+    const grid = el("g", {stroke:"var(--line-strong)","stroke-width":"1.15","stroke-dasharray":"5 5",fill:"none"});
+    for (let n=0;n<=3;n++) grid.appendChild(el("path", {d:pathFrom([P(0,n),P(3,n)])}));
+    for (let m=0;m<=3;m++) grid.appendChild(el("path", {d:pathFrom([P(m,0),P(m,3)])}));
+    svg.appendChild(grid);
+
+    const cell = [P(0,0),P(1,0),P(1,1),P(0,1)];
+    svg.appendChild(el("path", {d:pathFrom(cell,true),fill:"var(--blue-soft)",stroke:"var(--blue)","stroke-width":"1.7","stroke-dasharray":"6 5"}));
+
+    const points = el("g", {fill:"color-mix(in srgb,var(--ink) 48%,var(--panel))"});
+    for (let n=0;n<=3;n++) for (let m=0;m<=3;m++) {
+      const q=P(m,n); points.appendChild(el("circle", {cx:q.x,cy:q.y,r:"4.4"}));
+    }
+    svg.appendChild(points);
+
+    const vector1 = el("path", {d:pathFrom([O,P(1,0)]),stroke:"var(--blue)","stroke-width":"3.5",fill:"none","stroke-linecap":"round","marker-end":"url(#lattice-arrow-blue)"});
+    const vector2 = el("path", {d:pathFrom([O,P(0,1)]),stroke:"var(--orange)","stroke-width":"3.5",fill:"none","stroke-linecap":"round","marker-end":"url(#lattice-arrow-orange)"});
+    svg.append(vector1,vector2);
+    addTextLabel(svg,O.x+a.x*.5,O.y+34,"ω₁","var(--blue)","middle");
+    addTextLabel(svg,O.x+b.x*.5-25,O.y+b.y*.5-7,"ω₂","var(--orange)","middle");
+
+    const u0 = {x:O.x+.34*a.x+.34*b.x,y:O.y+.34*a.y+.34*b.y};
+    const u1 = {x:u0.x+a.x,y:u0.y+a.y};
+    const u2 = {x:u0.x+b.x,y:u0.y+b.y};
+    const u12 = {x:u0.x+a.x+b.x,y:u0.y+a.y+b.y};
+
+    const translations = el("g", {fill:"none","stroke-width":"2.35","stroke-dasharray":"7 6","stroke-linecap":"round"});
+    translations.appendChild(el("path", {d:pathFrom([u0,u1]),stroke:"var(--blue)","marker-end":"url(#lattice-arrow-blue)"}));
+    translations.appendChild(el("path", {d:pathFrom([u0,u2]),stroke:"var(--orange)","marker-end":"url(#lattice-arrow-orange)"}));
+    translations.appendChild(el("path", {d:pathFrom([u1,u12]),stroke:"var(--orange)",opacity:".72"}));
+    translations.appendChild(el("path", {d:pathFrom([u2,u12]),stroke:"var(--blue)",opacity:".72"}));
+    svg.appendChild(translations);
+
+    const copies = el("g", {fill:"var(--ink)",stroke:"var(--panel)","stroke-width":"2"});
+    for (const q of [u0,u1,u2,u12]) copies.appendChild(el("circle", {cx:q.x,cy:q.y,r:"6.3"}));
+    svg.appendChild(copies);
+
+    addTextLabel(svg,u0.x-10,u0.y+31,"u","var(--ink)","middle");
+    addTextLabel(svg,u1.x+13,u1.y+7,"u + ω₁","var(--blue)","start");
+    addTextLabel(svg,u2.x-8,u2.y-18,"u + ω₂","var(--orange)","middle");
+    addTextLabel(svg,u12.x+12,u12.y-12,"u + ω₁ + ω₂","var(--ink)","start");
+
+    const cellLabel = el("text", {x:(O.x+a.x*.74+b.x*.48),y:(O.y+a.y*.74+b.y*.48-4),"text-anchor":"middle","font-size":"13",fill:"var(--blue)","font-family":"Inter,Segoe UI,sans-serif","font-weight":"700"});
+    cellLabel.textContent="one repeating cell";
+    svg.appendChild(cellLabel);
+
+    const quotient = el("g", {transform:"translate(82,58)"});
+    quotient.appendChild(el("rect", {x:"0",y:"0",width:"168",height:"103",rx:"13",fill:"var(--panel)",stroke:"var(--line)"}));
+    const q1=el("text",{x:"15",y:"25","font-size":"12.5",fill:"var(--muted)","font-family":"Inter,Segoe UI,sans-serif"});q1.textContent="identify every translated copy";quotient.appendChild(q1);
+    const q2=el("text",{x:"15",y:"59","font-size":"29",fill:"var(--blue)","font-family":"Cambria,STIX Two Text,Times New Roman,serif"});q2.textContent="ℂ / Λ";quotient.appendChild(q2);
+    const q3=el("text",{x:"15",y:"85","font-size":"12.5",fill:"var(--muted)","font-family":"Inter,Segoe UI,sans-serif"});q3.textContent="one point per lattice cell";quotient.appendChild(q3);
+    svg.appendChild(quotient);
+  }
+
+  renderTorus(document.getElementById("torus-mini"), {large:false,cycles:false});
+  renderTorus(document.getElementById("torus-large"), {large:true,cycles:true});
+  renderLattice(document.getElementById("period-lattice"));
+})();
+</script>
+
+<script data-article-visualization-bridge>
+(() => {
+  const root = document.documentElement;
+  const syncTheme = () => {
+    try {
+      const theme = window.parent.document.documentElement.dataset.theme;
+      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+    } catch (_) {}
+  };
+  const report = () => {
+    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
+    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
+    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+  };
+  syncTheme();
+  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  window.addEventListener("load", report, { once: true });
+  window.addEventListener("resize", report);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
+  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  requestAnimationFrame(report);
+})();
+</script>
+</body>
+</html>

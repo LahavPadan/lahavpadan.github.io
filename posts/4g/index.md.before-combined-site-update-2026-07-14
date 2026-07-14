@@ -7,7 +7,6 @@ tags:
 - signal-processing
 - math
 entry_type: comprehensive
-reading_mode: guided
 math: true
 article: "article.md"
 accent: signal-processing

@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gyroscopic precession as the underlying mechanism</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #fbfbf8;
+      --surface: #ffffff;
+      --surface-2: #f7f3f5;
+      --ink: #1c2420;
+      --muted: #667169;
+      --border: #d7ddd8;
+      --border-strong: #a9b3ac;
+      --accent: #85295e;
+      --accent-deep: #5f173f;
+      --accent-soft: #fdeef6;
+      --field: #277876;
+      --field-soft: #e7f5f3;
+      --turn: #a66d16;
+      --turn-soft: #fff4df;
+      --shadow: rgba(61, 31, 48, .12);
+      --math: "STIX Two Math", "Cambria Math", "Times New Roman", serif;
+      --serif: Georgia, "Times New Roman", serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --page: #101511;
+      --surface: #171e19;
+      --surface-2: #21191f;
+      --ink: #e9efeb;
+      --muted: #a7b5aa;
+      --border: #344138;
+      --border-strong: #617168;
+      --accent: #ffb9df;
+      --accent-deep: #ffd2e9;
+      --accent-soft: #3f2033;
+      --field: #8edbd6;
+      --field-soft: #173b38;
+      --turn: #f0c276;
+      --turn-soft: #3e311c;
+      --shadow: rgba(0, 0, 0, .34);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { margin: 0; min-width: 320px; }
+
+    body {
+      background: var(--page);
+      color: var(--ink);
+      font-family: var(--serif);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button, input { font: inherit; }
+
+    button:focus-visible, input:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--accent) 42%, transparent);
+      outline-offset: 3px;
+    }
+
+    .viz {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      box-shadow: 0 18px 50px -38px var(--shadow);
+      overflow: hidden;
+    }
+
+    .viz__header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 28px;
+      align-items: end;
+      padding: clamp(24px, 4vw, 42px) clamp(20px, 4.5vw, 50px) clamp(22px, 3.5vw, 34px);
+      border-bottom: 1px solid var(--border);
+      background:
+        linear-gradient(115deg, color-mix(in srgb, var(--accent-soft) 80%, transparent), transparent 56%),
+        var(--surface);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font: 700 .72rem/1.2 var(--mono);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(1.82rem, 4vw, 3.35rem);
+      font-weight: 500;
+      letter-spacing: -.045em;
+      line-height: 1.02;
+    }
+
+    .lede {
+      max-width: 760px;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.65vw, 1.16rem);
+      line-height: 1.58;
+    }
+
+    .header-law {
+      min-width: 220px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      background: color-mix(in srgb, var(--surface) 74%, var(--accent-soft));
+    }
+
+    .header-law__label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font: 700 .66rem/1.2 var(--mono);
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
+
+    .math {
+      font-family: var(--math);
+      font-variant-numeric: lining-nums;
+    }
+
+    .header-law__equation {
+      font-size: 1.22rem;
+      white-space: nowrap;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.42fr) minmax(315px, .9fr);
+      gap: 0;
+    }
+
+    .stage-panel {
+      min-width: 0;
+      padding: clamp(18px, 3vw, 34px);
+      border-right: 1px solid var(--border);
+      background:
+        radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--accent-soft) 62%, transparent), transparent 47%),
+        var(--surface);
+    }
+
+    .stage {
+      position: relative;
+      min-height: 500px;
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px),
+        var(--surface);
+      background-size: 32px 32px;
+      overflow: hidden;
+    }
+
+    .stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 10%, transparent), color-mix(in srgb, var(--surface) 72%, transparent));
+    }
+
+    #scene {
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 720 / 520;
+    }
+
+    .svg-axis,
+    .svg-orbit,
+    .svg-vector,
+    .svg-tangent,
+    .svg-radius,
+    .svg-guide {
+      vector-effect: non-scaling-stroke;
+    }
+
+    .svg-axis { stroke: var(--field); stroke-width: 3; }
+    .svg-orbit { fill: none; stroke: var(--accent); stroke-width: 3; }
+    .svg-orbit-back { fill: none; stroke: var(--accent); stroke-width: 2; opacity: .25; stroke-dasharray: 5 7; }
+    .svg-cone { fill: color-mix(in srgb, var(--accent) 12%, transparent); stroke: color-mix(in srgb, var(--accent) 42%, transparent); stroke-width: 1.2; }
+    .svg-vector { stroke: var(--accent-deep); stroke-width: 5; stroke-linecap: round; }
+    .svg-tangent { stroke: var(--turn); stroke-width: 4; stroke-linecap: round; }
+    .svg-radius { stroke: color-mix(in srgb, var(--accent) 58%, var(--border)); stroke-width: 1.5; stroke-dasharray: 4 6; }
+    .svg-guide { stroke: var(--border-strong); stroke-width: 1.2; stroke-dasharray: 3 6; }
+    .svg-origin { fill: var(--ink); }
+    .svg-tip { fill: var(--accent-deep); stroke: var(--surface); stroke-width: 2; }
+    .svg-turn-tip { fill: var(--turn); stroke: var(--surface); stroke-width: 2; }
+
+    .svg-label rect {
+      fill: color-mix(in srgb, var(--surface) 93%, transparent);
+      stroke: var(--border);
+      rx: 5;
+    }
+
+    .svg-label text {
+      fill: var(--ink);
+      font-family: var(--mono);
+      font-size: 14px;
+    }
+
+    .svg-label--field text { fill: var(--field); font-weight: 700; }
+    .svg-label--moment text { fill: var(--accent-deep); font-weight: 700; }
+    .svg-label--turn text { fill: var(--turn); font-weight: 700; }
+
+    .stage-legend {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+      min-width: 0;
+      padding: 10px 11px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .legend-swatch {
+      flex: 0 0 auto;
+      width: 20px;
+      height: 3px;
+      margin-top: 8px;
+      background: var(--accent);
+    }
+
+    .legend-item:nth-child(2) .legend-swatch { background: var(--field); }
+    .legend-item:nth-child(3) .legend-swatch { background: var(--turn); }
+
+    .legend-item strong {
+      display: block;
+      color: var(--ink);
+      font: 700 .72rem/1.35 var(--mono);
+    }
+
+    .legend-item span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.38;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: auto minmax(180px, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+
+    .play {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 92px;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: var(--surface);
+      font: 700 .73rem/1 var(--mono);
+    }
+
+    .slider-wrap { min-width: 0; }
+
+    .slider-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 7px;
+      font: 700 .69rem/1.2 var(--mono);
+    }
+
+    .slider-head span:first-child { color: var(--muted); }
+    .slider-head output { color: var(--field); white-space: nowrap; }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--field);
+    }
+
+    .gamma-control {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--border-strong);
+    }
+
+    .gamma-control button {
+      min-height: 36px;
+      padding: 7px 9px;
+      border: 0;
+      background: var(--surface);
+      color: var(--muted);
+      font: 700 .68rem/1.15 var(--mono);
+    }
+
+    .gamma-control button + button { border-left: 1px solid var(--border-strong); }
+
+    .gamma-control button[aria-pressed="true"] {
+      background: var(--field-soft);
+      color: var(--field);
+    }
+
+    .animation-note {
+      margin: 9px 2px 0;
+      color: var(--muted);
+      font: .66rem/1.45 var(--mono);
+    }
+
+    .logic {
+      display: grid;
+      align-content: start;
+      padding: clamp(22px, 3.5vw, 38px);
+      background: var(--surface);
+    }
+
+    .logic__intro {
+      margin: 0 0 19px;
+      color: var(--muted);
+      font-size: .98rem;
+      line-height: 1.55;
+    }
+
+    .step {
+      position: relative;
+      padding: 19px 0 19px 47px;
+      border-top: 1px solid var(--border);
+    }
+
+    .step:last-of-type { border-bottom: 1px solid var(--border); }
+
+    .step__number {
+      position: absolute;
+      top: 20px;
+      left: 0;
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font: 700 .74rem/1 var(--mono);
+    }
+
+    .step h2 {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font: 700 .8rem/1.25 var(--mono);
+      letter-spacing: .015em;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .94rem;
+      line-height: 1.52;
+    }
+
+    .equation-card {
+      margin-top: 12px;
+      padding: 12px 13px;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .equation-card--turn {
+      border-left-color: var(--turn);
+      background: var(--turn-soft);
+    }
+
+    .equation-card--field {
+      border-left-color: var(--field);
+      background: var(--field-soft);
+    }
+
+    .equation-main {
+      color: var(--ink);
+      font: 1.08rem/1.35 var(--math);
+      white-space: normal;
+    }
+
+    .equation-reading {
+      margin-top: 6px;
+      color: var(--muted);
+      font: .67rem/1.45 var(--mono);
+    }
+
+    .invariant {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: center;
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-2);
+    }
+
+    .invariant__symbol {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--surface);
+      font: 700 1rem/1 var(--math);
+    }
+
+    .invariant strong {
+      display: block;
+      margin-bottom: 3px;
+      font: 700 .74rem/1.25 var(--mono);
+    }
+
+    .invariant > div span {
+      display: block;
+      color: var(--muted);
+      font-size: .86rem;
+      line-height: 1.4;
+    }
+
+    .invariant .invariant__symbol {
+      color: var(--surface);
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .derivation {
+      padding: clamp(24px, 4vw, 42px) clamp(20px, 4.5vw, 50px);
+      border-top: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+
+    .derivation__heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: baseline;
+      margin-bottom: 18px;
+    }
+
+    .derivation__heading h2 {
+      margin: 0;
+      font: 700 .82rem/1.25 var(--mono);
+      letter-spacing: .018em;
+    }
+
+    .derivation__heading p {
+      margin: 0;
+      color: var(--muted);
+      font: .7rem/1.4 var(--mono);
+      text-align: right;
+    }
+
+    .chain {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .chain-card {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      min-width: 0;
+      padding: 17px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .chain-card__label {
+      color: var(--accent);
+      font: 700 .67rem/1.2 var(--mono);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .chain-card__equation {
+      margin: 11px 0 9px;
+      color: var(--ink);
+      font: clamp(1rem, 1.7vw, 1.2rem)/1.35 var(--math);
+      overflow-wrap: anywhere;
+    }
+
+    .chain-card__reading {
+      color: var(--muted);
+      font-size: .84rem;
+      line-height: 1.45;
+    }
+
+    .chain-arrow {
+      align-self: center;
+      color: var(--accent);
+      font: 700 1.25rem/1 var(--mono);
+    }
+
+    .conclusion {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 15px;
+      align-items: center;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .conclusion__mark {
+      color: var(--accent);
+      font: 700 1.1rem/1 var(--mono);
+    }
+
+    .conclusion p {
+      margin: 0;
+      color: var(--ink);
+      font-size: .95rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 840px) {
+      .viz__header { grid-template-columns: 1fr; }
+      .header-law { width: fit-content; }
+      .main { grid-template-columns: 1fr; }
+      .stage-panel { border-right: 0; border-bottom: 1px solid var(--border); }
+      .logic { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+      .logic__intro, .invariant { grid-column: 1 / -1; }
+      .step { padding: 46px 0 0; border-top: 0; }
+      .step:last-of-type { border-bottom: 0; }
+      .step__number { top: 0; }
+    }
+
+    @media (max-width: 680px) {
+      .viz { border-inline: 0; }
+      .stage { min-height: 0; }
+      #scene { aspect-ratio: 720 / 590; }
+      .svg-label { display: none; }
+      .stage-legend { grid-template-columns: 1fr; }
+      .controls { grid-template-columns: 1fr; }
+      .play { width: 100%; }
+      .gamma-control { width: 100%; }
+      .logic { grid-template-columns: 1fr; }
+      .logic__intro, .invariant { grid-column: auto; }
+      .step { padding: 18px 0 18px 47px; border-top: 1px solid var(--border); }
+      .step:last-of-type { border-bottom: 1px solid var(--border); }
+      .step__number { top: 19px; }
+      .derivation__heading { display: block; }
+      .derivation__heading p { margin-top: 7px; text-align: left; }
+      .chain { grid-template-columns: 1fr; }
+      .chain-arrow { transform: rotate(90deg); justify-self: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <article class="viz" aria-labelledby="viz-title">
+    <header class="viz__header">
+      <div>
+        <p class="eyebrow">Gyromagnetic media · § 5.1</p>
+        <h1 id="viz-title">A magnetic field turns the moment without changing its length</h1>
+        <p class="lede">The torque is always sideways. That one geometric fact produces precession, sets the Larmor rate, and survives unchanged when many microscopic moments are combined into a magnetization.</p>
+      </div>
+      <div class="header-law" aria-label="Magnetic moment equation of motion">
+        <span class="header-law__label">Equation of motion</span>
+        <span class="header-law__equation math">d<b>μ</b>/dt = γ <b>μ</b> × <b>B</b></span>
+      </div>
+    </header>
+
+    <section class="main">
+      <div class="stage-panel">
+        <div class="stage">
+          <svg id="scene" viewBox="0 0 720 520" role="img" aria-labelledby="scene-title scene-desc">
+            <title id="scene-title">Magnetic moment precessing around a static magnetic field</title>
+            <desc id="scene-desc">A fixed-length magnetic moment traces a cone around the vertical bias field. A tangent arrow shows that its time derivative is perpendicular to the moment.</desc>
+            <defs>
+              <marker id="arrowField" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--field)"></path>
+              </marker>
+              <marker id="arrowMoment" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-deep)"></path>
+              </marker>
+              <marker id="arrowTurn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--turn)"></path>
+              </marker>
+              <linearGradient id="coneFill" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stop-color="var(--accent)" stop-opacity=".18"></stop>
+                <stop offset="1" stop-color="var(--accent)" stop-opacity=".025"></stop>
+              </linearGradient>
+            </defs>
+
+            <line id="axisBack" class="svg-guide" x1="360" y1="442" x2="360" y2="56"></line>
+            <line id="axis" class="svg-axis" x1="360" y1="442" x2="360" y2="54" marker-end="url(#arrowField)"></line>
+
+            <path id="cone" class="svg-cone" fill="url(#coneFill)"></path>
+            <path id="orbitBack" class="svg-orbit-back"></path>
+            <path id="orbitFront" class="svg-orbit"></path>
+      
+            <line id="radius" class="svg-radius"></line>
+            <line id="moment" class="svg-vector" marker-end="url(#arrowMoment)"></line>
+            <line id="tangent" class="svg-tangent" marker-end="url(#arrowTurn)"></line>
+
+            <circle class="svg-origin" cx="360" cy="442" r="5"></circle>
+            <circle id="tip" class="svg-tip" r="6"></circle>
+            <circle id="turnTip" class="svg-turn-tip" r="5"></circle>
+
+            <g class="svg-label svg-label--field" transform="translate(382 58)">
+              <rect width="126" height="34"></rect>
+              <text x="12" y="22">B = B₀ ẑ</text>
+            </g>
+            <g class="svg-label svg-label--moment" transform="translate(28 420)">
+              <rect width="145" height="34"></rect>
+              <text x="12" y="22">fixed |μ|</text>
+            </g>
+            <g class="svg-label svg-label--turn" transform="translate(512 420)">
+              <rect width="174" height="34"></rect>
+              <text x="12" y="22">dμ/dt ⟂ μ</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="stage-legend" aria-label="Scene legend">
+          <div class="legend-item">
+            <span class="legend-swatch" aria-hidden="true"></span>
+            <div><strong>magnetic moment</strong><span>Its length stays fixed while its direction changes.</span></div>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch" aria-hidden="true"></span>
+            <div><strong>static bias field</strong><span>The field supplies the axis around which the motion turns.</span></div>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch" aria-hidden="true"></span>
+            <div><strong>instantaneous change</strong><span>The derivative is tangent to the orbit, never along the moment.</span></div>
+          </div>
+        </div>
+
+        <div class="controls" aria-label="Precession controls">
+          <button class="play" id="playButton" type="button" aria-pressed="false">Pause</button>
+
+          <label class="slider-wrap" for="fieldSlider">
+            <span class="slider-head">
+              <span>bias magnitude B₀</span>
+              <output id="fieldOutput" for="fieldSlider">0.70 T · 19.6 GHz</output>
+            </span>
+            <input id="fieldSlider" type="range" min="0.2" max="1.4" step="0.05" value="0.7">
+          </label>
+
+          <div class="gamma-control" aria-label="Sign of gyromagnetic ratio">
+            <button id="gammaNegative" type="button" aria-pressed="true">γ &lt; 0<br>electron</button>
+            <button id="gammaPositive" type="button" aria-pressed="false">γ &gt; 0<br>positive</button>
+          </div>
+        </div>
+        <p class="animation-note">The animation is slowed to a visible rate. Its speed is proportional to |γB₀|; changing the sign of γ reverses the handedness.</p>
+      </div>
+
+      <aside class="logic" aria-label="Why precession occurs">
+        <p class="logic__intro">Nothing pulls the moment inward or outward. The field only supplies a perpendicular change at every instant.</p>
+
+        <section class="step">
+          <span class="step__number">1</span>
+          <h2>The field produces a sideways torque</h2>
+          <p>A cross product is perpendicular to both inputs, so the change cannot point along <span class="math"><b>μ</b></span>.</p>
+          <div class="equation-card equation-card--turn">
+            <div class="equation-main math"><b>μ</b> · d<b>μ</b>/dt = γ <b>μ</b> · (<b>μ</b> × <b>B</b>) = 0</div>
+            <div class="equation-reading">no component of the change can lengthen or shorten μ</div>
+          </div>
+        </section>
+
+        <section class="step">
+          <span class="step__number">2</span>
+          <h2>Therefore the magnitude is conserved</h2>
+          <p>Only the direction can move. Repeating that infinitesimal sideways turn traces a circle, and the full vector traces a cone.</p>
+          <div class="equation-card">
+            <div class="equation-main math">d|<b>μ</b>|²/dt = 2<b>μ</b> · d<b>μ</b>/dt = 0</div>
+            <div class="equation-reading">the motion is rotation, not oscillation in length</div>
+          </div>
+        </section>
+
+        <section class="step">
+          <span class="step__number">3</span>
+          <h2>The bias fixes the turning rate</h2>
+          <p>For <span class="math"><b>B</b> = B₀ ẑ</span>, the transverse part rotates uniformly around the field axis.</p>
+          <div class="equation-card equation-card--field">
+            <div class="equation-main math">|ω₀| = |γ|B₀</div>
+            <div class="equation-reading" id="frequencyReading">for an electron at 0.70 T: |ω₀|/2π ≈ 19.6 GHz</div>
+          </div>
+        </section>
+
+        <div class="invariant">
+          <span class="invariant__symbol math">1st</span>
+          <div>
+            <strong>First-order motion</strong>
+            <span>The present direction determines the next direction directly. No separate “angular-momentum velocity” is needed.</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="derivation" aria-labelledby="chain-title">
+      <div class="derivation__heading">
+        <h2 id="chain-title">The same precession law at three scales</h2>
+        <p>nothing new is assumed when moving from one moment to the material response</p>
+      </div>
+
+      <div class="chain">
+        <div class="chain-card">
+          <span class="chain-card__label">angular momentum</span>
+          <div class="chain-card__equation math">d<b>L</b>/dt = <b>τ</b>, &nbsp; <b>τ</b> = <b>μ</b> × <b>B</b></div>
+          <div class="chain-card__reading">Torque changes the direction of angular momentum.</div>
+        </div>
+
+        <div class="chain-arrow" aria-hidden="true">→</div>
+
+        <div class="chain-card">
+          <span class="chain-card__label">one magnetic moment</span>
+          <div class="chain-card__equation math"><b>μ</b> = γ<b>L</b> &nbsp; ⇒ &nbsp; d<b>μ</b>/dt = γ<b>μ</b> × <b>B</b></div>
+          <div class="chain-card__reading">The magnetic moment is proportional to the same rotating vector.</div>
+        </div>
+
+        <div class="chain-arrow" aria-hidden="true">→</div>
+
+        <div class="chain-card">
+          <span class="chain-card__label">many moments per volume</span>
+          <div class="chain-card__equation math"><b>M</b> = Σ<b>μ</b>/V &nbsp; ⇒ &nbsp; d<b>M</b>/dt = γ<b>M</b> × <b>B</b></div>
+          <div class="chain-card__reading">Summing moments preserves the equation, producing bulk magnetization precession.</div>
+        </div>
+      </div>
+
+      <div class="conclusion">
+        <span class="conclusion__mark" aria-hidden="true">∴</span>
+        <p>The ferrite response used in the next section begins here: a static bias makes the transverse magnetization rotate with a definite handedness, which is exactly the ingredient that later produces the antisymmetric off-diagonal coupling.</p>
+      </div>
+    </section>
+  </article>
+
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const scene = document.getElementById('scene');
+      const orbitFront = document.getElementById('orbitFront');
+      const orbitBack = document.getElementById('orbitBack');
+      const cone = document.getElementById('cone');
+      const radius = document.getElementById('radius');
+      const moment = document.getElementById('moment');
+      const tangent = document.getElementById('tangent');
+      const tip = document.getElementById('tip');
+      const turnTip = document.getElementById('turnTip');
+      const playButton = document.getElementById('playButton');
+      const fieldSlider = document.getElementById('fieldSlider');
+      const fieldOutput = document.getElementById('fieldOutput');
+      const frequencyReading = document.getElementById('frequencyReading');
+      const gammaNegative = document.getElementById('gammaNegative');
+      const gammaPositive = document.getElementById('gammaPositive');
+
+      const origin = { x: 360, y: 442 };
+      const center = { x: 360, y: 196 };
+      const radius3D = 164;
+      const ellipseY = 57;
+      const projectionSkew = 0.34;
+      const tangentLength = 112;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let phase = -0.35;
+      let field = Number(fieldSlider.value);
+      let gammaSign = -1;
+      let running = !reducedMotion;
+      let lastTime = performance.now();
+      let frameId = 0;
+
+      function project(angle) {
+        const x = radius3D * Math.cos(angle);
+        const y = radius3D * Math.sin(angle);
+        return {
+          x: center.x + x + projectionSkew * y,
+          y: center.y + ellipseY * Math.sin(angle)
+        };
+      }
+
+      function tangentVector(angle, sign) {
+        const dx = -radius3D * Math.sin(angle) + projectionSkew * radius3D * Math.cos(angle);
+        const dy = ellipseY * Math.cos(angle);
+        const length = Math.hypot(dx, dy) || 1;
+        return { x: sign * tangentLength * dx / length, y: sign * tangentLength * dy / length };
+      }
+
+      function pathSegment(start, end, steps = 64) {
+        let d = '';
+        for (let i = 0; i <= steps; i++) {
+          const a = start + (end - start) * (i / steps);
+          const p = project(a);
+          d += `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)} `;
+        }
+        return d.trim();
+      }
+
+      function drawStaticGeometry() {
+        const left = project(Math.PI);
+        const right = project(0);
+        const rear = project(-Math.PI / 2);
+        const front = project(Math.PI / 2);
+
+        cone.setAttribute('d', [
+          `M ${origin.x} ${origin.y}`,
+          `L ${left.x} ${left.y}`,
+          pathSegment(Math.PI, 0, 50).replace(/^M[^L]*/, ''),
+          `L ${origin.x} ${origin.y}`,
+          `M ${origin.x} ${origin.y}`,
+          `L ${rear.x} ${rear.y}`,
+          pathSegment(-Math.PI / 2, Math.PI / 2, 48).replace(/^M[^L]*/, ''),
+          `L ${origin.x} ${origin.y}`
+        ].join(' '));
+
+        orbitBack.setAttribute('d', pathSegment(Math.PI, 2 * Math.PI, 80));
+        orbitFront.setAttribute('d', pathSegment(0, Math.PI, 80));
+
+      }
+
+      function drawDynamicGeometry() {
+        const p = project(phase);
+        const centerProjected = { x: center.x, y: center.y };
+        const tv = tangentVector(phase, gammaSign);
+        const tangentEnd = { x: p.x + tv.x, y: p.y + tv.y };
+
+        radius.setAttribute('x1', centerProjected.x);
+        radius.setAttribute('y1', centerProjected.y);
+        radius.setAttribute('x2', p.x);
+        radius.setAttribute('y2', p.y);
+
+        moment.setAttribute('x1', origin.x);
+        moment.setAttribute('y1', origin.y);
+        moment.setAttribute('x2', p.x);
+        moment.setAttribute('y2', p.y);
+
+        tangent.setAttribute('x1', p.x);
+        tangent.setAttribute('y1', p.y);
+        tangent.setAttribute('x2', tangentEnd.x);
+        tangent.setAttribute('y2', tangentEnd.y);
+
+        tip.setAttribute('cx', p.x);
+        tip.setAttribute('cy', p.y);
+        turnTip.setAttribute('cx', tangentEnd.x);
+        turnTip.setAttribute('cy', tangentEnd.y);
+      }
+
+      function updateReadout() {
+        const ghz = 28 * field;
+        fieldOutput.value = `${field.toFixed(2)} T · ${ghz.toFixed(1)} GHz`;
+        fieldOutput.textContent = fieldOutput.value;
+        frequencyReading.textContent = `for an electron at ${field.toFixed(2)} T: |ω₀|/2π ≈ ${ghz.toFixed(1)} GHz`;
+      }
+
+      function frame(now) {
+        const dt = Math.min((now - lastTime) / 1000, .05);
+        lastTime = now;
+        if (running) {
+          const visibleAngularSpeed = .52 + .75 * field;
+          phase += gammaSign * visibleAngularSpeed * dt;
+          drawDynamicGeometry();
+        }
+        frameId = requestAnimationFrame(frame);
+      }
+
+      function setRunning(next) {
+        running = next;
+        playButton.textContent = running ? 'Pause' : 'Play';
+        playButton.setAttribute('aria-pressed', String(!running));
+      }
+
+      function setGamma(sign) {
+        gammaSign = sign;
+        gammaNegative.setAttribute('aria-pressed', String(sign < 0));
+        gammaPositive.setAttribute('aria-pressed', String(sign > 0));
+        drawStaticGeometry();
+        drawDynamicGeometry();
+      }
+
+      playButton.addEventListener('click', () => setRunning(!running));
+      fieldSlider.addEventListener('input', () => {
+        field = Number(fieldSlider.value);
+        updateReadout();
+      });
+      gammaNegative.addEventListener('click', () => setGamma(-1));
+      gammaPositive.addEventListener('click', () => setGamma(1));
+
+      function syncParentTheme() {
+        try {
+          const parentRoot = window.parent.document.documentElement;
+          const apply = () => {
+            const theme = parentRoot.dataset.theme;
+            if (theme) root.dataset.theme = theme;
+            else root.removeAttribute('data-theme');
+          };
+          apply();
+          new MutationObserver(apply).observe(parentRoot, { attributes: true, attributeFilter: ['data-theme'] });
+        } catch (_) {
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) root.dataset.theme = 'dark';
+        }
+      }
+
+      function reportHeight() {
+        const height = document.documentElement.scrollHeight;
+        try {
+          if (window.frameElement) window.frameElement.style.height = `${height}px`;
+        } catch (_) {}
+        try {
+          window.parent.postMessage({
+            type: 'article-visualization:resize',
+            id: 'gyroscopic-precession',
+            height
+          }, window.location.origin);
+        } catch (_) {}
+      }
+
+      syncParentTheme();
+      drawStaticGeometry();
+      drawDynamicGeometry();
+      updateReadout();
+      setRunning(!reducedMotion);
+      frameId = requestAnimationFrame(frame);
+
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(reportHeight).observe(document.body);
+      }
+      window.addEventListener('load', reportHeight);
+      window.addEventListener('beforeunload', () => cancelAnimationFrame(frameId));
+    })();
+  </script>
+
+<script data-article-visualization-bridge>
+(() => {
+  const root = document.documentElement;
+  const syncTheme = () => {
+    try {
+      const theme = window.parent.document.documentElement.dataset.theme;
+      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+    } catch (_) {}
+  };
+  const report = () => {
+    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
+    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
+    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+  };
+  syncTheme();
+  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  window.addEventListener("load", report, { once: true });
+  window.addEventListener("resize", report);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
+  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  requestAnimationFrame(report);
+})();
+</script>
+</body>
+</html>

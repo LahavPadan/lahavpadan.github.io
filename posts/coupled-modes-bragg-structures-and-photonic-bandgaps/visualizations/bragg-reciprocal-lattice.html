@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reciprocal-lattice elastic scattering preview</title>
+  <style>
+    :root {
+      --page: #fbfbf8;
+      --surface: #ffffff;
+      --surface-muted: #f4f5f1;
+      --ink: #1c2420;
+      --muted: #667169;
+      --border: #d6ddd7;
+      --border-strong: #a6b2a9;
+      --accent: #0d7659;
+      --post-accent: #85295e;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    html[data-theme="dark"] {
+      --page: #101511;
+      --surface: #171e19;
+      --surface-muted: #1d2720;
+      --ink: #e9efeb;
+      --muted: #a7b5aa;
+      --border: #344138;
+      --border-strong: #617168;
+      --accent: #7cdaad;
+      --post-accent: #ffb9df;
+    }
+
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    main {
+      width: min(100%, 900px);
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="rls-viz" aria-labelledby="rls-title">
+      <style>
+        .rls-viz {
+          --rls-surface: var(--surface, #ffffff);
+          --rls-muted-surface: var(--surface-muted, #f4f5f1);
+          --rls-ink: var(--ink, #1c2420);
+          --rls-muted: var(--muted, #667169);
+          --rls-border: var(--border, #d6ddd7);
+          --rls-border-strong: var(--border-strong, #a6b2a9);
+          --rls-k: var(--accent, #0d7659);
+          --rls-g: var(--post-accent, #85295e);
+          --rls-g-soft: color-mix(in srgb, var(--rls-g) 11%, var(--rls-surface));
+          --rls-k-soft: color-mix(in srgb, var(--rls-k) 10%, var(--rls-surface));
+
+          width: 100%;
+          margin: 2.25rem 0;
+          color: var(--rls-ink);
+          font-family: inherit;
+        }
+
+        .rls-viz,
+        .rls-viz * {
+          box-sizing: border-box;
+        }
+
+        .rls-viz__frame {
+          overflow: hidden;
+          border: 1px solid var(--rls-border);
+          border-radius: 20px;
+          background: var(--rls-surface);
+          box-shadow: 0 18px 46px rgb(24 39 31 / 0.08);
+        }
+
+        .rls-viz__header {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(13rem, 24ch);
+          gap: 1.5rem;
+          align-items: end;
+          padding: clamp(1.25rem, 2.5vw, 2rem) clamp(1.25rem, 3vw, 2.25rem) 1.15rem;
+          border-bottom: 1px solid var(--rls-border);
+        }
+
+        .rls-viz__eyebrow {
+          margin: 0 0 0.4rem;
+          color: var(--rls-g);
+          font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+          font-size: 0.72rem;
+          font-weight: 760;
+          letter-spacing: 0.11em;
+          text-transform: uppercase;
+        }
+
+        .rls-viz h3 {
+          margin: 0;
+          max-width: 28ch;
+          color: var(--rls-ink);
+          font-family: inherit;
+          font-size: clamp(1.32rem, 2.8vw, 1.9rem);
+          font-weight: 720;
+          line-height: 1.16;
+          letter-spacing: -0.025em;
+        }
+
+        .rls-viz__header-note {
+          max-width: 24ch;
+          margin: 0;
+          color: var(--rls-muted);
+          font-size: 0.91rem;
+          line-height: 1.48;
+          text-align: right;
+        }
+
+        .rls-viz__principles {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          border-bottom: 1px solid var(--rls-border);
+          background: var(--rls-muted-surface);
+        }
+
+        .rls-viz__principle {
+          display: grid;
+          grid-template-columns: 2rem minmax(0, 1fr);
+          gap: 0.82rem;
+          align-items: start;
+          min-width: 0;
+          padding: 1.05rem clamp(1rem, 2.2vw, 1.45rem) 1.1rem;
+        }
+
+        .rls-viz__principle + .rls-viz__principle {
+          border-left: 1px solid var(--rls-border);
+        }
+
+        .rls-viz__number {
+          display: inline-grid;
+          width: 2rem;
+          height: 2rem;
+          place-items: center;
+          align-self: start;
+          margin-top: 0.02rem;
+          border: 1px solid color-mix(in srgb, var(--rls-g) 44%, var(--rls-border));
+          border-radius: 50%;
+          color: var(--rls-g);
+          background: var(--rls-surface);
+          font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+          font-size: 0.72rem;
+          font-weight: 760;
+          font-variant-numeric: tabular-nums;
+          line-height: 1;
+        }
+
+        .rls-viz__principle-copy {
+          min-width: 0;
+        }
+
+        .rls-viz__principle-copy strong {
+          display: block;
+          margin: 0 0 0.18rem;
+          color: var(--rls-ink);
+          font-size: 0.88rem;
+          line-height: 1.3;
+        }
+
+        .rls-viz__principle-copy > span {
+          display: block;
+          color: var(--rls-muted);
+          font-size: 0.79rem;
+          line-height: 1.42;
+        }
+
+        .rls-viz__principle sub,
+        .rls-viz__equation sub,
+        .rls-viz__result-equation sub {
+          font-size: 0.72em;
+          line-height: 0;
+          vertical-align: -0.28em;
+        }
+
+        .rls-viz__main {
+          display: grid;
+          grid-template-columns: minmax(0, 1.18fr) minmax(17.5rem, 0.82fr);
+          gap: clamp(1rem, 2.2vw, 1.6rem);
+          align-items: stretch;
+          padding: clamp(1.15rem, 2.8vw, 2rem);
+        }
+
+        .rls-viz__diagram,
+        .rls-viz__derivation {
+          min-width: 0;
+          border: 1px solid var(--rls-border);
+          border-radius: 16px;
+          background: var(--rls-surface);
+        }
+
+        .rls-viz__diagram {
+          display: flex;
+          min-height: 27rem;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          padding: clamp(0.6rem, 1.7vw, 1.05rem);
+          background:
+            radial-gradient(circle at 28% 43%, var(--rls-k-soft), transparent 46%),
+            var(--rls-surface);
+        }
+
+        .rls-viz__diagram svg {
+          display: block;
+          width: 100%;
+          height: auto;
+          max-height: 31rem;
+          overflow: visible;
+        }
+
+        .rls-viz__diagram text {
+          fill: var(--rls-ink);
+          font-family: inherit;
+        }
+
+        .rls-viz__diagram .rls-svg-muted {
+          fill: var(--rls-muted);
+        }
+
+        .rls-viz__diagram .rls-svg-k {
+          fill: var(--rls-k);
+        }
+
+        .rls-viz__diagram .rls-svg-g {
+          fill: var(--rls-g);
+        }
+
+        .rls-viz__diagram .rls-svg-label-bg {
+          fill: var(--rls-surface);
+          stroke: var(--rls-border);
+        }
+
+        .rls-viz__derivation {
+          display: flex;
+          flex-direction: column;
+          padding: clamp(1.2rem, 2.4vw, 1.7rem);
+        }
+
+        .rls-viz__derivation-title {
+          margin: 0 0 1rem;
+          color: var(--rls-muted);
+          font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+          font-size: 0.71rem;
+          font-weight: 760;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+        }
+
+        .rls-viz__step {
+          position: relative;
+          display: grid;
+          grid-template-columns: 1.85rem minmax(0, 1fr);
+          gap: 0.72rem;
+          min-width: 0;
+          padding-bottom: 1.1rem;
+        }
+
+        .rls-viz__step:not(:last-of-type)::before {
+          position: absolute;
+          top: 1.65rem;
+          bottom: 0.15rem;
+          left: 0.72rem;
+          width: 1px;
+          background: var(--rls-border);
+          content: "";
+        }
+
+        .rls-viz__dot {
+          position: relative;
+          z-index: 1;
+          display: grid;
+          width: 1.45rem;
+          height: 1.45rem;
+          place-items: center;
+          border: 1px solid var(--rls-border-strong);
+          border-radius: 999px;
+          color: var(--rls-muted);
+          background: var(--rls-surface);
+          font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+          font-size: 0.66rem;
+          font-weight: 760;
+          line-height: 1;
+        }
+
+        .rls-viz__step-label {
+          margin: 0 0 0.26rem;
+          color: var(--rls-muted);
+          font-size: 0.76rem;
+          line-height: 1.35;
+        }
+
+        .rls-viz__equation {
+          margin: 0;
+          color: var(--rls-ink);
+          font-family: "STIX Two Math", "Cambria Math", "Times New Roman", serif;
+          font-size: clamp(1rem, 1.7vw, 1.18rem);
+          line-height: 1.5;
+          overflow-wrap: anywhere;
+        }
+
+        .rls-viz__equation .rls-k {
+          color: var(--rls-k);
+          font-weight: 680;
+        }
+
+        .rls-viz__equation .rls-g {
+          color: var(--rls-g);
+          font-weight: 680;
+        }
+
+        .rls-viz__result {
+          margin-top: auto;
+          padding: 1rem 1.05rem;
+          border: 1px solid color-mix(in srgb, var(--rls-g) 40%, var(--rls-border));
+          border-radius: 12px;
+          background: var(--rls-g-soft);
+        }
+
+        .rls-viz__result-label {
+          display: block;
+          margin-bottom: 0.34rem;
+          color: var(--rls-g);
+          font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+          font-size: 0.68rem;
+          font-weight: 760;
+          letter-spacing: 0.09em;
+          text-transform: uppercase;
+        }
+
+        .rls-viz__result-equation {
+          display: block;
+          color: var(--rls-ink);
+          font-family: "STIX Two Math", "Cambria Math", "Times New Roman", serif;
+          font-size: clamp(1.13rem, 2.1vw, 1.45rem);
+          font-weight: 680;
+          line-height: 1.35;
+          text-align: center;
+        }
+
+        .rls-viz__caption {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr);
+          gap: 0.72rem;
+          align-items: start;
+          margin: 0;
+          padding: 0 clamp(1.25rem, 3vw, 2.25rem) clamp(1.25rem, 2.8vw, 1.9rem);
+          color: var(--rls-muted);
+          font-size: 0.84rem;
+          line-height: 1.5;
+        }
+
+        .rls-viz__caption-mark {
+          color: var(--rls-g);
+          font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+          font-weight: 800;
+        }
+
+        @media (max-width: 780px) {
+          .rls-viz__header {
+            grid-template-columns: 1fr;
+          }
+
+          .rls-viz__header-note {
+            max-width: 52ch;
+            text-align: left;
+          }
+
+          .rls-viz__principles {
+            grid-template-columns: 1fr;
+          }
+
+          .rls-viz__principle + .rls-viz__principle {
+            border-top: 1px solid var(--rls-border);
+            border-left: 0;
+          }
+
+          .rls-viz__main {
+            grid-template-columns: 1fr;
+          }
+
+          .rls-viz__diagram {
+            min-height: 0;
+          }
+
+          .rls-viz__result {
+            margin-top: 0.25rem;
+          }
+        }
+
+        @media (max-width: 470px) {
+          .rls-viz__frame {
+            border-radius: 15px;
+          }
+
+          .rls-viz__header,
+          .rls-viz__main {
+            padding-right: 1rem;
+            padding-left: 1rem;
+          }
+
+          .rls-viz__diagram {
+            padding: 0.35rem;
+          }
+
+          .rls-viz__caption {
+            padding-right: 1rem;
+            padding-left: 1rem;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .rls-viz * {
+            scroll-behavior: auto !important;
+          }
+        }
+      </style>
+
+      <div class="rls-viz__frame">
+        <header class="rls-viz__header">
+          <div>
+            <p class="rls-viz__eyebrow">Elastic scattering · reciprocal space</p>
+            <h3 id="rls-title">The lattice redirects the wave without changing its wavelength</h3>
+          </div>
+          <p class="rls-viz__header-note">
+            The two wavevectors keep the same length; the lattice supplies only the difference between them.
+          </p>
+        </header>
+
+        <div class="rls-viz__principles" aria-label="Three ingredients of the construction">
+          <div class="rls-viz__principle">
+            <span class="rls-viz__number" aria-hidden="true">1</span>
+            <div class="rls-viz__principle-copy">
+              <strong>Fixed frequency</strong>
+              <span>At one ω, the dispersion relation fixes the radius k.</span>
+            </div>
+          </div>
+
+          <div class="rls-viz__principle">
+            <span class="rls-viz__number" aria-hidden="true">2</span>
+            <div class="rls-viz__principle-copy">
+              <strong>Elastic scattering</strong>
+              <span>Both the incoming and outgoing vectors end on the same circle.</span>
+            </div>
+          </div>
+
+          <div class="rls-viz__principle">
+            <span class="rls-viz__number" aria-hidden="true">3</span>
+            <div class="rls-viz__principle-copy">
+              <strong>Periodic momentum transfer</strong>
+              <span>The allowed difference is G<sub>m</sub> = mG<sub>1</sub>.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rls-viz__main">
+          <div class="rls-viz__diagram">
+            <svg viewBox="0 0 700 480" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="rls-svg-title rls-svg-desc">
+              <title id="rls-svg-title">Wavevector triangle for elastic scattering from a periodic lattice</title>
+              <desc id="rls-svg-desc">
+                Incoming and outgoing wavevectors have equal length k and end on one circle. A vertical reciprocal-lattice vector G sub m connects their tips. The chord length is two k sine theta.
+              </desc>
+
+              <defs>
+                <marker id="rls-arrow-k" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--rls-k)" />
+                </marker>
+                <marker id="rls-arrow-g" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--rls-g)" />
+                </marker>
+              </defs>
+
+              <!-- Fixed-|k| circle and its label occupy separate regions. -->
+              <circle cx="228" cy="239" r="157" fill="none" stroke="var(--rls-border-strong)" stroke-width="1.6" stroke-dasharray="5 8" opacity="0.82" vector-effect="non-scaling-stroke" />
+              <path d="M 99 92 L 128 119" fill="none" stroke="var(--rls-border-strong)" stroke-width="1.2" vector-effect="non-scaling-stroke" />
+              <text x="48" y="61" class="rls-svg-muted" font-size="18">fixed-frequency circle</text>
+              <text x="48" y="84" class="rls-svg-muted" font-size="16">|k| = constant</text>
+
+              <!-- Reference direction. Its label sits below the G_m callout, never behind it. -->
+              <line x1="49" y1="239" x2="647" y2="239" stroke="var(--rls-border-strong)" stroke-width="1.35" stroke-dasharray="3 7" opacity="0.82" vector-effect="non-scaling-stroke" />
+              <text x="431" y="286" class="rls-svg-muted" font-size="15">parallel to the lattice planes</text>
+
+              <!-- Scattering triangle. -->
+              <path d="M 228 239 L 361 155.8 L 361 322.2 Z" fill="var(--rls-g-soft)" stroke="none" opacity="0.72" />
+
+              <line x1="228" y1="239" x2="361" y2="155.8" stroke="var(--rls-k)" stroke-width="3.2" marker-end="url(#rls-arrow-k)" vector-effect="non-scaling-stroke" />
+              <line x1="228" y1="239" x2="361" y2="322.2" stroke="var(--rls-k)" stroke-width="3.2" marker-end="url(#rls-arrow-k)" vector-effect="non-scaling-stroke" />
+              <line x1="361" y1="322.2" x2="361" y2="155.8" stroke="var(--rls-g)" stroke-width="3.6" marker-end="url(#rls-arrow-g)" vector-effect="non-scaling-stroke" />
+
+              <circle cx="228" cy="239" r="5.5" fill="var(--rls-ink)" />
+              <circle cx="361" cy="155.8" r="5" fill="var(--rls-k)" />
+              <circle cx="361" cy="322.2" r="5" fill="var(--rls-k)" />
+
+              <!-- Origin label uses a leader line, so no text crosses either wavevector. -->
+              <path d="M 120 262 L 187 249 L 219 241" fill="none" stroke="var(--rls-border-strong)" stroke-width="1.15" vector-effect="non-scaling-stroke" />
+              <text x="49" y="268" class="rls-svg-muted" font-size="15">common origin O</text>
+
+              <!-- Angle annotation. -->
+              <path d="M 280 239 A 52 52 0 0 1 272.1 266.5" fill="none" stroke="var(--rls-g)" stroke-width="2" vector-effect="non-scaling-stroke" />
+              <text x="282" y="277" class="rls-svg-g" font-size="20" font-style="italic">θ</text>
+
+              <text x="266" y="174" class="rls-svg-k" font-size="21" font-weight="700">k<tspan baseline-shift="sub" font-size="14">out</tspan></text>
+              <text x="268" y="316" class="rls-svg-k" font-size="21" font-weight="700">k<tspan baseline-shift="sub" font-size="14">in</tspan></text>
+
+              <!-- G_m callout is in a dedicated right-hand label zone. -->
+              <path d="M 374 204 L 407 204" fill="none" stroke="var(--rls-g)" stroke-width="1.4" vector-effect="non-scaling-stroke" />
+              <rect x="407" y="164" width="236" height="83" rx="12" class="rls-svg-label-bg" stroke-width="1.2" vector-effect="non-scaling-stroke" />
+              <text x="430" y="196" class="rls-svg-g" font-size="20" font-weight="700">G<tspan baseline-shift="sub" font-size="13">m</tspan> = mG<tspan baseline-shift="sub" font-size="13">1</tspan></text>
+              <text x="430" y="224" class="rls-svg-muted" font-size="16">allowed lattice momentum</text>
+
+              <!-- Chord-length annotation. -->
+              <line x1="346" y1="155.8" x2="346" y2="322.2" stroke="var(--rls-g)" stroke-width="1.4" stroke-dasharray="3 5" opacity="0.58" vector-effect="non-scaling-stroke" />
+              <line x1="338" y1="155.8" x2="354" y2="155.8" stroke="var(--rls-g)" stroke-width="1.4" opacity="0.7" vector-effect="non-scaling-stroke" />
+              <line x1="338" y1="322.2" x2="354" y2="322.2" stroke="var(--rls-g)" stroke-width="1.4" opacity="0.7" vector-effect="non-scaling-stroke" />
+              <text x="389" y="357" class="rls-svg-g" font-size="18" font-weight="650">|G<tspan baseline-shift="sub" font-size="12">m</tspan>| = 2k sin θ</text>
+
+              <!-- Equality note. -->
+              <rect x="67" y="381" width="294" height="58" rx="11" fill="var(--rls-k-soft)" stroke="var(--rls-border)" stroke-width="1.1" vector-effect="non-scaling-stroke" />
+              <text x="91" y="417" class="rls-svg-k" font-size="19" font-weight="700">|k<tspan baseline-shift="sub" font-size="13">in</tspan>| = |k<tspan baseline-shift="sub" font-size="13">out</tspan>| = k</text>
+            </svg>
+          </div>
+
+          <aside class="rls-viz__derivation" aria-label="Derivation of the Bragg condition">
+            <p class="rls-viz__derivation-title">Read the geometry from top to bottom</p>
+
+            <div class="rls-viz__step">
+              <span class="rls-viz__dot">1</span>
+              <div>
+                <p class="rls-viz__step-label">Elasticity fixes both side lengths</p>
+                <p class="rls-viz__equation"><span class="rls-k">|k<sub>in</sub>| = |k<sub>out</sub>| = k</span></p>
+              </div>
+            </div>
+
+            <div class="rls-viz__step">
+              <span class="rls-viz__dot">2</span>
+              <div>
+                <p class="rls-viz__step-label">The lattice supplies the closing side</p>
+                <p class="rls-viz__equation">k<sub>out</sub> − k<sub>in</sub> = <span class="rls-g">G<sub>m</sub></span></p>
+              </div>
+            </div>
+
+            <div class="rls-viz__step">
+              <span class="rls-viz__dot">3</span>
+              <div>
+                <p class="rls-viz__step-label">Period Λ permits discrete transfers</p>
+                <p class="rls-viz__equation"><span class="rls-g">|G<sub>m</sub>| = m · 2π/Λ</span></p>
+              </div>
+            </div>
+
+            <div class="rls-viz__step">
+              <span class="rls-viz__dot">4</span>
+              <div>
+                <p class="rls-viz__step-label">The isosceles triangle gives the chord</p>
+                <p class="rls-viz__equation"><span class="rls-g">m · 2π/Λ</span> = <span class="rls-k">2k sin θ</span></p>
+              </div>
+            </div>
+
+            <div class="rls-viz__step">
+              <span class="rls-viz__dot">5</span>
+              <div>
+                <p class="rls-viz__step-label">Use k = 2πn<sub>avg</sub>/λ<sub>0</sub></p>
+                <p class="rls-viz__equation">m · 2π/Λ = 2(2πn<sub>avg</sub>/λ<sub>0</sub>) sin θ</p>
+              </div>
+            </div>
+
+            <div class="rls-viz__result">
+              <span class="rls-viz__result-label">Bragg condition</span>
+              <span class="rls-viz__result-equation">mλ<sub>0</sub> = 2n<sub>avg</sub>Λ sin θ</span>
+            </div>
+          </aside>
+        </div>
+
+        <p class="rls-viz__caption">
+          <span class="rls-viz__caption-mark">↳</span>
+          <span>The equal green sides encode energy conservation. The magenta side is the momentum accepted by the periodic lattice, and only integer multiples of 2π/Λ are available.</span>
+        </p>
+      </div>
+    </section>
+  </main>
+
+<script data-article-visualization-bridge>
+(() => {
+  const root = document.documentElement;
+  const syncTheme = () => {
+    try {
+      const theme = window.parent.document.documentElement.dataset.theme;
+      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+    } catch (_) {}
+  };
+  const report = () => {
+    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
+    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
+    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+  };
+  syncTheme();
+  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  window.addEventListener("load", report, { once: true });
+  window.addEventListener("resize", report);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
+  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  requestAnimationFrame(report);
+})();
+</script>
+</body>
+</html>

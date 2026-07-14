@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reading the dispersion hyperbola</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --accent: #315f73;
+      --accent-strong: #214554;
+      --accent-soft: #e8f0f3;
+      --warm: #a55f36;
+      --warm-soft: #f5ebe3;
+      --violet: #665985;
+      --violet-soft: #eeeaf5;
+      --ink: #20272b;
+      --muted: #657078;
+      --line: #cfd7db;
+      --grid: #e7ecee;
+      --paper: #fbfcfc;
+      --panel: #ffffff;
+      --shadow: 0 12px 34px rgba(31, 45, 52, 0.08);
+      --serif: "STIX Two Text", "Cambria Math", "Times New Roman", serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    html[data-theme="dark"],
+    html.dark {
+      --accent: #83b6c8;
+      --accent-strong: #abd0dc;
+      --accent-soft: #18333e;
+      --warm: #dda176;
+      --warm-soft: #3c291f;
+      --violet: #b4a5d5;
+      --violet-soft: #2d283d;
+      --ink: #edf2f4;
+      --muted: #a9b4ba;
+      --line: #455159;
+      --grid: #303a40;
+      --paper: #151a1d;
+      --panel: #1c2327;
+      --shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) {
+        --accent: #83b6c8;
+        --accent-strong: #abd0dc;
+        --accent-soft: #18333e;
+        --warm: #dda176;
+        --warm-soft: #3c291f;
+        --violet: #b4a5d5;
+        --violet-soft: #2d283d;
+        --ink: #edf2f4;
+        --muted: #a9b4ba;
+        --line: #455159;
+        --grid: #303a40;
+        --paper: #151a1d;
+        --panel: #1c2327;
+        --shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      background: transparent;
+      color: var(--ink);
+      font-family: var(--sans);
+    }
+
+    body { padding: 4px; }
+
+    .viz {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .viz__header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: start;
+      padding: 24px 26px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--accent-strong);
+      font-size: 0.73rem;
+      font-weight: 760;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 680px;
+      font-family: var(--serif);
+      font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+      font-weight: 600;
+      line-height: 1.18;
+      letter-spacing: -0.015em;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .equation {
+      align-self: center;
+      min-width: 188px;
+      padding: 12px 16px;
+      border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line));
+      border-radius: 12px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-family: var(--serif);
+      font-size: 1.17rem;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .control {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      padding: 18px 26px;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel) 76%, transparent);
+    }
+
+    .control__labelrow {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .control__label {
+      font-size: 0.83rem;
+      font-weight: 720;
+    }
+
+    .control__hint {
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin: 0;
+      accent-color: var(--accent);
+      cursor: ew-resize;
+    }
+
+    .range-labels {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      margin-top: 5px;
+      color: var(--muted);
+      font-family: var(--serif);
+      font-size: 0.72rem;
+    }
+
+    .range-labels span:nth-child(2),
+    .range-labels span:nth-child(3),
+    .range-labels span:nth-child(4) { text-align: center; }
+    .range-labels span:last-child { text-align: right; }
+
+    .state {
+      display: flex;
+      min-width: 156px;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+    }
+
+    .state__badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 780;
+      letter-spacing: 0.03em;
+    }
+
+    .state__badge[data-state="propagating"] {
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+    }
+
+    .state__badge[data-state="evanescent"] {
+      background: var(--violet-soft);
+      color: var(--violet);
+    }
+
+    .state__badge[data-state="edge"] {
+      background: var(--warm-soft);
+      color: var(--warm);
+    }
+
+    .state__value {
+      color: var(--muted);
+      font-family: var(--serif);
+      font-size: 0.82rem;
+    }
+
+    .plots {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      padding: 22px 22px 18px;
+    }
+
+    .plot-card {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+    }
+
+    .plot-card__head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: start;
+      padding: 16px 17px 3px;
+    }
+
+    .plot-card h2 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 1rem;
+      font-weight: 650;
+    }
+
+    .plot-card p {
+      margin: 4px 0 0;
+      max-width: 390px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.42;
+    }
+
+    .plot-card__tag {
+      flex: 0 0 auto;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-family: var(--serif);
+      font-size: 0.73rem;
+      white-space: nowrap;
+    }
+
+    svg.plot {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1.18 / 1;
+      min-height: 300px;
+      touch-action: none;
+      user-select: none;
+      cursor: crosshair;
+    }
+
+    .grid-line { stroke: var(--grid); stroke-width: 1; }
+    .axis-line { stroke: var(--muted); stroke-width: 1.15; }
+    .edge-line { stroke: var(--warm); stroke-width: 1.15; stroke-dasharray: 5 5; }
+    .curve { fill: none; stroke: var(--accent); stroke-width: 2.7; stroke-linecap: round; stroke-linejoin: round; }
+    .selection-line { stroke: var(--ink); stroke-width: 1.1; stroke-dasharray: 4 4; opacity: 0.74; }
+    .marker { fill: var(--panel); stroke: var(--accent-strong); stroke-width: 3; }
+    .marker--folded { fill: var(--accent); stroke: var(--panel); stroke-width: 2.5; }
+    .tick { fill: var(--muted); font: 11px var(--sans); }
+    .axis-label { fill: var(--ink); font: italic 15px var(--serif); }
+    .zone-label { fill: var(--muted); font: 700 10px var(--sans); letter-spacing: 0.08em; }
+    .gap-fill { fill: var(--warm-soft); opacity: 0.82; }
+    .evanescent-fill { fill: var(--violet-soft); opacity: 0.78; }
+    .propagating-fill { fill: var(--accent-soft); opacity: 0.43; }
+
+    .readout {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      margin: 0 22px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--line);
+    }
+
+    .readout__item {
+      min-width: 0;
+      padding: 13px 15px;
+      background: var(--panel);
+    }
+
+    .readout__label {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 0.69rem;
+      font-weight: 720;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .readout__value {
+      display: block;
+      overflow: hidden;
+      color: var(--ink);
+      font-family: var(--serif);
+      font-size: 0.98rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .field {
+      margin: 18px 22px 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+    }
+
+    .field__head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      padding: 15px 17px 4px;
+    }
+
+    .field h2 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 1rem;
+      font-weight: 650;
+    }
+
+    .field p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.42;
+    }
+
+    .field__formula {
+      color: var(--accent-strong);
+      font-family: var(--serif);
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+
+    #fieldPlot {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 180px;
+    }
+
+    .field-axis { stroke: var(--line); stroke-width: 1; }
+    .field-boundary { stroke: var(--ink); stroke-width: 1.35; }
+    .field-wave { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .field-envelope { fill: none; stroke: var(--violet); stroke-width: 1.25; stroke-dasharray: 5 5; opacity: 0.9; }
+    .field-medium { fill: var(--accent-soft); opacity: 0.48; }
+    .field-gap-medium { fill: var(--violet-soft); opacity: 0.6; }
+    .field-label { fill: var(--muted); font: 11px var(--sans); }
+    .field-title { fill: var(--ink); font: 600 12px var(--sans); }
+
+    .threshold {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: center;
+      margin-top: 18px;
+      padding: 18px 22px 20px;
+      border-top: 1px solid var(--line);
+      background: color-mix(in srgb, var(--warm-soft) 50%, var(--paper));
+    }
+
+    .threshold h2 {
+      margin: 0 0 4px;
+      font-family: var(--serif);
+      font-size: 1rem;
+      font-weight: 650;
+    }
+
+    .threshold p {
+      margin: 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .threshold__equations {
+      display: grid;
+      gap: 4px;
+      color: var(--warm);
+      font-family: var(--serif);
+      font-size: 0.88rem;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 2px; }
+      .viz { border-radius: 14px; }
+      .viz__header,
+      .control,
+      .threshold { grid-template-columns: 1fr; }
+      .equation { justify-self: start; }
+      .state { align-items: flex-start; min-width: 0; }
+      .plots { grid-template-columns: 1fr; padding: 16px 14px; }
+      .readout { grid-template-columns: 1fr; margin-inline: 14px; }
+      .field { margin-inline: 14px; }
+      .field__head { grid-template-columns: 1fr; }
+      .field__formula { white-space: normal; }
+      .threshold__equations { text-align: left; }
+      svg.plot { min-height: 280px; }
+    }
+
+    @media (max-width: 430px) {
+      .viz__header { padding: 20px 18px 17px; }
+      .control { padding: 16px 18px; }
+      .control__labelrow { align-items: start; flex-direction: column; gap: 3px; }
+      .plot-card__head { flex-direction: column; }
+      .plot-card__tag { align-self: flex-start; }
+      .threshold { padding-inline: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="viz" aria-labelledby="viz-title">
+    <header class="viz__header">
+      <div>
+        <p class="eyebrow">One equation · two coordinate views</p>
+        <h1 id="viz-title">The sign of <span style="font-family:var(--serif)">q²</span> decides whether the field travels or fades</h1>
+        <p class="subtitle">The left view keeps the two directions, <span style="font-family:var(--serif)">+q</span> and <span style="font-family:var(--serif)">−q</span>. The right view folds those directions together, making the boundary between real and imaginary wavenumber explicit.</p>
+      </div>
+      <div class="equation" aria-label="q squared equals delta squared minus kappa squared">q² = δ² − κ²</div>
+    </header>
+
+    <section class="control" aria-label="Detuning control">
+      <div>
+        <div class="control__labelrow">
+          <label class="control__label" for="deltaSlider">Choose the detuning δ relative to the gap scale κ</label>
+          <span class="control__hint">The same choice is marked in both plots</span>
+        </div>
+        <input id="deltaSlider" type="range" min="-2" max="2" step="0.01" value="0.55" aria-describedby="deltaDescription">
+        <div class="range-labels" aria-hidden="true">
+          <span>−2κ</span><span>−κ</span><span>0</span><span>+κ</span><span>+2κ</span>
+        </div>
+      </div>
+      <div class="state" id="deltaDescription" aria-live="polite">
+        <span class="state__badge" id="stateBadge" data-state="evanescent">Inside the gap</span>
+        <span class="state__value" id="stateValue">δ = 0.55κ</span>
+      </div>
+    </section>
+
+    <section class="plots" aria-label="Synchronized dispersion plots">
+      <article class="plot-card">
+        <div class="plot-card__head">
+          <div>
+            <h2>Keep the sign of q</h2>
+            <p>Real solutions occur in opposite-direction pairs. Inside the shaded interval, the horizontal slice does not meet either branch.</p>
+          </div>
+          <span class="plot-card__tag">signed q</span>
+        </div>
+        <svg class="plot" id="signedPlot" viewBox="0 0 460 390" role="img" aria-label="Hyperbola with signed q horizontally and delta vertically"></svg>
+      </article>
+
+      <article class="plot-card">
+        <div class="plot-card__head">
+          <div>
+            <h2>Fold +q and −q into q²</h2>
+            <p>The two directional points become one. Its position left or right of zero now states the physics directly.</p>
+          </div>
+          <span class="plot-card__tag">q²</span>
+        </div>
+        <svg class="plot" id="foldedPlot" viewBox="0 0 460 390" role="img" aria-label="Sideways parabola with q squared horizontally and delta vertically"></svg>
+      </article>
+    </section>
+
+    <section class="readout" aria-label="Current values">
+      <div class="readout__item">
+        <span class="readout__label">chosen detuning</span>
+        <span class="readout__value" id="deltaReadout">δ / κ = 0.55</span>
+      </div>
+      <div class="readout__item">
+        <span class="readout__label">result of the equation</span>
+        <span class="readout__value" id="q2Readout">q² / κ² = −0.70</span>
+      </div>
+      <div class="readout__item">
+        <span class="readout__label">spatial behavior</span>
+        <span class="readout__value" id="behaviorReadout">q = iα, α / κ = 0.84</span>
+      </div>
+    </section>
+
+    <section class="field" aria-labelledby="field-title">
+      <div class="field__head">
+        <div>
+          <h2 id="field-title">What that point means inside the medium</h2>
+          <p id="fieldDescription">An imaginary q turns the spatial factor into a decaying exponential; there is no continuing phase advance through the medium.</p>
+        </div>
+        <div class="field__formula" id="fieldFormula">e<sup>iqz</sup> = e<sup>−αz</sup></div>
+      </div>
+      <svg id="fieldPlot" viewBox="0 0 900 215" role="img" aria-label="Spatial field behavior for the selected detuning"></svg>
+    </section>
+
+    <section class="threshold" aria-labelledby="threshold-title">
+      <div>
+        <h2 id="threshold-title">Why κ acts like a mass-like threshold</h2>
+        <p>Write the relation as δ² = q² + κ². Before any real spatial wavenumber can appear, |δ| must first reach κ. This is the same threshold structure as the relativistic energy relation; the analogy is in the algebra, not in the physical origin of κ.</p>
+      </div>
+      <div class="threshold__equations" aria-label="Comparison of threshold equations">
+        <span>δ² = q² + κ²</span>
+        <span>E² = (pc)² + (mc²)²</span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const NS = 'http://www.w3.org/2000/svg';
+      const slider = document.getElementById('deltaSlider');
+      const signedPlot = document.getElementById('signedPlot');
+      const foldedPlot = document.getElementById('foldedPlot');
+      const fieldPlot = document.getElementById('fieldPlot');
+      const stateBadge = document.getElementById('stateBadge');
+      const stateValue = document.getElementById('stateValue');
+      const deltaReadout = document.getElementById('deltaReadout');
+      const q2Readout = document.getElementById('q2Readout');
+      const behaviorReadout = document.getElementById('behaviorReadout');
+      const fieldDescription = document.getElementById('fieldDescription');
+      const fieldFormula = document.getElementById('fieldFormula');
+
+      const plot = {
+        left: 55,
+        right: 438,
+        top: 22,
+        bottom: 337,
+        yMin: -2.2,
+        yMax: 2.2
+      };
+      plot.width = plot.right - plot.left;
+      plot.height = plot.bottom - plot.top;
+
+      const make = (name, attrs = {}, text = '') => {
+        const node = document.createElementNS(NS, name);
+        for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+        if (text) node.textContent = text;
+        return node;
+      };
+
+      const fmt = (value, digits = 2) => {
+        if (Math.abs(value) < 0.005) value = 0;
+        return value.toFixed(digits).replace('-', '−');
+      };
+
+      const xSigned = q => plot.left + ((q + 2.2) / 4.4) * plot.width;
+      const xFolded = q2 => plot.left + ((q2 + 1.2) / 4.7) * plot.width;
+      const yDelta = delta => plot.top + ((plot.yMax - delta) / (plot.yMax - plot.yMin)) * plot.height;
+
+      function pathFrom(points) {
+        return points.map((p, index) => `${index ? 'L' : 'M'} ${p[0].toFixed(2)} ${p[1].toFixed(2)}`).join(' ');
+      }
+
+      function addAxes(svg, xMap, xTicks, xLabel) {
+        const y0 = yDelta(0);
+        const x0 = xMap(0);
+
+        for (const tick of [-2, -1, 0, 1, 2]) {
+          const y = yDelta(tick);
+          svg.appendChild(make('line', { x1: plot.left, y1: y, x2: plot.right, y2: y, class: 'grid-line' }));
+          svg.appendChild(make('text', { x: plot.left - 10, y: y + 4, class: 'tick', 'text-anchor': 'end' }, String(tick).replace('-', '−')));
+        }
+
+        for (const tick of xTicks) {
+          const x = xMap(tick);
+          svg.appendChild(make('line', { x1: x, y1: plot.top, x2: x, y2: plot.bottom, class: 'grid-line' }));
+          svg.appendChild(make('text', { x, y: plot.bottom + 22, class: 'tick', 'text-anchor': 'middle' }, String(tick).replace('-', '−')));
+        }
+
+        svg.appendChild(make('line', { x1: plot.left, y1: y0, x2: plot.right, y2: y0, class: 'axis-line' }));
+        svg.appendChild(make('line', { x1: x0, y1: plot.top, x2: x0, y2: plot.bottom, class: 'axis-line' }));
+        svg.appendChild(make('text', { x: (plot.left + plot.right) / 2, y: 380, class: 'axis-label', 'text-anchor': 'middle' }, xLabel));
+        svg.appendChild(make('text', { x: 17, y: (plot.top + plot.bottom) / 2, class: 'axis-label', 'text-anchor': 'middle', transform: `rotate(-90 17 ${(plot.top + plot.bottom) / 2})` }, 'δ / κ'));
+      }
+
+      function buildSignedPlot() {
+        signedPlot.replaceChildren();
+        const gapTop = yDelta(1);
+        const gapBottom = yDelta(-1);
+        signedPlot.appendChild(make('rect', { x: plot.left, y: gapTop, width: plot.width, height: gapBottom - gapTop, class: 'gap-fill' }));
+        addAxes(signedPlot, xSigned, [-2, -1, 0, 1, 2], 'q / κ');
+        signedPlot.appendChild(make('line', { x1: plot.left, y1: gapTop, x2: plot.right, y2: gapTop, class: 'edge-line' }));
+        signedPlot.appendChild(make('line', { x1: plot.left, y1: gapBottom, x2: plot.right, y2: gapBottom, class: 'edge-line' }));
+        signedPlot.appendChild(make('text', { x: plot.right - 8, y: yDelta(0) - 8, class: 'zone-label', 'text-anchor': 'end' }, 'NO REAL q'));
+
+        const upper = [];
+        const lower = [];
+        for (let i = 0; i <= 260; i++) {
+          const q = -2.2 + (4.4 * i) / 260;
+          const d = Math.sqrt(q * q + 1);
+          if (d <= plot.yMax) {
+            upper.push([xSigned(q), yDelta(d)]);
+            lower.push([xSigned(q), yDelta(-d)]);
+          }
+        }
+        signedPlot.appendChild(make('path', { d: pathFrom(upper), class: 'curve' }));
+        signedPlot.appendChild(make('path', { d: pathFrom(lower), class: 'curve' }));
+      }
+
+      function buildFoldedPlot() {
+        foldedPlot.replaceChildren();
+        const xZero = xFolded(0);
+        foldedPlot.appendChild(make('rect', { x: plot.left, y: plot.top, width: xZero - plot.left, height: plot.height, class: 'evanescent-fill' }));
+        foldedPlot.appendChild(make('rect', { x: xZero, y: plot.top, width: plot.right - xZero, height: plot.height, class: 'propagating-fill' }));
+        addAxes(foldedPlot, xFolded, [-1, 0, 1, 2, 3], 'q² / κ²');
+
+        const points = [];
+        for (let i = 0; i <= 300; i++) {
+          const d = plot.yMin + ((plot.yMax - plot.yMin) * i) / 300;
+          points.push([xFolded(d * d - 1), yDelta(d)]);
+        }
+        foldedPlot.appendChild(make('path', { d: pathFrom(points), class: 'curve' }));
+        foldedPlot.appendChild(make('text', { x: (plot.left + xZero) / 2, y: plot.top + 18, class: 'zone-label', 'text-anchor': 'middle' }, 'q² < 0 · DECAY'));
+        foldedPlot.appendChild(make('text', { x: (xZero + plot.right) / 2, y: plot.top + 18, class: 'zone-label', 'text-anchor': 'middle' }, 'q² > 0 · PROPAGATE'));
+      }
+
+      function selection(svg, xValues, delta, folded = false) {
+        const old = svg.querySelector('.selection-layer');
+        if (old) old.remove();
+        const group = make('g', { class: 'selection-layer' });
+        const y = yDelta(delta);
+        group.appendChild(make('line', { x1: plot.left, y1: y, x2: plot.right, y2: y, class: 'selection-line' }));
+        for (const xValue of xValues) {
+          group.appendChild(make('circle', { cx: xValue, cy: y, r: folded ? 6.6 : 6.2, class: folded ? 'marker marker--folded' : 'marker' }));
+        }
+        svg.appendChild(group);
+      }
+
+      function drawField(delta) {
+        fieldPlot.replaceChildren();
+        const q2 = delta * delta - 1;
+        const state = Math.abs(q2) < 0.015 ? 'edge' : q2 > 0 ? 'propagating' : 'evanescent';
+        const compact = window.innerWidth <= 620;
+        const geometry = compact
+          ? { viewBox: '0 0 460 280', left: 20, boundary: 112, right: 438, top: 68, bottom: 234, mid: 153, amp: 28, labelY: 49, footerY: 257 }
+          : { viewBox: '0 0 900 215', left: 28, boundary: 166, right: 872, top: 28, bottom: 182, mid: 112, amp: 36, labelY: 48, footerY: 199 };
+        const { left, boundary, right, top, bottom, mid, amp, labelY, footerY } = geometry;
+        const mediumClass = state === 'evanescent' ? 'field-gap-medium' : 'field-medium';
+        const widthScale = compact ? 0.52 : 1;
+
+        fieldPlot.setAttribute('viewBox', geometry.viewBox);
+        fieldPlot.appendChild(make('rect', { x: boundary, y: top, width: right - boundary, height: bottom - top, rx: 8, class: mediumClass }));
+        fieldPlot.appendChild(make('line', { x1: left, y1: mid, x2: right, y2: mid, class: 'field-axis' }));
+        fieldPlot.appendChild(make('line', { x1: boundary, y1: top, x2: boundary, y2: bottom, class: 'field-boundary' }));
+        fieldPlot.appendChild(make('text', { x: left + 2, y: labelY, class: 'field-title' }, 'incoming field'));
+        fieldPlot.appendChild(make('text', { x: boundary + 10, y: labelY, class: 'field-title' }, 'inside the medium'));
+        fieldPlot.appendChild(make('text', { x: boundary - 7, y: footerY, class: 'field-label', 'text-anchor': 'end' }, 'z = 0'));
+        fieldPlot.appendChild(make('text', { x: right, y: footerY, class: 'field-label', 'text-anchor': 'end' }, 'z'));
+
+        const incomingFrequency = compact ? 0.145 : 0.11;
+        const incoming = [];
+        for (let x = left; x <= boundary; x += 2) {
+          incoming.push([x, mid - amp * Math.sin((x - left) * incomingFrequency)]);
+        }
+        fieldPlot.appendChild(make('path', { d: pathFrom(incoming), class: 'field-wave' }));
+
+        if (state === 'propagating') {
+          const q = Math.sqrt(q2);
+          const wavelengthFactor = (0.034 + q * 0.055) / widthScale;
+          const points = [];
+          for (let x = boundary; x <= right; x += 2) {
+            points.push([x, mid - amp * Math.sin((x - boundary) * wavelengthFactor + (boundary - left) * incomingFrequency)]);
+          }
+          fieldPlot.appendChild(make('path', { d: pathFrom(points), class: 'field-wave' }));
+          fieldPlot.appendChild(make('text', { x: right - 10, y: labelY, class: 'field-label', 'text-anchor': 'end' }, 'phase keeps advancing'));
+        } else if (state === 'evanescent') {
+          const alpha = Math.sqrt(-q2);
+          const decayRate = (0.0034 + alpha * 0.0048) / widthScale;
+          const upper = [];
+          const lower = [];
+          const field = [];
+          const phase = (boundary - left) * incomingFrequency;
+          for (let x = boundary; x <= right; x += 2) {
+            const envelope = amp * Math.exp(-(x - boundary) * decayRate);
+            upper.push([x, mid - envelope]);
+            lower.push([x, mid + envelope]);
+            field.push([x, mid - envelope * Math.cos(phase)]);
+          }
+          fieldPlot.appendChild(make('path', { d: pathFrom(upper), class: 'field-envelope' }));
+          fieldPlot.appendChild(make('path', { d: pathFrom(lower), class: 'field-envelope' }));
+          fieldPlot.appendChild(make('path', { d: pathFrom(field), class: 'field-wave' }));
+          fieldPlot.appendChild(make('text', { x: right - 10, y: labelY, class: 'field-label', 'text-anchor': 'end' }, 'amplitude fades as e⁻ᵅᶻ'));
+        } else {
+          const height = mid - amp * Math.sin((boundary - left) * incomingFrequency);
+          fieldPlot.appendChild(make('path', { d: pathFrom([[boundary, height], [right, height]]), class: 'field-wave' }));
+          fieldPlot.appendChild(make('text', { x: right - 10, y: labelY, class: 'field-label', 'text-anchor': 'end' }, 'no envelope phase advance'));
+        }
+      }
+
+      function update() {
+        const delta = Number(slider.value);
+        const q2 = delta * delta - 1;
+        const atEdge = Math.abs(q2) < 0.015;
+        const state = atEdge ? 'edge' : q2 > 0 ? 'propagating' : 'evanescent';
+
+        stateBadge.dataset.state = state;
+        stateBadge.textContent = state === 'propagating' ? 'Outside the gap' : state === 'evanescent' ? 'Inside the gap' : 'At the gap edge';
+        stateValue.textContent = `δ = ${fmt(delta)}κ`;
+        deltaReadout.textContent = `δ / κ = ${fmt(delta)}`;
+        q2Readout.textContent = `q² / κ² = ${fmt(q2)}`;
+
+        if (state === 'propagating') {
+          const q = Math.sqrt(q2);
+          behaviorReadout.textContent = `q / κ = ±${fmt(q)}`;
+          fieldDescription.textContent = 'A real q produces continuing spatial phase advance. The two signs correspond to the two propagation directions.';
+          fieldFormula.innerHTML = 'e<sup>iqz</sup> oscillates';
+          selection(signedPlot, [xSigned(-q), xSigned(q)], delta, false);
+        } else if (state === 'evanescent') {
+          const alpha = Math.sqrt(-q2);
+          behaviorReadout.textContent = `q = iα, α / κ = ${fmt(alpha)}`;
+          fieldDescription.textContent = 'An imaginary q turns the spatial factor into a decaying exponential; there is no continuing phase advance through the medium.';
+          fieldFormula.innerHTML = 'e<sup>iqz</sup> = e<sup>−αz</sup>';
+          selection(signedPlot, [], delta, false);
+        } else {
+          behaviorReadout.textContent = 'q = 0';
+          fieldDescription.textContent = 'The two signed-q solutions meet at zero. The envelope no longer accumulates phase, and the group velocity reaches zero.';
+          fieldFormula.innerHTML = 'e<sup>iqz</sup> = 1';
+          selection(signedPlot, [xSigned(0)], delta, false);
+        }
+
+        selection(foldedPlot, [xFolded(q2)], delta, true);
+        drawField(delta);
+        fitFrame();
+      }
+
+      function pointerToDelta(event, svg) {
+        const rect = svg.getBoundingClientRect();
+        const scaleY = 390 / rect.height;
+        const y = (event.clientY - rect.top) * scaleY;
+        const clamped = Math.max(plot.top, Math.min(plot.bottom, y));
+        return plot.yMax - ((clamped - plot.top) / plot.height) * (plot.yMax - plot.yMin);
+      }
+
+      function attachPlotInteraction(svg) {
+        let dragging = false;
+        const setFromEvent = event => {
+          const delta = Math.max(-2, Math.min(2, pointerToDelta(event, svg)));
+          slider.value = delta.toFixed(2);
+          update();
+        };
+        svg.addEventListener('pointerdown', event => {
+          dragging = true;
+          svg.setPointerCapture(event.pointerId);
+          setFromEvent(event);
+        });
+        svg.addEventListener('pointermove', event => { if (dragging) setFromEvent(event); });
+        svg.addEventListener('pointerup', () => { dragging = false; });
+        svg.addEventListener('pointercancel', () => { dragging = false; });
+      }
+
+      function syncParentTheme() {
+        try {
+          const parentRoot = window.parent.document.documentElement;
+          const apply = () => {
+            const explicit = parentRoot.getAttribute('data-theme') || (parentRoot.classList.contains('dark') ? 'dark' : parentRoot.classList.contains('light') ? 'light' : '');
+            if (explicit) document.documentElement.setAttribute('data-theme', explicit);
+            else document.documentElement.removeAttribute('data-theme');
+
+            const style = getComputedStyle(parentRoot);
+            for (const name of ['--post-accent', '--accent-color', '--accent']) {
+              const value = style.getPropertyValue(name).trim();
+              if (value) {
+                document.documentElement.style.setProperty('--accent', value);
+                break;
+              }
+            }
+          };
+          apply();
+          new MutationObserver(apply).observe(parentRoot, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+        } catch (_) {
+          // The component remains usable when embedded cross-origin or opened directly.
+        }
+      }
+
+      function fitFrame() {
+        try {
+          if (window.frameElement) {
+            window.frameElement.style.height = `${document.documentElement.scrollHeight + 4}px`;
+          }
+        } catch (_) {}
+      }
+
+      buildSignedPlot();
+      buildFoldedPlot();
+      attachPlotInteraction(signedPlot);
+      attachPlotInteraction(foldedPlot);
+      slider.addEventListener('input', update);
+      syncParentTheme();
+      update();
+      new ResizeObserver(fitFrame).observe(document.body);
+      window.addEventListener('load', fitFrame);
+    })();
+  </script>
+
+<script data-article-visualization-bridge>
+(() => {
+  const root = document.documentElement;
+  const syncTheme = () => {
+    try {
+      const theme = window.parent.document.documentElement.dataset.theme;
+      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+    } catch (_) {}
+  };
+  const report = () => {
+    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
+    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
+    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+  };
+  syncTheme();
+  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  window.addEventListener("load", report, { once: true });
+  window.addEventListener("resize", report);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
+  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  requestAnimationFrame(report);
+})();
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-:root {
+<!doctype html><html lang="en" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AUC area visualization preview v3</title><style>:root {
   --page: #fbfbf8;
   --surface: #ffffff;
   --surface-muted: #f4f5f1;
@@ -1377,807 +1377,532 @@ kbd {
   background: transparent;
 }
 
-/* Guided reading mode -----------------------------------------------------
-   Long-form posts opt in with `reading_mode: guided`.
+/* ROC/AUC area figure ----------------------------------------------------
+   A native article figure: same palette, typography, borders, and dark mode as
+   the surrounding mathematical write-up. All prose stays in HTML; SVG is used
+   only for geometry, which keeps labels aligned across viewport sizes. */
 
-   Colour roles are deliberately not monochromatic:
-   - the post accent remains the anchor for navigation and chapter identity;
-   - a neighbouring teal marks conceptual structure;
-   - amber marks optional derivations;
-   - violet marks proof details.
-
-   Folding is authored semantically in the article with guided-fold markers.
-   Nothing is folded merely because it crosses a word-count threshold. */
-.post-page--guided {
-  --guide-primary: var(--post-accent);
-  --guide-primary-ink: var(--post-accent-ink);
-  --guide-primary-soft: color-mix(in srgb, var(--post-accent-soft) 82%, var(--surface));
-  --guide-primary-border: var(--post-accent-border);
-
-  --guide-secondary: #2f7d78;
-  --guide-secondary-ink: #245f5b;
-  --guide-secondary-soft: #edf8f6;
-  --guide-secondary-border: #acd8d3;
-
-  --guide-warm: #a66224;
-  --guide-warm-ink: #7d4719;
-  --guide-warm-soft: #fff5e8;
-  --guide-warm-border: #e7c49c;
-
-  --guide-proof: #6b5aa5;
-  --guide-proof-ink: #55448d;
-  --guide-proof-soft: #f4f1fb;
-  --guide-proof-border: #cfc5e8;
-
-  width: min(1240px, calc(100% - 48px));
-  padding-top: clamp(48px, 7vw, 82px);
+/* AUC area: distinct score levels, ties, and straight-line interpolation */
+.article-prose .roc-threshold-figure {
+  --rt-accent: var(--post-accent, var(--accent));
+  --rt-soft: var(--post-accent-soft, var(--accent-soft));
+  --rt-border: var(--post-accent-border, var(--border-strong));
+  width: min(1060px, calc(100vw - 48px));
+  max-width: none;
+  margin: 2rem 0 2.25rem 50%;
+  padding: clamp(1rem, 2.4vw, 1.65rem);
+  transform: translateX(-50%);
+  border: 1px solid var(--border);
+  background: var(--surface);
 }
-
-:root[data-theme="dark"] .post-page--guided {
-  --guide-primary-soft: color-mix(in srgb, var(--post-accent-soft) 76%, var(--surface));
-
-  --guide-secondary: #87d8d0;
-  --guide-secondary-ink: #a7eee7;
-  --guide-secondary-soft: #173a38;
-  --guide-secondary-border: #3f7773;
-
-  --guide-warm: #f0bd7f;
-  --guide-warm-ink: #ffd4a4;
-  --guide-warm-soft: #3a2b1d;
-  --guide-warm-border: #7f5d38;
-
-  --guide-proof: #c9bbf3;
-  --guide-proof-ink: #dfd5ff;
-  --guide-proof-soft: #2d2740;
-  --guide-proof-border: #675b8a;
+.article-prose .roc-threshold-figure,
+.article-prose .roc-threshold-figure * { box-sizing: border-box; }
+.article-prose .roc-threshold-figure p { margin: 0; }
+.article-prose .roc-threshold-figure__header {
+  max-width: 850px;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--border-strong);
 }
-
-.post-page--guided .post-page__header {
-  max-width: 920px;
-}
-.post-page--guided .post-page__header > h1 {
-  max-width: 860px;
-  font-size: clamp(3rem, 6vw, 5.8rem);
-}
-.post-page--guided .post-page__lede {
-  max-width: 760px;
-  font-size: clamp(1rem, 1.8vw, 1.16rem);
-  line-height: 1.72;
-}
-.post-page--guided .post-page__rule {
-  height: 3px;
-  margin-top: clamp(34px, 5vw, 54px);
-  border: 0;
-  background: linear-gradient(
-    90deg,
-    var(--guide-primary) 0 48%,
-    var(--guide-secondary) 48% 76%,
-    var(--guide-warm) 76% 100%
-  );
-  opacity: 0.78;
-}
-
-.reading-progress {
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  z-index: 90;
-  height: 3px;
-  pointer-events: none;
-}
-.reading-progress > span {
+.article-prose .roc-threshold-figure__kicker,
+.article-prose .roc-threshold-section-label {
   display: block;
-  width: 100%;
-  height: 100%;
-  transform: scaleX(0);
-  transform-origin: left center;
-  background: linear-gradient(90deg, var(--guide-primary), var(--guide-secondary));
-  transition: transform 90ms linear;
-}
-
-.post-reading-layout {
-  display: grid;
-  grid-template-columns: minmax(190px, 238px) minmax(0, 760px);
-  gap: clamp(46px, 6vw, 88px);
-  align-items: start;
-  justify-content: center;
-}
-.post-reading-main {
-  min-width: 0;
-}
-.post-reading-rail {
-  position: sticky;
-  top: 28px;
-  max-height: calc(100vh - 56px);
-  overflow: auto;
-  scrollbar-width: thin;
-}
-.post-toc-toggle {
-  display: none;
-}
-
-.post-page--guided .post-toc {
-  margin: 0;
-  padding: 0 10px 24px 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-.post-page--guided .post-toc__title {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  margin: 0 0 14px;
-  padding: 9px 0 12px;
-  border-bottom: 1px solid var(--guide-primary-border);
-  background: var(--page);
-  color: var(--guide-primary-ink);
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.post-page--guided .post-toc__title::before {
-  content: none;
-}
-.post-page--guided .post-toc__list {
-  gap: 2px;
-}
-.post-page--guided .post-toc__item--top {
-  position: relative;
-  padding-left: 30px;
-}
-.post-page--guided .post-toc__item--top::before {
-  content: attr(data-chapter-number);
-  position: absolute;
-  top: 0.58rem;
-  left: 0;
-  width: 22px;
-  color: var(--muted);
-  font-size: 0.61rem;
+  color: var(--rt-accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: .68rem;
   font-weight: 700;
-  text-align: right;
+  letter-spacing: .045em;
+  line-height: 1.45;
+  text-transform: lowercase;
 }
-.post-page--guided .post-toc__item--top > .post-toc__link::before {
-  content: none;
-}
-.post-page--guided .post-toc__link {
-  display: block;
-  padding: 7px 8px;
-  border-radius: 6px;
-  color: var(--muted);
-  font-size: 0.72rem;
-  line-height: 1.35;
-  text-decoration: none;
-}
-.post-page--guided .post-toc__item--top > .post-toc__link {
+.article-prose .roc-threshold-figure__title {
+  margin-top: .32rem;
   color: var(--ink);
-  font-weight: 650;
-}
-.post-page--guided .post-toc__item--top.is-current::before,
-.post-page--guided .post-toc__item--top.is-current > .post-toc__link {
-  color: var(--guide-primary-ink);
-}
-.post-page--guided .post-toc__item--top.is-current > .post-toc__link {
-  background: var(--guide-primary-soft);
-  box-shadow: inset 3px 0 0 var(--guide-primary);
-}
-.post-page--guided .post-toc__sublist {
-  display: none;
-  margin: 2px 0 8px 8px;
-  padding-left: 10px;
-  border-left: 1px solid var(--guide-secondary-border);
-}
-.post-page--guided .post-toc__item--top.is-current > .post-toc__sublist {
-  display: block;
-}
-.post-page--guided .post-toc__item--sub > .post-toc__link {
-  padding: 5px 7px;
-  color: var(--muted);
-  font-size: 0.66rem;
-}
-.post-page--guided .post-toc__item--sub > .post-toc__link:hover {
-  color: var(--guide-secondary-ink);
-}
-
-.reading-status {
-  position: sticky;
-  top: 0;
-  z-index: 25;
-  display: flex;
-  min-height: 48px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  margin: 0 0 10px;
-  padding: 8px 0 7px;
-  border-bottom: 1px solid color-mix(in srgb, var(--guide-primary-border) 72%, transparent);
-  background: color-mix(in srgb, var(--page) 94%, transparent);
-  backdrop-filter: blur(10px);
-}
-.reading-status__chapter {
-  display: flex;
-  min-width: 0;
-  align-items: baseline;
-  gap: 9px;
-}
-.reading-status__number {
-  flex: none;
-  color: var(--guide-primary-ink);
-  font-size: 0.67rem;
-  font-weight: 750;
-  letter-spacing: 0.035em;
-}
-.reading-status__title {
-  overflow: hidden;
-  color: var(--muted);
-  font-size: 0.68rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.reading-status__disclosures {
-  flex: none;
-  padding: 5px 8px;
-  border: 1px solid var(--guide-warm-border);
-  border-radius: 999px;
-  background: var(--guide-warm-soft);
-  color: var(--guide-warm-ink);
-  font-size: 0.64rem;
-  font-weight: 700;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.28rem, 2.3vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: -.02em;
   line-height: 1.2;
 }
-.reading-status__disclosures:hover {
-  border-color: var(--guide-warm);
+.article-prose .roc-threshold-figure__header p {
+  margin-top: .68rem;
+  color: var(--muted);
+  font-size: .88rem;
+  line-height: 1.62;
 }
-.reading-status__disclosures:focus-visible,
-.post-toc-toggle:focus-visible,
-.guided-disclosure__summary:focus-visible {
-  outline: 2px solid var(--guide-primary);
-  outline-offset: 3px;
-}
-
-.post-page--guided .article-prose {
-  max-width: none;
-  font-size: clamp(1rem, 1.25vw, 1.07rem);
-  line-height: 1.78;
-}
-.post-page--guided .article-internal-title {
-  display: none;
-}
-.post-page--guided .article-prose > blockquote:first-of-type {
-  margin: 0 0 clamp(52px, 8vw, 86px);
-  padding: 19px 22px 19px 25px;
-  border: 0;
-  border-left: 4px solid var(--guide-primary);
-  background: linear-gradient(
-    108deg,
-    var(--guide-primary-soft),
-    color-mix(in srgb, var(--guide-secondary-soft) 70%, transparent) 68%,
-    transparent 92%
-  );
-  color: var(--ink);
-  font-size: 1.02em;
-}
-.post-page--guided .article-prose > .chapter-divider-source,
-.post-page--guided .article-chapter > hr:first-child,
-.guided-fold-start,
-.guided-fold-end {
-  display: none;
-}
-
-.article-chapter {
-  position: relative;
-  padding: clamp(64px, 9vw, 106px) 0 clamp(70px, 10vw, 116px);
-  border-top: 1px solid var(--border-strong);
-}
-.article-chapter::before {
-  content: "";
-  position: absolute;
-  top: -1px;
-  left: 0;
-  width: min(180px, 28%);
-  height: 2px;
-  background: linear-gradient(90deg, var(--guide-primary), var(--guide-secondary));
-}
-.article-chapter:first-of-type {
-  padding-top: 36px;
-  border-top: 0;
-}
-.article-chapter:first-of-type::before {
-  display: none;
-}
-.post-page--guided .article-chapter > h2 {
-  display: grid;
-  grid-template-columns: minmax(58px, auto) minmax(0, 1fr);
-  gap: clamp(16px, 3vw, 30px);
-  align-items: start;
-  margin: 0 0 0.85em;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
+.article-prose .roc-threshold-math,
+.article-prose .roc-threshold-figure i,
+.article-prose .roc-threshold-figure strong {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2rem, 4vw, 3.25rem);
-  font-weight: 500;
-  letter-spacing: -0.045em;
-  line-height: 1.04;
 }
-.chapter-heading__number {
-  padding-top: 0.5em;
-  color: var(--guide-primary-ink);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.29em;
-  font-weight: 750;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-}
-.chapter-heading__title {
-  max-width: 700px;
-}
-.chapter-lead {
-  max-width: 690px;
-  margin: 0 0 2.3em !important;
-  color: color-mix(in srgb, var(--ink) 82%, var(--muted));
-  font-size: 1.1em;
-  line-height: 1.67;
-}
-
-.article-subsection {
-  position: relative;
-  margin: clamp(48px, 7vw, 76px) 0 0;
-  padding-left: clamp(20px, 3vw, 34px);
-  border-left: 1px solid var(--guide-secondary-border);
-}
-.article-subsection::before {
-  content: "";
-  position: absolute;
-  top: 0.48rem;
-  left: -5px;
-  width: 8px;
-  height: 8px;
-  border: 2px solid var(--page);
-  border-radius: 50%;
-  background: var(--guide-secondary);
-  box-shadow: 0 0 0 1px var(--guide-secondary-border);
-}
-.post-page--guided .article-subsection > h3 {
-  margin: 0 0 1.05em;
-  padding: 0 0 0.55em;
-  border: 0;
-  border-bottom: 1px solid var(--guide-secondary-border);
-  background: transparent;
-  color: var(--guide-secondary-ink);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: clamp(1.12rem, 2vw, 1.34rem);
-  font-weight: 750;
-  letter-spacing: -0.035em;
-  line-height: 1.3;
-}
-
-/* h4 is a real conceptual pivot, not a tiny annotation. */
-.post-page--guided .article-subsection h4 {
-  display: flex;
-  align-items: baseline;
-  gap: 0.72rem;
-  margin: 2.75em 0 1.05em;
-  padding: 0;
-  border: 0;
-  color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.16rem, 1.8vw, 1.36rem);
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  line-height: 1.35;
-}
-.post-page--guided .article-subsection h4::before {
-  content: "";
-  flex: 0 0 24px;
-  border-top: 3px solid var(--guide-warm);
-  transform: translateY(-0.17em);
-}
-.post-page--guided .article-subsection h5,
-.post-page--guided .article-subsection h6 {
-  margin: 2.3em 0 0.9em;
-  padding-left: 0.8rem;
-  border-left: 2px solid var(--guide-proof-border);
-  color: var(--guide-proof-ink);
-  font-size: 0.94rem;
-  line-height: 1.42;
-}
-
-/* Semantically authored disclosure blocks. */
-.guided-disclosure {
-  --disclosure-accent: var(--guide-warm);
-  --disclosure-ink: var(--guide-warm-ink);
-  --disclosure-soft: var(--guide-warm-soft);
-  --disclosure-border: var(--guide-warm-border);
-  margin: 1.55em 0 1.8em;
-  overflow: clip;
-  border: 1px solid var(--disclosure-border);
-  border-left: 4px solid var(--disclosure-accent);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--disclosure-soft) 78%, var(--surface));
-}
-.guided-disclosure--proof {
-  --disclosure-accent: var(--guide-proof);
-  --disclosure-ink: var(--guide-proof-ink);
-  --disclosure-soft: var(--guide-proof-soft);
-  --disclosure-border: var(--guide-proof-border);
-}
-.guided-disclosure__summary {
+.article-prose .roc-threshold-figure__flow {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
-  gap: 10px;
-  align-items: center;
-  padding: 12px 14px 12px 13px;
-  color: var(--disclosure-ink);
-  cursor: pointer;
-  list-style: none;
-  line-height: 1.35;
+  grid-template-columns: minmax(0,.92fr) 2.2rem minmax(0,1.08fr);
+  gap: 1rem;
+  align-items: stretch;
+  margin-top: 1.1rem;
 }
-.guided-disclosure__summary::-webkit-details-marker {
-  display: none;
-}
-.guided-disclosure__summary:hover {
-  background: color-mix(in srgb, var(--disclosure-soft) 66%, transparent);
-}
-.guided-disclosure__icon {
-  position: relative;
-  width: 18px;
-  height: 18px;
-  border: 1px solid var(--disclosure-border);
-  border-radius: 50%;
-  background: var(--surface);
-}
-.guided-disclosure__icon::before,
-.guided-disclosure__icon::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 8px;
-  border-top: 1.5px solid var(--disclosure-accent);
-  transform: translate(-50%, -50%);
-}
-.guided-disclosure__icon::after {
-  transform: translate(-50%, -50%) rotate(90deg);
-  transition: transform 150ms ease;
-}
-.guided-disclosure[open] .guided-disclosure__icon::after {
-  transform: translate(-50%, -50%) rotate(0deg);
-}
-.guided-disclosure__label {
+.article-prose .roc-threshold-score,
+.article-prose .roc-threshold-move {
   min-width: 0;
-  font-weight: 720;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
 }
-.guided-disclosure__hint {
-  color: color-mix(in srgb, var(--disclosure-ink) 70%, var(--muted));
-  font-size: 0.61rem;
-  letter-spacing: 0.045em;
-  text-transform: uppercase;
-  white-space: nowrap;
+.article-prose .roc-threshold-flow-arrow {
+  display: grid;
+  place-items: center;
+  color: var(--rt-accent);
+  font-size: 1.45rem;
+  font-weight: 800;
 }
-.guided-disclosure__body {
-  padding: 2px 17px 16px 45px;
-  border-top: 1px solid color-mix(in srgb, var(--disclosure-border) 70%, transparent);
-  background: color-mix(in srgb, var(--surface) 58%, transparent);
-}
-.guided-disclosure__body > :first-child {
+.article-prose .roc-threshold-score__group {
+  position: relative;
   margin-top: 1rem;
-}
-.guided-disclosure__body > :last-child {
-  margin-bottom: 0;
-}
-
-.post-page--guided .article-prose mjx-container[display="true"] {
-  margin: 2em 0 !important;
-  padding: 1.05em 1.2em;
-  border: 0;
-  border-left: 3px solid var(--guide-primary);
-  background: linear-gradient(100deg, var(--guide-primary-soft), transparent 88%);
-}
-.post-page--guided .article-prose blockquote:not(:first-of-type) {
-  margin: 2.1em 0;
-  padding: 14px 18px;
-  border: 1px solid var(--guide-secondary-border);
-  border-left: 3px solid var(--guide-secondary);
-  background: color-mix(in srgb, var(--guide-secondary-soft) 66%, var(--surface));
-  color: var(--ink);
-  font-size: 0.96em;
-}
-.post-page--guided .article-prose pre {
-  margin: 2em 0;
-  border: 1px solid var(--guide-proof-border);
-  border-left: 4px solid var(--guide-proof);
-  border-radius: 0;
-}
-.post-page--guided .article-prose table {
-  width: calc(100% + 64px);
-  margin: 2.2em 0 2.2em -32px;
+  padding: 1rem .8rem .85rem;
+  border: 1px solid var(--rt-border);
   background: var(--surface);
-  font-size: 0.86em;
 }
-.post-page--guided .article-prose th {
-  background: var(--guide-primary-soft);
-  color: var(--guide-primary-ink);
+.article-prose .roc-threshold-score__line {
+  position: absolute;
+  top: 2.42rem;
+  right: .8rem;
+  left: .8rem;
+  height: 1px;
+  background: var(--rt-border);
 }
-.post-page--guided .article-prose img,
-.post-page--guided .article-prose .image-zoom-trigger {
-  width: calc(100% + 64px);
-  max-width: calc(100% + 64px);
-  margin-left: -32px;
+.article-prose .roc-threshold-score__value {
+  position: relative;
+  z-index: 1;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 .55rem;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: .72rem;
+  text-align: center;
 }
-
-.chapter-navigation {
+.article-prose .roc-threshold-score__samples {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 18px;
-  margin-top: clamp(62px, 9vw, 96px);
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: .55rem;
+  margin-top: .85rem;
 }
-.chapter-navigation__link {
+.article-prose .roc-threshold-sample {
   display: grid;
-  gap: 4px;
+  justify-items: center;
+  gap: .28rem;
   min-width: 0;
-  color: var(--muted) !important;
-  text-decoration: none !important;
+  color: var(--muted);
+  font-size: .62rem;
+  line-height: 1.35;
+  text-align: center;
 }
-.chapter-navigation__link--next {
+.article-prose .roc-threshold-sample b {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1rem;
+  line-height: 1;
+}
+.article-prose .roc-threshold-sample--positive b {
+  background: var(--rt-accent);
+  color: var(--surface);
+}
+.article-prose .roc-threshold-sample--negative b {
+  border: 1px solid var(--border-strong);
+  background: var(--surface-muted);
+  color: var(--ink);
+}
+.article-prose .roc-threshold-score__threshold {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
+  gap: .5rem;
+  align-items: center;
+  margin-top: .85rem;
+  color: var(--muted);
+  font-size: .69rem;
+  line-height: 1.35;
+  text-align: center;
+}
+.article-prose .roc-threshold-score__arrow {
+  color: var(--rt-accent);
+  font-size: 1rem;
+  font-weight: 800;
+}
+.article-prose .roc-threshold-score__conclusion,
+.article-prose .roc-threshold-move__interpolation {
+  margin-top: .82rem;
+  padding-top: .76rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: .76rem;
+  line-height: 1.55;
+}
+.article-prose .roc-threshold-move__states,
+.article-prose .roc-threshold-move__changes {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: .65rem;
+}
+.article-prose .roc-threshold-move__states { margin-top: .85rem; }
+.article-prose .roc-threshold-move__states > div,
+.article-prose .roc-threshold-move__changes > div { min-width: 0; }
+.article-prose .roc-threshold-move__states span,
+.article-prose .roc-threshold-move__changes span,
+.article-prose .roc-threshold-area__part span,
+.article-prose .roc-threshold-area__result span {
+  display: block;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: .62rem;
+  line-height: 1.4;
+  text-transform: lowercase;
+}
+.article-prose .roc-threshold-move__states strong,
+.article-prose .roc-threshold-move__changes strong,
+.article-prose .roc-threshold-area__part strong,
+.article-prose .roc-threshold-area__result strong {
+  display: block;
+  margin-top: .18rem;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: .83rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.article-prose .roc-threshold-move__states > div:last-child,
+.article-prose .roc-threshold-move__changes > div:last-child { text-align: right; }
+.article-prose .roc-threshold-plot-shell {
+  display: grid;
+  grid-template-columns: 1.4rem minmax(0,1fr);
+  grid-template-rows: minmax(0,auto) 1.15rem;
+  gap: .2rem .4rem;
+  align-items: center;
+  margin-top: .35rem;
+}
+.article-prose .roc-threshold-plot-shell__ylabel,
+.article-prose .roc-threshold-plot-shell__xlabel {
+  color: var(--muted);
+  font-size: .66rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.article-prose .roc-threshold-plot-shell__ylabel {
+  grid-column: 1;
+  grid-row: 1;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-align: center;
+}
+.article-prose .roc-threshold-plot-shell__xlabel {
+  grid-column: 2;
+  grid-row: 2;
   text-align: right;
 }
-.chapter-navigation__link span {
-  color: var(--guide-primary-ink);
-  font-size: 0.67rem;
-  letter-spacing: 0.025em;
-  text-transform: uppercase;
-}
-.chapter-navigation__link--next span {
-  color: var(--guide-secondary-ink);
-}
-.chapter-navigation__link strong {
-  overflow: hidden;
-  color: var(--muted) !important;
-  font-family: Georgia, "Times New Roman", serif !important;
-  font-size: 0.9rem !important;
-  font-weight: 400;
-  line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.chapter-navigation__link:hover strong {
-  color: var(--ink) !important;
-}
-
-@media (max-width: 980px) {
-  .post-page--guided {
-    width: min(860px, calc(100% - 40px));
-  }
-  .post-reading-layout {
-    display: block;
-  }
-  .post-reading-rail {
-    position: sticky;
-    top: 8px;
-    z-index: 32;
-    max-height: none;
-    margin-bottom: 12px;
-    overflow: visible;
-  }
-  .post-toc-toggle {
-    display: flex;
-    width: 100%;
-    min-height: 44px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 9px 12px;
-    border: 1px solid var(--guide-primary-border);
-    background: var(--page);
-    color: var(--guide-primary-ink);
-    font-size: 0.76rem;
-  }
-  .post-page--guided .post-toc {
-    display: none;
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    width: min(100%, 480px);
-    max-height: min(68vh, 560px);
-    padding: 16px;
-    overflow: auto;
-    border: 1px solid var(--guide-primary-border);
-    background: var(--page);
-    box-shadow: 0 16px 42px color-mix(in srgb, var(--ink) 13%, transparent);
-  }
-  .post-page--guided .post-toc.is-open {
-    display: block;
-  }
-  .post-page--guided .post-toc__title {
-    position: static;
-  }
-  .reading-status {
-    top: 60px;
-  }
-}
-
-@media (max-width: 680px) {
-  .post-page--guided {
-    width: min(100% - 28px, 860px);
-    padding-top: 42px;
-  }
-  .reading-status {
-    align-items: center;
-  }
-  .reading-status__title {
-    display: none;
-  }
-  .reading-status__disclosures {
-    max-width: 54%;
-    font-size: 0.59rem;
-    text-align: center;
-  }
-  .post-page--guided .article-chapter > h2 {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-  .chapter-heading__number {
-    padding-top: 0;
-    font-size: 0.34em;
-  }
-  .article-subsection {
-    padding-left: 18px;
-  }
-  .guided-disclosure__summary {
-    grid-template-columns: 22px minmax(0, 1fr);
-  }
-  .guided-disclosure__hint {
-    display: none;
-  }
-  .guided-disclosure__body {
-    padding-right: 13px;
-    padding-left: 18px;
-  }
-  .post-page--guided .article-prose table,
-  .post-page--guided .article-prose img,
-  .post-page--guided .article-prose .image-zoom-trigger {
-    width: 100%;
-    max-width: 100%;
-    margin-left: 0;
-  }
-  .chapter-navigation {
-    grid-template-columns: 1fr;
-  }
-  .chapter-navigation__link--next {
-    text-align: left;
-  }
-}
-
-@media print {
-  .reading-progress,
-  .post-reading-rail,
-  .reading-status,
-  .chapter-navigation,
-  .guided-disclosure__summary {
-    display: none !important;
-  }
-  .post-page--guided,
-  .post-reading-layout,
-  .post-reading-main,
-  .post-page--guided .article-prose {
-    display: block;
-    width: auto;
-    max-width: none;
-  }
-  .guided-disclosure,
-  .guided-disclosure__body {
-    display: block !important;
-    overflow: visible;
-    border: 0;
-    background: transparent;
-  }
-  .guided-disclosure__body {
-    padding: 0;
-  }
-  .article-chapter {
-    break-before: page;
-  }
-  .article-chapter:first-of-type {
-    break-before: auto;
-  }
-}
-
-/* Long-form baseline shared by ordinary mathematical/physical articles.
-   Guided pages use the richer chapter system above; shorter articles keep
-   their existing layout but share the same hierarchy and equation rhythm. */
-.post-page:not(.post-page--guided):not(.post-page--cyber) .article-prose h4 {
-  display: flex;
-  align-items: baseline;
-  gap: 0.65rem;
-  margin: 2.65em 0 0.95em;
-  padding: 0;
-  border: 0;
-  color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.12rem, 1.8vw, 1.3rem);
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  line-height: 1.38;
-}
-.post-page:not(.post-page--guided):not(.post-page--cyber) .article-prose h4::before {
-  content: "";
-  flex: 0 0 22px;
-  border-top: 3px solid color-mix(in srgb, var(--post-accent) 72%, #a66224);
-  transform: translateY(-0.16em);
-}
-.post-page:not(.post-page--guided):not(.post-page--cyber) .article-prose h5,
-.post-page:not(.post-page--guided):not(.post-page--cyber) .article-prose h6 {
-  margin: 2.15em 0 0.8em;
-  padding-left: 0.75rem;
-  border-left: 2px solid var(--post-accent-border);
-  color: var(--post-accent-ink);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.92rem;
-  line-height: 1.45;
-}
-.post-page:not(.post-page--guided):not(.post-page--cyber) .article-prose > hr {
-  margin: 4.25em 0 3.65em;
-}
-.article-prose p:has(> mjx-container[display="true"]) {
-  max-width: 100%;
-}
-.article-prose mjx-container[display="true"] {
-  scrollbar-width: thin;
-  overscroll-behavior-inline: contain;
-}
-
-/* combined-site-overlay:2026-07-14:start */
-.article-prose iframe[data-article-visualization] {
+.article-prose .roc-threshold-plot {
+  grid-column: 2;
+  grid-row: 1;
   display: block;
   width: 100%;
-  max-width: 100%;
-  min-height: 560px;
-  height: 760px;
-  margin: 1.8em 0 2.25em;
-  overflow: hidden;
-  border: 0;
-  background: transparent;
+  height: auto;
+  max-height: 15rem;
 }
-.article-prose iframe[data-article-visualization="compact"] {
-  min-height: 420px;
-  height: 560px;
+.article-prose .roc-threshold-plot__axis {
+  stroke: var(--border-strong);
+  stroke-width: 1.35;
+  vector-effect: non-scaling-stroke;
 }
-.whoami-blog-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
-  gap: 12px;
-  margin: 1.15rem 0 0;
-  padding: 0;
-  list-style: none;
+.article-prose .roc-threshold-plot__axis-head { fill: var(--border-strong); }
+.article-prose .roc-threshold-plot__guide {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 4 5;
+  vector-effect: non-scaling-stroke;
 }
-.whoami-blog-card {
-  min-width: 0;
-  padding: 14px 15px;
+.article-prose .roc-threshold-plot__base {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.article-prose .roc-threshold-plot__rise { fill: var(--rt-soft); }
+.article-prose .roc-threshold-plot__segment {
+  stroke: var(--rt-accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.article-prose .roc-threshold-plot__point { fill: var(--rt-accent); }
+.article-prose .roc-threshold-move__changes {
+  margin-top: .3rem;
+  padding-top: .7rem;
+  border-top: 1px solid var(--border);
+}
+.article-prose .roc-threshold-area {
+  margin-top: 1rem;
+  padding: 1rem;
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid var(--rt-accent);
   background: var(--surface);
 }
-.whoami-blog-card > a {
-  display: inline-block;
+.article-prose .roc-threshold-area__heading {
+  display: grid;
+  grid-template-columns: minmax(0,.9fr) minmax(260px,1.1fr);
+  gap: 1.25rem;
+  align-items: end;
+}
+.article-prose .roc-threshold-area__title {
+  margin-top: .2rem;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.12rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.article-prose .roc-threshold-area__heading p {
+  color: var(--muted);
+  font-size: .76rem;
+  line-height: 1.55;
+}
+.article-prose .roc-threshold-area__parts {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1.2fr);
+  gap: .65rem;
+  align-items: stretch;
+  margin-top: .85rem;
+}
+.article-prose .roc-threshold-area__part,
+.article-prose .roc-threshold-area__result {
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0,1fr);
+  gap: .65rem;
+  align-items: start;
+  min-width: 0;
+  padding: .72rem;
+  border-top: 1px solid var(--border);
+}
+.article-prose .roc-threshold-area__result {
+  grid-template-columns: minmax(0,1fr);
+  background: var(--rt-soft);
+  border-top-color: var(--rt-border);
+}
+.article-prose .roc-threshold-area__result strong {
+  color: var(--post-accent-ink,var(--rt-accent));
+  font-size: .9rem;
+}
+.article-prose .roc-threshold-area__swatch {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  margin-top: .18rem;
+  border: 1px solid var(--rt-border);
+}
+.article-prose .roc-threshold-area__swatch--base { background: var(--surface); }
+.article-prose .roc-threshold-area__swatch--rise { background: var(--rt-soft); }
+.article-prose .roc-threshold-area__plus,
+.article-prose .roc-threshold-area__equals {
+  display: grid;
+  place-items: center;
+  color: var(--rt-accent);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.15rem;
   font-weight: 700;
 }
-.whoami-blog-card > span {
-  display: block;
-  margin-top: 6px;
+.article-prose .roc-threshold-figure__caption {
+  margin-top: 1rem;
+  padding: .9rem 1rem;
+  border-top: 1px solid var(--border-strong);
+  background: var(--surface-muted);
   color: var(--muted);
-  font-size: .82rem;
-  line-height: 1.5;
+  font-size: .8rem;
+  line-height: 1.6;
 }
-.elliptic-acknowledgment {
-  border-left-color: var(--post-accent, var(--accent));
+.article-prose .roc-threshold-figure__caption strong {
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: .76rem;
 }
-@media (max-width: 620px) {
-  .article-prose iframe[data-article-visualization] {
-    min-height: 680px;
+@media (max-width: 820px) {
+  .article-prose .roc-threshold-figure__flow { grid-template-columns: minmax(0,1fr); }
+  .article-prose .roc-threshold-flow-arrow { min-height: 1.5rem; transform: rotate(90deg); }
+  .article-prose .roc-threshold-area__heading { grid-template-columns: minmax(0,1fr); gap: .55rem; }
+  .article-prose .roc-threshold-area__parts { grid-template-columns: minmax(0,1fr); }
+  .article-prose .roc-threshold-area__plus,
+  .article-prose .roc-threshold-area__equals { min-height: 1.2rem; }
+}
+@media (max-width: 520px) {
+  .article-prose .roc-threshold-figure {
+    width: 100%;
+    margin-left: 0;
+    padding: .82rem;
+    transform: none;
   }
+  .article-prose .roc-threshold-score,
+  .article-prose .roc-threshold-move,
+  .article-prose .roc-threshold-area { padding: .8rem; }
+  .article-prose .roc-threshold-score__samples { gap: .35rem; }
+  .article-prose .roc-threshold-sample { font-size: .58rem; }
+  .article-prose .roc-threshold-move__states,
+  .article-prose .roc-threshold-move__changes { grid-template-columns: minmax(0,1fr); }
+  .article-prose .roc-threshold-move__states > div:last-child,
+  .article-prose .roc-threshold-move__changes > div:last-child { text-align: left; }
+  .article-prose .roc-threshold-score__threshold { grid-template-columns: minmax(0,1fr); }
+  .article-prose .roc-threshold-score__arrow { line-height: 1; }
 }
-/* combined-site-overlay:2026-07-14:end */
+</style></head><body><header class="site-header"><div class="shell header-inner"><a class="site-mark">~/lahavpadan.github.io/</a><nav class="site-nav"><a>posts</a><a>whoami</a><button class="theme-toggle">◐</button></nav></div></header><main class="site-main"><article class="shell post-page post-page--accent-machine-learning"><header class="post-page__header"><div class="post-page__meta"><time>July 10, 2026</time><span>·</span><span>comprehensive</span></div><h1>AUC-ROC</h1><p class="post-page__lede">How ROC curves summarize threshold trade-offs, why AUC is an area, and why it also equals a positive-versus-negative ranking probability.</p></header><div class="post-page__rule"></div><div class="article-prose"><h2>AUC as area</h2><p>The ROC curve is evaluated at the distinct score values produced by the classifier. At one score level, every sample with that exact score enters together.</p><figure class="roc-threshold-figure" aria-labelledby="roc-threshold-title">
+  <header class="roc-threshold-figure__header">
+    <span class="roc-threshold-figure__kicker">one score level, one ROC move</span>
+    <div id="roc-threshold-title" class="roc-threshold-figure__title">Equal classifier scores can move both rates at once</div>
+    <p>
+      A <strong>tie</strong> means that several samples received exactly the same classifier score
+      <span class="roc-threshold-math">s</span>. A threshold cannot separate them: once the threshold passes
+      <span class="roc-threshold-math">s</span>, every sample with that score enters the predicted-positive set together.
+    </p>
+  </header>
+
+  <div class="roc-threshold-figure__flow">
+    <section class="roc-threshold-score" aria-labelledby="roc-threshold-score-title">
+      <div class="roc-threshold-section-label" id="roc-threshold-score-title">At the score value <span class="roc-threshold-math">s</span></div>
+
+      <div class="roc-threshold-score__group" aria-label="Two actual positives and one actual negative all have the same classifier score s">
+        <div class="roc-threshold-score__line" aria-hidden="true"></div>
+        <div class="roc-threshold-score__value">same classifier score <i>s</i></div>
+        <div class="roc-threshold-score__samples">
+          <span class="roc-threshold-sample roc-threshold-sample--positive"><b>+</b><span>actual positive</span></span>
+          <span class="roc-threshold-sample roc-threshold-sample--negative"><b>−</b><span>actual negative</span></span>
+          <span class="roc-threshold-sample roc-threshold-sample--positive"><b>+</b><span>actual positive</span></span>
+        </div>
+      </div>
+
+      <div class="roc-threshold-score__threshold">
+        <span>threshold above <i>s</i></span>
+        <span class="roc-threshold-score__arrow" aria-hidden="true">↓</span>
+        <span>threshold below <i>s</i></span>
+      </div>
+
+      <p class="roc-threshold-score__conclusion">
+        Before the threshold passes <i>s</i>, none of these three samples is predicted positive.
+        After the threshold passes <i>s</i>, all three are predicted positive. There is no intermediate threshold state.
+      </p>
+    </section>
+
+    <div class="roc-threshold-flow-arrow" aria-hidden="true">→</div>
+
+    <section class="roc-threshold-move" aria-labelledby="roc-threshold-move-title">
+      <div class="roc-threshold-section-label" id="roc-threshold-move-title">The corresponding move in ROC space</div>
+
+      <div class="roc-threshold-move__states">
+        <div>
+          <span>before passing <i>s</i></span>
+          <strong>(F<sub>j</sub>, T<sub>j</sub>)</strong>
+        </div>
+        <div>
+          <span>after passing <i>s</i></span>
+          <strong>(F<sub>j+1</sub>, T<sub>j+1</sub>)</strong>
+        </div>
+      </div>
+
+      <div class="roc-threshold-move__changes">
+        <div><span>true positive rate</span><strong>TPR = TP / |P|</strong></div>
+        <div><span>false positive rate</span><strong>FPR = FP / |N|</strong></div>
+      </div>
+
+      <div class="roc-threshold-plot-shell">
+        <div class="roc-threshold-plot-shell__ylabel">TPR</div>
+        <svg class="roc-threshold-plot" viewBox="0 0 430 285" role="img" aria-label="Two attainable ROC points joined by a straight segment. The area below the segment is split into a rectangle and a triangle.">
+          <line class="roc-threshold-plot__axis" x1="52" y1="244" x2="404" y2="244" />
+          <line class="roc-threshold-plot__axis" x1="52" y1="244" x2="52" y2="28" />
+          <path class="roc-threshold-plot__axis-head" d="M404 244 l-10 -6 v12 z" />
+          <path class="roc-threshold-plot__axis-head" d="M52 28 l-6 10 h12 z" />
+
+          <rect class="roc-threshold-plot__base" x="118" y="151" width="214" height="93" />
+          <path class="roc-threshold-plot__rise" d="M118 151 L332 73 L332 151 Z" />
+          <line class="roc-threshold-plot__guide" x1="118" y1="151" x2="118" y2="244" />
+          <line class="roc-threshold-plot__guide" x1="332" y1="73" x2="332" y2="244" />
+          <line class="roc-threshold-plot__segment" x1="118" y1="151" x2="332" y2="73" />
+          <circle class="roc-threshold-plot__point" cx="118" cy="151" r="5.5" />
+          <circle class="roc-threshold-plot__point" cx="332" cy="73" r="5.5" />
+        </svg>
+        <div class="roc-threshold-plot-shell__xlabel">FPR</div>
+      </div>
+
+      <div class="roc-threshold-move__changes">
+        <div><span>one negative entered</span><strong>F<sub>j+1</sub> − F<sub>j</sub> = 1 / |N|</strong></div>
+        <div><span>two positives entered</span><strong>T<sub>j+1</sub> − T<sub>j</sub> = 2 / |P|</strong></div>
+      </div>
+
+      <p class="roc-threshold-move__interpolation">
+        The empirical ROC curve contains these two threshold states. For AUC, neighboring states are joined by a straight segment.
+        Because both coordinates changed, the connecting segment is slanted.
+      </p>
+    </section>
+  </div>
+
+  <section class="roc-threshold-area" aria-labelledby="roc-threshold-area-title">
+    <div class="roc-threshold-area__heading">
+      <div>
+        <span class="roc-threshold-section-label">the area below that straight segment</span>
+        <div id="roc-threshold-area-title" class="roc-threshold-area__title">A rectangle plus a triangle</div>
+      </div>
+      <p>
+        The lower endpoint has height <span class="roc-threshold-math">T<sub>j</sub></span>.
+        While moving from <span class="roc-threshold-math">F<sub>j</sub></span> to <span class="roc-threshold-math">F<sub>j+1</sub></span>,
+        the segment rises from <span class="roc-threshold-math">T<sub>j</sub></span> to <span class="roc-threshold-math">T<sub>j+1</sub></span>.
+      </p>
+    </div>
+
+    <div class="roc-threshold-area__parts">
+      <div class="roc-threshold-area__part">
+        <span class="roc-threshold-area__swatch roc-threshold-area__swatch--base" aria-hidden="true"></span>
+        <div><span>rectangle already below the lower endpoint</span><strong>T<sub>j</sub> · (F<sub>j+1</sub> − F<sub>j</sub>)</strong></div>
+      </div>
+      <div class="roc-threshold-area__plus" aria-hidden="true">+</div>
+      <div class="roc-threshold-area__part">
+        <span class="roc-threshold-area__swatch roc-threshold-area__swatch--rise" aria-hidden="true"></span>
+        <div><span>triangle created by the rise</span><strong>½ · (T<sub>j+1</sub> − T<sub>j</sub>) · (F<sub>j+1</sub> − F<sub>j</sub>)</strong></div>
+      </div>
+      <div class="roc-threshold-area__equals" aria-hidden="true">=</div>
+      <div class="roc-threshold-area__result">
+        <span>area contributed between these two threshold states</span>
+        <strong>T<sub>j</sub>(F<sub>j+1</sub> − F<sub>j</sub>) + ½(T<sub>j+1</sub> − T<sub>j</sub>)(F<sub>j+1</sub> − F<sub>j</sub>)</strong>
+      </div>
+    </div>
+  </section>
+
+  <figcaption class="roc-threshold-figure__caption">
+    <strong>When every score is distinct, no trapezoid is needed.</strong>
+    One sample enters at a time, so either <span class="roc-threshold-math">F<sub>j+1</sub> - F<sub>j</sub> = 0</span> or
+    <span class="roc-threshold-math">T<sub>j+1</sub> - T<sub>j</sub> = 0</span>. The ROC path is then vertical or horizontal:
+    a vertical move contributes no area, and a horizontal move contributes a rectangle.
+  </figcaption>
+</figure><p>The empirical ROC curve used for AUC joins neighboring threshold points by straight segments. The area below one such segment is the rectangle below its lower endpoint plus the triangle created by its rise.</p></div></article></main>
+<script data-article-visualization-bridge>
+(() => {
+  const root = document.documentElement;
+  const syncTheme = () => {
+    try {
+      const theme = window.parent.document.documentElement.dataset.theme;
+      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+    } catch (_) {}
+  };
+  const report = () => {
+    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
+    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
+    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+  };
+  syncTheme();
+  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  window.addEventListener("load", report, { once: true });
+  window.addEventListener("resize", report);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
+  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  requestAnimationFrame(report);
+})();
+</script>
+</body></html>

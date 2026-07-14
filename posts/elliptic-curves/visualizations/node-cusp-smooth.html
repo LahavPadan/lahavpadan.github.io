@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Why a singular cubic can be parameterized by a line</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#fbfaf7;
+  --paper:#ffffff;
+  --panel:#f5f3ee;
+  --ink:#1e252b;
+  --muted:#657079;
+  --faint:#8b949b;
+  --rule:#d9dde0;
+  --rule-strong:#b9c1c7;
+  --curve:#2f6f9f;
+  --curve-dark:#174f78;
+  --line:#668b45;
+  --singular:#b95a37;
+  --tangent:#c2842f;
+  --third:#6c5aa8;
+  --good:#386f52;
+  --shadow:0 12px 34px rgba(27,35,41,.055);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#111417;
+    --paper:#171b1f;
+    --panel:#1d2227;
+    --ink:#eef1f3;
+    --muted:#b2bbc2;
+    --faint:#8f9aa3;
+    --rule:#323940;
+    --rule-strong:#4c5760;
+    --curve:#70add7;
+    --curve-dark:#9bc9e8;
+    --line:#9abc73;
+    --singular:#ed8c68;
+    --tangent:#e2aa58;
+    --third:#b6a7ed;
+    --good:#7fbd99;
+    --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:ui-serif,Georgia,Cambria,"Times New Roman",serif}
+button,input{font:inherit}
+#scpe{max-width:1080px;margin:0 auto;padding:20px 16px 24px}
+#scpe .kicker{font:600 11px/1.2 ui-sans-serif,system-ui,sans-serif;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);margin-bottom:7px}
+#scpe h1{font-size:clamp(23px,3.2vw,34px);line-height:1.14;letter-spacing:-.02em;margin:0;max-width:850px}
+#scpe .lead{font-size:15px;line-height:1.62;color:var(--muted);max-width:910px;margin:11px 0 17px}
+#scpe .causal{display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;border-block:1px solid var(--rule);padding:10px 0;margin-bottom:15px}
+#scpe .cause{font:500 12.5px/1.45 ui-sans-serif,system-ui,sans-serif;color:var(--muted);text-align:center;padding:0 8px}
+#scpe .cause strong{display:block;color:var(--ink);font-size:13px;margin-bottom:1px}
+#scpe .arrow{text-align:center;color:var(--faint);font:18px/1 ui-sans-serif,system-ui,sans-serif}
+#scpe .tabs{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 14px}
+#scpe .tabs button{appearance:none;border:1px solid var(--rule);background:var(--paper);color:var(--muted);padding:8px 12px;border-radius:5px;cursor:pointer;font:600 12.5px/1.2 ui-sans-serif,system-ui,sans-serif}
+#scpe .tabs button:hover{border-color:var(--rule-strong);color:var(--ink)}
+#scpe .tabs button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+#scpe .main{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(330px,.95fr);gap:16px;align-items:stretch}
+#scpe .panel{background:var(--paper);border:1px solid var(--rule);box-shadow:var(--shadow)}
+#scpe .plot-panel{padding:13px 13px 12px}
+#scpe .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+#scpe .panel-head strong{font-size:15px;line-height:1.25}
+#scpe .equation{font:600 12.5px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);white-space:nowrap}
+#scpe svg{display:block;width:100%;height:auto;background:var(--panel);border:1px solid var(--rule)}
+#scpe .slider-block{margin-top:11px;border-top:1px solid var(--rule);padding-top:10px}
+#scpe .slider-label{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font:12.5px/1.4 ui-sans-serif,system-ui,sans-serif;color:var(--muted)}
+#scpe .slider-label strong{color:var(--ink);font-size:13px}
+#scpe input[type="range"]{width:100%;margin:8px 0 3px;accent-color:var(--line)}
+#scpe .slider-hint{font:11.5px/1.45 ui-sans-serif,system-ui,sans-serif;color:var(--faint)}
+#scpe .derivation{padding:14px;display:flex;flex-direction:column}
+#scpe .case-title{font-size:22px;line-height:1.18;letter-spacing:-.012em;margin:0}
+#scpe .case-explain{font-size:13.5px;line-height:1.55;color:var(--muted);margin:6px 0 13px}
+#scpe .step{display:grid;grid-template-columns:24px 1fr;gap:9px;padding:8px 0;border-top:1px solid var(--rule)}
+#scpe .step:first-of-type{border-top:0}
+#scpe .step-num{width:22px;height:22px;border:1px solid var(--rule-strong);border-radius:50%;display:grid;place-items:center;font:600 11px/1 ui-sans-serif,system-ui,sans-serif;color:var(--muted)}
+#scpe .step-name{font:600 11.5px/1.25 ui-sans-serif,system-ui,sans-serif;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+#scpe .mathline{font:600 13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--ink);overflow-wrap:anywhere}
+#scpe .mathnote{font:12px/1.45 ui-sans-serif,system-ui,sans-serif;color:var(--muted);margin-top:2px}
+#scpe .roots-title{font:600 11.5px/1.3 ui-sans-serif,system-ui,sans-serif;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin:11px 0 6px}
+#scpe .roots{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+#scpe .root{border:1px solid var(--rule);background:var(--panel);padding:8px 6px;min-height:67px;text-align:center}
+#scpe .root .r{font:650 14px/1.25 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--ink)}
+#scpe .root .means{font:11px/1.35 ui-sans-serif,system-ui,sans-serif;color:var(--muted);margin-top:5px}
+#scpe .root.same{border-color:color-mix(in srgb,var(--singular) 42%,var(--rule));background:color-mix(in srgb,var(--singular) 6%,var(--panel))}
+#scpe .root.other{border-color:color-mix(in srgb,var(--third) 38%,var(--rule));background:color-mix(in srgb,var(--third) 5%,var(--panel))}
+#scpe .conclusion{margin-top:auto;border-left:3px solid var(--good);background:color-mix(in srgb,var(--good) 7%,var(--panel));padding:10px 11px;font:12.5px/1.52 ui-sans-serif,system-ui,sans-serif;color:var(--muted)}
+#scpe .conclusion strong{color:var(--ink)}
+#scpe .map-panel{margin-top:16px;padding:14px}
+#scpe .map-title{font-size:18px;margin:0 0 4px}
+#scpe .map-lead{font-size:13px;line-height:1.5;color:var(--muted);margin:0 0 12px}
+#scpe .map-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+#scpe .map-col{border-top:1px solid var(--rule);padding-top:10px}
+#scpe .map-col h3{font-size:14px;margin:0 0 7px}
+#scpe .display-formula{background:var(--panel);border:1px solid var(--rule);padding:9px 10px;font:600 12.5px/1.58 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--ink);overflow-x:auto}
+#scpe .map-copy{font-size:12.5px;line-height:1.55;color:var(--muted);margin:8px 0 0}
+#scpe .proofline{margin-top:8px;padding-top:8px;border-top:1px dashed var(--rule);font:12px/1.5 ui-sans-serif,system-ui,sans-serif;color:var(--muted)}
+#scpe .proofline strong{color:var(--ink)}
+#scpe .scope{margin-top:12px;font:11.5px/1.5 ui-sans-serif,system-ui,sans-serif;color:var(--faint)}
+#scpe .scope strong{color:var(--muted)}
+@media (max-width:820px){
+  #scpe .main,#scpe .map-grid{grid-template-columns:1fr}
+  #scpe .causal{grid-template-columns:1fr;gap:5px}
+  #scpe .arrow{transform:rotate(90deg)}
+}
+@media (max-width:520px){
+  #scpe{padding-inline:10px}
+  #scpe .roots{grid-template-columns:1fr}
+  #scpe .root{min-height:0;text-align:left;display:grid;grid-template-columns:1fr 1.25fr;align-items:center;gap:8px}
+  #scpe .root .means{margin-top:0}
+  #scpe .panel-head{display:block}
+  #scpe .equation{margin-top:4px;white-space:normal}
+}
+</style>
+</head>
+<body>
+<section id="scpe" aria-labelledby="scpe-title">
+  <div class="kicker">Singular cubic, one line parameter</div>
+  <h1 id="scpe-title">Why the slope of a line determines one point on a singular cubic</h1>
+  <p class="lead">
+    Every green line has equation <strong>y = tx</strong>, so it passes through the marked point <strong>S = (0,0)</strong>.
+    The useful fact is not merely that the curve has a crossing or a tip. It is the repeated factor that appears after substitution:
+    on a node or cusp, <strong>x²</strong> accounts for two of the cubic equation’s three roots, leaving one root for one other point.
+  </p>
+
+  <div class="causal" aria-label="The logical chain shown by the visualization">
+    <div class="cause"><strong>Rotate one line through S</strong>Its slope is the number t.</div>
+    <div class="arrow">→</div>
+    <div class="cause"><strong>Substitute y = tx</strong>The intersection becomes a cubic equation in x.</div>
+    <div class="arrow">→</div>
+    <div class="cause"><strong>Read the remaining root</strong>That root gives the one other intersection.</div>
+  </div>
+
+  <div class="tabs" role="group" aria-label="Choose the type of point">
+    <button type="button" data-case="node" aria-pressed="true">Node — two strands cross at S</button>
+    <button type="button" data-case="cusp" aria-pressed="false">Cusp — one strand pinches at S</button>
+    <button type="button" data-case="smooth" aria-pressed="false">Smooth comparison — S is ordinary</button>
+  </div>
+
+  <div class="main">
+    <article class="panel plot-panel">
+      <div class="panel-head">
+        <strong id="plot-title">The two blue strands meet at S</strong>
+        <span class="equation" id="curve-equation">y² = x²(x + 1)</span>
+      </div>
+      <svg id="plot" viewBox="0 0 620 430" role="img" aria-label="A cubic curve, a line y equals t x through S, and their other intersections">
+        <defs>
+          <clipPath id="plot-clip"><rect x="49" y="24" width="535" height="350" /></clipPath>
+          <filter id="label-shadow" x="-10%" y="-20%" width="120%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation="1" flood-opacity=".14"/></filter>
+        </defs>
+        <rect x="49" y="24" width="535" height="350" fill="var(--panel)"/>
+        <g id="grid"></g>
+        <g clip-path="url(#plot-clip)">
+          <path id="curve-upper" fill="none" stroke="var(--curve)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path id="curve-lower" fill="none" stroke="var(--curve)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <line id="tangent-a" stroke="var(--tangent)" stroke-width="1.35" stroke-dasharray="5 5" opacity="0"/>
+          <line id="tangent-b" stroke="var(--tangent)" stroke-width="1.35" stroke-dasharray="5 5" opacity="0"/>
+          <line id="moving-line" stroke="var(--line)" stroke-width="2"/>
+          <circle id="point-s-ring" r="10" fill="none" stroke="var(--singular)" stroke-width="1.2" opacity=".55"/>
+          <circle id="point-s" r="5.6" fill="var(--singular)"/>
+          <circle id="point-r1" r="5.7" fill="var(--third)" stroke="var(--paper)" stroke-width="2" opacity="0"/>
+          <circle id="point-r2" r="5.7" fill="var(--curve-dark)" stroke="var(--paper)" stroke-width="2" opacity="0"/>
+        </g>
+        <g id="labels" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12">
+          <g id="label-s" filter="url(#label-shadow)"><rect rx="3" fill="var(--paper)" stroke="var(--rule)"/><text fill="var(--singular)">S = (0,0)</text></g>
+          <g id="label-r1" opacity="0" filter="url(#label-shadow)"><rect rx="3" fill="var(--paper)" stroke="var(--rule)"/><text fill="var(--third)"></text></g>
+          <g id="label-r2" opacity="0" filter="url(#label-shadow)"><rect rx="3" fill="var(--paper)" stroke="var(--rule)"/><text fill="var(--curve-dark)"></text></g>
+          <g id="label-line" filter="url(#label-shadow)"><rect rx="3" fill="var(--paper)" stroke="var(--rule)"/><text fill="var(--line)"></text></g>
+          <text id="tangent-label-a" fill="var(--tangent)" opacity="0"></text>
+          <text id="tangent-label-b" fill="var(--tangent)" opacity="0"></text>
+        </g>
+        <text x="580" y="407" text-anchor="end" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="var(--faint)">x</text>
+        <text x="33" y="35" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="var(--faint)">y</text>
+      </svg>
+      <div class="slider-block">
+        <div class="slider-label"><span><strong>Change the slope t</strong> to rotate the green line</span><span id="slope-readout">t = 0.55</span></div>
+        <input id="slope" type="range" min="-1.45" max="1.45" step="0.01" value="0.55" aria-label="Slope t of the line y equals t x"/>
+        <div class="slider-hint" id="slider-hint">The purple point is computed from the remaining root x = t² − 1.</div>
+      </div>
+    </article>
+
+    <article class="panel derivation">
+      <h2 class="case-title" id="case-title">Node: two curve strands cross at S</h2>
+      <p class="case-explain" id="case-explain">Close to S, one blue strand follows the direction y = x and the other follows y = −x. Both directions pass through the same geometric point S.</p>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div><div class="step-name">Line through S</div><div class="mathline">y = tx</div><div class="mathnote">The number t is the slope. Changing t changes the line, not the marked point.</div></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div><div class="step-name">Substitute into the curve</div><div class="mathline" id="substitution">(tx)² = x²(x + 1)</div></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div><div class="step-name">Factor the intersection equation</div><div class="mathline" id="factorization">x²(t² − x − 1) = 0</div><div class="mathnote" id="factor-note">The factor x² means x = 0 is a root twice. Both copies describe S = (0,0).</div></div>
+      </div>
+
+      <div class="roots-title">The three x-roots of the line–cubic intersection</div>
+      <div class="roots" id="roots"></div>
+
+      <div class="conclusion" id="conclusion"><strong>Therefore:</strong> after the repeated root x = 0 has used two roots, only x = t² − 1 remains. It gives exactly one other point.</div>
+    </article>
+  </div>
+
+  <article class="panel map-panel">
+    <h2 class="map-title" id="map-title">From the slope t to a coordinate on the smooth part</h2>
+    <p class="map-lead" id="map-lead">The first column says exactly which point the line finds. The second column explains the extra change of coordinate used by the group law; it is not inferred merely from the curve’s shape.</p>
+    <div class="map-grid">
+      <section class="map-col">
+        <h3 id="point-map-title">The point selected by t</h3>
+        <div class="display-formula" id="point-map"></div>
+        <p class="map-copy" id="point-map-copy"></p>
+      </section>
+      <section class="map-col">
+        <h3 id="group-map-title">Why multiplication appears</h3>
+        <div class="display-formula" id="group-map"></div>
+        <p class="map-copy" id="group-map-copy"></p>
+        <div class="proofline" id="proofline"></div>
+      </section>
+    </div>
+    <div class="scope" id="scope"><strong>What this establishes.</strong> The repeated factor explains why one slope leaves one other point, and the displayed coordinate identity explains the resulting familiar group law. No unnamed “local point” or unexplained “remaining point” is needed.</div>
+  </article>
+</section>
+
+<script>
+(function(){
+  const root=document.getElementById('scpe');
+  const slope=document.getElementById('slope');
+  const upper=document.getElementById('curve-upper');
+  const lower=document.getElementById('curve-lower');
+  const movingLine=document.getElementById('moving-line');
+  const tangentA=document.getElementById('tangent-a');
+  const tangentB=document.getElementById('tangent-b');
+  const pointS=document.getElementById('point-s');
+  const pointSRing=document.getElementById('point-s-ring');
+  const pointR1=document.getElementById('point-r1');
+  const pointR2=document.getElementById('point-r2');
+  const labelS=document.getElementById('label-s');
+  const labelR1=document.getElementById('label-r1');
+  const labelR2=document.getElementById('label-r2');
+  const labelLine=document.getElementById('label-line');
+  const tangentLabelA=document.getElementById('tangent-label-a');
+  const tangentLabelB=document.getElementById('tangent-label-b');
+
+  const XMIN=-1.55,XMAX=2.55,YMIN=-3.15,YMAX=3.15;
+  const LEFT=49,TOP=24,WIDTH=535,HEIGHT=350;
+  const sx=x=>LEFT+(x-XMIN)/(XMAX-XMIN)*WIDTH;
+  const sy=y=>TOP+(YMAX-y)/(YMAX-YMIN)*HEIGHT;
+
+  const cases={
+    node:{
+      equation:'y² = x²(x + 1)',
+      title:'The two blue strands meet at S',
+      caseTitle:'Node: two curve strands cross at S',
+      explain:'Close to S, one blue strand follows the direction y = x and the other follows y = −x. Both directions pass through the same geometric point S.',
+      q:x=>x*x*(x+1),
+      substitution:'(tx)² = x²(x + 1)',
+      factorization:'x²(t² − x − 1) = 0',
+      factorNote:'The factor x² means x = 0 is a root twice. Both copies describe S = (0,0).',
+      points:t=>[{x:t*t-1,y:t*(t*t-1)}],
+      roots:t=>[
+        {r:'x₁ = 0',means:'first copy of S',same:true},
+        {r:'x₂ = 0',means:'second copy of S',same:true},
+        {r:'x₃ = t² − 1',means:'one other point',other:true}
+      ],
+      conclusion:t=>`<strong>Therefore:</strong> the two roots x = 0 both give S. The only other root is x = ${fmt(t*t-1)}, so the line has one other intersection at R<sub>t</sub> = (${fmt(t*t-1)}, ${fmt(t*(t*t-1))}).`,
+      sliderHint:'The purple point is computed from the remaining root x = t² − 1.',
+      tangents:[{m:1,label:'t = 1: tangent direction'},{m:-1,label:'t = −1: tangent direction'}],
+      pointMap:'t = y/x  ⟼  Rₜ = (t² − 1, t(t² − 1))',
+      pointMapCopy:'The singular point occurs at the two special slopes t = 1 and t = −1. Removing S therefore removes those two slope values. The point at infinity corresponds to t = ∞.',
+      groupTitle:'Why multiplication appears',
+      groupMap:'u = (t − 1)/(t + 1)    ∈ ℝ×',
+      groupCopy:'This change sends the two removed tangent slopes to u = 0 and u = ∞. The point at infinity becomes u = 1, the multiplicative identity.',
+      proof:'<strong>For three collinear points:</strong> u₁u₂u₃ = 1. Reflecting the third intersection sends u₃ to 1/u₃. Therefore u(P + Q) = u₁u₂.',
+      scope:'<strong>What this establishes.</strong> The node contributes the repeated factor x², so each slope t gives one other point. The Möbius coordinate u then turns the chord-and-reflection rule into ordinary multiplication.',
+      singular:true
+    },
+    cusp:{
+      equation:'y² = x³',
+      title:'The blue strand narrows into S',
+      caseTitle:'Cusp: one curve strand pinches at S',
+      explain:'The curve approaches S from above and below along the same horizontal direction. There are not two crossing strands, but the substitution still produces the repeated factor x².',
+      q:x=>x*x*x,
+      substitution:'(tx)² = x³',
+      factorization:'x²(t² − x) = 0',
+      factorNote:'Again x = 0 is a root twice. Both copies describe the cusp S = (0,0).',
+      points:t=>[{x:t*t,y:t*t*t}],
+      roots:t=>[
+        {r:'x₁ = 0',means:'first copy of S',same:true},
+        {r:'x₂ = 0',means:'second copy of S',same:true},
+        {r:'x₃ = t²',means:'one other point',other:true}
+      ],
+      conclusion:t=>`<strong>Therefore:</strong> after the two x = 0 roots have both described S, only x = ${fmt(t*t)} remains. The line has one other intersection at R<sub>t</sub> = (${fmt(t*t)}, ${fmt(t*t*t)}).`,
+      sliderHint:'The purple point is computed from the remaining root x = t².',
+      tangents:[{m:0,label:'t = 0: tangent direction'}],
+      pointMap:'t = y/x  ⟼  Rₜ = (t², t³)',
+      pointMapCopy:'The value t = 0 gives the cusp itself, so it is removed from the smooth part. The point at infinity is reached as t tends to ∞.',
+      groupTitle:'Why addition appears',
+      groupMap:'u = 1/t = x/y;   R(u) = (u⁻², u⁻³)',
+      groupCopy:'The cusp is u = ∞ and is removed. The point at infinity is u = 0. Thus every smooth point has one finite u-coordinate.',
+      proof:'<strong>For three collinear points:</strong> u₁ + u₂ + u₃ = 0. Reflecting the third intersection sends u₃ to −u₃. Therefore u(P + Q) = u₁ + u₂.',
+      scope:'<strong>What this establishes.</strong> The cusp contributes the repeated factor x², so t gives one other point. The reciprocal coordinate u = x/y—not t = y/x—is the coordinate in which the chord-and-reflection rule becomes ordinary addition.',
+      singular:true
+    },
+    smooth:{
+      equation:'y² = x³ − x',
+      title:'At S, the blue curve is smooth',
+      caseTitle:'Smooth comparison: S uses only one root',
+      explain:'The point S = (0,0) is an ordinary point of this curve. A line through S passes through it once, so only one factor x appears after substitution.',
+      q:x=>x*x*x-x,
+      substitution:'(tx)² = x³ − x',
+      factorization:'x(x² − t²x − 1) = 0',
+      factorNote:'There is only one factor x. Let d = √(t⁴ + 4); the quadratic still leaves the two roots (t² + d)/2 and (t² − d)/2.',
+      points:t=>{const d=Math.sqrt(t*t*t*t+4);return [{x:(t*t+d)/2,y:t*(t*t+d)/2},{x:(t*t-d)/2,y:t*(t*t-d)/2}]},
+      roots:t=>[
+        {r:'x₁ = 0',means:'the point S',same:true},
+        {r:'x₂ = (t² + d)/2',means:'d = √(t⁴ + 4)',other:true},
+        {r:'x₃ = (t² − d)/2',means:'d = √(t⁴ + 4)',other:true}
+      ],
+      conclusion:t=>{const d=Math.sqrt(t*t*t*t+4),a=(t*t+d)/2,b=(t*t-d)/2;return `<strong>Therefore:</strong> the same slope t leaves two roots, x = ${fmt(a)} and x = ${fmt(b)}. The line meets two other points, so t does not select one unique point.`},
+      sliderHint:'Here the quadratic factor produces two visible points, not one.',
+      tangents:[{vertical:true,label:'vertical tangent at S'}],
+      pointMap:'t = y/x  ⟼  two points, not one',
+      pointMapCopy:'For every displayed t, the remaining quadratic has two roots. A slope through S therefore cannot be used as a one-to-one global coordinate on this smooth cubic.',
+      groupTitle:'No coordinate conclusion follows',
+      groupMap:'x(x² − t²x − 1) = 0',
+      groupCopy:'The factor x identifies S once. The quadratic factor still contains two choices, so there is no single-valued point map t ↦ Rₜ of this form.',
+      proof:'<strong>The contrast is exact:</strong> singular point → x² → one root remains. Smooth point → x → two roots remain.',
+      scope:'<strong>What this establishes.</strong> The obstruction is visible in the factorization itself. It is not merely that the smooth curve “looks different”; one slope leaves two possible points.',
+      singular:false
+    }
+  };
+  let active='node';
+
+  function fmt(v){
+    if(Math.abs(v)<.005)return '0';
+    return (Math.round(v*100)/100).toFixed(2).replace(/\.00$/,'').replace(/(-?\d+)\.0$/,'$1');
+  }
+  function setText(id,text){document.getElementById(id).textContent=text}
+  function setHTML(id,html){document.getElementById(id).innerHTML=html}
+
+  function drawGrid(){
+    const g=document.getElementById('grid');let out='';
+    [-1,0,1,2].forEach(x=>{out+=`<line x1="${sx(x)}" y1="${TOP}" x2="${sx(x)}" y2="${TOP+HEIGHT}" stroke="var(--rule)" stroke-width="${x===0?1.05:.65}"/><text x="${sx(x)}" y="397" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10.5" fill="var(--faint)">${x}</text>`});
+    [-2,-1,0,1,2].forEach(y=>{out+=`<line x1="${LEFT}" y1="${sy(y)}" x2="${LEFT+WIDTH}" y2="${sy(y)}" stroke="var(--rule)" stroke-width="${y===0?1.05:.65}"/>`;if(y!==0)out+=`<text x="40" y="${sy(y)+3.5}" text-anchor="end" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10.5" fill="var(--faint)">${y}</text>`});
+    g.innerHTML=out;
+  }
+  function pathFor(sign){
+    const c=cases[active],segments=[];let seg=[];const N=1200;
+    for(let i=0;i<=N;i++){
+      const x=XMIN+(XMAX-XMIN)*i/N,q=c.q(x);
+      if(q>=-1e-9){const y=sign*Math.sqrt(Math.max(0,q));if(y>=YMIN-.15&&y<=YMAX+.15){seg.push([sx(x),sy(y)]);continue}}
+      if(seg.length>1)segments.push(seg);seg=[];
+    }
+    if(seg.length>1)segments.push(seg);
+    return segments.map(s=>'M'+s.map((p,i)=>(i?'L':'')+p[0].toFixed(2)+','+p[1].toFixed(2)).join(' ')).join(' ');
+  }
+  function endpoints(t){
+    const pts=[];
+    [[XMIN,t*XMIN],[XMAX,t*XMAX]].forEach(p=>{if(p[1]>=YMIN&&p[1]<=YMAX)pts.push(p)});
+    if(Math.abs(t)>1e-10)[[YMIN/t,YMIN],[YMAX/t,YMAX]].forEach(p=>{if(p[0]>=XMIN&&p[0]<=XMAX)pts.push(p)});
+    pts.sort((a,b)=>a[0]-b[0]);return [pts[0],pts[pts.length-1]];
+  }
+  function setLine(el,x1,y1,x2,y2,opacity=1){el.setAttribute('x1',sx(x1));el.setAttribute('y1',sy(y1));el.setAttribute('x2',sx(x2));el.setAttribute('y2',sy(y2));el.setAttribute('opacity',opacity)}
+  function setLabel(group,text,x,y,anchor='start',compact=false){
+    const tx=group.querySelector('text'),rect=group.querySelector('rect');
+    tx.textContent=text;
+    tx.setAttribute('x',x);
+    tx.setAttribute('y',y);
+    tx.setAttribute('text-anchor',anchor);
+
+    // Size the box from the text's actual rendered bounds instead of a
+    // character-count estimate. Point labels use especially tight padding.
+    const bounds=tx.getBBox();
+    const padX=compact?4:6;
+    const padY=compact?2:3;
+    rect.setAttribute('x',bounds.x-padX);
+    rect.setAttribute('y',bounds.y-padY);
+    rect.setAttribute('width',bounds.width+2*padX);
+    rect.setAttribute('height',bounds.height+2*padY);
+    rect.setAttribute('rx',compact?2:3);
+    group.setAttribute('opacity',1);
+  }
+  function setPoint(circle,label,p,text,index){
+    if(!p||p.x<XMIN-.05||p.x>XMAX+.05||p.y<YMIN-.05||p.y>YMAX+.05){circle.setAttribute('opacity',0);label.setAttribute('opacity',0);return}
+    const x=sx(p.x),y=sy(p.y);circle.setAttribute('cx',x);circle.setAttribute('cy',y);circle.setAttribute('opacity',1);
+    const right=x<LEFT+WIDTH*.68;
+    const lx=right?Math.min(x+11,LEFT+WIDTH-12):Math.max(x-11,LEFT+12);
+    const ly=index===1?Math.max(TOP+20,y-12):Math.min(TOP+HEIGHT-8,y+26);
+    setLabel(label,text,lx,ly,right?'start':'end',true);
+  }
+  function drawTangents(c){
+    [tangentA,tangentB].forEach(e=>e.setAttribute('opacity',0));
+    [tangentLabelA,tangentLabelB].forEach(e=>e.setAttribute('opacity',0));
+    c.tangents.forEach((tan,i)=>{
+      const el=i===0?tangentA:tangentB,label=i===0?tangentLabelA:tangentLabelB;
+      if(tan.vertical){setLine(el,0,YMIN,0,YMAX,.9);label.textContent=tan.label;label.setAttribute('x',sx(0)+7);label.setAttribute('y',TOP+18)}
+      else{const ep=endpoints(tan.m);setLine(el,ep[0][0],ep[0][1],ep[1][0],ep[1][1],.9);label.textContent=tan.label;label.setAttribute('x',tan.m>=0?LEFT+WIDTH-8:LEFT+WIDTH-8);label.setAttribute('y',tan.m>=0?TOP+38:TOP+HEIGHT-12);label.setAttribute('text-anchor','end')}
+      label.setAttribute('opacity',1);
+    });
+  }
+  function renderRoots(c,t){
+    document.getElementById('roots').innerHTML=c.roots(t).map(r=>`<div class="root ${r.same?'same':''} ${r.other?'other':''}"><div class="r">${r.r}</div><div class="means">${r.means}</div></div>`).join('');
+  }
+  function render(){
+    const c=cases[active],t=Number(slope.value),pts=c.points(t);
+    setText('curve-equation',c.equation);setText('plot-title',c.title);setText('case-title',c.caseTitle);setText('case-explain',c.explain);
+    setText('substitution',c.substitution);setText('factorization',c.factorization);setText('factor-note',c.factorNote);
+    setHTML('conclusion',c.conclusion(t));setText('slider-hint',c.sliderHint);setText('slope-readout',`t = ${fmt(t)}`);
+    setText('point-map-title','The point selected by t');setText('point-map',c.pointMap);setText('point-map-copy',c.pointMapCopy);
+    setText('group-map-title',c.groupTitle);setText('group-map',c.groupMap);setText('group-map-copy',c.groupCopy);setHTML('proofline',c.proof);setHTML('scope',c.scope);
+    renderRoots(c,t);
+
+    upper.setAttribute('d',pathFor(1));lower.setAttribute('d',pathFor(-1));
+    const ep=endpoints(t);setLine(movingLine,ep[0][0],ep[0][1],ep[1][0],ep[1][1]);drawTangents(c);
+    const sX=sx(0),sY=sy(0);pointS.setAttribute('cx',sX);pointS.setAttribute('cy',sY);pointSRing.setAttribute('cx',sX);pointSRing.setAttribute('cy',sY);pointSRing.setAttribute('opacity',c.singular?.58:.25);
+    setLabel(labelS,'S = (0,0)',sX+11,sY+24,'start',true);
+    setPoint(pointR1,labelR1,pts[0],active==='smooth'?`A = (${fmt(pts[0].x)}, ${fmt(pts[0].y)})`:`Rₜ = (${fmt(pts[0].x)}, ${fmt(pts[0].y)})`,1);
+    setPoint(pointR2,labelR2,pts[1],pts[1]?`B = (${fmt(pts[1].x)}, ${fmt(pts[1].y)})`:'',2);
+    const labelX=LEFT+WIDTH-12,labelY=Math.max(TOP+20,Math.min(TOP+HEIGHT-12,sy(t*(XMAX-.25))-8));
+    setLabel(labelLine,`y = ${fmt(t)}x`,labelX,labelY,'end');
+    requestResize();
+  }
+  function requestResize(){
+    if(window.parent!==window){window.parent.postMessage({type:'singular-cubic-height',height:document.documentElement.scrollHeight},'*')}
+  }
+  root.querySelectorAll('[data-case]').forEach(btn=>btn.addEventListener('click',()=>{
+    active=btn.dataset.case;root.querySelectorAll('[data-case]').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));
+    if(active==='cusp'&&Math.abs(Number(slope.value))>1.25)slope.value='1.15';
+    render();
+  }));
+  slope.addEventListener('input',render);
+  window.addEventListener('resize',requestResize);
+  drawGrid();render();setTimeout(requestResize,60);
+})();
+</script>
+
+<script data-article-visualization-bridge>
+(() => {
+  const root = document.documentElement;
+  const syncTheme = () => {
+    try {
+      const theme = window.parent.document.documentElement.dataset.theme;
+      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+    } catch (_) {}
+  };
+  const report = () => {
+    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
+    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
+    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+  };
+  syncTheme();
+  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  window.addEventListener("load", report, { once: true });
+  window.addEventListener("resize", report);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
+  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  requestAnimationFrame(report);
+})();
+</script>
+</body>
+</html>

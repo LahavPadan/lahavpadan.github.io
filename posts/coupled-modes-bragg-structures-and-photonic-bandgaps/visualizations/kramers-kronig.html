@@ -1,0 +1,1306 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kramers–Kronig: one causal response, two linked spectra</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #fbfbf8;
+      --surface: #ffffff;
+      --surface-muted: #f6f4f2;
+      --ink: #1c2420;
+      --muted: #667169;
+      --border: #d8d7d3;
+      --border-strong: #b8b2ad;
+      --accent: #85295e;
+      --accent-ink: #70204d;
+      --accent-soft: #fdeef6;
+      --real: #1d61a6;
+      --real-soft: #edf6fe;
+      --imag: #ad493d;
+      --imag-soft: #fff1ed;
+      --positive: #8a5b14;
+      --negative: #32668f;
+      --grid: #e6e4df;
+      --shadow: rgba(37, 30, 33, 0.08);
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --page: #101511;
+      --surface: #171e19;
+      --surface-muted: #1d2720;
+      --ink: #e9efeb;
+      --muted: #a7b5aa;
+      --border: #344138;
+      --border-strong: #617168;
+      --accent: #ffb9df;
+      --accent-ink: #ffb9df;
+      --accent-soft: #3f2033;
+      --real: #add9ff;
+      --real-soft: #18354e;
+      --imag: #ffb5a8;
+      --imag-soft: #45261f;
+      --positive: #f1c36d;
+      --negative: #8bc5f1;
+      --grid: #2b3730;
+      --shadow: rgba(0, 0, 0, 0.22);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      background: var(--page);
+      color: var(--ink);
+    }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 16px;
+      line-height: 1.58;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input { font: inherit; }
+
+    button { color: inherit; }
+
+    .kk {
+      width: 100%;
+      padding: clamp(20px, 3.5vw, 34px);
+      border-top: 4px solid var(--accent);
+      background:
+        radial-gradient(circle at 100% 0%, var(--accent-soft) 0, transparent 29%),
+        var(--surface);
+    }
+
+    .kk__eyebrow {
+      margin: 0 0 7px;
+      color: var(--accent-ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.045em;
+      text-transform: uppercase;
+    }
+
+    .kk__title {
+      max-width: 720px;
+      margin: 0;
+      font-size: clamp(1.65rem, 4vw, 2.55rem);
+      font-weight: 500;
+      letter-spacing: -0.045em;
+      line-height: 1.05;
+    }
+
+    .kk__lede {
+      max-width: 720px;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: clamp(0.98rem, 2vw, 1.1rem);
+    }
+
+    .causal-link {
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) auto minmax(0, 1.08fr);
+      gap: 18px;
+      align-items: stretch;
+      margin-top: 26px;
+    }
+
+    .concept-card {
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface) 92%, var(--accent-soft));
+      box-shadow: 0 10px 26px -24px var(--shadow);
+    }
+
+    .concept-card__label,
+    .section-label,
+    .chart-copy__kicker {
+      margin: 0 0 6px;
+      color: var(--accent-ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.73rem;
+      font-weight: 700;
+      letter-spacing: 0.025em;
+    }
+
+    .concept-card h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 500;
+      line-height: 1.25;
+    }
+
+    .concept-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .causal-arrow {
+      display: grid;
+      place-items: center;
+      color: var(--accent);
+      font-family: ui-monospace, monospace;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .time-plot {
+      display: block;
+      width: 100%;
+      height: 112px;
+      margin-top: 13px;
+    }
+
+    .complex-response {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+    .response-chip {
+      min-width: 0;
+      padding: 13px 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      text-align: center;
+    }
+
+    .response-chip strong {
+      display: block;
+      font-size: 1.18rem;
+      font-weight: 500;
+    }
+
+    .response-chip span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+      font-size: 0.69rem;
+    }
+
+    .response-chip--real strong { color: var(--real); }
+    .response-chip--imag strong { color: var(--imag); }
+
+    .response-plus {
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+      font-size: 0.86rem;
+      white-space: nowrap;
+    }
+
+    .reconstruction {
+      margin-top: 28px;
+      padding-top: 25px;
+      border-top: 1px solid var(--border-strong);
+    }
+
+    .reconstruction__head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 22px;
+      align-items: end;
+    }
+
+    .reconstruction__head h2 {
+      margin: 0;
+      font-size: clamp(1.35rem, 3vw, 1.9rem);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+    }
+
+    .mode-switch {
+      display: inline-flex;
+      padding: 3px;
+      border: 1px solid var(--border);
+      background: var(--surface-muted);
+    }
+
+    .mode-switch button {
+      min-height: 34px;
+      padding: 7px 10px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .mode-switch button[aria-pressed="true"] {
+      background: var(--surface);
+      color: var(--accent-ink);
+      box-shadow: 0 1px 5px var(--shadow);
+    }
+
+    .equation-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(210px, 0.44fr);
+      gap: 18px;
+      margin-top: 17px;
+      padding: 16px 18px;
+      border-left: 3px solid var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .equation {
+      min-width: 0;
+      align-self: center;
+      color: var(--ink);
+      font-size: clamp(1rem, 2.4vw, 1.28rem);
+      line-height: 1.8;
+    }
+
+    .equation .target-symbol { color: var(--real); }
+    .equation .source-symbol { color: var(--imag); }
+
+    .frac {
+      display: inline-grid;
+      grid-template-rows: auto auto;
+      align-items: center;
+      margin: 0 0.12em;
+      vertical-align: -0.56em;
+      text-align: center;
+      line-height: 1.05;
+    }
+
+    .frac > span:first-child {
+      padding: 0 0.25em 0.16em;
+      border-bottom: 1px solid currentColor;
+    }
+
+    .frac > span:last-child { padding: 0.16em 0.25em 0; }
+
+    .equation-note {
+      margin: 0;
+      align-self: center;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .frequency-control label {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+
+    .frequency-control output {
+      color: var(--accent-ink);
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .preset-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 7px;
+    }
+
+    .preset-buttons button {
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+      font-size: 0.68rem;
+      cursor: pointer;
+    }
+
+    .preset-buttons button:hover,
+    .preset-buttons button:focus-visible {
+      border-color: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    .charts {
+      display: grid;
+      gap: 12px;
+      margin-top: 21px;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns: 172px minmax(0, 1fr);
+      gap: 18px;
+      align-items: stretch;
+      padding: 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .chart-copy {
+      align-self: center;
+      min-width: 0;
+    }
+
+    .chart-copy h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 1.25;
+    }
+
+    .chart-copy p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.48;
+    }
+
+    .chart-copy__value {
+      display: inline-block;
+      margin-top: 9px;
+      padding: 4px 6px;
+      background: var(--surface-muted);
+      color: var(--accent-ink);
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .chart {
+      display: block;
+      width: 100%;
+      height: 164px;
+      min-width: 0;
+      overflow: visible;
+    }
+
+    .contribution-note {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 2px 14px 4px 204px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      text-align: center;
+    }
+
+    .sign-note {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .sign-swatch {
+      width: 17px;
+      height: 3px;
+      background: currentColor;
+    }
+
+    .sign-note--negative { color: var(--negative); }
+    .sign-note--positive { color: var(--positive); }
+
+    .exclusion-note {
+      padding: 4px 8px;
+      border: 1px dashed var(--accent);
+      color: var(--accent-ink);
+      font-family: ui-monospace, monospace;
+      font-size: 0.66rem;
+      white-space: nowrap;
+    }
+
+    .reading {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 17px;
+    }
+
+    .reading-card {
+      padding: 13px 14px;
+      border-top: 2px solid var(--border-strong);
+      background: var(--surface-muted);
+    }
+
+    .reading-card strong {
+      display: block;
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem;
+      color: var(--accent-ink);
+    }
+
+    .reading-card span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .contour-explanation {
+      display: grid;
+      grid-template-columns: minmax(250px, 0.82fr) minmax(0, 1.18fr);
+      gap: 22px;
+      align-items: center;
+      margin-top: 27px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface-muted);
+    }
+
+    .contour-plot {
+      display: block;
+      width: 100%;
+      height: 205px;
+    }
+
+    .contour-copy h2 {
+      margin: 0;
+      font-size: 1.28rem;
+      font-weight: 500;
+      letter-spacing: -0.025em;
+    }
+
+    .contour-copy p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .principal-definition {
+      margin-top: 13px;
+      padding: 11px 12px;
+      border-left: 3px solid var(--accent);
+      background: var(--surface);
+      font-size: 0.83rem;
+    }
+
+    .takeaway {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border: 1px solid var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .takeaway strong {
+      display: block;
+      color: var(--accent-ink);
+      font-family: ui-monospace, monospace;
+      font-size: 0.74rem;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .takeaway p {
+      margin: 7px 0 0;
+      font-size: 0.96rem;
+    }
+
+    .axis,
+    .tick {
+      stroke: var(--border-strong);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .grid-line {
+      stroke: var(--grid);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .cursor-line {
+      stroke: var(--accent);
+      stroke-width: 1.5;
+      stroke-dasharray: 5 5;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .curve-real,
+    .curve-imag,
+    .curve-contribution {
+      fill: none;
+      stroke-width: 2.4;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .curve-real { stroke: var(--real); }
+    .curve-imag { stroke: var(--imag); }
+    .curve-contribution { stroke: var(--ink); stroke-width: 1.4; }
+
+    .fill-real { fill: color-mix(in srgb, var(--real) 16%, transparent); }
+    .fill-imag { fill: color-mix(in srgb, var(--imag) 16%, transparent); }
+    .fill-positive { fill: color-mix(in srgb, var(--positive) 26%, transparent); }
+    .fill-negative { fill: color-mix(in srgb, var(--negative) 26%, transparent); }
+
+    .marker {
+      fill: var(--surface);
+      stroke-width: 3;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .marker-real { stroke: var(--real); }
+    .marker-imag { stroke: var(--imag); }
+
+    .exclusion-band {
+      fill: color-mix(in srgb, var(--accent) 9%, transparent);
+      stroke: var(--accent);
+      stroke-width: 1;
+      stroke-dasharray: 3 4;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .svg-label {
+      fill: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+    }
+
+    .svg-label--accent { fill: var(--accent-ink); }
+
+    @media (max-width: 720px) {
+      .kk { padding: 20px 16px 24px; }
+
+      .causal-link {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .causal-arrow {
+        min-height: 24px;
+        transform: rotate(90deg);
+      }
+
+      .reconstruction__head,
+      .equation-panel,
+      .control-row,
+      .contour-explanation {
+        grid-template-columns: 1fr;
+      }
+
+      .mode-switch { width: 100%; }
+      .mode-switch button { flex: 1 1 0; }
+
+      .preset-buttons { justify-content: flex-start; }
+
+      .chart-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .chart-copy p { max-width: 580px; }
+
+      .chart { height: 174px; }
+
+      .contribution-note {
+        grid-template-columns: 1fr 1fr;
+        padding: 0 14px 4px;
+      }
+
+      .exclusion-note {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        justify-self: center;
+      }
+
+      .reading { grid-template-columns: 1fr; }
+
+      .contour-plot { height: 180px; }
+    }
+
+    @media (max-width: 430px) {
+      .complex-response {
+        grid-template-columns: 1fr;
+      }
+
+      .response-plus { text-align: center; }
+      .equation { font-size: 0.94rem; }
+      .chart { height: 160px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="kk" aria-labelledby="kk-title">
+    <p class="kk__eyebrow">Causality in the frequency domain</p>
+    <h1 class="kk__title" id="kk-title">One causal response, two inseparable spectra</h1>
+    <p class="kk__lede">
+      The real part χ′ changes phase and refractive index; the imaginary part χ″ describes absorption or gain.
+      Kramers–Kronig says they are two views of the same causal material response—not two curves that may be chosen independently.
+    </p>
+
+    <section class="causal-link" aria-label="From a causal time response to a complex frequency response">
+      <article class="concept-card">
+        <p class="concept-card__label">In time</p>
+        <h2>The material responds only after the field arrives</h2>
+        <svg class="time-plot" id="time-plot" role="img" aria-label="A causal response is zero before time zero and oscillates with decay after time zero"></svg>
+        <p>That single restriction—no response for <em>t</em> &lt; 0—is what constrains the frequency response.</p>
+      </article>
+
+      <div class="causal-arrow" aria-hidden="true">→</div>
+
+      <article class="concept-card">
+        <p class="concept-card__label">After the Fourier transform</p>
+        <h2>The same response has a real and an imaginary part</h2>
+        <div class="complex-response" aria-label="The complex susceptibility is the real part plus i times the imaginary part">
+          <div class="response-chip response-chip--real">
+            <strong>χ′(ω)</strong>
+            <span>phase / index</span>
+          </div>
+          <div class="response-plus">χ = χ′ + iχ″</div>
+          <div class="response-chip response-chip--imag">
+            <strong>χ″(ω)</strong>
+            <span>absorption / gain</span>
+          </div>
+        </div>
+        <p>Causality makes χ analytic above the real-frequency axis. That analytic structure is what links χ′ and χ″.</p>
+      </article>
+    </section>
+
+    <section class="reconstruction" aria-labelledby="reconstruction-title">
+      <div class="reconstruction__head">
+        <div>
+          <p class="section-label">The relation as a reconstruction rule</p>
+          <h2 id="reconstruction-title">Choose one frequency, then add the weighted influence of every other frequency</h2>
+        </div>
+        <div class="mode-switch" role="group" aria-label="Choose which Kramers–Kronig relation to visualize">
+          <button type="button" id="mode-real" aria-pressed="true">rebuild χ′ from χ″</button>
+          <button type="button" id="mode-imag" aria-pressed="false">rebuild χ″ from χ′</button>
+        </div>
+      </div>
+
+      <div class="equation-panel">
+        <div class="equation" id="equation" aria-live="polite"></div>
+        <p class="equation-note" id="equation-note"></p>
+      </div>
+
+      <div class="control-row">
+        <div class="frequency-control">
+          <label for="frequency">
+            <span>frequency being reconstructed</span>
+            <output id="frequency-output" for="frequency">ω = 0.72 ωᵣ</output>
+          </label>
+          <input id="frequency" type="range" min="0.22" max="1.82" value="0.72" step="0.01">
+        </div>
+        <div class="preset-buttons" aria-label="Frequency presets">
+          <button type="button" data-frequency="0.62">below resonance</button>
+          <button type="button" data-frequency="1.00">at resonance</button>
+          <button type="button" data-frequency="1.38">above resonance</button>
+        </div>
+      </div>
+
+      <div class="charts">
+        <article class="chart-row">
+          <div class="chart-copy">
+            <p class="chart-copy__kicker">Known spectrum</p>
+            <h3 id="source-title">χ″(ω′): absorption at every frequency</h3>
+            <p id="source-copy">The entire red curve participates; the selected frequency is only the point whose χ′ value we are asking for.</p>
+          </div>
+          <svg class="chart" id="source-chart" role="img"></svg>
+        </article>
+
+        <article class="chart-row">
+          <div class="chart-copy">
+            <p class="chart-copy__kicker">Weight, then add</p>
+            <h3 id="contribution-title">Each frequency contributes with a sign and a distance-dependent weight</h3>
+            <p id="contribution-copy">The denominator changes sign across ω′ = ω. Nearby frequencies matter strongly, but the point itself is excluded symmetrically.</p>
+          </div>
+          <svg class="chart" id="contribution-chart" role="img"></svg>
+        </article>
+
+        <div class="contribution-note" aria-hidden="true">
+          <span class="sign-note sign-note--negative"><span class="sign-swatch"></span><span id="left-sign-label">negative contribution</span></span>
+          <span class="exclusion-note">ω − ε &lt; ω′ &lt; ω + ε omitted</span>
+          <span class="sign-note sign-note--positive"><span class="sign-swatch"></span><span id="right-sign-label">positive contribution</span></span>
+        </div>
+
+        <article class="chart-row">
+          <div class="chart-copy">
+            <p class="chart-copy__kicker">Reconstructed spectrum</p>
+            <h3 id="target-title">χ′(ω): the weighted sum lands on this curve</h3>
+            <p id="target-copy">Moving ω changes the weighting of the same absorption spectrum, so the reconstructed real part changes with it.</p>
+            <span class="chart-copy__value" id="target-value">χ′(0.72 ωᵣ) is positive</span>
+          </div>
+          <svg class="chart" id="target-chart" role="img"></svg>
+        </article>
+      </div>
+
+      <div class="reading" aria-label="How to read the linked plots">
+        <div class="reading-card">
+          <strong>same horizontal axis</strong>
+          <span>All three rows use the same ω′ scale, so a feature stays vertically aligned while its role changes.</span>
+        </div>
+        <div class="reading-card">
+          <strong>the sign comes from the kernel</strong>
+          <span>The source spectrum is not simply copied; it is multiplied by a frequency-dependent positive or negative weight.</span>
+        </div>
+        <div class="reading-card">
+          <strong>the output is global</strong>
+          <span>Changing absorption or gain in one spectral region alters the real response elsewhere, not only at that same frequency.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="contour-explanation" aria-labelledby="contour-title">
+      <svg class="contour-plot" id="contour-plot" role="img" aria-label="Upper half-plane contour with a symmetric detour around a pole on the real axis"></svg>
+      <div class="contour-copy">
+        <p class="section-label">Why the principal value appears</p>
+        <h2 id="contour-title">The real-axis path reaches a pole, so it passes equally on both sides</h2>
+        <p>
+          Causality leaves the upper half-plane free of singularities, so the contour may close there. The Kramers–Kronig kernel still has a pole on the boundary at ω′ = ω. The path therefore makes a symmetric detour around that point.
+        </p>
+        <p class="principal-definition">
+          <strong>𝒫</strong> means: integrate up to ω − ε and from ω + ε onward, then take ε → 0 with the two sides removed equally.
+        </p>
+        <p>The divergent pieces have opposite signs and cancel in that symmetric limit; the finite remainder is the value shown by the reconstruction above.</p>
+      </div>
+    </section>
+
+    <aside class="takeaway">
+      <strong>What the relation forbids</strong>
+      <p>
+        A causal material cannot have an arbitrary refractive-index curve while keeping absorption and gain unchanged everywhere. Alter χ″ somewhere in the spectrum and the weighted reconstruction forces χ′ to change as well; the second Kramers–Kronig equation runs the same constraint in reverse.
+      </p>
+    </aside>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var root = document.documentElement;
+      var mode = 'realFromImag';
+      var resonance = 1;
+      var damping = 0.18;
+      var xMin = 0.04;
+      var xMax = 2.15;
+      var selected = 0.72;
+
+      var sourceChart = document.getElementById('source-chart');
+      var contributionChart = document.getElementById('contribution-chart');
+      var targetChart = document.getElementById('target-chart');
+      var frequency = document.getElementById('frequency');
+      var frequencyOutput = document.getElementById('frequency-output');
+      var modeReal = document.getElementById('mode-real');
+      var modeImag = document.getElementById('mode-imag');
+
+      function syncTheme() {
+        var theme = '';
+        try {
+          theme = window.parent.document.documentElement.dataset.theme || '';
+        } catch (error) {
+          theme = '';
+        }
+        if (!theme) {
+          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        root.dataset.theme = theme;
+      }
+
+      syncTheme();
+      try {
+        var parentRoot = window.parent.document.documentElement;
+        new MutationObserver(function () {
+          syncTheme();
+          drawAll();
+        }).observe(parentRoot, { attributes: true, attributeFilter: ['data-theme'] });
+      } catch (error) {
+        if (window.matchMedia) {
+          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+            syncTheme();
+            drawAll();
+          });
+        }
+      }
+
+      function resizeHost() {
+        window.requestAnimationFrame(function () {
+          try {
+            if (window.frameElement) {
+              window.frameElement.style.height = document.documentElement.scrollHeight + 'px';
+            }
+          } catch (error) {
+            // The visualization still works as a standalone page.
+          }
+        });
+      }
+
+      function chiReal(w) {
+        var a = resonance * resonance - w * w;
+        var b = damping * w;
+        return a / (a * a + b * b);
+      }
+
+      function chiImag(w) {
+        var a = resonance * resonance - w * w;
+        var b = damping * w;
+        return b / (a * a + b * b);
+      }
+
+      function sourceValue(w) {
+        return mode === 'realFromImag' ? chiImag(w) : chiReal(w);
+      }
+
+      function targetValue(w) {
+        return mode === 'realFromImag' ? chiReal(w) : chiImag(w);
+      }
+
+      function contributionValue(wPrime, w) {
+        var denominator = wPrime * wPrime - w * w;
+        if (mode === 'realFromImag') {
+          return (2 / Math.PI) * wPrime * chiImag(wPrime) / denominator;
+        }
+        return -(2 * w / Math.PI) * chiReal(wPrime) / denominator;
+      }
+
+      function formatFrequency(value) {
+        return Number(value).toFixed(2) + ' ωᵣ';
+      }
+
+      function describeSign(value, symbol) {
+        var threshold = 0.08;
+        if (Math.abs(value) < threshold) return symbol + ' is near zero';
+        return symbol + ' is ' + (value > 0 ? 'positive' : 'negative');
+      }
+
+      function svgElement(name, attrs) {
+        var el = document.createElementNS('http://www.w3.org/2000/svg', name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          el.setAttribute(key, attrs[key]);
+        });
+        return el;
+      }
+
+      function clearSvg(svg) {
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+      }
+
+      function range(count, start, end) {
+        var values = [];
+        for (var i = 0; i < count; i += 1) {
+          values.push(start + (end - start) * i / (count - 1));
+        }
+        return values;
+      }
+
+      function finiteExtent(values, forceZero) {
+        var finite = values.filter(Number.isFinite);
+        var min = Math.min.apply(null, finite);
+        var max = Math.max.apply(null, finite);
+        if (forceZero) {
+          min = Math.min(0, min);
+          max = Math.max(0, max);
+        }
+        if (Math.abs(max - min) < 1e-9) {
+          min -= 1;
+          max += 1;
+        }
+        var pad = (max - min) * 0.13;
+        return [min - pad, max + pad];
+      }
+
+      function quantileAbs(values, q) {
+        var sorted = values
+          .filter(Number.isFinite)
+          .map(Math.abs)
+          .sort(function (a, b) { return a - b; });
+        if (!sorted.length) return 1;
+        var index = Math.min(sorted.length - 1, Math.floor(q * (sorted.length - 1)));
+        return Math.max(sorted[index], 0.1);
+      }
+
+      function buildPath(points, xScale, yScale) {
+        var path = '';
+        var open = false;
+        points.forEach(function (point) {
+          if (!Number.isFinite(point[1])) {
+            open = false;
+            return;
+          }
+          var command = open ? 'L' : 'M';
+          path += command + xScale(point[0]).toFixed(2) + ',' + yScale(point[1]).toFixed(2);
+          open = true;
+        });
+        return path;
+      }
+
+      function buildArea(points, xScale, yScale, baseline, predicate) {
+        var segments = [];
+        var current = [];
+        points.forEach(function (point) {
+          if (Number.isFinite(point[1]) && predicate(point[1])) {
+            current.push(point);
+          } else if (current.length) {
+            segments.push(current);
+            current = [];
+          }
+        });
+        if (current.length) segments.push(current);
+
+        return segments.map(function (segment) {
+          var d = 'M' + xScale(segment[0][0]).toFixed(2) + ',' + yScale(baseline).toFixed(2);
+          segment.forEach(function (point) {
+            d += 'L' + xScale(point[0]).toFixed(2) + ',' + yScale(point[1]).toFixed(2);
+          });
+          d += 'L' + xScale(segment[segment.length - 1][0]).toFixed(2) + ',' + yScale(baseline).toFixed(2) + 'Z';
+          return d;
+        });
+      }
+
+      function drawChart(svg, kind) {
+        clearSvg(svg);
+        var width = Math.max(280, Math.round(svg.clientWidth));
+        var height = Math.max(150, Math.round(svg.clientHeight));
+        var margin = { top: 12, right: 15, bottom: 29, left: 42 };
+        var plotWidth = width - margin.left - margin.right;
+        var plotHeight = height - margin.top - margin.bottom;
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+
+        var xs = range(360, xMin, xMax);
+        var exclusion = Math.max(0.035, selected * 0.035);
+        var points;
+        var extent;
+        var curveClass;
+        var fillClass;
+
+        if (kind === 'source') {
+          points = xs.map(function (x) { return [x, sourceValue(x)]; });
+          extent = finiteExtent(points.map(function (p) { return p[1]; }), true);
+          curveClass = mode === 'realFromImag' ? 'curve-imag' : 'curve-real';
+          fillClass = mode === 'realFromImag' ? 'fill-imag' : 'fill-real';
+        } else if (kind === 'target') {
+          points = xs.map(function (x) { return [x, targetValue(x)]; });
+          extent = finiteExtent(points.map(function (p) { return p[1]; }), true);
+          curveClass = mode === 'realFromImag' ? 'curve-real' : 'curve-imag';
+          fillClass = mode === 'realFromImag' ? 'fill-real' : 'fill-imag';
+        } else {
+          points = xs.map(function (x) {
+            if (Math.abs(x - selected) < exclusion) return [x, NaN];
+            return [x, contributionValue(x, selected)];
+          });
+          var clip = quantileAbs(points.map(function (p) { return p[1]; }), 0.90);
+          points = points.map(function (p) {
+            if (!Number.isFinite(p[1])) return p;
+            return [p[0], Math.max(-clip, Math.min(clip, p[1]))];
+          });
+          extent = [-clip * 1.12, clip * 1.12];
+          curveClass = 'curve-contribution';
+        }
+
+        var xScale = function (x) {
+          return margin.left + (x - xMin) / (xMax - xMin) * plotWidth;
+        };
+        var yScale = function (y) {
+          return margin.top + (extent[1] - y) / (extent[1] - extent[0]) * plotHeight;
+        };
+        var zeroY = yScale(0);
+
+        [0.5, 1.0, 1.5, 2.0].forEach(function (tick) {
+          var x = xScale(tick);
+          svg.appendChild(svgElement('line', { x1: x, y1: margin.top, x2: x, y2: margin.top + plotHeight, class: 'grid-line' }));
+          svg.appendChild(svgElement('line', { x1: x, y1: margin.top + plotHeight, x2: x, y2: margin.top + plotHeight + 5, class: 'tick' }));
+          var label = svgElement('text', { x: x, y: height - 7, 'text-anchor': 'middle', class: 'svg-label' });
+          label.textContent = tick.toFixed(1);
+          svg.appendChild(label);
+        });
+
+        if (extent[0] < 0 && extent[1] > 0) {
+          svg.appendChild(svgElement('line', { x1: margin.left, y1: zeroY, x2: margin.left + plotWidth, y2: zeroY, class: 'axis' }));
+        } else {
+          svg.appendChild(svgElement('line', { x1: margin.left, y1: margin.top + plotHeight, x2: margin.left + plotWidth, y2: margin.top + plotHeight, class: 'axis' }));
+        }
+        svg.appendChild(svgElement('line', { x1: margin.left, y1: margin.top, x2: margin.left, y2: margin.top + plotHeight, class: 'axis' }));
+
+        var omegaLabel = svgElement('text', { x: margin.left + plotWidth, y: height - 7, 'text-anchor': 'end', class: 'svg-label' });
+        omegaLabel.textContent = 'ω′ / ωᵣ';
+        svg.appendChild(omegaLabel);
+
+        if (kind === 'contribution') {
+          var bandX = xScale(selected - exclusion);
+          var bandWidth = xScale(selected + exclusion) - bandX;
+          svg.appendChild(svgElement('rect', {
+            x: bandX,
+            y: margin.top,
+            width: Math.max(2, bandWidth),
+            height: plotHeight,
+            class: 'exclusion-band'
+          }));
+          buildArea(points, xScale, yScale, 0, function (v) { return v >= 0; }).forEach(function (d) {
+            svg.appendChild(svgElement('path', { d: d, class: 'fill-positive' }));
+          });
+          buildArea(points, xScale, yScale, 0, function (v) { return v < 0; }).forEach(function (d) {
+            svg.appendChild(svgElement('path', { d: d, class: 'fill-negative' }));
+          });
+          svg.appendChild(svgElement('path', { d: buildPath(points, xScale, yScale), class: curveClass }));
+        } else {
+          buildArea(points, xScale, yScale, 0, function () { return true; }).forEach(function (d) {
+            svg.appendChild(svgElement('path', { d: d, class: fillClass }));
+          });
+          svg.appendChild(svgElement('path', { d: buildPath(points, xScale, yScale), class: curveClass }));
+          var selectedX = xScale(selected);
+          svg.appendChild(svgElement('line', { x1: selectedX, y1: margin.top, x2: selectedX, y2: margin.top + plotHeight, class: 'cursor-line' }));
+
+          if (kind === 'target') {
+            var value = targetValue(selected);
+            svg.appendChild(svgElement('circle', {
+              cx: selectedX,
+              cy: yScale(value),
+              r: 5,
+              class: 'marker ' + (mode === 'realFromImag' ? 'marker-real' : 'marker-imag')
+            }));
+          }
+        }
+
+        var aria;
+        if (kind === 'source') {
+          aria = mode === 'realFromImag'
+            ? 'Imaginary susceptibility absorption spectrum with a selected frequency marker.'
+            : 'Real susceptibility dispersion spectrum with a selected frequency marker.';
+        } else if (kind === 'contribution') {
+          aria = 'Signed Kramers–Kronig contribution at each frequency, with a symmetric excluded interval around the selected frequency.';
+        } else {
+          aria = mode === 'realFromImag'
+            ? 'Real susceptibility curve with the reconstructed value marked at the selected frequency.'
+            : 'Imaginary susceptibility curve with the reconstructed value marked at the selected frequency.';
+        }
+        svg.setAttribute('aria-label', aria);
+      }
+
+      function drawTimePlot() {
+        var svg = document.getElementById('time-plot');
+        clearSvg(svg);
+        var width = Math.max(260, Math.round(svg.clientWidth));
+        var height = Math.max(100, Math.round(svg.clientHeight));
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        var left = 14;
+        var right = width - 10;
+        var center = Math.round(width * 0.34);
+        var baseline = Math.round(height * 0.62);
+
+        svg.appendChild(svgElement('line', { x1: left, y1: baseline, x2: right, y2: baseline, class: 'axis' }));
+        svg.appendChild(svgElement('line', { x1: center, y1: 12, x2: center, y2: height - 12, class: 'cursor-line' }));
+
+        var before = svgElement('text', { x: left, y: 17, class: 'svg-label' });
+        before.textContent = 'no response before t = 0';
+        svg.appendChild(before);
+
+        var zero = svgElement('text', { x: center, y: height - 3, 'text-anchor': 'middle', class: 'svg-label svg-label--accent' });
+        zero.textContent = 'field arrives';
+        svg.appendChild(zero);
+
+        var points = [];
+        for (var i = 0; i <= 220; i += 1) {
+          var x = left + (right - left) * i / 220;
+          var t = (x - center) / Math.max(1, right - center) * 8;
+          var y = t < 0 ? 0 : Math.exp(-0.33 * t) * Math.sin(4.0 * t);
+          points.push([x, baseline - y * height * 0.28]);
+        }
+        var d = points.map(function (p, index) {
+          return (index ? 'L' : 'M') + p[0].toFixed(2) + ',' + p[1].toFixed(2);
+        }).join('');
+        svg.appendChild(svgElement('path', { d: d, class: 'curve-real' }));
+      }
+
+      function drawContour() {
+        var svg = document.getElementById('contour-plot');
+        clearSvg(svg);
+        var width = Math.max(250, Math.round(svg.clientWidth));
+        var height = Math.max(170, Math.round(svg.clientHeight));
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+
+        var left = 20;
+        var right = width - 18;
+        var base = height - 39;
+        var origin = width * 0.43;
+        var radius = Math.min((right - left) * 0.42, base - 24);
+        var arcStart = origin - radius;
+        var arcEnd = origin + radius;
+        var poleX = origin + radius * 0.47;
+        var notch = Math.max(12, width * 0.045);
+
+        svg.appendChild(svgElement('line', { x1: left, y1: base, x2: right, y2: base, class: 'axis' }));
+        svg.appendChild(svgElement('line', { x1: origin, y1: base, x2: origin, y2: 17, class: 'axis' }));
+
+        var arc = 'M' + arcStart + ',' + base + ' A' + radius + ',' + radius + ' 0 0 1 ' + arcEnd + ',' + base;
+        svg.appendChild(svgElement('path', { d: arc, class: 'curve-real' }));
+
+        svg.appendChild(svgElement('line', { x1: arcStart, y1: base, x2: poleX - notch, y2: base, class: 'curve-real' }));
+        var notchPath = 'M' + (poleX - notch) + ',' + base + ' A' + notch + ',' + notch + ' 0 0 1 ' + (poleX + notch) + ',' + base;
+        var notchArc = svgElement('path', { d: notchPath, class: 'curve-imag' });
+        notchArc.setAttribute('stroke-dasharray', '4 3');
+        svg.appendChild(notchArc);
+        svg.appendChild(svgElement('line', { x1: poleX + notch, y1: base, x2: arcEnd, y2: base, class: 'curve-real' }));
+
+        svg.appendChild(svgElement('circle', { cx: poleX, cy: base, r: 4.5, fill: 'var(--imag)' }));
+
+        var analytic = svgElement('text', { x: origin, y: 43, 'text-anchor': 'middle', class: 'svg-label' });
+        analytic.textContent = 'analytic upper half-plane';
+        svg.appendChild(analytic);
+
+        var originLabel = svgElement('text', { x: origin, y: base + 19, 'text-anchor': 'middle', class: 'svg-label' });
+        originLabel.textContent = '0';
+        svg.appendChild(originLabel);
+
+        var pole = svgElement('text', { x: poleX, y: base + 23, 'text-anchor': 'middle', class: 'svg-label svg-label--accent' });
+        pole.textContent = 'pole at ω′ = ω';
+        svg.appendChild(pole);
+
+        var realAxis = svgElement('text', { x: right, y: base - 8, 'text-anchor': 'end', class: 'svg-label' });
+        realAxis.textContent = 'real ω′ axis';
+        svg.appendChild(realAxis);
+
+        var detour = svgElement('text', { x: poleX + notch + 7, y: base - notch - 7, class: 'svg-label' });
+        detour.textContent = 'equal detour';
+        svg.appendChild(detour);
+      }
+
+      function updateText() {
+        var equation = document.getElementById('equation');
+        var note = document.getElementById('equation-note');
+        var sourceTitle = document.getElementById('source-title');
+        var sourceCopy = document.getElementById('source-copy');
+        var targetTitle = document.getElementById('target-title');
+        var targetCopy = document.getElementById('target-copy');
+        var targetValueLabel = document.getElementById('target-value');
+        var leftSign = document.getElementById('left-sign-label');
+        var rightSign = document.getElementById('right-sign-label');
+
+        frequencyOutput.textContent = 'ω = ' + formatFrequency(selected);
+
+        if (mode === 'realFromImag') {
+          equation.innerHTML =
+            '<span class="target-symbol">χ′(ω)</span> = ' +
+            '<span class="frac"><span>2</span><span>π</span></span> ' +
+            '𝒫 ∫<sub>0</sub><sup>∞</sup> ' +
+            '<span class="frac"><span>ω′ <span class="source-symbol">χ″(ω′)</span></span><span>ω′² − ω²</span></span> dω′';
+          note.textContent = 'To determine χ′ at the selected ω, use χ″ over the whole spectrum. The denominator supplies the sign and the distance-dependent weight.';
+          sourceTitle.textContent = 'χ″(ω′): absorption at every frequency';
+          sourceCopy.textContent = 'The entire red curve participates; the selected frequency is only the point whose χ′ value we are asking for.';
+          targetTitle.textContent = 'χ′(ω): the weighted sum lands on this curve';
+          targetCopy.textContent = 'Moving ω changes the weighting of the same absorption spectrum, so the reconstructed real part changes with it.';
+          targetValueLabel.textContent = 'χ′(' + formatFrequency(selected) + ') ' + describeSign(targetValue(selected), '').replace(' is', 'is');
+          leftSign.textContent = 'ω′ below ω enters with − sign';
+          rightSign.textContent = 'ω′ above ω enters with + sign';
+        } else {
+          equation.innerHTML =
+            '<span class="target-symbol" style="color:var(--imag)">χ″(ω)</span> = −' +
+            '<span class="frac"><span>2ω</span><span>π</span></span> ' +
+            '𝒫 ∫<sub>0</sub><sup>∞</sup> ' +
+            '<span class="frac"><span><span class="source-symbol" style="color:var(--real)">χ′(ω′)</span></span><span>ω′² − ω²</span></span> dω′';
+          note.textContent = 'The reverse relation uses the real spectrum everywhere to reconstruct the imaginary value at the selected frequency.';
+          sourceTitle.textContent = 'χ′(ω′): phase and index shift at every frequency';
+          sourceCopy.textContent = 'The blue dispersion curve is now the known input to the transform.';
+          targetTitle.textContent = 'χ″(ω): the same causal constraint in reverse';
+          targetCopy.textContent = 'The weighted real spectrum reconstructs the absorption or gain at the selected frequency.';
+          targetValueLabel.textContent = 'χ″(' + formatFrequency(selected) + ') ' + describeSign(targetValue(selected), '').replace(' is', 'is');
+          leftSign.textContent = 'signed contribution from ω′ below ω';
+          rightSign.textContent = 'signed contribution from ω′ above ω';
+        }
+      }
+
+      function drawAll() {
+        updateText();
+        drawTimePlot();
+        drawChart(sourceChart, 'source');
+        drawChart(contributionChart, 'contribution');
+        drawChart(targetChart, 'target');
+        drawContour();
+        resizeHost();
+      }
+
+      frequency.addEventListener('input', function () {
+        selected = Number(frequency.value);
+        drawAll();
+      });
+
+      document.querySelectorAll('[data-frequency]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          selected = Number(button.dataset.frequency);
+          frequency.value = String(selected);
+          drawAll();
+        });
+      });
+
+      modeReal.addEventListener('click', function () {
+        mode = 'realFromImag';
+        modeReal.setAttribute('aria-pressed', 'true');
+        modeImag.setAttribute('aria-pressed', 'false');
+        drawAll();
+      });
+
+      modeImag.addEventListener('click', function () {
+        mode = 'imagFromReal';
+        modeReal.setAttribute('aria-pressed', 'false');
+        modeImag.setAttribute('aria-pressed', 'true');
+        drawAll();
+      });
+
+      var resizeTimer;
+      window.addEventListener('resize', function () {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(drawAll, 80);
+      });
+
+      drawAll();
+    }());
+  </script>
+
+<script data-article-visualization-bridge>
+(() => {
+  const root = document.documentElement;
+  const syncTheme = () => {
+    try {
+      const theme = window.parent.document.documentElement.dataset.theme;
+      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+    } catch (_) {}
+  };
+  const report = () => {
+    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
+    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
+    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+  };
+  syncTheme();
+  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  window.addEventListener("load", report, { once: true });
+  window.addEventListener("resize", report);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
+  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  requestAnimationFrame(report);
+})();
+</script>
+</body>
+</html>

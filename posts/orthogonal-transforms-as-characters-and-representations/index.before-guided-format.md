@@ -6,7 +6,6 @@ date: 2026-07-13
 tags:
   - math
 entry_type: comprehensive
-reading_mode: guided
 math: true
 article: article.md
 accent: mathematics

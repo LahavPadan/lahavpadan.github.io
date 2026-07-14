@@ -1,38 +1,22 @@
 /**
- * Loaded on every page. Wires up four features that only exist on posts:
- *
- *   1. Table of contents: build the nav list from the article's headings,
- *      then run a rAF-throttled scroll-spy with a binary-searched active
- *      heading. Replaces the old IntersectionObserver approach, which called
- *      back on every heading that entered or left the viewport — for the
- *      elliptic-curves and 4G articles that fires dozens of times per scroll
- *      frame and stalls the main thread.
- *
- *   2. Formula copy-to-clipboard. Reads the TeX source from `data-tex`
- *      attributes that mathjax-setup.js writes onto every mjx-container.
- *      Inline formulas copy on click / Enter / Space; display formulas have
- *      an explicit button injected into a `.math-copy-shell` wrapper.
- *
- *   3. Formula copy-via-selection. A capture-phase `copy` handler on the
- *      document walks the current Range, replaces each `mjx-container` that
- *      lands in the selection with its TeX source (wrapped in $…$ or $$…$$),
- *      and writes the result to text/plain. That way a normal drag-select
- *      + Ctrl-C over a paragraph carries the LaTeX with it, instead of
- *      producing an empty clipboard entry because the visible glyphs are
- *      unselectable SVG.
- *
- *   4. Image lightbox. Every content image in `.article-prose` is wrapped
- *      in a semantic `<button class="image-zoom-trigger">` on init; clicking
- *      one opens a full-viewport overlay with the image at natural size,
- *      dismissible by Escape, backdrop click, or the explicit close button.
- *
- * None of these features run on pages that don't contain the corresponding
- * DOM, so the module is safe to load site-wide.
+ * Site-wide post enhancements plus the July 2026 article-visualization overlay.
+ * This is a normal production asset loaded by the existing site layout; it is
+ * not an installer or repository-update script.
  */
 (function () {
   'use strict';
 
-  /* -------------------------------------------------------------- TOC ---- */
+  function each(nodes, fn) {
+    Array.prototype.forEach.call(nodes || [], fn);
+  }
+
+  function normalizeText(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function lowerText(value) {
+    return normalizeText(value).toLowerCase();
+  }
 
   function slugify(text) {
     return String(text || '')
@@ -42,158 +26,504 @@
       .replace(/^-+|-+$/g, '');
   }
 
+  function findByText(root, selector, fragments, startNode) {
+    if (!root) return null;
+    var wanted = (fragments || []).map(lowerText);
+    var nodes = root.querySelectorAll(selector);
+    var started = !startNode;
+    for (var i = 0; i < nodes.length; i += 1) {
+      if (!started) {
+        if (nodes[i] === startNode) started = true;
+        continue;
+      }
+      var text = lowerText(nodes[i].textContent);
+      var ok = wanted.every(function (fragment) {
+        return text.indexOf(fragment) !== -1;
+      });
+      if (ok) return nodes[i];
+    }
+    return null;
+  }
+
+  function closestBlock(node) {
+    if (!node) return null;
+    return node.closest('figure, p, .image-zoom-trigger') || node;
+  }
+
+  function isCaptionParagraph(node) {
+    if (!node || node.tagName !== 'P') return false;
+    var text = normalizeText(node.textContent);
+    if (!text) return false;
+    if (node.children.length === 1 &&
+        (node.firstElementChild.tagName === 'EM' ||
+         node.firstElementChild.tagName === 'I')) return true;
+    return node.querySelectorAll('img, iframe, a, button').length === 0 &&
+      node.innerHTML.replace(/\s+/g, '').indexOf('<em>') === 0;
+  }
+
+  function removeBlockAndCaption(node) {
+    var block = closestBlock(node);
+    if (!block || !block.parentNode) return;
+    var next = block.nextElementSibling;
+    block.parentNode.removeChild(block);
+    if (isCaptionParagraph(next) && next.parentNode) {
+      next.parentNode.removeChild(next);
+    }
+  }
+
+  function makeFrame(src, title, key, compact) {
+    var frame = document.createElement('iframe');
+    frame.className = 'article-visualization';
+    frame.setAttribute('data-article-visualization', compact ? 'compact' : 'responsive');
+    frame.setAttribute('data-visualization-key', key);
+    frame.setAttribute('src', src);
+    frame.setAttribute('title', title);
+    frame.setAttribute('loading', 'lazy');
+    frame.setAttribute('scrolling', 'no');
+    return frame;
+  }
+
+  function alreadyInserted(root, key) {
+    return Boolean(root && root.querySelector('[data-visualization-key="' + key + '"]'));
+  }
+
+  function insertAfter(anchor, frame) {
+    if (!anchor || !anchor.parentNode) return false;
+    anchor.parentNode.insertBefore(frame, anchor.nextSibling);
+    return true;
+  }
+
+  function insertBefore(anchor, frame) {
+    if (!anchor || !anchor.parentNode) return false;
+    anchor.parentNode.insertBefore(frame, anchor);
+    return true;
+  }
+
+  function findImage(root, altFragment, srcFragment) {
+    var images = root ? root.querySelectorAll('img') : [];
+    var altNeedle = lowerText(altFragment);
+    var srcNeedle = String(srcFragment || '').toLowerCase();
+    for (var i = 0; i < images.length; i += 1) {
+      var alt = lowerText(images[i].getAttribute('alt'));
+      var src = String(images[i].getAttribute('src') || '').toLowerCase();
+      if ((altNeedle && alt.indexOf(altNeedle) !== -1) ||
+          (srcNeedle && src.indexOf(srcNeedle) !== -1)) return images[i];
+    }
+    return null;
+  }
+
+  function replaceImageWithFrame(root, alt, src, frame) {
+    var image = findImage(root, alt, src);
+    if (!image) return false;
+    var block = closestBlock(image);
+    if (!block || !block.parentNode) return false;
+    var next = block.nextElementSibling;
+    block.parentNode.replaceChild(frame, block);
+    if (isCaptionParagraph(next) && next.parentNode) next.parentNode.removeChild(next);
+    return true;
+  }
+
+  function removeImagesBetweenHeadings(root, currentHeading, nextHeadingText) {
+    if (!root || !currentHeading) return;
+
+    var subsection = currentHeading.closest('.article-subsection');
+    if (subsection) {
+      each(subsection.querySelectorAll('img'), removeBlockAndCaption);
+      return;
+    }
+
+    var node = currentHeading.nextElementSibling;
+    while (node) {
+      if (/^H[1-4]$/.test(node.tagName) &&
+          lowerText(node.textContent).indexOf(lowerText(nextHeadingText)) !== -1) break;
+      var next = node.nextElementSibling;
+      if (node.tagName === 'IMG' || node.querySelector('img')) {
+        removeBlockAndCaption(node.tagName === 'IMG' ? node : node.querySelector('img'));
+      }
+      node = next;
+    }
+  }
+
+  function ensureEllipticAcknowledgment(prose) {
+    if (!prose) return;
+    var badNodes = prose.querySelectorAll('blockquote, p');
+    each(badNodes, function (node) {
+      var text = lowerText(node.textContent);
+      if (text.indexOf('reference document built bottom-up') !== -1 ||
+          text.indexOf('by such-and-such theorem') !== -1) {
+        if (node.parentNode) node.parentNode.removeChild(node);
+      }
+    });
+
+    if (prose.querySelector('a[href*="xperimex.com/blog/quantum-elliptic-curves"]')) return;
+
+    var quote = document.createElement('blockquote');
+    quote.className = 'elliptic-acknowledgment';
+    var p = document.createElement('p');
+    var strong = document.createElement('strong');
+    strong.textContent = 'Acknowledgment. ';
+    var link = document.createElement('a');
+    link.href = 'https://xperimex.com/blog/quantum-elliptic-curves/';
+    link.textContent = 'Adi Mittal’s “Introductory Quantum Elliptic Curve Cryptography” on Delta Thoughts';
+    p.appendChild(strong);
+    p.appendChild(document.createTextNode('A major early push for this article came from '));
+    p.appendChild(link);
+    p.appendChild(document.createTextNode('. It gave me a giant leap forward when I was first getting oriented in the subject, and I am grateful for the clear starting point it provided.'));
+    quote.appendChild(p);
+
+    var firstSection = prose.querySelector('h2');
+    if (firstSection) insertBefore(firstSection, quote);
+    else prose.insertBefore(quote, prose.firstChild);
+  }
+
+  function integrateCoupled(prose) {
+    var base = './visualizations/';
+
+    if (!alreadyInserted(prose, 'coupled-oscillators')) {
+      var osc = makeFrame(base + 'coupled-oscillators.html',
+        'Coupled mechanical oscillators and the coupling matrix',
+        'coupled-oscillators', false);
+      if (!replaceImageWithFrame(prose,
+          'coupling-spring extension from endpoint displacements',
+          'coupling-spring-extension.png', osc)) {
+        var oscHeading = findByText(prose, 'h2, h3', ['coupled mechanical oscillators']);
+        if (oscHeading) insertAfter(oscHeading, osc);
+      }
+    }
+
+    if (!alreadyInserted(prose, 'eigenvalue-gap')) {
+      var gap = makeFrame(base + 'eigenvalue-gap.html',
+        'The selected-detuning eigenvalue separation and minimum gap',
+        'eigenvalue-gap', true);
+      if (!replaceImageWithFrame(prose,
+          'coupling changes a crossing into an avoided crossing',
+          'avoided-crossing.svg', gap)) {
+        var gapHeading = findByText(prose, 'h2, h3', ['eigenvalue hyperbola', 'definition of gap']);
+        if (gapHeading) insertAfter(gapHeading, gap);
+      }
+    }
+
+    if (!alreadyInserted(prose, 'hyperbola-propagation')) {
+      var hyperHeading = findByText(prose, 'h2, h3', ['reading the hyperbola']);
+      if (hyperHeading) {
+        removeImagesBetweenHeadings(prose, hyperHeading, '0.7');
+        var hyper = makeFrame(base + 'hyperbola-propagation.html',
+          'Reading propagation and evanescence from the dispersion hyperbola',
+          'hyperbola-propagation', false);
+        var qAnchor = findByText(prose, 'p, .math-copy-shell, mjx-container', ['q', 'delta', 'kappa'], hyperHeading);
+        insertAfter(qAnchor || hyperHeading, hyper);
+      }
+    }
+
+    if (!alreadyInserted(prose, 'kramers-kronig')) {
+      var kk = makeFrame(base + 'kramers-kronig.html',
+        'Causality linking the real and imaginary response spectra',
+        'kramers-kronig', false);
+      if (!replaceImageWithFrame(prose,
+          'cauchy contour, real-axis pole, principal value, and kramers-kronig pair',
+          'kramers-kronig-cauchy-contour.png', kk)) {
+        var kkHeading = findByText(prose, 'h2, h3', ['kramers', 'kronig']);
+        if (kkHeading) insertAfter(kkHeading, kk);
+      }
+    }
+
+    if (!alreadyInserted(prose, 'bragg-path-difference')) {
+      var pathFrame = makeFrame(base + 'bragg-path-difference.html',
+        'Classical Bragg path difference and constructive reflection',
+        'bragg-path-difference', false);
+      var pathAnchor = findByText(prose, 'p', ['formula is intuitive', 'two limitations']);
+      if (pathAnchor) insertBefore(pathAnchor, pathFrame);
+      else {
+        var braggHeading = findByText(prose, 'h2, h3', ['bragg']);
+        if (braggHeading) insertAfter(braggHeading, pathFrame);
+      }
+    }
+
+    if (!alreadyInserted(prose, 'bragg-reciprocal-lattice')) {
+      var reciprocalFrame = makeFrame(base + 'bragg-reciprocal-lattice.html',
+        'Elastic reciprocal-lattice scattering construction',
+        'bragg-reciprocal-lattice', false);
+      var reciprocalAnchor = findByText(prose, 'p', ['same formula as picture 1']);
+      if (reciprocalAnchor) insertAfter(reciprocalAnchor, reciprocalFrame);
+      else {
+        var reciprocalHeading = findByText(prose, 'h2, h3', ['reciprocal-lattice']);
+        if (reciprocalHeading) insertAfter(reciprocalHeading, reciprocalFrame);
+      }
+    }
+
+    if (!alreadyInserted(prose, 'two-wave-truncation')) {
+      var truncHeading = findByText(prose, 'h2, h3, h4', ['two-wave truncation', 'amplitude suppression']);
+      if (truncHeading) {
+        insertAfter(truncHeading, makeFrame(base + 'two-wave-truncation.html',
+          'Why the full Fourier matrix reduces to two near-resonant waves',
+          'two-wave-truncation', false));
+      }
+    }
+
+    if (!alreadyInserted(prose, 'gyroscopic-precession')) {
+      var gyroHeading = findByText(prose, 'h2, h3, h4', ['gyroscopic precession', 'underlying mechanism']);
+      if (gyroHeading) {
+        insertAfter(gyroHeading, makeFrame(base + 'gyroscopic-precession.html',
+          'Gyroscopic precession as the origin of the transverse response',
+          'gyroscopic-precession', false));
+      }
+    }
+  }
+
+  function integrateElliptic(prose) {
+    var base = './visualizations/';
+    ensureEllipticAcknowledgment(prose);
+
+    if (!alreadyInserted(prose, 'chord-and-tangent')) {
+      var chordAnchor = findByText(prose, 'p', ['for doubling', 'tangent line']);
+      var chordHeading = findByText(prose, 'h2, h3', ['chord-and-tangent construction']);
+      insertAfter(chordAnchor || chordHeading,
+        makeFrame(base + 'chord-and-tangent.html',
+          'The chord-and-tangent construction on an elliptic curve',
+          'chord-and-tangent', false));
+    }
+
+    if (!alreadyInserted(prose, 'node-cusp-smooth')) {
+      var singularAnchor = findByText(prose, 'p', ['topological obstruction', 'genuinely new structure']);
+      var singularHeading = findByText(prose, 'h2, h3', ['why non-singular']);
+      var singularFrame = makeFrame(base + 'node-cusp-smooth.html',
+        'Node, cusp, and smooth cubic comparison through line slopes',
+        'node-cusp-smooth', false);
+      if (singularAnchor) insertBefore(singularAnchor, singularFrame);
+      else insertAfter(singularHeading, singularFrame);
+    }
+
+    if (!alreadyInserted(prose, 'elliptic-torus')) {
+      var torusHeading = findByText(prose, 'h2, h3, h4', ['weierstrass parameterization']);
+      if (!torusHeading) torusHeading = findByText(prose, 'h2, h3', ['complex', 'torus']);
+      if (torusHeading) {
+        insertBefore(torusHeading, makeFrame(base + 'elliptic-curve-torus.html',
+          'From the two-sheeted complex curve to a torus and period lattice',
+          'elliptic-torus', false));
+      }
+    }
+  }
+
+  function integrateOrthogonal(prose) {
+    var base = './visualizations/';
+
+    if (!alreadyInserted(prose, 'chebyshev-coordinate')) {
+      var coordinateAnchor = findByText(prose, 'p', ['everything about', 'literally']);
+      if (!coordinateAnchor) coordinateAnchor = findByText(prose, 'p', ['cos', 'chebyshev']);
+      if (!coordinateAnchor) coordinateAnchor = findByText(prose, 'h2, h3', ['chebyshev polynomials']);
+      if (coordinateAnchor) {
+        insertAfter(coordinateAnchor, makeFrame(base + 'chebyshev.html#coordinate',
+          'Chebyshev polynomials as ordinary cosine modes under t equals cos theta',
+          'chebyshev-coordinate', false));
+      }
+    }
+
+    if (!alreadyInserted(prose, 'chebyshev-trace')) {
+      var traceAnchor = findByText(prose, 'p', ['natural coordinate', 'su(2)']);
+      if (!traceAnchor) traceAnchor = findByText(prose, 'h2, h3', ['chebyshev', 'su(2)']);
+      if (!traceAnchor) traceAnchor = findByText(prose, 'p', ['trigonometric identity', 'diagonal']);
+      if (traceAnchor) {
+        insertAfter(traceAnchor, makeFrame(base + 'chebyshev.html#trace',
+          'Chebyshev polynomials from traces of opposite phases',
+          'chebyshev-trace', false));
+      }
+    }
+
+    if (!alreadyInserted(prose, 'bessel')) {
+      var besselAnchor = findByText(prose, 'p', ['this is why bessel functions describe']);
+      if (!besselAnchor) besselAnchor = findByText(prose, 'h2, h3', ['bessel functions']);
+      if (besselAnchor) {
+        insertAfter(besselAnchor, makeFrame(base + 'bessel.html',
+          'Why circular geometry and plane-wave symmetry produce Bessel modes',
+          'bessel', false));
+      }
+    }
+  }
+
+  function integrateWhoami() {
+    if (window.location.pathname.indexOf('/whoami') === -1) return;
+    var heading = findByText(document, 'h2', ['blogs i would recommend to others']);
+    if (!heading) return;
+    var node = heading.nextElementSibling;
+    while (node && node.tagName !== 'UL') node = node.nextElementSibling;
+    if (!node) return;
+    node.classList.add('whoami-blog-grid');
+    each(node.children, function (item) { item.classList.add('whoami-blog-card'); });
+  }
+
+  function integrateArticleVisualizations() {
+    var prose = document.querySelector('.article-prose');
+    var path = window.location.pathname.replace(/\/+$/, '');
+    if (prose) {
+      if (path.indexOf('/posts/coupled-modes-bragg-structures-and-photonic-bandgaps') !== -1) {
+        integrateCoupled(prose);
+      } else if (path.indexOf('/posts/elliptic-curves') !== -1) {
+        integrateElliptic(prose);
+      } else if (path.indexOf('/posts/orthogonal-transforms-as-characters-and-representations') !== -1) {
+        integrateOrthogonal(prose);
+      }
+    }
+    integrateWhoami();
+  }
+
+  function initVisualizationResizing() {
+    window.addEventListener('message', function (event) {
+      if (event.origin !== window.location.origin) return;
+      var data = event.data;
+      if (!data || typeof data !== 'object') return;
+      var accepted = data.type === 'article-visualization:resize' ||
+        data.type === 'article-visualization-height' ||
+        data.type === 'singular-cubic-height';
+      if (!accepted) return;
+      var height = Number(data.height || data.value || data.documentHeight);
+      if (!isFinite(height) || height <= 0) return;
+      height = Math.max(320, Math.min(3000, Math.ceil(height)));
+      each(document.querySelectorAll('iframe[data-article-visualization]'), function (frame) {
+        if (frame.contentWindow === event.source) frame.style.height = height + 'px';
+      });
+    });
+  }
+
+  /* -------------------------------------------------------------- TOC ---- */
+
   function buildToc() {
     var nav = document.getElementById('post-toc');
     var listEl = document.getElementById('post-toc-list');
     var prose = document.querySelector('.article-prose');
     if (!nav || !listEl || !prose) return null;
 
-    var headings = Array.prototype.slice.call(
-      prose.querySelectorAll('h2, h3, h4')
-    );
+    var headings = Array.prototype.slice.call(prose.querySelectorAll('h2, h3, h4'));
     if (headings.length < 2) {
       if (nav.parentNode) nav.parentNode.removeChild(nav);
       return null;
     }
 
-    var hasH2 = headings.some(function (h) { return h.tagName === 'H2'; });
+    var hasH2 = headings.some(function (heading) { return heading.tagName === 'H2'; });
     var topTag = hasH2 ? 'H2' : 'H3';
-
-    function isTop(h) { return h.tagName === topTag; }
-    function isSub(h) {
+    function isTop(heading) { return heading.tagName === topTag; }
+    function isSub(heading) {
       return topTag === 'H2'
-        ? (h.tagName === 'H3' || h.tagName === 'H4')
-        : (h.tagName === 'H4');
+        ? (heading.tagName === 'H3' || heading.tagName === 'H4')
+        : heading.tagName === 'H4';
     }
 
-    var linkable = headings.filter(function (h) { return isTop(h) || isSub(h); });
-    /* Very long references (dozens of subsections) collapse to a clean,
-       section-level list; shorter ones show their subsections too. */
+    var linkable = headings.filter(function (heading) { return isTop(heading) || isSub(heading); });
     var includeSubs = linkable.length <= 40;
-
     var used = {};
-    function ensureId(h) {
-      if (h.id) { used[h.id] = true; return; }
-      var base = slugify(h.textContent) || 'section';
+
+    function ensureId(heading) {
+      if (heading.id) { used[heading.id] = true; return; }
+      var base = slugify(heading.textContent) || 'section';
       var id = base;
       var n = 1;
       while (document.getElementById(id) || used[id]) {
         id = base + '-' + n;
         n += 1;
       }
-      h.id = id;
-      used[h.id] = true;
+      heading.id = id;
+      used[id] = true;
     }
 
-    function makeItem(h, cls) {
-      var li = document.createElement('li');
-      li.className = 'post-toc__item ' + cls;
-      var a = document.createElement('a');
-      a.className = 'post-toc__link';
-      a.href = '#' + h.id;
-      a.textContent = h.textContent;
-      li.appendChild(a);
-      return li;
+    function makeItem(heading, cls) {
+      var item = document.createElement('li');
+      item.className = 'post-toc__item ' + cls;
+      var link = document.createElement('a');
+      link.className = 'post-toc__link';
+      link.href = '#' + heading.id;
+      link.textContent = heading.textContent;
+      item.appendChild(link);
+      return item;
     }
 
-    /* Build the DOM in a fragment first so we hit the live tree once. */
-    var frag = document.createDocumentFragment();
+    listEl.textContent = '';
+    var fragment = document.createDocumentFragment();
     var currentSub = null;
-    var currentTopLi = null;
+    var currentTopItem = null;
     var linked = [];
 
-    headings.forEach(function (h) {
-      if (isTop(h)) {
-        ensureId(h);
+    headings.forEach(function (heading) {
+      if (isTop(heading)) {
+        ensureId(heading);
         currentSub = null;
-        currentTopLi = makeItem(h, 'post-toc__item--top');
-        frag.appendChild(currentTopLi);
-        linked.push(h);
-      } else if (isSub(h) && includeSubs) {
-        ensureId(h);
+        currentTopItem = makeItem(heading, 'post-toc__item--top');
+        fragment.appendChild(currentTopItem);
+        linked.push(heading);
+      } else if (isSub(heading) && includeSubs) {
+        ensureId(heading);
         if (!currentSub) {
           currentSub = document.createElement('ol');
           currentSub.className = 'post-toc__sublist';
-          (currentTopLi || frag).appendChild(currentSub);
+          (currentTopItem || fragment).appendChild(currentSub);
         }
-        currentSub.appendChild(makeItem(h, 'post-toc__item--sub'));
-        linked.push(h);
+        currentSub.appendChild(makeItem(heading, 'post-toc__item--sub'));
+        linked.push(heading);
       }
     });
 
-    listEl.appendChild(frag);
+    listEl.appendChild(fragment);
     nav.hidden = false;
     nav.setAttribute('data-toc-ready', '');
     return { nav: nav, linked: linked };
   }
 
   function initTocSpy(state) {
-    if (!state) return;
-    var links = {};
-    var linkNodes = state.nav.querySelectorAll('.post-toc__link');
-    Array.prototype.forEach.call(linkNodes, function (a) {
-      var raw = a.getAttribute('href').slice(1);
+    if (!state || !state.linked.length) return;
+    var entries = [];
+    each(state.nav.querySelectorAll('.post-toc__link'), function (link) {
+      var raw = link.getAttribute('href').slice(1);
       var id;
-      try { id = decodeURIComponent(raw); }
-      catch (_e) { id = raw; }
-      links[id] = a;
+      try { id = decodeURIComponent(raw); } catch (_error) { id = raw; }
+      var heading = document.getElementById(id);
+      if (heading) entries.push({ heading: heading, link: link });
     });
-
-    var entries = state.linked
-      .map(function (h) { return { id: h.id, heading: h, link: links[h.id] }; })
-      .filter(function (e) { return e.link; });
     if (!entries.length) return;
 
-    /* Compact parallel arrays for the hot path. */
-    var offsets = new Array(entries.length);
-    var activeIndex = -1;
+    var offsets = [];
+    var active = -1;
     var scrollFrame = 0;
     var measureFrame = 0;
-    /* Header height + a little breathing room, mirroring the CSS
-       scroll-margin-top used on headings. */
-    var HEADER_OFFSET = 96;
+    var headerOffset = 96;
 
     function setActive(index) {
-      if (index === activeIndex) return;
-      if (activeIndex >= 0 && entries[activeIndex]) {
-        entries[activeIndex].link.classList.remove('is-active');
-        entries[activeIndex].link.removeAttribute('aria-current');
+      if (index === active) return;
+      if (active >= 0 && entries[active]) {
+        entries[active].link.classList.remove('is-active');
+        entries[active].link.removeAttribute('aria-current');
       }
-      activeIndex = index;
-      if (activeIndex >= 0 && entries[activeIndex]) {
-        entries[activeIndex].link.classList.add('is-active');
-        entries[activeIndex].link.setAttribute('aria-current', 'location');
+      active = index;
+      if (active >= 0 && entries[active]) {
+        entries[active].link.classList.add('is-active');
+        entries[active].link.setAttribute('aria-current', 'location');
       }
     }
 
-    function updateActive() {
+    function update() {
       scrollFrame = 0;
       if (!offsets.length) return;
-      var target = window.scrollY + HEADER_OFFSET;
+      var target = window.scrollY + headerOffset;
       var low = 0;
       var high = offsets.length - 1;
       var chosen = 0;
-      /* Standard binary search for the greatest offset <= target. */
       while (low <= high) {
-        var mid = (low + high) >> 1;
-        if (offsets[mid] <= target) { chosen = mid; low = mid + 1; }
-        else high = mid - 1;
+        var middle = (low + high) >> 1;
+        if (offsets[middle] <= target) {
+          chosen = middle;
+          low = middle + 1;
+        } else high = middle - 1;
       }
       setActive(chosen);
     }
 
     function scheduleUpdate() {
-      if (scrollFrame) return;
-      scrollFrame = window.requestAnimationFrame(updateActive);
+      if (!scrollFrame) scrollFrame = window.requestAnimationFrame(update);
     }
 
     function measure() {
       measureFrame = 0;
-      for (var i = 0; i < entries.length; i++) {
-        offsets[i] = entries[i].heading.getBoundingClientRect().top
-          + window.scrollY;
-      }
-      updateActive();
+      offsets = entries.map(function (entry) {
+        return entry.heading.getBoundingClientRect().top + window.scrollY;
+      });
+      update();
     }
 
     function scheduleMeasure() {
@@ -204,40 +534,9 @@
     window.addEventListener('scroll', scheduleUpdate, { passive: true });
     window.addEventListener('resize', scheduleMeasure, { passive: true });
     window.addEventListener('load', scheduleMeasure, { once: true });
-
-    /* Re-measure once web fonts settle: math boxes change height when the
-       Roboto Mono and MathJax SVG fonts finish decoding. */
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(scheduleMeasure).catch(function () {});
     }
-
-    /* And once MathJax typesets, because math grows/shrinks section heights.
-       mathjax-setup.js writes data-math-restored on cache-hit; on cache-miss
-       we listen for the promise indirectly via a MutationObserver on the
-       article prose, throttled to a single re-measure. */
-    var prose = document.querySelector('.article-prose');
-    if (prose && window.MutationObserver) {
-      var mutationTimer = 0;
-      var mo = new MutationObserver(function () {
-        if (mutationTimer) return;
-        mutationTimer = window.setTimeout(function () {
-          mutationTimer = 0;
-          scheduleMeasure();
-        }, 120);
-      });
-      mo.observe(prose, { childList: true, subtree: true });
-      /* Stop watching once things quiet down. */
-      window.setTimeout(function () { mo.disconnect(); }, 8000);
-    }
-
-    Array.prototype.forEach.call(linkNodes, function (a) {
-      a.addEventListener('click', function () {
-        /* After a hash-jump, the target scroll position isn't final until
-           the browser has repainted; re-measure after a beat. */
-        window.setTimeout(scheduleMeasure, 320);
-      });
-    });
-
     measure();
   }
 
@@ -293,146 +592,93 @@
       var button = event.target.closest('[data-copy-math-button]');
       if (button) {
         var shell = button.closest('.math-copy-shell');
-        copyFormula(
-          shell && shell.querySelector('mjx-container[data-tex]'),
-          button
-        );
+        copyFormula(shell && shell.querySelector('mjx-container[data-tex]'), button);
         return;
       }
-      var inline = event.target.closest(
-        'mjx-container[data-copy-math-inline][data-tex]'
-      );
+      var inline = event.target.closest('mjx-container[data-copy-math-inline][data-tex]');
       if (!inline) return;
-      /* Respect an active text selection so users can still highlight math
-         with the mouse without triggering a copy. */
-      var sel = window.getSelection && window.getSelection();
-      if (sel && String(sel).trim()) return;
+      var selection = window.getSelection && window.getSelection();
+      if (selection && String(selection).trim()) return;
       copyFormula(inline, inline);
     });
 
     document.addEventListener('keydown', function (event) {
       if (event.key !== 'Enter' && event.key !== ' ') return;
-      var target = event.target.closest(
-        'mjx-container[data-copy-math-inline][data-tex]'
-      );
+      var target = event.target.closest('mjx-container[data-copy-math-inline][data-tex]');
       if (!target) return;
       event.preventDefault();
       copyFormula(target, target);
     });
   }
 
-  /* ------------------------------------------ Formula copy via select ---- */
-
-  /* Rebuild the selected content as plain text, but with every
-     `mjx-container[data-tex]` replaced by its raw TeX source in delimiters.
-     Returns null if the selection touches no math (let the browser handle
-     the copy normally in that case). */
   function buildSelectionTextWithTex(selection) {
     var mathHit = false;
     var parts = [];
-
-    for (var r = 0; r < selection.rangeCount; r++) {
+    for (var r = 0; r < selection.rangeCount; r += 1) {
       var range = selection.getRangeAt(r);
       if (range.collapsed) continue;
-
-      /* Edge case: the entire selection lies inside a single mjx-container
-         (user drag-selected only a formula). cloneContents on such a range
-         returns an SVG fragment with no data-tex attribute in scope, so we
-         short-circuit to the enclosing container's TeX. */
-      var host = range.commonAncestorContainer;
-      var hostEl = host.nodeType === Node.ELEMENT_NODE ? host : host.parentElement;
-      var enclosing = hostEl && hostEl.closest
-        ? hostEl.closest('mjx-container[data-tex]')
-        : null;
-      if (enclosing) {
-        var etex = enclosing.getAttribute('data-tex') || '';
-        var edisp = enclosing.getAttribute('display') === 'true';
-        parts.push(edisp ? '$$' + etex + '$$' : '$' + etex + '$');
-        mathHit = true;
-        continue;
-      }
-
-      var frag = range.cloneContents();
-      var mjxNodes = frag.querySelectorAll('mjx-container[data-tex]');
-      if (mjxNodes.length) mathHit = true;
-      for (var i = 0; i < mjxNodes.length; i++) {
-        var c = mjxNodes[i];
-        var tex = c.getAttribute('data-tex') || '';
-        var display = c.getAttribute('display') === 'true';
-        var replaced = display ? '\n$$' + tex + '$$\n' : '$' + tex + '$';
-        c.parentNode.replaceChild(document.createTextNode(replaced), c);
-      }
-
-      var wrap = document.createElement('div');
-      wrap.appendChild(frag);
-      parts.push(wrap.textContent);
+      var fragment = range.cloneContents();
+      var math = fragment.querySelectorAll('mjx-container[data-tex]');
+      if (math.length) mathHit = true;
+      each(math, function (container) {
+        var tex = container.getAttribute('data-tex') || '';
+        var display = container.getAttribute('display') === 'true';
+        container.parentNode.replaceChild(
+          document.createTextNode(display ? '\n$$' + tex + '$$\n' : '$' + tex + '$'),
+          container
+        );
+      });
+      var wrapper = document.createElement('div');
+      wrapper.appendChild(fragment);
+      parts.push(wrapper.textContent);
     }
-
     if (!mathHit) return null;
     return parts.join('\n').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n');
   }
 
   function initFormulaSelectionCopy() {
-    /* Capture phase so we run before any application-level handler. */
     document.addEventListener('copy', function (event) {
-      var sel = window.getSelection && window.getSelection();
-      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
-
-      var text = buildSelectionTextWithTex(sel);
-      if (text == null) return; // no math in the selection — let the browser copy
-
+      var selection = window.getSelection && window.getSelection();
+      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+      var text = buildSelectionTextWithTex(selection);
+      if (text == null) return;
       try {
         event.clipboardData.setData('text/plain', text);
         event.preventDefault();
-      } catch (_e) {
-        /* clipboardData not writable (very old browser); fall through to
-           the default behaviour, which is at least no worse than before. */
-      }
+      } catch (_error) {}
     }, true);
   }
 
   /* -------------------------------------------------- Image lightbox ---- */
 
-  var lightboxState = {
-    node: null,       // overlay element while open
-    lastFocus: null,  // element to return focus to on close
-    onKey: null       // bound keydown handler, for teardown
-  };
+  var lightboxState = { node: null, lastFocus: null, onKey: null };
 
   function closeLightbox() {
     if (!lightboxState.node) return;
     document.body.classList.remove('has-lightbox');
     document.removeEventListener('keydown', lightboxState.onKey, true);
-    if (lightboxState.node.parentNode) {
-      lightboxState.node.parentNode.removeChild(lightboxState.node);
-    }
-    var toFocus = lightboxState.lastFocus;
-    lightboxState.node = null;
-    lightboxState.lastFocus = null;
-    lightboxState.onKey = null;
-    if (toFocus && typeof toFocus.focus === 'function') {
-      try { toFocus.focus(); } catch (_e) { /* detached node — ignore */ }
+    if (lightboxState.node.parentNode) lightboxState.node.parentNode.removeChild(lightboxState.node);
+    var focus = lightboxState.lastFocus;
+    lightboxState = { node: null, lastFocus: null, onKey: null };
+    if (focus && typeof focus.focus === 'function') {
+      try { focus.focus(); } catch (_error) {}
     }
   }
 
-  function openLightbox(sourceImg) {
-    var src = sourceImg.currentSrc || sourceImg.src;
+  function openLightbox(sourceImage) {
+    var src = sourceImage.currentSrc || sourceImage.src;
     if (!src) return;
-
     var backdrop = document.createElement('div');
     backdrop.className = 'lightbox';
     backdrop.setAttribute('role', 'dialog');
     backdrop.setAttribute('aria-modal', 'true');
-    backdrop.setAttribute(
-      'aria-label',
-      sourceImg.alt ? 'Image: ' + sourceImg.alt : 'Image preview'
-    );
+    backdrop.setAttribute('aria-label', sourceImage.alt ? 'Image: ' + sourceImage.alt : 'Image preview');
     backdrop.tabIndex = -1;
 
-    var img = document.createElement('img');
-    img.className = 'lightbox__image';
-    img.src = src;
-    img.alt = sourceImg.alt || '';
+    var image = document.createElement('img');
+    image.className = 'lightbox__image';
+    image.src = src;
+    image.alt = sourceImage.alt || '';
 
     var close = document.createElement('button');
     close.type = 'button';
@@ -440,16 +686,11 @@
     close.setAttribute('aria-label', 'Close image');
     close.innerHTML = '&times;';
 
-    backdrop.appendChild(img);
+    backdrop.appendChild(image);
     backdrop.appendChild(close);
-
     backdrop.addEventListener('click', function (event) {
-      /* Clicking the image itself should not close; clicking the backdrop
-         or the close button should. */
-      if (event.target === img) return;
-      closeLightbox();
+      if (event.target !== image) closeLightbox();
     });
-
     lightboxState.onKey = function (event) {
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -457,7 +698,6 @@
       }
     };
     document.addEventListener('keydown', lightboxState.onKey, true);
-
     lightboxState.lastFocus = document.activeElement;
     lightboxState.node = backdrop;
     document.body.appendChild(backdrop);
@@ -468,58 +708,45 @@
   function initImageLightbox() {
     var prose = document.querySelector('.article-prose');
     if (!prose) return;
-
-    /* Pure delegation, no upfront wrapping. mathjax-setup.js can replace
-       .article-prose innerHTML during its sessionStorage cache-restore
-       step, which would wipe any per-image button wrappers we'd
-       installed at boot. Delegating on the persistent .article-prose
-       ancestor and matching img at click time avoids that whole
-       failure mode: whatever images live in the prose at the moment
-       of the click are what we react to. Cursor and focus affordances
-       come from the CSS selector `.article-prose img` in
-       performance-fixes.css. */
     prose.addEventListener('click', function (event) {
-      var img = event.target.closest('img');
-      if (!img || !prose.contains(img)) return;
-      /* Images inside anchors: preserve link behaviour. */
-      if (img.closest('a')) return;
+      var image = event.target.closest('img');
+      if (!image || !prose.contains(image) || image.closest('a')) return;
       event.preventDefault();
-      openLightbox(img);
-    });
-
-    /* Keyboard access: images aren't natively focusable, so wire a
-       tabindex-less path via the article body. Users who want to open
-       an image via keyboard can Tab to the enclosing paragraph (or
-       any focusable element nearby) and press Enter on the img via
-       the browser's structural navigation; on most browsers we still
-       want a keydown fallback for AT that focuses images. */
-    prose.addEventListener('keydown', function (event) {
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      var img = event.target.closest('img');
-      if (!img || img.closest('a')) return;
-      event.preventDefault();
-      openLightbox(img);
+      openLightbox(image);
     });
   }
 
-  /* --------------------------------------------------------- Bootstrap ---- */
+  function watchForArticleReplacement() {
+    var prose = document.querySelector('.article-prose');
+    if (!prose || !window.MutationObserver) return;
+    var timer = 0;
+    var observer = new MutationObserver(function () {
+      if (timer) return;
+      timer = window.setTimeout(function () {
+        timer = 0;
+        integrateArticleVisualizations();
+      }, 90);
+    });
+    observer.observe(prose, { childList: true, subtree: true });
+    window.setTimeout(function () { observer.disconnect(); }, 12000);
+  }
 
   function boot() {
-    /* Guided articles build a chapter-aware rail in guided-reading.js.
-       Running the generic TOC here as well would duplicate links and attach
-       two competing scroll spies to the same navigation. */
+    integrateArticleVisualizations();
+    initVisualizationResizing();
     if (!document.querySelector('.post-page--guided')) {
-      var tocState = buildToc();
-      initTocSpy(tocState);
+      initTocSpy(buildToc());
     }
     initFormulaCopying();
     initFormulaSelectionCopy();
     initImageLightbox();
+    watchForArticleReplacement();
+
+    document.addEventListener('lahav:math-ready', integrateArticleVisualizations, { once: true });
+    window.addEventListener('load', integrateArticleVisualizations, { once: true });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else boot();
 }());

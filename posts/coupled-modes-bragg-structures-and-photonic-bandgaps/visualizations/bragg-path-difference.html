@@ -1,0 +1,1167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Classical Bragg path difference</title>
+  <style>
+    :root {
+      --page: #f7f5f1;
+      --panel: #fffdfa;
+      --panel-2: #f1edf2;
+      --ink: #20232b;
+      --muted: #667080;
+      --line: #d8d1d9;
+      --line-strong: #a9a0aa;
+      --accent: #a83f71;
+      --accent-soft: #f5e5ed;
+      --ray: #426b9a;
+      --ray-soft: #e2ebf5;
+      --path: #c46d32;
+      --path-soft: #f6e6d8;
+      --success: #2e7a62;
+      --success-soft: #dfefe9;
+      --warn: #9a5f28;
+      --warn-soft: #f7eadc;
+      --shadow: 0 18px 45px rgba(50, 39, 49, 0.09);
+      --radius: 22px;
+      --math: "Cambria Math", "STIX Two Math", "Times New Roman", serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    html[data-theme="dark"] {
+      --page: #0d1411;
+      --panel: #111b17;
+      --panel-2: #17231e;
+      --ink: #f4f0e7;
+      --muted: #b6c0b8;
+      --line: #314139;
+      --line-strong: #66766e;
+      --accent: #ff8fc4;
+      --accent-soft: #36212d;
+      --ray: #8ab8f1;
+      --ray-soft: #1b2d3d;
+      --path: #ffb36f;
+      --path-soft: #3a2a1d;
+      --success: #79d0ae;
+      --success-soft: #18362c;
+      --warn: #efb577;
+      --warn-soft: #3a2b1d;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) {
+        --page: #0d1411;
+        --panel: #111b17;
+        --panel-2: #17231e;
+        --ink: #f4f0e7;
+        --muted: #b6c0b8;
+        --line: #314139;
+        --line-strong: #66766e;
+        --accent: #ff8fc4;
+        --accent-soft: #36212d;
+        --ray: #8ab8f1;
+        --ray-soft: #1b2d3d;
+        --path: #ffb36f;
+        --path-soft: #3a2a1d;
+        --success: #79d0ae;
+        --success-soft: #18362c;
+        --warn: #efb577;
+        --warn-soft: #3a2b1d;
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+
+    button, input { font: inherit; }
+
+    .viz {
+      width: min(1180px, calc(100% - 28px));
+      margin: 14px auto;
+      padding: clamp(20px, 3.5vw, 42px);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 0.54fr);
+      gap: 30px;
+      align-items: end;
+      padding-bottom: 26px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 760;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 760px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 4.1vw, 3.35rem);
+      font-weight: 600;
+      line-height: 1.03;
+      letter-spacing: -0.035em;
+    }
+
+    .intro p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.75fr) minmax(250px, 0.72fr);
+      gap: 20px;
+      padding-top: 22px;
+    }
+
+    .card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .diagram-card { overflow: hidden; }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 20px 22px 14px;
+    }
+
+    .kicker {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-weight: 760;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .card-head strong,
+    .controls h2,
+    .phase-copy h2,
+    .scope h2 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+
+    .card-head strong { font-size: 1.18rem; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px 14px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .legend i {
+      display: inline-block;
+      width: 22px;
+      height: 3px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .legend .ray-key { color: var(--ray); }
+    .legend .extra-key { color: var(--path); }
+    .legend .phase-key i {
+      height: 1px;
+      background: transparent;
+      border-top: 2px dashed var(--line-strong);
+    }
+
+    .diagram-wrap {
+      position: relative;
+      padding: 0 12px 12px;
+    }
+
+    #geometry {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1000 / 560;
+      border-radius: 17px;
+      background:
+        radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--accent-soft) 48%, transparent), transparent 41%),
+        linear-gradient(180deg, color-mix(in srgb, var(--panel-2) 68%, transparent), transparent 54%);
+    }
+
+    .diagram-note {
+      margin: 0 18px 18px;
+      padding: 13px 15px;
+      color: var(--muted);
+      border-left: 3px solid var(--accent);
+      background: var(--panel-2);
+      border-radius: 0 12px 12px 0;
+      font-size: 0.88rem;
+    }
+
+    .diagram-note strong { color: var(--ink); }
+
+    .controls {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      background: linear-gradient(180deg, var(--panel), color-mix(in srgb, var(--panel-2) 76%, var(--panel)));
+    }
+
+    .controls h2,
+    .phase-copy h2,
+    .scope h2 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .control {
+      display: grid;
+      gap: 9px;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .control-row label {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 680;
+    }
+
+    output {
+      color: var(--ink);
+      font-family: var(--math);
+      font-size: 1.04rem;
+      font-weight: 700;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .scale {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.68rem;
+    }
+
+    .order-block {
+      display: grid;
+      gap: 10px;
+      padding-top: 2px;
+    }
+
+    .order-block > span {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 680;
+    }
+
+    .order-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .order-buttons button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 9px 8px;
+      background: var(--panel);
+      color: var(--ink);
+      cursor: pointer;
+      transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+    }
+
+    .order-buttons button:hover,
+    .order-buttons button:focus-visible {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      outline: none;
+      transform: translateY(-1px);
+    }
+
+    .status {
+      margin-top: auto;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: var(--panel);
+    }
+
+    .status-label {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 760;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .status strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 0.98rem;
+    }
+
+    .status p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.81rem;
+    }
+
+    .status.constructive {
+      border-color: color-mix(in srgb, var(--success) 42%, var(--line));
+      background: var(--success-soft);
+    }
+
+    .status.offset {
+      border-color: color-mix(in srgb, var(--warn) 40%, var(--line));
+      background: var(--warn-soft);
+    }
+
+    .derivation {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1.25fr;
+      gap: 12px;
+      align-items: stretch;
+      margin-top: 20px;
+    }
+
+    .term,
+    .total-term {
+      min-width: 0;
+      padding: 17px 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel);
+    }
+
+    .term span,
+    .total-term span {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 730;
+      letter-spacing: 0.04em;
+    }
+
+    .term strong,
+    .total-term strong {
+      display: block;
+      font-family: var(--math);
+      font-size: clamp(1rem, 2vw, 1.3rem);
+      white-space: nowrap;
+    }
+
+    .term { border-top: 3px solid var(--path); }
+    .total-term {
+      border-top: 3px solid var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .operator {
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-family: var(--math);
+      font-size: 1.55rem;
+    }
+
+    .phase-card {
+      display: grid;
+      grid-template-columns: minmax(240px, 0.78fr) minmax(0, 1.3fr);
+      gap: 22px;
+      margin-top: 20px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-2);
+    }
+
+    .phase-copy {
+      align-self: center;
+    }
+
+    .phase-copy p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .equation {
+      margin-top: 14px;
+      padding: 13px 14px;
+      border-radius: 12px;
+      background: var(--panel);
+      font-family: var(--math);
+      font-size: clamp(1rem, 2.2vw, 1.32rem);
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .equation b { color: var(--accent); }
+
+    .wave-panel {
+      min-width: 0;
+      padding: 13px 14px 8px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel);
+    }
+
+    .wave-panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .wave-panel-head strong {
+      color: var(--ink);
+      font-family: var(--math);
+      font-size: 0.96rem;
+    }
+
+    #waves {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 700 / 250;
+    }
+
+    .vacuum-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .vacuum-note .math {
+      color: var(--ink);
+      font-family: var(--math);
+      font-weight: 700;
+    }
+
+    .scope {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .scope article {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+    }
+
+    .scope article:first-child { border-left: 4px solid var(--success); }
+    .scope article:last-child { border-left: 4px solid var(--accent); }
+
+    .scope p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .math { font-family: var(--math); }
+
+    @media (max-width: 900px) {
+      .intro,
+      .workspace,
+      .phase-card { grid-template-columns: 1fr; }
+      .intro { align-items: start; }
+      .controls { min-height: auto; }
+      .status { margin-top: 0; }
+      .legend { justify-content: flex-start; }
+    }
+
+    @media (max-width: 650px) {
+      .viz {
+        width: min(100% - 14px, 1180px);
+        margin: 7px auto;
+        padding: 17px;
+        border-radius: 20px;
+      }
+
+      .intro { gap: 16px; padding-bottom: 20px; }
+      .workspace { gap: 14px; padding-top: 16px; }
+      .card-head { display: grid; padding: 16px 16px 10px; }
+      .diagram-wrap { padding: 0 6px 8px; }
+      .diagram-note { margin: 0 12px 14px; }
+      .controls { padding: 17px; gap: 18px; }
+
+      .derivation {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .operator { min-height: 22px; }
+      .operator::before { content: ""; }
+      .term strong,
+      .total-term strong { white-space: normal; }
+      .phase-card { padding: 17px; }
+      .scope { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="viz" aria-labelledby="viz-title">
+    <header class="intro">
+      <div>
+        <div class="eyebrow">Picture 1 · classical path difference</div>
+        <h1 id="viz-title">Why the extra path is <span class="math">2Λ sin θ</span></h1>
+      </div>
+      <p>
+        Compare reflections from two adjacent planes between the same incoming phase front
+        and the same outgoing phase front. Only the deeper reflection travels between them.
+      </p>
+    </header>
+
+    <section class="workspace" aria-label="Interactive Bragg reflection geometry">
+      <article class="card diagram-card">
+        <div class="card-head">
+          <div>
+            <span class="kicker">Geometry</span>
+            <strong>Two reflected rays, one fair comparison</strong>
+          </div>
+          <div class="legend" aria-label="Diagram legend">
+            <span class="ray-key"><i></i>rays</span>
+            <span class="extra-key"><i></i>extra travel</span>
+            <span class="phase-key"><i></i>equal-phase fronts</span>
+          </div>
+        </div>
+
+        <div class="diagram-wrap">
+          <svg id="geometry" viewBox="0 0 1000 560" role="img" aria-labelledby="geometry-title geometry-desc">
+            <title id="geometry-title">Path difference between reflections from adjacent planes</title>
+            <desc id="geometry-desc">
+              Two parallel scattering planes are separated by Lambda. Parallel rays reflect from the two planes.
+              The lower reflection travels the additional segments C B and B D, each of length Lambda sine theta.
+            </desc>
+            <defs>
+              <marker id="arrow-ray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ray)"></path>
+              </marker>
+              <marker id="arrow-path" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--path)"></path>
+              </marker>
+              <filter id="label-shadow" x="-20%" y="-30%" width="140%" height="160%">
+                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.14"></feDropShadow>
+              </filter>
+            </defs>
+            <g id="geometry-dynamic"></g>
+          </svg>
+        </div>
+
+        <p class="diagram-note">
+          The dashed lines are not material surfaces. They mark <strong>equal phase</strong> before and after reflection,
+          so the comparison isolates exactly the path added by the lower ray.
+        </p>
+      </article>
+
+      <aside class="card controls" aria-label="Visualization controls">
+        <div>
+          <span class="kicker">Change the geometry</span>
+          <h2>Move the angle and wavelength</h2>
+        </div>
+
+        <div class="control">
+          <div class="control-row">
+            <label for="theta">Angle from the planes, θ</label>
+            <output id="theta-output" for="theta">38°</output>
+          </div>
+          <input id="theta" type="range" min="25" max="72" step="1" value="38">
+          <div class="scale"><span>25°</span><span>72°</span></div>
+        </div>
+
+        <div class="control">
+          <div class="control-row">
+            <label for="lambda">In-medium wavelength, λ<sub>medium</sub>/Λ</label>
+            <output id="lambda-output" for="lambda">1.23</output>
+          </div>
+          <input id="lambda" type="range" min="0.28" max="1.95" step="0.01" value="1.23">
+          <div class="scale"><span>shorter</span><span>longer</span></div>
+        </div>
+
+        <div class="order-block">
+          <span>Place an exact integer number of wavelengths in the extra path</span>
+          <div class="order-buttons" role="group" aria-label="Set exact Bragg diffraction order">
+            <button type="button" data-order="1">m = 1</button>
+            <button type="button" data-order="2">m = 2</button>
+            <button type="button" data-order="3">m = 3</button>
+          </div>
+        </div>
+
+        <div id="status" class="status constructive" aria-live="polite">
+          <span class="status-label">At the detector</span>
+          <strong id="status-title">The two reflections return in phase</strong>
+          <p id="status-copy">One complete wavelength fits in the added path.</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="derivation" aria-label="Path difference derivation">
+      <div class="term">
+        <span>Before the deeper reflection · C → B</span>
+        <strong>CB = Λ sin θ</strong>
+      </div>
+      <div class="operator" aria-hidden="true">+</div>
+      <div class="term">
+        <span>After the deeper reflection · B → D</span>
+        <strong>BD = Λ sin θ</strong>
+      </div>
+      <div class="operator" aria-hidden="true">=</div>
+      <div class="total-term">
+        <span>Total extra path</span>
+        <strong>ΔL = 2Λ sin θ</strong>
+      </div>
+    </section>
+
+    <section class="phase-card" aria-label="Constructive interference condition">
+      <div class="phase-copy">
+        <span class="kicker">Interference</span>
+        <h2>Constructive reflection means a whole number of wavelengths</h2>
+        <p>
+          The lower ray may travel farther, but it reinforces the upper ray whenever the added distance contains
+          <span class="math">m = 1, 2, 3, …</span> complete wavelengths.
+        </p>
+        <div class="equation">
+          <b>m λ<sub>medium</sub></b> = ΔL = 2Λ sin θ
+        </div>
+      </div>
+
+      <div class="wave-panel">
+        <div class="wave-panel-head">
+          <span>Reflected field at the same outgoing phase front</span>
+          <strong id="cycles-output">ΔL / λ = 1.00</strong>
+        </div>
+        <svg id="waves" viewBox="0 0 700 250" role="img" aria-labelledby="waves-title waves-desc">
+          <title id="waves-title">Phase comparison of the two reflected waves</title>
+          <desc id="waves-desc">Two sinusoidal traces show whether the reflected waves arrive in phase or with a phase offset.</desc>
+          <g id="waves-dynamic"></g>
+        </svg>
+      </div>
+
+      <div class="vacuum-note" style="grid-column: 1 / -1;">
+        Using <span class="math">λ<sub>0</sub> = n<sub>avg</sub> λ<sub>medium</sub></span>, the same condition becomes
+        <span class="math">m λ<sub>0</sub> = 2 n<sub>avg</sub> Λ sin θ</span>.
+      </div>
+    </section>
+
+    <section class="scope" aria-label="Scope of the classical picture">
+      <article>
+        <span class="kicker">What this picture answers</span>
+        <h2>Where constructive reflection occurs</h2>
+        <p>It connects the plane spacing, incidence angle, wavelength, and diffraction order through one geometric path difference.</p>
+      </article>
+      <article>
+        <span class="kicker">What it deliberately leaves open</span>
+        <h2>How strong and how wide the reflection is</h2>
+        <p>A discrete-plane picture does not determine the strength of a Fourier order or the width of the resulting stopband; the later derivations supply those pieces.</p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const SVG_NS = "http://www.w3.org/2000/svg";
+      const thetaInput = document.getElementById("theta");
+      const lambdaInput = document.getElementById("lambda");
+      const thetaOutput = document.getElementById("theta-output");
+      const lambdaOutput = document.getElementById("lambda-output");
+      const cyclesOutput = document.getElementById("cycles-output");
+      const status = document.getElementById("status");
+      const statusTitle = document.getElementById("status-title");
+      const statusCopy = document.getElementById("status-copy");
+      const geometryGroup = document.getElementById("geometry-dynamic");
+      const wavesGroup = document.getElementById("waves-dynamic");
+
+      const state = {
+        theta: Number(thetaInput.value),
+        lambdaRatio: Number(lambdaInput.value)
+      };
+
+      const el = (name, attrs = {}, text = "") => {
+        const node = document.createElementNS(SVG_NS, name);
+        for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+        if (text) node.textContent = text;
+        return node;
+      };
+
+      const line = (x1, y1, x2, y2, attrs = {}) =>
+        el("line", { x1, y1, x2, y2, ...attrs });
+
+      const text = (x, y, value, attrs = {}) =>
+        el("text", { x, y, ...attrs }, value);
+
+      const round = (value, digits = 2) => Number(value).toFixed(digits);
+
+      function clear(node) {
+        while (node.firstChild) node.removeChild(node.firstChild);
+      }
+
+      function labelBox(group, x, y, label, options = {}) {
+        const width = options.width || Math.max(72, label.length * 9.2 + 24);
+        const height = options.height || 34;
+        const fill = options.fill || "var(--panel)";
+        const stroke = options.stroke || "var(--line)";
+        const color = options.color || "var(--ink)";
+        const anchor = options.anchor || "middle";
+        let rectX = x - width / 2;
+        if (anchor === "start") rectX = x;
+        if (anchor === "end") rectX = x - width;
+
+        group.appendChild(el("rect", {
+          x: rectX,
+          y: y - height / 2,
+          width,
+          height,
+          rx: 9,
+          fill,
+          stroke,
+          "stroke-width": 1,
+          filter: "url(#label-shadow)"
+        }));
+        group.appendChild(text(
+          anchor === "middle" ? x : anchor === "start" ? x + 12 : x - 12,
+          y + 1,
+          label,
+          {
+            fill: color,
+            "font-family": "var(--math)",
+            "font-size": options.fontSize || 20,
+            "font-weight": options.weight || 700,
+            "text-anchor": anchor,
+            "dominant-baseline": "middle"
+          }
+        ));
+      }
+
+      function drawPoint(group, point, name, dx, dy, fill = "var(--accent)") {
+        group.appendChild(el("circle", {
+          cx: point.x,
+          cy: point.y,
+          r: 7,
+          fill,
+          stroke: "var(--panel)",
+          "stroke-width": 3
+        }));
+        group.appendChild(text(point.x + dx, point.y + dy, name, {
+          fill: "var(--ink)",
+          "font-family": "var(--math)",
+          "font-size": 20,
+          "font-style": "italic",
+          "font-weight": 700,
+          "text-anchor": "middle",
+          "dominant-baseline": "middle",
+          "paint-order": "stroke",
+          stroke: "var(--panel)",
+          "stroke-width": 5,
+          "stroke-linejoin": "round"
+        }));
+      }
+
+      function arcPath(cx, cy, radius, theta) {
+        const steps = 24;
+        const points = [];
+        for (let i = 0; i <= steps; i++) {
+          const a = Math.PI + (theta * i / steps);
+          points.push(`${i === 0 ? "M" : "L"} ${cx + radius * Math.cos(a)} ${cy + radius * Math.sin(a)}`);
+        }
+        return points.join(" ");
+      }
+
+      function renderGeometry() {
+        clear(geometryGroup);
+
+        const theta = state.theta * Math.PI / 180;
+        const sin = Math.sin(theta);
+        const cos = Math.cos(theta);
+
+        const yTop = 210;
+        const yBottom = 405;
+        const spacing = yBottom - yTop;
+        const A = { x: 510, y: yTop };
+        const B = { x: 510, y: yBottom };
+        const uIn = { x: cos, y: sin };
+        const uOut = { x: cos, y: -sin };
+
+        const incomingLength = Math.min(470, (yTop - 48) / sin, (A.x - 65) / cos);
+        const outgoingLength = Math.min(470, (yTop - 48) / sin, (930 - A.x) / cos);
+        const lowerIncomingLength = Math.min(470, (B.y - 70) / sin, (B.x - 65) / cos);
+        const lowerOutgoingLength = Math.min(470, (B.y - 70) / sin, (930 - B.x) / cos);
+
+        const AIn = { x: A.x - incomingLength * uIn.x, y: A.y - incomingLength * uIn.y };
+        const AOut = { x: A.x + outgoingLength * uOut.x, y: A.y + outgoingLength * uOut.y };
+        const BIn = { x: B.x - lowerIncomingLength * uIn.x, y: B.y - lowerIncomingLength * uIn.y };
+        const BOut = { x: B.x + lowerOutgoingLength * uOut.x, y: B.y + lowerOutgoingLength * uOut.y };
+
+        const projected = spacing * sin;
+        const C = { x: B.x - projected * uIn.x, y: B.y - projected * uIn.y };
+        const D = { x: B.x + projected * uOut.x, y: B.y + projected * uOut.y };
+
+        // Plane bands and labels.
+        geometryGroup.appendChild(el("rect", {
+          x: 100, y: yTop - 7, width: 820, height: 14, rx: 7,
+          fill: "var(--accent-soft)", opacity: 0.82
+        }));
+        geometryGroup.appendChild(el("rect", {
+          x: 100, y: yBottom - 7, width: 820, height: 14, rx: 7,
+          fill: "var(--accent-soft)", opacity: 0.82
+        }));
+        geometryGroup.appendChild(line(100, yTop, 920, yTop, {
+          stroke: "var(--accent)", "stroke-width": 2.6
+        }));
+        geometryGroup.appendChild(line(100, yBottom, 920, yBottom, {
+          stroke: "var(--accent)", "stroke-width": 2.6
+        }));
+        geometryGroup.appendChild(text(915, yTop - 17, "plane n", {
+          fill: "var(--muted)", "font-size": 17, "font-weight": 700, "text-anchor": "end"
+        }));
+        geometryGroup.appendChild(text(915, yBottom + 28, "plane n + 1", {
+          fill: "var(--muted)", "font-size": 17, "font-weight": 700, "text-anchor": "end"
+        }));
+
+        // Spacing bracket.
+        geometryGroup.appendChild(line(124, yTop + 2, 124, yBottom - 2, {
+          stroke: "var(--line-strong)", "stroke-width": 2
+        }));
+        geometryGroup.appendChild(line(112, yTop + 2, 136, yTop + 2, {
+          stroke: "var(--line-strong)", "stroke-width": 2
+        }));
+        geometryGroup.appendChild(line(112, yBottom - 2, 136, yBottom - 2, {
+          stroke: "var(--line-strong)", "stroke-width": 2
+        }));
+        labelBox(geometryGroup, 78, (yTop + yBottom) / 2, "Λ", {
+          width: 48, fill: "var(--panel)", stroke: "var(--line)", fontSize: 24
+        });
+
+        // Rays.
+        geometryGroup.appendChild(line(AIn.x, AIn.y, A.x, A.y, {
+          stroke: "var(--ray)", "stroke-width": 4, "stroke-linecap": "round", "marker-end": "url(#arrow-ray)"
+        }));
+        geometryGroup.appendChild(line(BIn.x, BIn.y, B.x, B.y, {
+          stroke: "var(--ray)", "stroke-width": 4, "stroke-linecap": "round", "marker-end": "url(#arrow-ray)"
+        }));
+        geometryGroup.appendChild(line(A.x, A.y, AOut.x, AOut.y, {
+          stroke: "var(--ray)", "stroke-width": 4, "stroke-linecap": "round", "marker-end": "url(#arrow-ray)"
+        }));
+        geometryGroup.appendChild(line(B.x, B.y, BOut.x, BOut.y, {
+          stroke: "var(--ray)", "stroke-width": 4, "stroke-linecap": "round", "marker-end": "url(#arrow-ray)"
+        }));
+
+        // Equal-phase fronts.
+        geometryGroup.appendChild(line(A.x, A.y, C.x, C.y, {
+          stroke: "var(--line-strong)", "stroke-width": 2.2, "stroke-dasharray": "8 8"
+        }));
+        geometryGroup.appendChild(line(A.x, A.y, D.x, D.y, {
+          stroke: "var(--line-strong)", "stroke-width": 2.2, "stroke-dasharray": "8 8"
+        }));
+
+        // Highlighted extra segments.
+        geometryGroup.appendChild(line(C.x, C.y, B.x, B.y, {
+          stroke: "var(--path)", "stroke-width": 8, "stroke-linecap": "round", "marker-end": "url(#arrow-path)"
+        }));
+        geometryGroup.appendChild(line(B.x, B.y, D.x, D.y, {
+          stroke: "var(--path)", "stroke-width": 8, "stroke-linecap": "round", "marker-end": "url(#arrow-path)"
+        }));
+
+        const midCB = { x: (C.x + B.x) / 2, y: (C.y + B.y) / 2 };
+        const midBD = { x: (B.x + D.x) / 2, y: (B.y + D.y) / 2 };
+        const labelOffset = 34;
+        labelBox(
+          geometryGroup,
+          midCB.x - sin * labelOffset,
+          midCB.y - cos * labelOffset,
+          "Λ sin θ",
+          { width: 108, fill: "var(--path-soft)", stroke: "var(--path)", color: "var(--path)", fontSize: 20 }
+        );
+        labelBox(
+          geometryGroup,
+          midBD.x + sin * labelOffset,
+          midBD.y - cos * labelOffset,
+          "Λ sin θ",
+          { width: 108, fill: "var(--path-soft)", stroke: "var(--path)", color: "var(--path)", fontSize: 20 }
+        );
+
+        // Angle arc measured from the plane, not the normal.
+        geometryGroup.appendChild(el("path", {
+          d: arcPath(A.x, A.y, 69, theta),
+          fill: "none",
+          stroke: "var(--accent)",
+          "stroke-width": 3,
+          "stroke-linecap": "round"
+        }));
+        const thetaLabel = {
+          x: A.x - 91 * Math.cos(theta / 2),
+          y: A.y - 91 * Math.sin(theta / 2)
+        };
+        labelBox(geometryGroup, thetaLabel.x, thetaLabel.y, "θ", {
+          width: 43, height: 31, fill: "var(--accent-soft)", stroke: "var(--accent)", color: "var(--accent)", fontSize: 22
+        });
+
+        // Reflection points and comparison points.
+        drawPoint(geometryGroup, A, "A", 18, -18, "var(--accent)");
+        drawPoint(geometryGroup, B, "B", -18, 24, "var(--accent)");
+        drawPoint(geometryGroup, C, "C", -18, 20, "var(--path)");
+        drawPoint(geometryGroup, D, "D", 18, 20, "var(--path)");
+
+        // Direction labels placed in stable empty zones.
+        geometryGroup.appendChild(text(198, 72, "incident waves", {
+          fill: "var(--ray)", "font-size": 18, "font-weight": 750, "text-anchor": "middle"
+        }));
+        geometryGroup.appendChild(text(820, 72, "reflected waves", {
+          fill: "var(--ray)", "font-size": 18, "font-weight": 750, "text-anchor": "middle"
+        }));
+
+        // Compact geometric fact.
+        labelBox(geometryGroup, 510, 516, "CB + BD = 2Λ sin θ", {
+          width: 270, height: 42, fill: "var(--accent-soft)", stroke: "var(--accent)", color: "var(--accent)", fontSize: 22
+        });
+      }
+
+      function sinePath(yCenter, phase, amplitude, cycles, width = 610, xStart = 58) {
+        const points = [];
+        const samples = 220;
+        for (let i = 0; i <= samples; i++) {
+          const t = i / samples;
+          const x = xStart + t * width;
+          const y = yCenter - amplitude * Math.sin(t * cycles * Math.PI * 2 + phase);
+          points.push(`${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`);
+        }
+        return points.join(" ");
+      }
+
+      function renderWaves() {
+        clear(wavesGroup);
+
+        const extraInLambda = 2 * Math.sin(state.theta * Math.PI / 180) / state.lambdaRatio;
+        const phase = 2 * Math.PI * extraInLambda;
+        const displayCycles = 4.2;
+
+        wavesGroup.appendChild(el("rect", {
+          x: 14, y: 18, width: 672, height: 214, rx: 15,
+          fill: "var(--panel-2)", stroke: "var(--line)"
+        }));
+
+        [84, 169].forEach(y => {
+          wavesGroup.appendChild(line(55, y, 670, y, {
+            stroke: "var(--line)", "stroke-width": 1.5
+          }));
+        });
+
+        wavesGroup.appendChild(text(27, 84, "A", {
+          fill: "var(--accent)", "font-family": "var(--math)", "font-size": 20,
+          "font-style": "italic", "font-weight": 800, "dominant-baseline": "middle"
+        }));
+        wavesGroup.appendChild(text(27, 169, "B", {
+          fill: "var(--path)", "font-family": "var(--math)", "font-size": 20,
+          "font-style": "italic", "font-weight": 800, "dominant-baseline": "middle"
+        }));
+
+        wavesGroup.appendChild(el("path", {
+          d: sinePath(84, 0, 27, displayCycles),
+          fill: "none", stroke: "var(--ray)", "stroke-width": 4, "stroke-linecap": "round"
+        }));
+        wavesGroup.appendChild(el("path", {
+          d: sinePath(169, phase, 27, displayCycles),
+          fill: "none", stroke: "var(--path)", "stroke-width": 4, "stroke-linecap": "round"
+        }));
+
+        const fractional = ((extraInLambda % 1) + 1) % 1;
+        const phaseDegrees = fractional * 360;
+        const markerX = 620;
+        const radius = 29;
+        const c1 = { x: markerX, y: 84 };
+        const c2 = { x: markerX, y: 169 };
+
+        [c1, c2].forEach((c, index) => {
+          wavesGroup.appendChild(el("circle", {
+            cx: c.x, cy: c.y, r: radius,
+            fill: "var(--panel)", stroke: "var(--line)", "stroke-width": 1.7
+          }));
+          const p = index === 0 ? 0 : fractional * Math.PI * 2;
+          wavesGroup.appendChild(line(c.x, c.y, c.x + radius * 0.76 * Math.cos(p), c.y - radius * 0.76 * Math.sin(p), {
+            stroke: index === 0 ? "var(--ray)" : "var(--path)",
+            "stroke-width": 4, "stroke-linecap": "round"
+          }));
+          wavesGroup.appendChild(el("circle", {
+            cx: c.x, cy: c.y, r: 4,
+            fill: index === 0 ? "var(--ray)" : "var(--path)"
+          }));
+        });
+
+        wavesGroup.appendChild(text(620, 128, `${round(phaseDegrees, 0)}° offset`, {
+          fill: "var(--muted)", "font-size": 14, "font-weight": 700,
+          "text-anchor": "middle", "dominant-baseline": "middle"
+        }));
+      }
+
+      function updateStatus() {
+        const thetaRad = state.theta * Math.PI / 180;
+        const cycles = 2 * Math.sin(thetaRad) / state.lambdaRatio;
+        const nearestOrder = Math.max(1, Math.round(cycles));
+        const distanceToInteger = Math.abs(cycles - Math.round(cycles));
+        const constructive = distanceToInteger < 0.025;
+
+        thetaOutput.textContent = `${state.theta}°`;
+        lambdaOutput.textContent = round(state.lambdaRatio, 2);
+        cyclesOutput.textContent = `ΔL / λ = ${round(cycles, 2)}`;
+
+        status.classList.toggle("constructive", constructive);
+        status.classList.toggle("offset", !constructive);
+
+        if (constructive) {
+          const order = Math.max(1, Math.round(cycles));
+          statusTitle.textContent = "The two reflections return in phase";
+          statusCopy.textContent = `${order === 1 ? "One complete wavelength fits" : `${order} complete wavelengths fit`} in the added path (m = ${order}).`;
+        } else {
+          const phaseDeg = Math.round((((cycles % 1) + 1) % 1) * 360);
+          statusTitle.textContent = "The reflected waves return with a phase offset";
+          statusCopy.textContent = `The added path is ${round(cycles, 2)} wavelengths, leaving a ${phaseDeg}° phase offset instead of an integer order.`;
+        }
+      }
+
+      function render() {
+        renderGeometry();
+        renderWaves();
+        updateStatus();
+        requestAnimationFrame(reportHeight);
+      }
+
+      function setExactOrder(order) {
+        const exact = 2 * Math.sin(state.theta * Math.PI / 180) / order;
+        const bounded = Math.min(Number(lambdaInput.max), Math.max(Number(lambdaInput.min), exact));
+        state.lambdaRatio = Math.round(bounded * 100) / 100;
+        lambdaInput.value = state.lambdaRatio;
+        render();
+      }
+
+      thetaInput.addEventListener("input", event => {
+        state.theta = Number(event.target.value);
+        render();
+      });
+
+      lambdaInput.addEventListener("input", event => {
+        state.lambdaRatio = Number(event.target.value);
+        render();
+      });
+
+      document.querySelectorAll("[data-order]").forEach(button => {
+        button.addEventListener("click", () => setExactOrder(Number(button.dataset.order)));
+      });
+
+      function syncThemeFromParent() {
+        try {
+          if (window.parent === window) return;
+          const parentRoot = window.parent.document.documentElement;
+          const apply = () => {
+            const explicit = parentRoot.dataset.theme || parentRoot.getAttribute("data-color-mode");
+            const parentDark = parentRoot.classList.contains("dark") || explicit === "dark";
+            const parentLight = parentRoot.classList.contains("light") || explicit === "light";
+            document.documentElement.dataset.theme = parentDark ? "dark" : parentLight ? "light" : "";
+          };
+          apply();
+          new MutationObserver(apply).observe(parentRoot, { attributes: true, attributeFilter: ["class", "data-theme", "data-color-mode"] });
+        } catch (_) {
+          // Cross-origin embedding: prefers-color-scheme remains the fallback.
+        }
+      }
+
+      function reportHeight() {
+        try {
+          window.parent.postMessage({ type: "bragg-path-difference-height", height: document.documentElement.scrollHeight }, "*");
+        } catch (_) {}
+      }
+
+      syncThemeFromParent();
+      new ResizeObserver(reportHeight).observe(document.body);
+      render();
+    })();
+  </script>
+
+<script data-article-visualization-bridge>
+(() => {
+  const root = document.documentElement;
+  const syncTheme = () => {
+    try {
+      const theme = window.parent.document.documentElement.dataset.theme;
+      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+    } catch (_) {}
+  };
+  const report = () => {
+    const height = Math.max(document.body.scrollHeight, root.scrollHeight);
+    try { if (window.frameElement) window.frameElement.style.height = `${height + 2}px`; } catch (_) {}
+    try { window.parent.postMessage({ type: "article-visualization:resize", height: height + 2 }, window.location.origin); } catch (_) {}
+  };
+  syncTheme();
+  try { new MutationObserver(() => { syncTheme(); report(); }).observe(window.parent.document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (_) {}
+  window.addEventListener("load", report, { once: true });
+  window.addEventListener("resize", report);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(report).catch(() => {});
+  if ("ResizeObserver" in window) new ResizeObserver(report).observe(document.body);
+  requestAnimationFrame(report);
+})();
+</script>
+</body>
+</html>
