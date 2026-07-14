@@ -35,8 +35,7 @@
   {% endif %}
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}?v={{ site.time | date: '%s' }}">
-  <link rel="stylesheet" href="{{ '/assets/css/performance-fixes.css' | relative_url }}?v={{ site.time | date: '%s' }}">
-  <script>
+<script>
   (function () {
   var saved = localStorage.getItem('theme');
   var system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -53,27 +52,8 @@
   {% endif %}
   {% if page.math %}
   {%- comment -%}
-  MathJax configuration.
-
-  1. `output.svg` — we use the SVG output bundle (tex-mml-svg) so the
-  typeset glyphs are self-contained SVG paths. That means once a math
-  node is in the DOM it renders identically without depending on the
-  MathJax font stylesheet being fully applied. This is what lets the
-  sessionStorage cache restore rendered math on refresh with no flash.
-
-  2. Before MathJax scans the article we run
-  `window.__lahavMathPrep()` (defined in mathjax-setup.js). That helper
-  undoes kramdown's stray `<em>` wrapping around single-`$` inline math
-  (the reason `Y$_3$Fe$_5$O$_{12}$`-style formulas break in tables and
-  list items), separates display-math delimiters from adjacent prose before
-  guided-reading rearranges the DOM, and restores any safe cached snapshot.
-
-  3. `startup.pageReady` — after MathJax finishes typesetting we run
-  `window.__lahavMathPost()`, which annotates each `mjx-container` with
-  its original TeX source, adds copy controls without reparenting MathJax
-  output, and saves the fully-typeset article body to sessionStorage
-  keyed by (URL, build-time).
-  {%- endcomment -%}
+Guided reading builds the final semantic article structure before MathJax scans it. MathJax then typesets that DOM once; rendered equations are not moved or cached.
+{%- endcomment -%}
   <script src="{{ '/assets/js/mathjax-setup.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
   <script>
   window.MathJax = {

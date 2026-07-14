@@ -210,7 +210,7 @@
         var hyper = makeFrame(base + 'hyperbola-propagation.html',
           'Reading propagation and evanescence from the dispersion hyperbola',
           'hyperbola-propagation', false);
-        var qAnchor = findByText(prose, 'p, .math-copy-shell, mjx-container', ['q', 'delta', 'kappa'], hyperHeading);
+        var qAnchor = findByText(prose, 'p', ['q', 'delta', 'kappa'], hyperHeading);
         insertAfter(qAnchor || hyperHeading, hyper);
       }
     }
@@ -970,115 +970,6 @@
     measure();
   }
 
-  /* ----------------------------------------------------- Formula copy ---- */
-
-  function fallbackCopy(text) {
-    var textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.setAttribute('readonly', '');
-    textarea.style.position = 'fixed';
-    textarea.style.top = '-9999px';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    var ok = false;
-    try { ok = document.execCommand('copy'); }
-    finally { document.body.removeChild(textarea); }
-    return ok;
-  }
-
-  function writeClipboard(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-      return navigator.clipboard.writeText(text)
-        .then(function () { return true; })
-        .catch(function () { return fallbackCopy(text); });
-    }
-    return Promise.resolve(fallbackCopy(text));
-  }
-
-  function showCopiedState(target) {
-    if (!target) return;
-    var isButton = target.matches('[data-copy-math-button]');
-    var oldLabel = isButton ? target.textContent : '';
-    target.classList.add('is-copied');
-    if (isButton) target.textContent = 'copied';
-    window.setTimeout(function () {
-      target.classList.remove('is-copied');
-      if (isButton) target.textContent = oldLabel;
-    }, 1200);
-  }
-
-  function copyFormula(container, feedbackTarget) {
-    if (!container) return;
-    var tex = container.getAttribute('data-tex');
-    if (!tex) return;
-    writeClipboard(tex).then(function (ok) {
-      if (ok) showCopiedState(feedbackTarget || container);
-    });
-  }
-
-  function initFormulaCopying() {
-    document.addEventListener('click', function (event) {
-      var button = event.target.closest('[data-copy-math-button]');
-      if (button) {
-        var shell = button.closest('.math-copy-shell');
-        copyFormula(shell && shell.querySelector('mjx-container[data-tex]'), button);
-        return;
-      }
-      var inline = event.target.closest('mjx-container[data-copy-math-inline][data-tex]');
-      if (!inline) return;
-      var selection = window.getSelection && window.getSelection();
-      if (selection && String(selection).trim()) return;
-      copyFormula(inline, inline);
-    });
-
-    document.addEventListener('keydown', function (event) {
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      var target = event.target.closest('mjx-container[data-copy-math-inline][data-tex]');
-      if (!target) return;
-      event.preventDefault();
-      copyFormula(target, target);
-    });
-  }
-
-  function buildSelectionTextWithTex(selection) {
-    var mathHit = false;
-    var parts = [];
-    for (var r = 0; r < selection.rangeCount; r += 1) {
-      var range = selection.getRangeAt(r);
-      if (range.collapsed) continue;
-      var fragment = range.cloneContents();
-      var math = fragment.querySelectorAll('mjx-container[data-tex]');
-      if (math.length) mathHit = true;
-      each(math, function (container) {
-        var tex = container.getAttribute('data-tex') || '';
-        var display = container.getAttribute('display') === 'true';
-        container.parentNode.replaceChild(
-          document.createTextNode(display ? '\n$$' + tex + '$$\n' : '$' + tex + '$'),
-          container
-        );
-      });
-      var wrapper = document.createElement('div');
-      wrapper.appendChild(fragment);
-      parts.push(wrapper.textContent);
-    }
-    if (!mathHit) return null;
-    return parts.join('\n').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n');
-  }
-
-  function initFormulaSelectionCopy() {
-    document.addEventListener('copy', function (event) {
-      var selection = window.getSelection && window.getSelection();
-      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
-      var text = buildSelectionTextWithTex(selection);
-      if (text == null) return;
-      try {
-        event.clipboardData.setData('text/plain', text);
-        event.preventDefault();
-      } catch (_error) {}
-    }, true);
-  }
-
   /* -------------------------------------------------- Image lightbox ---- */
 
   var lightboxState = { node: null, lastFocus: null, onKey: null };
@@ -1183,8 +1074,8 @@
     if (!document.querySelector('.post-page--guided')) {
       initTocSpy(buildToc());
     }
-    initFormulaCopying();
-    initFormulaSelectionCopy();
+    
+    
     initImageLightbox();
 
     if (document.getElementById('MathJax-script') &&

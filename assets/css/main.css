@@ -634,6 +634,28 @@ kbd {
   font-family: ui-monospace, monospace;
 }
 
+
+/* Embedded article visualizations ---------------------------------------- */
+.article-prose iframe[data-article-visualization] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-height: 560px;
+  height: 760px;
+  margin: 1.8em 0 2.25em;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+}
+.article-prose iframe[data-article-visualization="compact"] {
+  min-height: 420px;
+  height: 560px;
+}
+@media (max-width: 620px) {
+  .article-prose iframe[data-article-visualization] {
+    min-height: 680px;
+  }
+}
 /* Cyber posts */
 .post-page--cyber {
   width: min(840px, calc(100% - 48px));
@@ -875,6 +897,35 @@ kbd {
 .accent-word {
   color: var(--accent);
   font-style: normal;
+}
+
+
+/* Recommended blogs: responsive cards rather than a single long column. */
+.whoami-blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 12px;
+  margin: 1.15rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.whoami-blog-card {
+  min-width: 0;
+  padding: 14px 15px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+}
+.whoami-blog-card > a {
+  display: inline-block;
+  font-weight: 700;
+}
+.whoami-blog-card > span {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.5;
 }
 
 .not-found {
@@ -1377,13 +1428,36 @@ kbd {
   background: transparent;
 }
 
+
+/* Article acknowledgment variant. */
+.elliptic-acknowledgment {
+  border-left-color: var(--post-accent, var(--accent));
+}
+
+
+/* Display-math source blocks ---------------------------------------------
+   mathjax-setup.js separates display delimiters from neighbouring prose
+   before MathJax and guided reading run. MathJax then typesets in place. */
+.math-source-block {
+  position: relative;
+  max-width: 100%;
+  margin: 1.7em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  overscroll-behavior-inline: contain;
+}
+.math-source-block > mjx-container[display="true"] {
+  margin: 0 !important;
+}
 /* Guided reading mode -----------------------------------------------------
    Long-form posts opt in with `reading_mode: guided`.
 
-   Every guided-reading colour is derived from the post's own accent. This
-   keeps physics, mathematics, cyber, and the other article families centred
-   on the same main colour they use in the normal reading layout, rather than
-   introducing an unrelated teal/amber/violet palette.
+   The post accent remains the visual centre. Three supporting roles are
+   produced by mixing that accent with stable neighbouring hue seeds: a cool
+   structural colour, a warm derivation colour, and a violet proof colour.
+   The result keeps the article family's identity while avoiding a flat,
+   monochromatic hierarchy.
 
    Folding is authored semantically in the article with guided-fold markers.
    Nothing is folded merely because it crosses a word-count threshold. */
@@ -1393,20 +1467,38 @@ kbd {
   --guide-primary-soft: color-mix(in srgb, var(--post-accent-soft) 82%, var(--surface));
   --guide-primary-border: var(--post-accent-border);
 
-  --guide-secondary: color-mix(in oklab, var(--guide-primary) 82%, var(--ink));
-  --guide-secondary-ink: color-mix(in oklab, var(--guide-primary-ink) 88%, var(--ink));
-  --guide-secondary-soft: color-mix(in oklab, var(--guide-primary-soft) 84%, var(--surface));
-  --guide-secondary-border: color-mix(in oklab, var(--guide-primary-border) 82%, var(--border));
+  /* Public palette contract for guided components and future visualizations. */
+  --guided-main: var(--guide-primary);
+  --guided-main-ink: var(--guide-primary-ink);
+  --guided-main-soft: var(--guide-primary-soft);
+  --guided-main-border: var(--guide-primary-border);
 
-  --guide-warm: color-mix(in oklab, var(--guide-primary) 68%, var(--ink));
-  --guide-warm-ink: color-mix(in oklab, var(--guide-primary-ink) 74%, var(--ink));
-  --guide-warm-soft: color-mix(in oklab, var(--guide-primary-soft) 72%, var(--surface));
-  --guide-warm-border: color-mix(in oklab, var(--guide-primary-border) 72%, var(--border));
+  /* Theme-neutral seeds, each lightly tinted by the post accent. */
+  --guide-secondary-seed: #2f7d78;
+  --guide-warm-seed: #a66224;
+  --guide-proof-seed: #6b5aa5;
 
-  --guide-proof: color-mix(in oklab, var(--guide-primary) 56%, var(--ink));
-  --guide-proof-ink: color-mix(in oklab, var(--guide-primary-ink) 62%, var(--ink));
-  --guide-proof-soft: color-mix(in oklab, var(--guide-primary-soft) 62%, var(--surface));
-  --guide-proof-border: color-mix(in oklab, var(--guide-primary-border) 62%, var(--border));
+  --guide-secondary: color-mix(in oklab, var(--guide-primary) 18%, var(--guide-secondary-seed));
+  --guide-secondary-ink: color-mix(in oklab, var(--guide-primary-ink) 14%, var(--guide-secondary-seed));
+  --guide-secondary-soft: color-mix(in oklab, var(--guide-secondary) 13%, var(--surface));
+  --guide-secondary-border: color-mix(in oklab, var(--guide-secondary) 38%, var(--border));
+
+  --guide-warm: color-mix(in oklab, var(--guide-primary) 16%, var(--guide-warm-seed));
+  --guide-warm-ink: color-mix(in oklab, var(--guide-primary-ink) 12%, var(--guide-warm-seed));
+  --guide-warm-soft: color-mix(in oklab, var(--guide-warm) 13%, var(--surface));
+  --guide-warm-border: color-mix(in oklab, var(--guide-warm) 38%, var(--border));
+
+  --guide-proof: color-mix(in oklab, var(--guide-primary) 20%, var(--guide-proof-seed));
+  --guide-proof-ink: color-mix(in oklab, var(--guide-primary-ink) 16%, var(--guide-proof-seed));
+  --guide-proof-soft: color-mix(in oklab, var(--guide-proof) 13%, var(--surface));
+  --guide-proof-border: color-mix(in oklab, var(--guide-proof) 38%, var(--border));
+
+  --guided-cool: var(--guide-secondary);
+  --guided-cool-soft: var(--guide-secondary-soft);
+  --guided-warm: var(--guide-warm);
+  --guided-warm-soft: var(--guide-warm-soft);
+  --guided-proof: var(--guide-proof);
+  --guided-proof-soft: var(--guide-proof-soft);
 
   width: min(1680px, calc(100% - clamp(32px, 4vw, 72px)));
   padding-top: clamp(48px, 7vw, 82px);
@@ -1414,6 +1506,9 @@ kbd {
 
 :root[data-theme="dark"] .post-page--guided {
   --guide-primary-soft: color-mix(in srgb, var(--post-accent-soft) 76%, var(--surface));
+  --guide-secondary-seed: #87d8d0;
+  --guide-warm-seed: #f0bd7f;
+  --guide-proof-seed: #c9bbf3;
 }
 
 .post-page--guided .post-page__header {
@@ -1832,15 +1927,6 @@ kbd {
   border-top: 1px solid color-mix(in srgb, var(--disclosure-border) 70%, transparent);
   background: color-mix(in srgb, var(--surface) 58%, transparent);
 }
-.guided-disclosure.is-typesetting .guided-disclosure__body {
-  /* Keep the disclosure measurable for MathJax while hiding the raw TeX that
-     exists for the brief interval between opening and local typesetting. */
-  min-height: 5.5rem;
-  visibility: hidden;
-}
-.guided-disclosure.is-typesetting > .guided-disclosure__summary {
-  pointer-events: none;
-}
 .guided-disclosure__body > :first-child {
   margin-top: 1rem;
 }
@@ -2056,54 +2142,127 @@ kbd {
   overscroll-behavior-inline: contain;
 }
 
-/* combined-site-overlay:2026-07-14:start */
-.article-prose iframe[data-article-visualization] {
-  display: block;
-  width: 100%;
+.article-prose mjx-container[display="true"] {
+  display: block !important;
+  position: static !important;
+  float: none !important;
+  clear: both;
   max-width: 100%;
-  min-height: 560px;
-  height: 760px;
-  margin: 1.8em 0 2.25em;
-  overflow: hidden;
-  border: 0;
-  background: transparent;
 }
-.article-prose iframe[data-article-visualization="compact"] {
-  min-height: 420px;
-  height: 560px;
-}
-.whoami-blog-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
-  gap: 12px;
-  margin: 1.15rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-.whoami-blog-card {
-  min-width: 0;
-  padding: 14px 15px;
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  background: var(--surface);
-}
-.whoami-blog-card > a {
+.article-prose mjx-container[display="true"] > svg {
   display: inline-block;
-  font-weight: 700;
+  max-width: none;
 }
-.whoami-blog-card > span {
-  display: block;
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: .82rem;
-  line-height: 1.5;
+
+/* Integrated component styles --------------------------------------------
+   These rules formerly lived in performance-fixes.css. They belong to the
+   components they style and no longer depend on MathJax wrappers or caches. */
+
+/* Keep the long guided contents rail isolated from article layout. */
+.post-toc[data-toc-ready] {
+  contain: layout style paint;
 }
-.elliptic-acknowledgment {
-  border-left-color: var(--post-accent, var(--accent));
+.post-toc__link {
+  transition: color 90ms linear;
 }
-@media (max-width: 620px) {
-  .article-prose iframe[data-article-visualization] {
-    min-height: 680px;
+.post-toc__link.is-active {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+/* The portrait reserves its final square and paints a tiny local preview
+   until the real image decodes. No JavaScript or opacity swap is involved. */
+.portrait-frame {
+  background: var(--surface-muted);
+}
+.portrait-frame img {
+  contain: paint;
+  background-color: var(--surface-muted);
+  background-image:
+    url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCAAYABgDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAYD/8QAJhAAAQMEAQMEAwAAAAAAAAAAAQACAwQFERIhBjJhExQiQTFRkf/EABgBAAIDAAAAAAAAAAAAAAAAAAIEAAED/8QAGhEBAQEAAwEAAAAAAAAAAAAAAQACERIxIf/aAAwDAQACEQMRAD8ArgMnCjT1BdHyPqGS0ccbXZ9rIw7a5x3fsqxUVVxCC+GkheWwghu2AeOPyfCVXiZwD7VxOzQ4fYyiDQRtERBYBhpByMBFUFDdW9UVbK+otlI70oo/g947nnHPP0FOi9XBrNRK3OMb6Db+oiczjPHll2R+NvYb3V22vgaJ3mmfIBJGTkEE8nwfKIiHeBaZW//Z");
+  background-repeat: no-repeat;
+  background-position: center 28%;
+  background-size: cover;
+}
+
+/* Image lightbox. post-enhancements.js uses event delegation, so article
+   images remain in their authored DOM positions. */
+.article-prose img {
+  cursor: zoom-in;
+  transition: box-shadow 100ms linear;
+}
+.article-prose a img,
+.article-prose .image-no-zoom img {
+  cursor: pointer;
+}
+.article-prose img:hover,
+.article-prose img:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--post-accent, var(--accent));
+}
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(2rem, 4vh) max(2rem, 4vw);
+  background: rgba(0, 0, 0, 0.85);
+  cursor: zoom-out;
+  animation: lightbox-in 120ms linear;
+}
+@keyframes lightbox-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.lightbox__image {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  object-fit: contain;
+  cursor: default;
+}
+.lightbox__close {
+  position: absolute;
+  top: max(1.2rem, 2vh);
+  right: max(1.2rem, 2vw);
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #f4f5f1;
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 100ms linear, background-color 100ms linear;
+}
+.lightbox__close:hover,
+.lightbox__close:focus-visible {
+  border-color: #fff;
+  background: rgba(0, 0, 0, 0.75);
+  outline: none;
+}
+body.has-lightbox {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post-toc__link,
+  .portrait-frame img,
+  .article-prose img,
+  .lightbox,
+  .lightbox__close {
+    transition: none;
+    animation: none;
   }
 }
-/* combined-site-overlay:2026-07-14:end */
+

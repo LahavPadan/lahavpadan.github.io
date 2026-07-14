@@ -10,9 +10,11 @@ The physical models used to develop the algebra here are two coupled mechanical 
 
 ### § 0.1. Coupled mechanical oscillators
 
-![Coupling-spring extension from endpoint displacements](assets/coupling-spring-extension.png)
 
-*The spring length is the right endpoint minus the left endpoint. After subtracting the equilibrium length, its extension is $x_B-x_A$, not $x_A+x_B$.*
+
+<iframe class="article-visualization" data-article-visualization="responsive" data-visualization-key="coupled-oscillators" src="./visualizations/coupled-oscillators.html" title="Coupled mechanical oscillators and the coupling matrix" loading="lazy" scrolling="no"></iframe>
+
+
 
 Take two masses $m$, one at position $x_A$ and one at $x_B$, each pulled back to zero by its own restoring spring of stiffness $k_A$ and $k_B$ respectively. In isolation, each mass obeys Newton's law $m\ddot x = -kx$, whose solution is $x(t) = X\cos(\omega t + \phi)$ with a natural frequency $\omega = \sqrt{k/m}$: substitute the trial cosine into the ODE and $-m\omega^2 = -k$ falls out. Stiffer spring or lighter mass raises the frequency — the same $\sqrt{k/m}$ that reappears in every linear-restoring-force problem (a Lorentz oscillator model of a bound electron, an $LC$ circuit with $\omega = 1/\sqrt{LC}$, a longitudinal phonon). In the pendulum problem, $A$ alone would oscillate at $\omega_A = \sqrt{k_A/m}$ and $B$ alone at $\omega_B = \sqrt{k_B/m}$; the two frequencies would be the "unperturbed" frequencies if the masses did not know about each other.
 
@@ -130,9 +132,11 @@ $$(\omega^2 - \bar\omega^2)^2 = \delta^2 + \kappa'^2.$$
 
 This is a **hyperbola** in the $(\delta, \omega^2 - \bar\omega^2)$ plane. Its two branches are the two mode frequencies; they never come closer than $2\kappa'$ at $\delta = 0$.
 
-![Coupling changes a crossing into an avoided crossing](assets/avoided-crossing.svg)
 
-*Without coupling, the dashed branches cross. The coupling bends them apart and leaves a minimum separation $2\kappa'$ at zero detuning.*
+
+<iframe class="article-visualization" data-article-visualization="compact" data-visualization-key="eigenvalue-gap" src="./visualizations/eigenvalue-gap.html" title="The selected-detuning eigenvalue separation and minimum gap" loading="lazy" scrolling="no"></iframe>
+
+
 
 The vertical separation between the two branches is what we shall consistently call the **gap**, and the term deserves precise naming since it will appear in every setting from now on.
 
@@ -150,15 +154,17 @@ $$\boxed{\;q^2 = \delta^2 - \kappa^2.\;}$$
 
 Keeping the signed wavenumber $q$ gives a hyperbola in the $(q,\delta)$ plane:
 
-![Dispersion hyperbola on the q-delta plane](assets/dispersion-hyperbola-q-delta.png)
 
-*The interval $|\delta|<\kappa$ contains no real $q$; the two propagating branches begin at $\delta=\pm\kappa$.*
+
+<iframe class="article-visualization" data-article-visualization="responsive" data-visualization-key="hyperbola-propagation" src="./visualizations/hyperbola-propagation.html" title="Reading propagation and evanescence from the dispersion hyperbola" loading="lazy" scrolling="no"></iframe>
+
+
 
 Replacing $q$ by $q^2$ folds the $+q$ and $-q$ branches together. On the $(q^2,\delta)$ axes, the same algebraic relation therefore becomes a sideways parabola:
 
-![The same relation as a sideways parabola on q-squared and delta axes](assets/sideways-parabola-q2-delta.png)
 
-*Negative $q^2$ is the evanescent region; positive $q^2$ is the propagating region. Their boundary is $q^2=0$ at the two gap edges.*
+
+
 
 The physical meaning of $q$ depends on the problem — a spatial wavenumber inside a Bragg grating (§ 4), a plane-wave $k_z$ in a waveguide (§ 6), a plasma wavenumber (§ 6) — but the interpretation is universal:
 
@@ -174,9 +180,9 @@ $q^2 < 0$, so $q$ is imaginary; write $q = i\alpha$ with $\alpha = \sqrt{\kappa^
 
 $q = 0$ and the two eigenvectors become degenerate. The mode is a pure standing wave with zero wavenumber, and the group velocity vanishes (§ 0.7).
 
-![One algebraic relation shown in three coordinate systems](assets/one-relation-three-coordinate-views.png)
 
-*The axes determine the visible geometry: the eigenvalue and signed-wavenumber views are hyperbolas, while replacing $q$ by $q^2$ folds the two signed branches into a sideways parabola.*
+
+
 
 The formula $q^2 = \delta^2 - \kappa^2$ carries a further reading that unifies four apparently unrelated physical situations. Compare it with the Klein–Gordon dispersion relation of a relativistic massive particle,
 
@@ -240,9 +246,11 @@ $$\chi'(\omega) = \frac{2}{\pi}\, \mathcal{P}\!\int_0^\infty \frac{\omega'\, \ch
 
 the **Kramers–Kronig relations**. The symbol $\mathcal{P}$ is the **Cauchy principal value**: exclude a symmetric interval $[\omega-\epsilon, \omega+\epsilon]$ around the pole in the integrand, integrate over the rest, take $\epsilon \to 0$; the linear pole cancels between the two sides of the excluded interval and the result is finite.
 
-![Cauchy contour, real-axis pole, principal value, and Kramers-Kronig pair](assets/kramers-kronig-cauchy-contour.png)
 
-*The contour argument, the symmetric exclusion around the real-axis pole, and the final real–imaginary transform pair are shown as one continuous derivation.*
+
+<iframe class="article-visualization" data-article-visualization="responsive" data-visualization-key="kramers-kronig" src="./visualizations/kramers-kronig.html" title="Causality linking the real and imaginary response spectra" loading="lazy" scrolling="no"></iframe>
+
+
 
 The engineering consequence is one of the most important statements in the framework, and it appears in three later contexts without repetition:
 
