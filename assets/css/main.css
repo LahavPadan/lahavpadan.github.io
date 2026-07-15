@@ -1197,7 +1197,9 @@ kbd {
 
 /* Kramdown emits MathJax's \(...\) and \[...\] delimiters. MathJax turns
    display equations into mjx-container[display="true"]. */
-.article-prose mjx-container[display="true"] {max-width: 100%;
+.article-prose mjx-container[display="true"] {
+  display: block !important;
+  max-width: 100%;
   overflow-x: auto;
   margin: 1.7em 0 !important;
   padding: 1em 1.15em;
@@ -2140,7 +2142,9 @@ kbd {
   overscroll-behavior-inline: contain;
 }
 
-.article-prose mjx-container[display="true"] {position: static !important;
+.article-prose mjx-container[display="true"] {
+  display: block !important;
+  position: static !important;
   float: none !important;
   clear: both;
   max-width: 100%;
@@ -2262,32 +2266,3 @@ body.has-lightbox {
   }
 }
 
-/* Guided disclosure math ownership ---------------------------------------
-   Closed disclosures are excluded from MathJax's initial scan. Their raw
-   source is processed in the disclosure body, in place, on first open. */
-.guided-disclosure__body[data-math-state="typesetting"] {
-  visibility: hidden;
-}
-
-.guided-disclosure[aria-busy="true"] .guided-disclosure__summary {
-  cursor: progress;
-}
-
-.guided-disclosure__body > .math-source-block {
-  max-width: 100%;
-}
-/* End guided disclosure math ownership ---------------------------------- */
-
-/* Guided disclosure closed-state invariant -------------------------------
-   Do not rely on the browser's native <details> stylesheet: article-level
-   MathJax rules use author declarations and may otherwise defeat it. */
-@media screen {
-  .guided-disclosure:not([open]) > .guided-disclosure__body {
-    display: none !important;
-  }
-
-  .guided-disclosure[open] > .guided-disclosure__body {
-    display: block;
-  }
-}
-/* End guided disclosure closed-state invariant -------------------------- */
