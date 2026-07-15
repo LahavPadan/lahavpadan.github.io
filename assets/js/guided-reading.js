@@ -33,6 +33,10 @@
     });
   }
 
+  function isHeading(node, selector) {
+    return node.nodeType === Node.ELEMENT_NODE && node.matches(selector);
+  }
+
   function parseChapterHeading(heading, index) {
     var text = (heading.textContent || '').trim();
     var match = text.match(/^§\s*([^\.\s]+(?:\.[^\.\s]+)*)\.?\s*(.*)$/);
@@ -57,20 +61,26 @@
     heading.append(number, title);
   }
 
+  /**
+   * Regrouping a range of siblings must relocate every node in that range.
+   * Iterating `children` would carry the elements into the new wrapper and
+   * abandon every text node between them at its original depth, which is how
+   * display equations came to sit after the subsection they belong to.
+   */
   function wrapSubsections(chapter) {
-    var children = Array.prototype.slice.call(chapter.children);
+    var nodes = Array.prototype.slice.call(chapter.childNodes);
     var current = null;
     var subsections = [];
 
-    children.forEach(function (child) {
-      if (child.matches('h3')) {
+    nodes.forEach(function (node) {
+      if (isHeading(node, 'h3')) {
         current = document.createElement('section');
         current.className = 'article-subsection';
-        child.before(current);
+        chapter.insertBefore(current, node);
         subsections.push(current);
       }
 
-      if (current) current.appendChild(child);
+      if (current) current.appendChild(node);
     });
 
     return subsections;
@@ -89,7 +99,7 @@
     var currentChapter = null;
 
     Array.prototype.slice.call(source.childNodes).forEach(function (node) {
-      if (node.nodeType === 1 && node.matches('h2')) {
+      if (isHeading(node, 'h2')) {
         currentChapter = document.createElement('section');
         currentChapter.className = 'article-chapter';
         currentChapter.appendChild(node);

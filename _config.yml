@@ -21,7 +21,10 @@ google_site_verification: "WyIFwUQImflujTpThYRQEFPBTXoOeQIx2G_n1OypzWE"
 markdown: kramdown
 kramdown:
   input: Kramdown
-  math_engine: mathjax
+  # Defined in _plugins/math_block_engine.rb. Identical to kramdown's stock
+  # `mathjax` engine except that a block equation is wrapped in
+  # `div.math-block` instead of being emitted as a bare text node.
+  math_engine: mathjax_block
   syntax_highlighter: rouge
 
 plugins:

@@ -1195,17 +1195,24 @@ kbd {
   margin: 2.5em 0;
 }
 
-/* Kramdown emits MathJax's \(...\) and \[...\] delimiters. MathJax turns
-   display equations into mjx-container[display="true"]. */
-.article-prose mjx-container[display="true"] {
-  display: block !important;
+/* Display math ------------------------------------------------------------
+   The mathjax_block engine wraps every block equation in div.math-block, so
+   the frame is drawn by that element and MathJax's own container is left to
+   size itself inside it. */
+.article-prose .math-block {
   max-width: 100%;
-  overflow-x: auto;
-  margin: 1.7em 0 !important;
+  margin: 1.7em 0;
   padding: 1em 1.15em;
   border: 1px solid var(--post-accent-border);
   border-left: 4px solid var(--post-accent);
   background: var(--post-accent-soft);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  overscroll-behavior-inline: contain;
+}
+.article-prose .math-block mjx-container[display="true"] {
+  margin: 0;
 }
 .article-prose mjx-container:not([display="true"]) {
   color: var(--post-accent-ink);
@@ -1421,8 +1428,9 @@ kbd {
 .article-prose .callout > :last-child {
   margin-bottom: 0;
 }
-.article-prose .callout mjx-container[display="true"] {
-  margin: 1.1em 0 !important;
+/* A callout already supplies its own frame. */
+.article-prose .callout .math-block {
+  margin: 1.1em 0;
   padding: 0.65em 0;
   border: 0;
   background: transparent;
@@ -1435,21 +1443,6 @@ kbd {
 }
 
 
-/* Display-math source blocks ---------------------------------------------
-   mathjax-setup.js separates display delimiters from neighbouring prose
-   before MathJax and guided reading run. MathJax then typesets in place. */
-.math-source-block {
-  position: relative;
-  max-width: 100%;
-  margin: 1.7em 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: thin;
-  overscroll-behavior-inline: contain;
-}
-.math-source-block > mjx-container[display="true"] {
-  margin: 0 !important;
-}
 /* Guided reading mode -----------------------------------------------------
    Long-form posts opt in with `reading_mode: guided`.
 
@@ -1934,8 +1927,8 @@ kbd {
   margin-bottom: 0;
 }
 
-.post-page--guided .article-prose mjx-container[display="true"] {
-  margin: 2em 0 !important;
+.post-page--guided .article-prose .math-block {
+  margin: 2em 0;
   padding: 1.05em 1.2em;
   border: 0;
   border-left: 3px solid var(--guide-primary);
@@ -2134,20 +2127,12 @@ kbd {
 .post-page:not(.post-page--guided):not(.post-page--cyber) .article-prose > hr {
   margin: 4.25em 0 3.65em;
 }
-.article-prose p:has(> mjx-container[display="true"]) {
-  max-width: 100%;
-}
+/* Legacy posts that glue $$…$$ to prose leave Kramdown no reason to treat the
+   expression as a block, so MathJax typesets it inside the paragraph. Keep it
+   scrollable rather than letting a wide expression stretch the column. */
 .article-prose mjx-container[display="true"] {
-  scrollbar-width: thin;
-  overscroll-behavior-inline: contain;
-}
-
-.article-prose mjx-container[display="true"] {
-  display: block !important;
-  position: static !important;
-  float: none !important;
-  clear: both;
   max-width: 100%;
+  overflow-x: auto;
 }
 .article-prose mjx-container[display="true"] > svg {
   display: inline-block;
