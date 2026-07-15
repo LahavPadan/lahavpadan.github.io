@@ -155,19 +155,53 @@
     }
   }
 
+  function pairFoldMarkers(root) {
+    const markers = Array.from(
+      root.querySelectorAll(".guided-fold-start, .guided-fold-end")
+    );
+    const stack = [];
+    const pairs = [];
+
+    markers.forEach((marker) => {
+      if (marker.classList.contains("guided-fold-start")) {
+        stack.push(marker);
+        return;
+      }
+
+      const start = stack.pop();
+      if (start) pairs.push({ start, end: marker });
+    });
+
+    return pairs;
+  }
+
+  function markOwnedTopLevelNodes(fragment, ownerId) {
+    Array.from(fragment.children).forEach((element) => {
+      element.dataset.guidedFoldOwner = ownerId;
+    });
+  }
+
+  function enforceDisclosureOwnership(root, disclosures) {
+    disclosures.forEach((details) => {
+      const body = details.querySelector(":scope > .guided-disclosure__body");
+      if (!body) return;
+
+      const selector = `[data-guided-fold-owner="${CSS.escape(details.id)}"]`;
+      Array.from(root.querySelectorAll(selector)).forEach((node) => {
+        if (!body.contains(node)) body.append(node);
+      });
+    });
+  }
+
   function prepareSemanticDisclosures(root) {
     const disclosures = [];
-    const starts = Array.from(root.querySelectorAll(".guided-fold-start"));
+    const pairs = pairFoldMarkers(root);
 
-    starts.forEach((start, index) => {
-      const parent = start.parentElement;
-      if (!parent) return;
+    pairs.forEach(({ start, end }, index) => {
+      if (!start.parentNode || !end.parentNode) return;
 
-      let end = start.nextElementSibling;
-      while (end && !end.classList.contains("guided-fold-end")) {
-        end = end.nextElementSibling;
-      }
-      if (!end || end.parentElement !== parent) return;
+      const relation = start.compareDocumentPosition(end);
+      if (!(relation & Node.DOCUMENT_POSITION_FOLLOWING)) return;
 
       const details = document.createElement("details");
       const tone = start.dataset.tone || "supporting";
@@ -196,15 +230,20 @@
       const body = document.createElement("div");
       body.className = "guided-disclosure__body";
 
-      let node = start.nextSibling;
-      while (node && node !== end) {
-        const next = node.nextSibling;
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          node.dataset.guidedFoldOwner = details.id;
-        }
-        body.append(node);
-        node = next;
-      }
+      /*
+       * Use a DOM Range rather than walking siblings. Kramdown and the guided
+       * chapter/subsection overlay may place the two authored markers under
+       * different wrapper elements. Range extraction still claims the exact
+       * document interval, so equations cannot remain behind as siblings.
+       */
+      const range = document.createRange();
+      range.setStartAfter(start);
+      range.setEndBefore(end);
+      const ownedContent = range.extractContents();
+      range.detach();
+
+      markOwnedTopLevelNodes(ownedContent, details.id);
+      body.append(ownedContent);
 
       const deferMath =
         !details.open &&
@@ -219,17 +258,12 @@
 
       details.append(summary, body);
 
-      /*
-       * A second click while MathJax is laying out SVG inside the newly-opened
-       * body would hide the only measurable container halfway through the pass.
-       * Ignore that click for the few milliseconds in which ownership is being
-       * finalized.
-       */
       summary.addEventListener("click", (event) => {
         if (body.dataset.mathState === "typesetting") event.preventDefault();
       });
 
       details.addEventListener("toggle", () => {
+        enforceDisclosureOwnership(root, disclosures);
         document.dispatchEvent(new CustomEvent("lahav:guided-layout-change"));
         if (details.open && body.dataset.deferredMath === "true") {
           typesetDeferredDisclosure(details, body, hint);
@@ -244,6 +278,13 @@
     root
       .querySelectorAll(".guided-fold-start, .guided-fold-end")
       .forEach((marker) => marker.remove());
+
+    enforceDisclosureOwnership(root, disclosures);
+    document.addEventListener(
+      "lahav:math-ready",
+      () => enforceDisclosureOwnership(root, disclosures),
+      { once: true }
+    );
 
     return disclosures;
   }
