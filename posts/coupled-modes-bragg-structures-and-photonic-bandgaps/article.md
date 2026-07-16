@@ -274,7 +274,7 @@ The eigenvalues of the full Hermitian matrix are
 $$\omega_\pm^2 = c_0 \pm \sqrt{c_x^2 + c_y^2 + c_z^2},
 \tag{4}\label{eq:pauli-eigenvalues}$$
 
-with $\omega^2$ retained from [§ 0.2](#sec-0-2) since all subsequent physical instances will identify $c_0$ with a mean-frequency-squared and $c_x, c_y, c_z$ with coupling-frequency-squared scales. The gap is
+with $\omega^2$ retained as the eigenvalue variable of equations \eqref{eq:hyperbola-eigenvalue} and \eqref{eq:omega-pm}, since all subsequent physical instances will identify $c_0$ with a mean-frequency-squared and $c_x, c_y, c_z$ with coupling-frequency-squared scales. The gap is
 
 $$\Delta \equiv \omega_+^2 - \omega_-^2 = 2\sqrt{c_x^2 + c_y^2 + c_z^2}.
 \tag{5}\label{eq:pauli-gap}$$
@@ -285,7 +285,7 @@ Which $c$'s are nonzero in a given physical problem, and by what mechanism, beco
 
 ### § 0.5. The eigenvalue hyperbola and the definition of gap {#sec-0-5}
 
-Plot the two eigenvalues against detuning at fixed coupling. From [§ 0.2](#sec-0-2),
+Plot the two eigenvalues against detuning at fixed coupling. From equation \eqref{eq:hyperbola-eigenvalue},
 
 $$
 (\omega^2-\bar\omega^2)^2=\delta^2+\kappa'^2.
@@ -304,7 +304,7 @@ These names emphasize different plots or experiments, but the underlying operati
 
 ### § 0.6. Reading the hyperbola: propagation, evanescence, and the mass-like term {#sec-0-6}
 
-The preceding section used the eigenvalue view: frequency against detuning at fixed coupling. The wave problems of §§ 1–12 also require the inverse question: at a chosen driving frequency, what spatial wavenumber does the medium support? Near the coupled-mode crossing, the answer takes the form
+The preceding section used the eigenvalue view: frequency against detuning at fixed coupling. The later wave problems — beginning with [the scalar-wave-equation refresher](#picture-3-scalar-wave-equation) and [the Bloch-theorem refresher](#picture-3-bloch-theorem) beneath Picture 3, and continuing through § 12 — also require the inverse question: at a chosen driving frequency, what spatial wavenumber does the medium support? Near the coupled-mode crossing, the answer takes the form
 
 $$
 \boxed{
@@ -399,131 +399,7 @@ Every mention of gain, absorption, or a complex refractive index in the sections
 
 ### § 0.9. What follows {#sec-0-9}
 
-The universal machinery is now in place. §§ 1–4 develop the wave setting: Maxwell's equations in an inhomogeneous medium ([§ 1](#sec-1)), Bloch's theorem for a periodic medium ([§ 2](#sec-2)), the Bragg condition ([§ 3](#sec-3)), and coupled-mode theory ([§ 4](#sec-4)) — the last of which shows that the small-modulation limit of Bragg scattering is literally the $2 \times 2$ of [§ 0](#sec-0) with $c_x \propto \Delta\varepsilon$, $c_z = k - k_{\text{Bragg}}$, $c_y = 0$. [§ 5](#sec-5) does the same identification for a magnetically biased ferrite, producing $c_y \neq 0$ as the Polder tensor. [§ 6](#sec-6) collects the "one edge of the gap" reading of [§ 0.6](#sec-0-6) into a unified section on waveguide, plasma, Klein–Gordon, and band-edge cutoffs. [§ 7](#sec-7) opens the reading of the hyperbola at band edges — standing waves, penetration depth, Bragg length — that governs the design of any Bragg-based device. [§ 8](#sec-8) develops the transfer-matrix formalism as the algorithmic dual to coupled-mode theory. §§ 9–12 are the applications: DBR mirrors, DFB lasers, non-reciprocal circulators and isolators, and further-engineered gratings.
-
----
-
-## § 1. The scalar wave equation for an inhomogeneous medium {#sec-1}
-
-The following sections all specialize the framework of [§ 0](#sec-0) to a spatial wave problem: a wave propagating through a medium whose permittivity varies with position. This section derives the equation the wave obeys.
-
-Start with the two curl equations of Maxwell in a linear, isotropic, source-free medium:
-
-$$\nabla \times \mathbf{E} = -\partial_t \mathbf{B}, \qquad \nabla \times \mathbf{H} = \partial_t \mathbf{D}.$$
-
-We assume the material is **nonmagnetic**, meaning its permeability equals the vacuum value $\mathbf{B} = \mu_0 \mathbf{H}$. This holds for every dielectric medium discussed in §§ 2–4 and §§ 7–10 (glasses, semiconductors, transparent dielectrics), because atomic magnetic moments cannot follow the electromagnetic field at $10^{14}$ Hz — the same inertial cutoff that will reappear in [§ 5](#sec-5) when we ask why ferromagnetic resonance dies at optical frequencies. [§ 5](#sec-5) is the one section in which $\mu \neq \mu_0$ matters.
-
-Take the curl of Faraday's law, substitute Ampère's law, and use $\mathbf{D} = \varepsilon_0 \varepsilon(\mathbf{r}) \mathbf{E}$:
-
-$$\nabla \times (\nabla \times \mathbf{E}) = -\mu_0 \partial_t (\nabla \times \mathbf{H}) = -\mu_0 \varepsilon_0 \varepsilon\, \partial_t^2 \mathbf{E}.$$
-
-For a time-harmonic field $\mathbf{E}(\mathbf{r}, t) = \mathbf{E}(\mathbf{r})\, e^{-i\omega t}$, the double time derivative gives $-\omega^2$. The curl-of-curl identity is
-
-$$\nabla \times (\nabla \times \mathbf{E}) = \nabla(\nabla \cdot \mathbf{E}) - \nabla^2 \mathbf{E}.$$
-
-The first term $\nabla(\nabla \cdot \mathbf{E})$ vanishes for a homogeneous medium (Gauss's law $\nabla \cdot \mathbf{D} = 0$ combined with constant $\varepsilon$ gives $\nabla \cdot \mathbf{E} = 0$), but not for a $\varepsilon(\mathbf{r})$ that varies: an inhomogeneous $\varepsilon$ generates polarization-charge gradients that give $\mathbf{E}$ a nonzero longitudinal component, and dropping this term is a real approximation.
-
-Restrict to two situations in which dropping it is legitimate: propagation along a direction transverse to a $z$-only-varying medium (the field polarization is perpendicular to $\nabla \varepsilon$), and normal incidence onto a 1D layered stack. Under these conditions the wave equation reduces to a **scalar Helmholtz equation** — Helmholtz because we have fixed the frequency, scalar because we have projected to one field component, source-free because we assumed no charges or currents:
-
-$$\frac{d^2 E(z)}{dz^2} + \frac{\omega^2}{c^2}\, \varepsilon(z)\, E(z) = 0, \qquad c^2 \equiv \frac{1}{\mu_0 \varepsilon_0}.$$
-
-This is the equation that governs §§ 2–10.
-
-### The physical content of $\varepsilon(z)$
-
-Matter is composed of positive nuclei and negative electron clouds; an electric field displaces the clouds relative to the nuclei by a small distance, producing induced electric dipoles. Each atom carries a tiny dipole moment $\mathbf{p}_{\text{atom}}$ pointing from displaced negative center to fixed positive center.
-
-Aggregate over many atoms per unit volume, and define the **polarization density**
-
-$$\mathbf{P}(\mathbf{r}) \equiv \text{net dipole moment per unit volume at } \mathbf{r}.$$
-
-For a linear, isotropic medium the response is linear in the field:
-
-$$\mathbf{P} = \varepsilon_0 \chi \mathbf{E},$$
-
-which defines the **electric susceptibility** $\chi$. The displacement field is then the sum of the vacuum contribution and the material's polarization:
-
-$$\mathbf{D} \;\equiv\; \varepsilon_0 \mathbf{E} + \mathbf{P} \;=\; \varepsilon_0 (1 + \chi) \mathbf{E} \;\equiv\; \varepsilon_0 \varepsilon\, \mathbf{E}, \qquad \varepsilon \equiv 1 + \chi.$$
-
-So the permittivity is "one plus the material's electric response." Gases have $\chi$ close to zero; glasses have $\chi \sim 1.4$; semiconductors have $\chi \sim 10$; metals have complex $\chi$ that can be enormous. Later mentions of "modulation $\Delta\varepsilon$" in a photonic device refer literally to a spatial variation of this atomic-scale polarizability.
-
-### Refractive index and complex response
-
-The **refractive index** is $n(\mathbf{r}) = \sqrt{\varepsilon(\mathbf{r})}$. For a plane wave $E \propto e^{ikz}$ in a homogeneous medium, the Helmholtz equation gives $k = n\omega/c$, so the phase velocity is $c/n$: a wave slows by the factor $n$ inside a dense dielectric.
-
-When the medium absorbs or amplifies, $\varepsilon$ acquires an imaginary part. Section 0.8 develops complex response, absorption, and gain; the causal Kramers–Kronig link between the real and imaginary parts of $\varepsilon(\omega)$ is derived in [§ 10.4](#sec-10-4), where it directly constrains index-coupled and gain-coupled DFB design.
-
----
-
-## § 2. Bloch's theorem for a periodic medium {#sec-2}
-
-Specialize now to a medium whose permittivity is periodic in space with period $\Lambda$: $\varepsilon(z + \Lambda) = \varepsilon(z)$. The wave equation from [§ 1](#sec-1) becomes
-
-$$\mathcal{L}\, E(z) \equiv \left(\frac{d^2}{dz^2} + \frac{\omega^2}{c^2} \varepsilon(z)\right) E(z) = 0,$$
-
-with the crucial feature that the differential operator $\mathcal{L}$ commutes with the translation operator $T_\Lambda$ defined by $(T_\Lambda f)(z) = f(z + \Lambda)$. This section derives the consequence — every solution decomposes into Bloch waves, indexed by a wavevector defined modulo the reciprocal-lattice vector $G = 2\pi/\Lambda$.
-
-### Bloch waves and the translation operator
-
-Look for solutions on which $T_\Lambda$ acts by a scalar: $\psi(z + \Lambda) = \lambda\, \psi(z)$. For the solution to be bounded on the whole real line, $|\lambda| = 1$ (iterating $T_\Lambda^N$ multiplies by $\lambda^N$; anything with $|\lambda| \neq 1$ diverges at one end). Write $\lambda = e^{ik\Lambda}$ with $k$ real (any complex number of modulus 1 has this form for some real phase; $k$ carries units of inverse length).
-
-The functional equation $\psi(z + \Lambda) = e^{ik\Lambda}\psi(z)$ has solutions of the form
-
-$$\psi(z) = e^{ikz}\, u(z), \qquad u(z + \Lambda) = u(z).$$
-
-Justification: factor $e^{ikz}$ out of any candidate $\psi$ by defining $u(z) \equiv e^{-ikz}\psi(z)$; the shift condition $\psi(z+\Lambda) = e^{ik\Lambda}\psi(z)$ then translates to $u(z+\Lambda) = u(z)$, no more and no less. So every eigenfunction of $T_\Lambda$ with eigenvalue $e^{ik\Lambda}$ is a plane wave times a periodic function; conversely, every such object is an eigenfunction.
-
-The parameter $k$ is called the **Bloch wavenumber** or **crystal momentum**; the function $u(z)$ is the **Bloch amplitude**.
-
-### Completeness of Bloch solutions
-
-The claim: for a medium with $\varepsilon(z + \Lambda) = \varepsilon(z)$, every solution of the second-order wave equation $\mathcal{L}\, E = 0$ is a linear combination of at most two Bloch waves. This is nontrivial — the periodicity is what makes it true, and the argument requires that both $\mathcal{L}$ and $T_\Lambda$ act on the same solution space. Three steps.
-
-<div class="guided-fold-start" data-guided-version="content-preserving-v2" data-label="Why every solution reduces to two Bloch waves" data-tone="proof"></div>
-
-#### Step 1 — the solution space is two-dimensional.
-
-For a linear second-order ODE, specifying the initial values $E(0)$ and $E'(0)$ uniquely determines $E(z)$ everywhere (existence and uniqueness for linear ODEs). Solutions form a two-dimensional vector space, parameterized by these two initial values — the same two-dimensional space in which the transfer matrix $T$ of [§ 8](#sec-8) will act.
-
-#### Step 2 — commuting operators send solutions to solutions.
-
-Because $\varepsilon(z)$ is periodic, $\mathcal{L}$ and $T_\Lambda$ commute: shifting a periodic-coefficient ODE by one period gives an ODE with the *same* coefficients. Applying $T_\Lambda$ to a solution $E$ of $\mathcal{L}\, E = 0$ then gives another solution:
-
-$$\mathcal{L}(T_\Lambda E) = T_\Lambda(\mathcal{L} E) = T_\Lambda(0) = 0.$$
-
-So $T_\Lambda$ maps the solution space into itself.
-
-A basic fact about commuting operators: **any family of matrices that commute with each other can be simultaneously diagonalized**. Concretely, if $A$ and $B$ commute, there exists a basis in which both are diagonal, and therefore a common set of eigenvectors — every eigenvector of $A$ is an eigenvector of $B$, and vice versa. So here, since $\mathcal L$ and $T_\Lambda$ commute (Step 2), we can find their eigenvectors together: restrict $T_\Lambda$ to the two-dimensional solution space of $\mathcal L$ (Step 1), where it acts as a $2 \times 2$ matrix; diagonalize that matrix; each of its two eigenvectors is simultaneously a solution of the wave equation and a Bloch eigenvector of $T_\Lambda$. That is what "diagonalize $T_\Lambda$ within the solution space" means concretely.
-
-One more structural fact worth stating explicitly. $T_\Lambda$ is a **unitary** operator: it just relabels $z \to z + \Lambda$, permuting the values of a function without changing any of them, so it preserves the norm of any function it acts on. Two consequences from linear algebra: (i) the eigenvalues of a unitary matrix all have $|\lambda| = 1$ — the same conclusion reached by the boundedness argument in the previous subsection, now recovered by a cleaner algebraic route; (ii) eigenvectors of a unitary matrix at distinct eigenvalues are orthogonal, so the two Bloch waves at distinct eigenvalues of $T_\Lambda$ are orthogonal to each other.
-
-#### Step 3 — two eigenvalues.
-
-Any $2 \times 2$ matrix has two eigenvalues (over $\mathbb{C}$). For a lossless medium, the argument of the previous section fixes $|\lambda| = 1$ on both. In general, both roots satisfy $\lambda_1 \lambda_2 = \det T_\Lambda$; [§ 8](#sec-8) will show $\det T_\Lambda = 1$ from a conservation law. Together these imply that in a lossless medium either both eigenvalues have $|\lambda| = 1$ (a **band**), or they are real reciprocals with $\lambda_2 = 1/\lambda_1$ (a **gap**, where one solution grows exponentially with $z$ and the other decays).
-
-Each eigenvalue produces one Bloch-form solution, and their linear combinations span the whole two-dimensional solution space. When both eigenvalues coincide at $\pm 1$, the two eigenvectors merge; this happens exactly at the top and bottom of each stopband and corresponds to the standing waves of [§ 7](#sec-7). That degeneracy is the special "double root" case where $\text{tr}(T_\Lambda) = \pm 2$ with $\det = 1$.
-
-<div class="guided-fold-end"></div>
-
-### Reciprocal-lattice equivalence
-
-Because $u(z)$ is periodic, expand it in a Fourier series:
-
-$$u(z) = \sum_{n \in \mathbb{Z}} u_n\, e^{i n G z}, \qquad G \equiv 2\pi/\Lambda.$$
-
-Then
-
-$$\psi(z) = e^{ikz} u(z) = \sum_n u_n\, e^{i(k + nG) z}.$$
-
-The Bloch wave at wavenumber $k$ is a superposition of plane waves at wavenumbers $k + nG$ for all integers $n$. This is best read as **aliasing**: on a lattice with period $\Lambda$, one cannot tell a wave of wavenumber $k$ apart from waves of wavenumber $k + nG$, because they agree at every lattice site (any two of them differ by $e^{inG\Lambda} = e^{in\cdot 2\pi} = 1$ at $z = m\Lambda$). Every wavenumber $k$ and every wavenumber $k + nG$ leave the same footprint on the lattice, and the medium cannot distinguish between them. Formally: $e^{i(k+G)z}\cdot u(z) = e^{ikz}\cdot [e^{iGz} u(z)]$ and $e^{iGz}u(z)$ is another $\Lambda$-periodic function, so the "Bloch wave at $k+G$" is the same Bloch wave as at $k$ — different labels for the same object. So **$k$ is defined modulo $G$**: the natural domain is the **first Brillouin zone** $k \in (-\pi/\Lambda, \pi/\Lambda]$, or by convention $[0, G)$. In dispersion plots, the free-space parabola $\omega = ck$ (which was one-to-one) gets **folded** back into the Brillouin zone at each crossing of $k = \pm\pi/\Lambda$ — an aliasing artifact of the periodicity, and the geometric mechanism that later opens gaps at each folding point.
-
-### Band structure and the group velocity
-
-For each $k$ in the Brillouin zone, the eigenvalue problem has a discrete set of allowed frequencies $\{\omega_n(k)\}$ indexed by a **band number** $n = 0, 1, 2, \ldots$ — sweep $k$, and each $n$ traces a curve $\omega_n(k)$ called a **band curve**; the collection is the **band structure**.
-
-For a homogeneous medium ($\varepsilon = \text{const}$), the band curves are straight lines $\omega = \pm ck/\sqrt{\varepsilon}$ folded into the Brillouin zone (they are called "folded" because the reciprocal-lattice equivalence forces $k$ into the first zone). For a periodic medium, the curves bend near the Brillouin-zone edge, and gaps open where no real $k$ gives a real $\omega$: this is the bandgap of [§ 0.5](#sec-0-5) appearing in its wave-mechanical guise.
-
-The group velocity of a wavepacket centered at $k$ is $v_g = d\omega_n/dk$, whose interpretation was fixed once in [§ 0.7](#sec-0-7): nonzero and near the material speed far from the gap, vanishing at the band edges (slow light), imaginary inside the gap. Every subsequent reference to $v_g$ in the following sections refers back to that formula and its reading.
+The universal machinery is now in place. The wave setting begins in [§ 3](#sec-3). Its first two pictures derive the Bragg condition geometrically; Picture 3 then combines two background results kept directly beneath it as collapsible refreshers: [the scalar wave equation for an inhomogeneous medium](#picture-3-scalar-wave-equation) and [Bloch's theorem for a periodic medium](#picture-3-bloch-theorem). [§ 4](#sec-4) uses those results to show that the small-modulation limit of Bragg scattering is literally the $2 \times 2$ of [§ 0](#sec-0), with $c_x \propto \Delta\varepsilon$, $c_z = k - k_{\text{Bragg}}$, and $c_y = 0$. [§ 5](#sec-5) does the same identification for a magnetically biased ferrite, producing $c_y \neq 0$ as the Polder tensor. [§ 6](#sec-6) collects the "one edge of the gap" reading of [§ 0.6](#sec-0-6) into a unified section on waveguide, plasma, Klein–Gordon, and band-edge cutoffs. [§ 7](#sec-7) opens the reading of the hyperbola at band edges — standing waves, penetration depth, Bragg length — that governs the design of any Bragg-based device. [§ 8](#sec-8) develops the transfer-matrix formalism as the algorithmic dual to coupled-mode theory. §§ 9–12 are the applications: DBR mirrors, DFB lasers, non-reciprocal circulators and isolators, and further-engineered gratings.
 
 ---
 
@@ -568,7 +444,132 @@ the same formula as Picture 1.
 
 ### Picture 3: Fourier convolution and the master equation
 
-This picture assembles the machinery of [§ 1](#sec-1) (the scalar wave equation in an inhomogeneous medium) and [§ 2](#sec-2) (Bloch's theorem for a periodic medium) into a single algebraic object — an infinite matrix — whose diagonal entries and off-diagonals directly display the Bragg condition. Readers who want a refresher on either building block should return to [§ 1](#sec-1) or [§ 2](#sec-2) before continuing here; everything below assumes their results.
+This picture assembles [the scalar wave equation for an inhomogeneous medium](#picture-3-scalar-wave-equation) and [Bloch's theorem for a periodic medium](#picture-3-bloch-theorem) into a single algebraic object — an infinite matrix — whose diagonal entries and off-diagonals directly display the Bragg condition. Both background derivations are kept directly below as collapsible refreshers; everything after them uses their results.
+
+<span id="sec-1"></span>
+<span id="picture-3-scalar-wave-equation"></span>
+<div class="guided-fold-start" data-guided-version="content-preserving-v2" data-label="The scalar wave equation for an inhomogeneous medium" data-tone="derivation"></div>
+
+The later wave sections specialize the framework of [§ 0](#sec-0) to a spatial wave problem: a wave propagating through a medium whose permittivity varies with position. This refresher derives the equation the wave obeys.
+
+Start with the two curl equations of Maxwell in a linear, isotropic, source-free medium:
+
+$$\nabla \times \mathbf{E} = -\partial_t \mathbf{B}, \qquad \nabla \times \mathbf{H} = \partial_t \mathbf{D}.$$
+
+We assume the material is **nonmagnetic**, meaning its permeability equals the vacuum value $\mathbf{B} = \mu_0 \mathbf{H}$. This holds for every dielectric medium discussed in [the Bloch-theorem refresher](#picture-3-bloch-theorem), §§ 3–4, and §§ 7–10 (glasses, semiconductors, transparent dielectrics), because atomic magnetic moments cannot follow the electromagnetic field at $10^{14}$ Hz — the same inertial cutoff that will reappear in [§ 5](#sec-5) when we ask why ferromagnetic resonance dies at optical frequencies. [§ 5](#sec-5) is the one section in which $\mu \neq \mu_0$ matters.
+
+Take the curl of Faraday's law, substitute Ampère's law, and use $\mathbf{D} = \varepsilon_0 \varepsilon(\mathbf{r}) \mathbf{E}$:
+
+$$\nabla \times (\nabla \times \mathbf{E}) = -\mu_0 \partial_t (\nabla \times \mathbf{H}) = -\mu_0 \varepsilon_0 \varepsilon\, \partial_t^2 \mathbf{E}.$$
+
+For a time-harmonic field $\mathbf{E}(\mathbf{r}, t) = \mathbf{E}(\mathbf{r})\, e^{-i\omega t}$, the double time derivative gives $-\omega^2$. The curl-of-curl identity is
+
+$$\nabla \times (\nabla \times \mathbf{E}) = \nabla(\nabla \cdot \mathbf{E}) - \nabla^2 \mathbf{E}.$$
+
+The first term $\nabla(\nabla \cdot \mathbf{E})$ vanishes for a homogeneous medium (Gauss's law $\nabla \cdot \mathbf{D} = 0$ combined with constant $\varepsilon$ gives $\nabla \cdot \mathbf{E} = 0$), but not for a $\varepsilon(\mathbf{r})$ that varies: an inhomogeneous $\varepsilon$ generates polarization-charge gradients that give $\mathbf{E}$ a nonzero longitudinal component, and dropping this term is a real approximation.
+
+Restrict to two situations in which dropping it is legitimate: propagation along a direction transverse to a $z$-only-varying medium (the field polarization is perpendicular to $\nabla \varepsilon$), and normal incidence onto a 1D layered stack. Under these conditions the wave equation reduces to a **scalar Helmholtz equation** — Helmholtz because we have fixed the frequency, scalar because we have projected to one field component, source-free because we assumed no charges or currents:
+
+$$\frac{d^2 E(z)}{dz^2} + \frac{\omega^2}{c^2}\, \varepsilon(z)\, E(z) = 0, \qquad c^2 \equiv \frac{1}{\mu_0 \varepsilon_0}.$$
+
+This is the equation that governs [the Bloch-theorem refresher](#picture-3-bloch-theorem) and §§ 3–10.
+
+#### The physical content of $\varepsilon(z)$
+
+Matter is composed of positive nuclei and negative electron clouds; an electric field displaces the clouds relative to the nuclei by a small distance, producing induced electric dipoles. Each atom carries a tiny dipole moment $\mathbf{p}_{\text{atom}}$ pointing from displaced negative center to fixed positive center.
+
+Aggregate over many atoms per unit volume, and define the **polarization density**
+
+$$\mathbf{P}(\mathbf{r}) \equiv \text{net dipole moment per unit volume at } \mathbf{r}.$$
+
+For a linear, isotropic medium the response is linear in the field:
+
+$$\mathbf{P} = \varepsilon_0 \chi \mathbf{E},$$
+
+which defines the **electric susceptibility** $\chi$. The displacement field is then the sum of the vacuum contribution and the material's polarization:
+
+$$\mathbf{D} \;\equiv\; \varepsilon_0 \mathbf{E} + \mathbf{P} \;=\; \varepsilon_0 (1 + \chi) \mathbf{E} \;\equiv\; \varepsilon_0 \varepsilon\, \mathbf{E}, \qquad \varepsilon \equiv 1 + \chi.$$
+
+So the permittivity is "one plus the material's electric response." Gases have $\chi$ close to zero; glasses have $\chi \sim 1.4$; semiconductors have $\chi \sim 10$; metals have complex $\chi$ that can be enormous. Later mentions of "modulation $\Delta\varepsilon$" in a photonic device refer literally to a spatial variation of this atomic-scale polarizability.
+
+#### Refractive index and complex response
+
+The **refractive index** is $n(\mathbf{r}) = \sqrt{\varepsilon(\mathbf{r})}$. For a plane wave $E \propto e^{ikz}$ in a homogeneous medium, the Helmholtz equation gives $k = n\omega/c$, so the phase velocity is $c/n$: a wave slows by the factor $n$ inside a dense dielectric.
+
+When the medium absorbs or amplifies, $\varepsilon$ acquires an imaginary part. Section 0.8 develops complex response, absorption, and gain; the causal Kramers–Kronig link between the real and imaginary parts of $\varepsilon(\omega)$ is derived in [§ 10.4](#sec-10-4), where it directly constrains index-coupled and gain-coupled DFB design.
+
+<div class="guided-fold-end"></div>
+
+<span id="sec-2"></span>
+<span id="picture-3-bloch-theorem"></span>
+<div class="guided-fold-start" data-guided-version="content-preserving-v2" data-label="Bloch’s theorem for a periodic medium" data-tone="proof"></div>
+
+Specialize now to a medium whose permittivity is periodic in space with period $\Lambda$: $\varepsilon(z + \Lambda) = \varepsilon(z)$. The wave equation from [the scalar-wave-equation refresher](#picture-3-scalar-wave-equation) becomes
+
+$$\mathcal{L}\, E(z) \equiv \left(\frac{d^2}{dz^2} + \frac{\omega^2}{c^2} \varepsilon(z)\right) E(z) = 0,$$
+
+with the crucial feature that the differential operator $\mathcal{L}$ commutes with the translation operator $T_\Lambda$ defined by $(T_\Lambda f)(z) = f(z + \Lambda)$. This refresher derives the consequence — every solution decomposes into Bloch waves, indexed by a wavevector defined modulo the reciprocal-lattice vector $G = 2\pi/\Lambda$.
+
+#### Bloch waves and the translation operator
+
+Look for solutions on which $T_\Lambda$ acts by a scalar: $\psi(z + \Lambda) = \lambda\, \psi(z)$. For the solution to be bounded on the whole real line, $|\lambda| = 1$ (iterating $T_\Lambda^N$ multiplies by $\lambda^N$; anything with $|\lambda| \neq 1$ diverges at one end). Write $\lambda = e^{ik\Lambda}$ with $k$ real (any complex number of modulus 1 has this form for some real phase; $k$ carries units of inverse length).
+
+The functional equation $\psi(z + \Lambda) = e^{ik\Lambda}\psi(z)$ has solutions of the form
+
+$$\psi(z) = e^{ikz}\, u(z), \qquad u(z + \Lambda) = u(z).$$
+
+Justification: factor $e^{ikz}$ out of any candidate $\psi$ by defining $u(z) \equiv e^{-ikz}\psi(z)$; the shift condition $\psi(z+\Lambda) = e^{ik\Lambda}\psi(z)$ then translates to $u(z+\Lambda) = u(z)$, no more and no less. So every eigenfunction of $T_\Lambda$ with eigenvalue $e^{ik\Lambda}$ is a plane wave times a periodic function; conversely, every such object is an eigenfunction.
+
+The parameter $k$ is called the **Bloch wavenumber** or **crystal momentum**; the function $u(z)$ is the **Bloch amplitude**.
+
+#### Completeness of Bloch solutions
+
+The claim: for a medium with $\varepsilon(z + \Lambda) = \varepsilon(z)$, every solution of the second-order wave equation $\mathcal{L}\, E = 0$ is a linear combination of at most two Bloch waves. This is nontrivial — the periodicity is what makes it true, and the argument requires that both $\mathcal{L}$ and $T_\Lambda$ act on the same solution space. Three steps.
+
+##### Step 1 — the solution space is two-dimensional.
+
+For a linear second-order ODE, specifying the initial values $E(0)$ and $E'(0)$ uniquely determines $E(z)$ everywhere (existence and uniqueness for linear ODEs). Solutions form a two-dimensional vector space, parameterized by these two initial values — the same two-dimensional space in which the transfer matrix $T$ of [§ 8](#sec-8) will act.
+
+##### Step 2 — commuting operators send solutions to solutions.
+
+Because $\varepsilon(z)$ is periodic, $\mathcal{L}$ and $T_\Lambda$ commute: shifting a periodic-coefficient ODE by one period gives an ODE with the *same* coefficients. Applying $T_\Lambda$ to a solution $E$ of $\mathcal{L}\, E = 0$ then gives another solution:
+
+$$\mathcal{L}(T_\Lambda E) = T_\Lambda(\mathcal{L} E) = T_\Lambda(0) = 0.$$
+
+So $T_\Lambda$ maps the solution space into itself.
+
+A basic fact about commuting operators: **any family of matrices that commute with each other can be simultaneously diagonalized**. Concretely, if $A$ and $B$ commute, there exists a basis in which both are diagonal, and therefore a common set of eigenvectors — every eigenvector of $A$ is an eigenvector of $B$, and vice versa. So here, since $\mathcal L$ and $T_\Lambda$ commute (Step 2), we can find their eigenvectors together: restrict $T_\Lambda$ to the two-dimensional solution space of $\mathcal L$ (Step 1), where it acts as a $2 \times 2$ matrix; diagonalize that matrix; each of its two eigenvectors is simultaneously a solution of the wave equation and a Bloch eigenvector of $T_\Lambda$. That is what "diagonalize $T_\Lambda$ within the solution space" means concretely.
+
+One more structural fact worth stating explicitly. $T_\Lambda$ is a **unitary** operator: it just relabels $z \to z + \Lambda$, permuting the values of a function without changing any of them, so it preserves the norm of any function it acts on. Two consequences from linear algebra: (i) the eigenvalues of a unitary matrix all have $|\lambda| = 1$ — the same conclusion reached by the boundedness argument in the previous subsection, now recovered by a cleaner algebraic route; (ii) eigenvectors of a unitary matrix at distinct eigenvalues are orthogonal, so the two Bloch waves at distinct eigenvalues of $T_\Lambda$ are orthogonal to each other.
+
+##### Step 3 — two eigenvalues.
+
+Any $2 \times 2$ matrix has two eigenvalues (over $\mathbb{C}$). For a lossless medium, the argument of the previous subsection fixes $|\lambda| = 1$ on both. In general, both roots satisfy $\lambda_1 \lambda_2 = \det T_\Lambda$; [§ 8](#sec-8) will show $\det T_\Lambda = 1$ from a conservation law. Together these imply that in a lossless medium either both eigenvalues have $|\lambda| = 1$ (a **band**), or they are real reciprocals with $\lambda_2 = 1/\lambda_1$ (a **gap**, where one solution grows exponentially with $z$ and the other decays).
+
+Each eigenvalue produces one Bloch-form solution, and their linear combinations span the whole two-dimensional solution space. When both eigenvalues coincide at $\pm 1$, the two eigenvectors merge; this happens exactly at the top and bottom of each stopband and corresponds to the standing waves of [§ 7](#sec-7). That degeneracy is the special "double root" case where $\text{tr}(T_\Lambda) = \pm 2$ with $\det = 1$.
+
+#### Reciprocal-lattice equivalence
+
+Because $u(z)$ is periodic, expand it in a Fourier series:
+
+$$u(z) = \sum_{n \in \mathbb{Z}} u_n\, e^{i n G z}, \qquad G \equiv 2\pi/\Lambda.$$
+
+Then
+
+$$\psi(z) = e^{ikz} u(z) = \sum_n u_n\, e^{i(k + nG) z}.$$
+
+The Bloch wave at wavenumber $k$ is a superposition of plane waves at wavenumbers $k + nG$ for all integers $n$. This is best read as **aliasing**: on a lattice with period $\Lambda$, one cannot tell a wave of wavenumber $k$ apart from waves of wavenumber $k + nG$, because they agree at every lattice site (any two of them differ by $e^{inG\Lambda} = e^{in\cdot 2\pi} = 1$ at $z = m\Lambda$). Every wavenumber $k$ and every wavenumber $k + nG$ leave the same footprint on the lattice, and the medium cannot distinguish between them. Formally: $e^{i(k+G)z}\cdot u(z) = e^{ikz}\cdot [e^{iGz} u(z)]$ and $e^{iGz}u(z)$ is another $\Lambda$-periodic function, so the "Bloch wave at $k+G$" is the same Bloch wave as at $k$ — different labels for the same object. So **$k$ is defined modulo $G$**: the natural domain is the **first Brillouin zone** $k \in (-\pi/\Lambda, \pi/\Lambda]$, or by convention $[0, G)$. In dispersion plots, the free-space parabola $\omega = ck$ (which was one-to-one) gets **folded** back into the Brillouin zone at each crossing of $k = \pm\pi/\Lambda$ — an aliasing artifact of the periodicity, and the geometric mechanism that later opens gaps at each folding point.
+
+#### Band structure and the group velocity
+
+For each $k$ in the Brillouin zone, the eigenvalue problem has a discrete set of allowed frequencies $\{\omega_n(k)\}$ indexed by a **band number** $n = 0, 1, 2, \ldots$ — sweep $k$, and each $n$ traces a curve $\omega_n(k)$ called a **band curve**; the collection is the **band structure**.
+
+For a homogeneous medium ($\varepsilon = \text{const}$), the band curves are straight lines $\omega = \pm ck/\sqrt{\varepsilon}$ folded into the Brillouin zone (they are called "folded" because the reciprocal-lattice equivalence forces $k$ into the first zone). For a periodic medium, the curves bend near the Brillouin-zone edge, and gaps open where no real $k$ gives a real $\omega$: this is the non-propagating regime of equation \eqref{eq:hyperbola-q} appearing in its wave-mechanical guise.
+
+The group velocity of a wavepacket centered at $k$ is $v_g = d\omega_n/dk$, whose interpretation was fixed once in [§ 0.7](#sec-0-7): nonzero and near the material speed far from the gap, vanishing at the band edges (slow light), imaginary inside the gap. Every subsequent reference to $v_g$ in the following sections refers back to that formula and its reading.
+
+<div class="guided-fold-end"></div>
+
 
 Bloch's theorem tells us that any solution of the wave equation in a periodic medium has the form $E(z) = e^{ikz} u(z)$ with $u(z)$ periodic under $z\to z+\Lambda$. Fourier-expand $u$ on the unit cell,
 
@@ -578,7 +579,7 @@ and multiply through by $e^{ikz}$ to recover $E(z)$:
 
 $$E(z) = \sum_{n \in \mathbb{Z}} E_n\, e^{i(k+nG_1) z}.$$
 
-The wavenumber $k+nG_1$ appears because it is what the exponent becomes after the $e^{ikz}$ prefactor absorbs the $e^{inG_1z}$ from the Fourier series — each Fourier component of the periodic amplitude $u$ acquires the same $k$ from the Bloch factor, so the plane-wave label of coefficient $E_n$ is $k+nG_1$. The index $n$ labels which reciprocal-lattice shift of $k$ this component sits at, in the sense of the folding argument of [§ 2](#sec-2). Similarly, the modulation is periodic and expands as
+The wavenumber $k+nG_1$ appears because it is what the exponent becomes after the $e^{ikz}$ prefactor absorbs the $e^{inG_1z}$ from the Fourier series — each Fourier component of the periodic amplitude $u$ acquires the same $k$ from the Bloch factor, so the plane-wave label of coefficient $E_n$ is $k+nG_1$. The index $n$ labels which reciprocal-lattice shift of $k$ this component sits at, in the sense of the folding argument of [the Bloch-theorem refresher](#picture-3-bloch-theorem). Similarly, the modulation is periodic and expands as
 
 $$\varepsilon(z) = \sum_m \varepsilon_m\, e^{i m G_1 z},$$
 
@@ -660,7 +661,7 @@ Optical Bragg mirrors circumvent the issue by *engineering* $\Lambda$ to match t
 
 ## § 4. Coupled-mode theory: the framework realized in a periodic dielectric {#sec-4}
 
-The master equation of [§ 3](#sec-3) was an infinite system: one linear equation per Fourier component $E_n$, with each $E_n$ coupled to every other through the modulation coefficients $\varepsilon_m$. Bloch's theorem in [§ 2](#sec-2) said only that solutions have the form $e^{ikz} u(z)$ with $u$ periodic — nothing about how many Fourier components of $u$ are needed, and generically all of them are nonzero. What makes the periodic medium problem tractable is not Bloch's theorem itself but a *dynamical* observation: for a small modulation amplitude $\Delta\varepsilon/\bar\varepsilon \ll 1$ and a driving wavenumber close to a specific Bragg resonance, only two of the infinitely many Fourier components carry appreciable amplitude. All the others are algebraically small in $\Delta\varepsilon/\bar\varepsilon$ and can be dropped at leading order. The result is a $2 \times 2$ eigenvalue problem in exactly the form of [§ 0](#sec-0), and this section derives it, identifies the framework's $\delta$ and $\kappa$ in terms of the modulation, and reads off the physical consequences by invoking [§ 0.5](#sec-0-5)–[0.7](#sec-0-7).
+The master equation of [§ 3](#sec-3) was an infinite system: one linear equation per Fourier component $E_n$, with each $E_n$ coupled to every other through the modulation coefficients $\varepsilon_m$. [The Bloch-theorem refresher](#picture-3-bloch-theorem) established only that solutions have the form $e^{ikz} u(z)$ with $u$ periodic — nothing about how many Fourier components of $u$ are needed, and generically all of them are nonzero. What makes the periodic medium problem tractable is not Bloch's theorem itself but a *dynamical* observation: for a small modulation amplitude $\Delta\varepsilon/\bar\varepsilon \ll 1$ and a driving wavenumber close to a specific Bragg resonance, only two of the infinitely many Fourier components carry appreciable amplitude. All the others are algebraically small in $\Delta\varepsilon/\bar\varepsilon$ and can be dropped at leading order. The result is a $2 \times 2$ eigenvalue problem in exactly the form of [§ 0](#sec-0), and this section derives it, identifies the framework's $\delta$ and $\kappa$ in terms of the modulation, and reads off the physical consequences by invoking [§ 0.5](#sec-0-5)–[0.7](#sec-0-7).
 
 ### From cosine modulation to Fourier coefficients
 
@@ -686,7 +687,7 @@ Define
 
 $$k_B \equiv G_1/2 = \pi/\Lambda,$$
 
-the wavenumber whose free-space wavelength satisfies the classical Bragg condition of [§ 3](#sec-3) at $\theta = 90°$: substituting $m = 1$ and $\sin\theta = 1$ gives $\lambda_0 = 2n_{\text{avg}}\Lambda$, and $2 k_B = G_1$ — the reciprocal-lattice vector $G_1$ is exactly the round-trip momentum transfer that the grating imparts at first-order backscattering. So a wave with $k \approx k_B$ can be scattered by a $G_1$ kick into a wave at $k - G_1 = k - 2k_B \approx -k_B$: the backward wave. Every subsequent formula in this section measures the driving wavenumber $k$ as a deviation from $k_B$, and it is the smallness of that deviation that will justify keeping only two Fourier components of $E$.
+the wavenumber whose free-space wavelength satisfies the classical Bragg condition \eqref{eq:bragg-condition} at $\theta = 90°$: substituting $m = 1$ and $\sin\theta = 1$ gives $\lambda_0 = 2n_{\text{avg}}\Lambda$, and $2 k_B = G_1$ — the reciprocal-lattice vector $G_1$ is exactly the round-trip momentum transfer that the grating imparts at first-order backscattering. So a wave with $k \approx k_B$ can be scattered by a $G_1$ kick into a wave at $k - G_1 = k - 2k_B \approx -k_B$: the backward wave. Every subsequent formula in this section measures the driving wavenumber $k$ as a deviation from $k_B$, and it is the smallness of that deviation that will justify keeping only two Fourier components of $E$.
 
 Fix the operating regime by two conditions. First, set the driving frequency to lie in the reference band,
 
@@ -773,7 +774,7 @@ with $\Delta n = \Delta\varepsilon/(2n_{\text{avg}})$ and $\lambda_B = 2n_{\text
 
 Same Pauli slots as the coupled pendulum of [§ 0.1](#sec-0-1) (which also had $c_z \neq 0$, $c_x \neq 0$, $c_y = 0$): the mechanical spring and the periodic index modulation play the same algebraic role. That is the entire content of "coupled-mode theory as the framework realized in a periodic dielectric."
 
-Substituting into the [§ 0.5](#sec-0-5) hyperbola \eqref{eq:hyperbola-eigenvalue},
+Substituting into equation \eqref{eq:hyperbola-eigenvalue},
 
 $$\boxed{\;q^2 = \delta^2 - \kappa^2,\;}$$
 
@@ -783,11 +784,11 @@ where $q$ is the wavenumber of the Bloch mode measured from the Bragg wavenumber
 
 Every consequence of the two-wave truncation is a reading of the [§ 0](#sec-0) framework at these values of $\delta$ and $\kappa$:
 
-- The **stopband** — the range of frequencies for which no real $q$ exists — is $|\delta| < \kappa$, giving stopband width in wavenumber $\Delta k = 2\kappa$ and, using the group velocity of [§ 0.7](#sec-0-7) at the Bragg frequency, stopband width in frequency $\Delta\omega = 2\kappa v_g$.
-- Inside the stopband the wave is evanescent with decay constant $\alpha = \sqrt{\kappa^2 - \delta^2}$, and at $\delta = 0$ the **penetration depth** is $1/\kappa$ — the Bragg length of [§ 0.6](#sec-0-6).
+- The **stopband** is the non-propagating range $|\delta| < \kappa$ of equation \eqref{eq:hyperbola-q}, giving stopband width in wavenumber $\Delta k = 2\kappa$ and, using the group velocity of [§ 0.7](#sec-0-7) at the Bragg frequency, stopband width in frequency $\Delta\omega = 2\kappa v_g$.
+- Inside the stopband, the imaginary-$q$ branch of equation \eqref{eq:hyperbola-q} gives the decay constant $\alpha = \sqrt{\kappa^2 - \delta^2}$; at $\delta = 0$ the **penetration depth** is $1/\kappa$, the Bragg length.
 - **Group velocity** vanishes at the band edges $\delta = \pm\kappa$ where $q = 0$; the slow-light gain enhancement of the DFB laser ([§ 10](#sec-10)) is the direct consequence.
 - **Group velocity dispersion** diverges at the band edges as $d^2q/d\omega^2 \to \infty$; [§ 12](#sec-12) uses this in a chirped Bragg grating.
-- The **mixing angle** $\tan 2\theta = \kappa/\delta$ ([§ 0.3](#sec-0-3)) governs how much of the forward and backward components sit in each eigenmode. At exact tuning, the two eigenmodes are equal mixtures $(E_0 \pm E_{-1})/\sqrt 2$: pure standing waves. [§ 7](#sec-7) works out their nodes and antinodes.
+- The **mixing angle** in equation \eqref{eq:mixing-angle}, here $\tan 2\theta = \kappa/\delta$, governs how much of the forward and backward components sit in each eigenmode. At exact tuning, the two eigenmodes are equal mixtures $(E_0 \pm E_{-1})/\sqrt 2$: pure standing waves. [§ 7](#sec-7) works out their nodes and antinodes.
 
 The two-wave truncation, read through the framework, is the complete first-order theory of small-modulation Bragg gratings.
 
@@ -805,7 +806,7 @@ At second order, keeping $E_{+1}$ and $E_{-2}$ as small perturbations couples th
 
 ## § 5. Gyromagnetic media: the $\sigma_y$ realization {#sec-5}
 
-Section 4 identified the two-wave coupled-mode matrix of a Bragg grating as an instance of the [§ 0](#sec-0) framework with $c_z \neq 0$ (Bragg detuning), $c_x \neq 0$ (real symmetric coupling from index modulation), and $c_y = 0$. That last identification carries a physical statement worth restating: **$c_y = 0$ is equivalent to reciprocity of the medium**, in the sense that a wave reversed in time or in direction sees the same coupling matrix as the original wave. Concretely: reversing the direction of a propagating wave amounts to complex-conjugating the matrix (via the $e^{ikz} \to e^{-ikz}$ substitution); a matrix with $c_y = 0$ is real symmetric and unchanged by complex conjugation, so forward and backward waves see the same physics. A $c_y \neq 0$ matrix has entries $\pm i c_y$ in the off-diagonal; complex conjugation flips their signs, so forward and backward waves see *different* effective couplings — the medium is non-reciprocal. This section derives the one class of physical medium that produces $c_y \neq 0$: a magnetically biased ferrite. The linearized susceptibility tensor of such a medium (the **Polder tensor**) is exactly $c_0 I + c_y \sigma_y$ in the notation of [§ 0.4](#sec-0-4), with $c_y$ set by the bias field and the magnetization; its consequence — different phase velocities for the two circular polarizations, giving Faraday rotation and non-reciprocity — is the mechanism behind every device in [§ 11](#sec-11).
+Equations \eqref{eq:delta-bragg} and \eqref{eq:kappa-bragg} supply the Bragg detuning and the real coupling coefficient. Together with the real-symmetric two-wave matrix immediately above them, they identify the Bragg grating as an instance of the [§ 0](#sec-0) framework with $c_z \neq 0$, $c_x \neq 0$, and $c_y = 0$. That last identification carries a physical statement worth restating: **$c_y = 0$ is equivalent to reciprocity of the medium**, in the sense that a wave reversed in time or in direction sees the same coupling matrix as the original wave. Concretely: reversing the direction of a propagating wave amounts to complex-conjugating the matrix (via the $e^{ikz} \to e^{-ikz}$ substitution); a matrix with $c_y = 0$ is real symmetric and unchanged by complex conjugation, so forward and backward waves see the same physics. A $c_y \neq 0$ matrix has entries $\pm i c_y$ in the off-diagonal; complex conjugation flips their signs, so forward and backward waves see *different* effective couplings — the medium is non-reciprocal. This section derives the one class of physical medium that produces $c_y \neq 0$: a magnetically biased ferrite. The linearized susceptibility tensor of such a medium (the **Polder tensor**) is exactly $c_0 I + c_y \sigma_y$ in the notation of [§ 0.4](#sec-0-4), with $c_y$ set by the bias field and the magnetization; its consequence — different phase velocities for the two circular polarizations, giving Faraday rotation and non-reciprocity — is the mechanism behind every device in [§ 11](#sec-11).
 
 This section deals only with the theory of the gyromagnetic material; the device applications (Y-junction circulator, optical isolator, materials selection) are deferred to [§ 11](#sec-11) alongside the other applications.
 
@@ -841,7 +842,7 @@ Aggregate over the many magnetic moments in a unit volume to define the **magnet
 
 $$\frac{d\vec{M}}{dt} = \gamma\, \vec{M}\times\vec{B}.$$
 
-This is the **magnetization equation of motion**. (Historically named the Bloch equation, after a different Bloch than the one behind Bloch's theorem for periodic media in [§ 2](#sec-2); the naming coincidence is unfortunate but the theorems are unrelated.)
+This is the **magnetization equation of motion**. (Historically named the Bloch equation, after a different Bloch than the one behind [Bloch's theorem for periodic media](#picture-3-bloch-theorem); the naming coincidence is unfortunate but the theorems are unrelated.)
 
 ### § 5.2. Small-signal linearization: the Polder tensor {#sec-5-2}
 
@@ -888,7 +889,7 @@ The gyromagnetic mechanism activates the $\sigma_y$ slot of the framework; [§ 4
 
 ### § 5.4. Circular polarization: the eigenbasis of the framework {#sec-5-4}
 
-Since $c_x = c_z = 0$ and $c_y = \kappa_P$, [§ 0](#sec-0)'s general formula $\lambda_\pm = c_0 \pm \sqrt{c_x^2 + c_y^2 + c_z^2}$ gives eigenvalues $\mu_\pm = \mu \pm \kappa_P$. The corresponding eigenvectors of $\sigma_y$ are $(1, \pm i)/\sqrt 2$, which are the **circular polarizations** (CP):
+Since $c_x = c_z = 0$ and $c_y = \kappa_P$, equation \eqref{eq:pauli-eigenvalues} gives eigenvalues $\mu_\pm = \mu \pm \kappa_P$. The corresponding eigenvectors of $\sigma_y$ are $(1, \pm i)/\sqrt 2$, which are the **circular polarizations** (CP):
 
 - $(1, i)/\sqrt 2$ is right-CP for propagation along $+\hat z$: $\hat x$-component 90° ahead of $\hat y$-component, so the vector rotates counterclockwise as seen from the direction of propagation;
 - $(1, -i)/\sqrt 2$ is left-CP.
@@ -961,7 +962,7 @@ with $\xi$ the bound-electron off-diagonal (proportional to $B_0$ times a materi
 
 ### Naming: the two $\kappa$'s
 
-The document has now introduced two distinct $\kappa$'s in the framework. In [§ 4](#sec-4) the Bragg coupling coefficient $\kappa = \pi\Delta n/\lambda_B$ played the role of $c_x$: real symmetric off-diagonal produced by periodic index modulation. Here in [§ 5](#sec-5) the Polder coefficient $\kappa_P = \omega\omega_M/(\omega_0^2 - \omega^2)$ plays the role of $c_y$: antisymmetric imaginary off-diagonal produced by a magnetic bias. Both sit in the same slot of [§ 0.4](#sec-0-4)'s Hermitian matrix — the off-diagonal — but in orthogonal Pauli directions ($\sigma_x$ versus $\sigma_y$). When both mechanisms are present simultaneously (a magnetically biased Bragg grating), the eigenvalue formula of [§ 0.4](#sec-0-4) gives the gap as $2\sqrt{\kappa^2 + \kappa_P^2 + \delta^2}$: quadrature sum, exactly the [§ 0](#sec-0) combination.
+The document has now introduced two distinct $\kappa$'s in the framework. In equation \eqref{eq:kappa-bragg}, the Bragg coupling coefficient $\kappa = \pi\Delta n/\lambda_B$ plays the role of $c_x$: real symmetric off-diagonal produced by periodic index modulation. Here in [§ 5](#sec-5) the Polder coefficient $\kappa_P = \omega\omega_M/(\omega_0^2 - \omega^2)$ plays the role of $c_y$: antisymmetric imaginary off-diagonal produced by a magnetic bias. Both sit in the same off-diagonal slot of the Hermitian matrix introduced in [§ 0.4](#sec-0-4), but in orthogonal Pauli directions ($\sigma_x$ versus $\sigma_y$). When both mechanisms are present simultaneously (a magnetically biased Bragg grating), the gap formula \eqref{eq:pauli-gap} gives $2\sqrt{\kappa^2 + \kappa_P^2 + \delta^2}$: a quadrature sum of detuning and the two orthogonal couplings.
 
 The third $\kappa$ used above is the coupled-oscillator spring stiffness of [§ 0](#sec-0). That, too, sits in the $\sigma_x$ slot — real symmetric coupling — but for a different physical reason (a mechanical spring). All three share notation because all three occupy the same algebraic role: **off-diagonal element that lifts two-mode degeneracy**. The physical mechanism must be supplied from context.
 
@@ -969,13 +970,13 @@ The third $\kappa$ used above is the coupled-oscillator spring stiffness of [§ 
 
 ## § 6. Cutoff phenomena: the same hyperbola in four settings {#sec-6}
 
-Section 0.6 read the dispersion hyperbola $q^2 = \delta^2 - \kappa^2$ as the source of the concept of a **gap**: a range in one variable ($\delta$) for which the other variable ($q$) has no real solution. This section applies the same reading to four physical settings in which the concept is called "cutoff" rather than "bandgap," and shows that all four are the same hyperbola with different physical interpretations of $\delta$ and $\kappa$.
+Equation \eqref{eq:hyperbola-q} is the source of the concept of a **gap**: a range in one variable ($\delta$) for which the other variable ($q$) has no real solution. This section applies the same reading to four physical settings in which the concept is called "cutoff" rather than "bandgap," and shows that all four are the same hyperbola with different physical interpretations of $\delta$ and $\kappa$.
 
 The point is dedupication: rather than introducing "waveguide cutoff," "plasma cutoff," and "Klein–Gordon mass" as separate topics, this section shows they are one topic — a lower edge of the gap in the framework of [§ 0](#sec-0) — with four different underlying mechanisms setting the coupling $\kappa$.
 
 ### § 6.1. The general shape {#sec-6-1}
 
-The gap of [§ 0](#sec-0) has two edges: an upper one at $\delta = +\kappa$ and a lower one at $\delta = -\kappa$. In a symmetric situation both edges matter (Bragg gratings: [§ 4](#sec-4), [§ 7](#sec-7)). In an asymmetric situation only the lower edge is physically accessible — the wave lives above $\delta = 0$, and the gap is a *cutoff* below which no propagation exists. This asymmetric form is what the four settings below share.
+The propagation condition in equation \eqref{eq:hyperbola-q} has two edges: an upper one at $\delta = +\kappa$ and a lower one at $\delta = -\kappa$. In a symmetric situation both edges matter (Bragg gratings: [§ 4](#sec-4), [§ 7](#sec-7)). In an asymmetric situation only the lower edge is physically accessible — the wave lives above $\delta = 0$, and the gap is a *cutoff* below which no propagation exists. This asymmetric form is what the four settings below share.
 
 Rewrite the hyperbola with $\delta \to \omega$ (the driving frequency) and $\kappa \to \omega_c$ (the coupling now labeled as a cutoff frequency):
 
@@ -1024,11 +1025,11 @@ A relativistic scalar particle of mass $m$ has energy–momentum relation
 
 $$E^2 = (pc)^2 + (mc^2)^2, \qquad \text{equivalently} \qquad p^2 = \frac{E^2 - m^2c^4}{c^2}.$$
 
-Identify $q \to p/\hbar$, $\omega \to E/\hbar$, $\omega_c \to mc^2/\hbar$: same hyperbola. The cutoff is set by the **rest energy** of the particle, $\hbar\omega_c = mc^2$. Physical origin: producing a particle at rest requires an energy input of $mc^2$; any driving with less energy cannot excite the field. Below cutoff there is no propagating particle; the field is Yukawa-suppressed (the "evanescent decay" of [§ 0.6](#sec-0-6) in the relativistic setting). This is what makes short-range forces mediated by massive particles fall off exponentially with distance, with the exponential decay length equal to the Compton wavelength $\hbar/(mc)$.
+Identify $q \to p/\hbar$, $\omega \to E/\hbar$, $\omega_c \to mc^2/\hbar$: same hyperbola. The cutoff is set by the **rest energy** of the particle, $\hbar\omega_c = mc^2$. Physical origin: producing a particle at rest requires an energy input of $mc^2$; any driving with less energy cannot excite the field. Below cutoff there is no propagating particle; the field is Yukawa-suppressed (the evanescent branch of equation \eqref{eq:hyperbola-q} in the relativistic setting). This is what makes short-range forces mediated by massive particles fall off exponentially with distance, with the exponential decay length equal to the Compton wavelength $\hbar/(mc)$.
 
 ### § 6.5. The Bragg band edge, once more {#sec-6-5}
 
-Section 4 already worked out the Bragg case. At the lower band edge ($\delta = -\kappa$ in the [§ 4](#sec-4) notation), $q = 0$ and the wave is a standing wave: same as $\omega = \omega_c$ in the other three settings. The Bragg case is *symmetric* — there is an upper band edge as well at $\delta = +\kappa$ — because both edges of the gap are physically accessible in the Bragg setting, whereas in the waveguide/plasma/KG case only the lower edge is meaningful (there is no natural physical variable that goes below zero for propagation). This is the sole way in which the Bragg problem is richer than the three cutoff problems: it has two edges instead of one.
+The Bragg reduction, with detuning and coupling defined by equations \eqref{eq:delta-bragg} and \eqref{eq:kappa-bragg}, already worked out this case. At the lower band edge ($\delta = -\kappa$ in equation \eqref{eq:hyperbola-q}), $q = 0$ and the wave is a standing wave: same as $\omega = \omega_c$ in the other three settings. The Bragg case is *symmetric* — there is an upper band edge as well at $\delta = +\kappa$ — because both edges of the gap are physically accessible in the Bragg setting, whereas in the waveguide/plasma/KG case only the lower edge is meaningful (there is no natural physical variable that goes below zero for propagation). This is the sole way in which the Bragg problem is richer than the three cutoff problems: it has two edges instead of one.
 
 ![A Bragg gap has an upper and a lower accessible band edge](assets/bragg-gap-two-edges.png)
 
@@ -1043,7 +1044,7 @@ In all four settings the algebra is $q^2 = (\omega^2 - \omega_c^2)/v^2$: a singl
 | Waveguide   | Quantized transverse mode           | $m\pi c/a$                    |
 | Plasma      | Collective electron oscillation     | $\omega_p = \sqrt{n_e e^2/(m_e\varepsilon_0)}$ |
 | Klein–Gordon| Particle rest energy                | $mc^2/\hbar$                  |
-| Bragg edge  | Periodic index modulation           | $\pi \Delta n / \lambda_B \cdot v_g$ (from [§ 4](#sec-4)) |
+| Bragg edge  | Periodic index modulation           | $\pi \Delta n / \lambda_B \cdot v_g$ (using $\kappa$ from equation \eqref{eq:kappa-bragg}) |
 
 Each mechanism has its own downstream consequences (skin depth in metals, mode filtering in optical fibers, Yukawa fall-off of short-range forces, DBR mirror engineering), but the mathematical object is the same and every "cutoff" or "band edge" behavior in the sections that follow is a reading of this single hyperbola.
 
@@ -1053,9 +1054,9 @@ The mass-like reading is worth planting once. Near the cutoff, expand $\omega^2 
 
 ## § 7. Bragg band edges: standing waves, penetration, and phase-error catastrophe {#sec-7}
 
-Section 4 identified the two-wave truncation with a specific hyperbola of the [§ 0](#sec-0) framework and enumerated the general reading (stopband, evanescence, group velocity vanishing at band edges). This section develops three specific readings of that framework in the Bragg setting: (a) *what* the standing waves at the two band edges look like in real space, (b) *how deep* the wave penetrates into a finite mirror, and (c) *why the stopband has the width it has*, from an accumulation-of-error viewpoint.
+[§ 4](#sec-4) identified the two-wave truncation with the hyperbola in equation \eqref{eq:hyperbola-q} and enumerated its general reading (stopband, evanescence, group velocity vanishing at band edges). This section develops three specific readings of that framework in the Bragg setting: (a) *what* the standing waves at the two band edges look like in real space, (b) *how deep* the wave penetrates into a finite mirror, and (c) *why the stopband has the width it has*, from an accumulation-of-error viewpoint.
 
-None of these adds new algebra to [§ 0](#sec-0) — they are geometric readings of the same $q^2 = \delta^2 - \kappa^2$ hyperbola in the specific Bragg context.
+None of these adds new algebra beyond equation \eqref{eq:hyperbola-q}; they are geometric readings of that same hyperbola in the specific Bragg context.
 
 ### § 7.1. The two standing waves at the band edges {#sec-7-1}
 
@@ -1074,7 +1075,7 @@ The two standing waves have their intensity maxima at complementary positions in
 
 ### § 7.2. Why the two frequencies differ, from a variational principle {#sec-7-2}
 
-The Helmholtz equation from [§ 1](#sec-1), $E'' + (\omega/c)^2\varepsilon(z) E = 0$, can be rewritten as an eigenvalue problem for $\omega^2$:
+The Helmholtz equation from [the scalar-wave-equation refresher](#picture-3-scalar-wave-equation), $E'' + (\omega/c)^2\varepsilon(z) E = 0$, can be rewritten as an eigenvalue problem for $\omega^2$:
 
 $$\omega^2 = c^2 \frac{-\int E^* E''\, dz}{\int \varepsilon(z)|E(z)|^2\, dz}.$$
 
@@ -1107,7 +1108,7 @@ Both reflected amplitudes therefore return with total phase $\pi$ and add constr
 
 ### § 7.3. Penetration into a finite Bragg mirror {#sec-7-3}
 
-Section 0.6 answered an infinite-medium eigenmode question. At exact Bragg tuning, $\delta=0$, the propagation relation becomes
+Equation \eqref{eq:hyperbola-q} answers an infinite-medium eigenmode question. At exact Bragg tuning, $\delta=0$, it becomes
 
 $$
 q^2=-\kappa^2,
@@ -1213,7 +1214,7 @@ Thus a useful engineering rule is: **a grating needs about three Bragg lengths t
 
 ### § 7.4. The stopband width as an accumulation-of-error argument {#sec-7-4}
 
-The formula $\Delta\omega = 2\kappa v_g$ was delivered by [§ 4](#sec-4) as a bare algebraic result. It has a physical reading from the layered-mirror viewpoint that is worth spelling out, because it exposes why $\kappa$ and $L_B = 1/\kappa$ appear together as reciprocals in every design formula.
+Combining the gap edges of equation \eqref{eq:hyperbola-q} with the Bragg coupling in equation \eqref{eq:kappa-bragg} gives $\Delta\omega = 2\kappa v_g$. It has a physical reading from the layered-mirror viewpoint that is worth spelling out, because it exposes why $\kappa$ and $L_B = 1/\kappa$ appear together as reciprocals in every design formula.
 
 Take a mirror at exactly its design wavelength $\lambda_0$: each quarter-wave layer contributes a round-trip phase of exactly $\pi$, and combined with the boundary-reflection phase, all reflections arrive at the input in constructive interference.
 
@@ -1241,11 +1242,11 @@ This is the origin of the $2\kappa$ formula. Writing $\kappa$ as $\pi \Delta n/\
 
 ## § 8. Transfer matrix formalism {#sec-8}
 
-Sections 2–4 answered the eigenvalue question in $k$-space: given a frequency $\omega$, what wavenumber $q$ does the periodic medium allow? This section answers the complementary question in $z$-space: given the field $(E, E')$ at one point, what is it at another point? The reformulation is *operational* — it exposes propagation as matrix multiplication — and provides the algorithmic basis for computing reflectivity, transmission, and cascading of finite structures. It also recovers the band structure of §§ 2–4 by a different route: as an eigenvalue problem on the propagation matrix.
+[The scalar-wave-equation refresher](#picture-3-scalar-wave-equation), [the Bloch-theorem refresher](#picture-3-bloch-theorem), Picture 3, and § 4 answered the eigenvalue question in $k$-space: given a frequency $\omega$, what wavenumber $q$ does the periodic medium allow? This section answers the complementary question in $z$-space: given the field $(E, E')$ at one point, what is it at another point? The reformulation is *operational* — it exposes propagation as matrix multiplication — and provides the algorithmic basis for computing reflectivity, transmission, and cascading of finite structures. It also recovers the band structure of Picture 3 and § 4 by a different route: as an eigenvalue problem on the propagation matrix.
 
 ### § 8.1. The local state and the propagation matrix {#sec-8-1}
 
-The wave equation from [§ 1](#sec-1) is second-order in $z$; a second-order linear ODE has a two-dimensional solution space parameterized by initial conditions $E(z_0)$ and $E'(z_0)$. Define the **local state**
+The wave equation from [the scalar-wave-equation refresher](#picture-3-scalar-wave-equation) is second-order in $z$; a second-order linear ODE has a two-dimensional solution space parameterized by initial conditions $E(z_0)$ and $E'(z_0)$. Define the **local state**
 
 $$\mathbf{v}(z) = \begin{pmatrix} E(z) \\ E'(z) \end{pmatrix}.$$
 
@@ -1257,7 +1258,7 @@ Because the ODE is linear, its solution defines a linear map from initial state 
 
 $$\mathbf{v}(z_1) = T(z_0, z_1)\, \mathbf{v}(z_0).$$
 
-This is the **transfer matrix**. It is defined for *any* $\varepsilon(z)$, not just periodic — the same 2×2 solution space that Bloch's theorem in [§ 2](#sec-2) used to prove the completeness of Bloch waves.
+This is the **transfer matrix**. It is defined for *any* $\varepsilon(z)$, not just periodic — the same 2×2 solution space used in [the Bloch-theorem refresher](#picture-3-bloch-theorem) to prove the completeness of Bloch waves.
 
 ### § 8.2. Cascading and $\det T = 1$ {#sec-8-2}
 
@@ -1276,7 +1277,7 @@ of any two solutions $E_1, E_2$; it is proportional to the Poynting flux of any 
 
 ### § 8.3. Band structure from the trace {#sec-8-3}
 
-For a periodic medium, the Bloch waves of [§ 2](#sec-2) are the eigenvectors of the unit-cell transfer matrix — states that reproduce themselves up to a factor after one period. The eigenvalues satisfy
+For a periodic medium, the Bloch waves derived in [the Bloch-theorem refresher](#picture-3-bloch-theorem) are the eigenvectors of the unit-cell transfer matrix — states that reproduce themselves up to a factor after one period. The eigenvalues satisfy
 
 $$\lambda^2 - \text{tr}(T)\, \lambda + 1 = 0 \implies \lambda = \frac{\text{tr}(T) \pm \sqrt{\text{tr}(T)^2 - 4}}{2}.$$
 
@@ -1288,7 +1289,7 @@ Discriminant negative; $\lambda$ complex-conjugate pair with $|\lambda_1| = |\la
 
 $$\cos(K\Lambda) = \frac{1}{2}\text{tr}(T),$$
 
-which defines the **Bloch wavenumber** $K$ for that frequency — the same $K$ that Bloch's theorem produced abstractly in [§ 2](#sec-2).
+which defines the **Bloch wavenumber** $K$ for that frequency — the same $K$ produced abstractly in [the Bloch-theorem refresher](#picture-3-bloch-theorem).
 
 #### Case B: $|\text{tr}(T)| > 2$ (gap).
 
@@ -1356,11 +1357,11 @@ The formula comes from taking the transfer-matrix product analytically at the qu
 
 ### § 9.2. Stopband width from the coupling constant {#sec-9-2}
 
-Section 4 gave the coupling constant of a sinusoidal grating with peak-to-peak index modulation $\Delta n$ as $\kappa = \pi \Delta n/\lambda_B$. A square-wave modulation (real DBR) is a Fourier series with fundamental coefficient $4/\pi$ times the peak-to-peak amplitude, so the effective coupling at the fundamental Bragg wavelength is
+Equation \eqref{eq:kappa-bragg} gives the coupling constant of a sinusoidal grating with peak-to-peak index modulation $\Delta n$ as $\kappa = \pi \Delta n/\lambda_B$. A square-wave modulation (real DBR) is a Fourier series with fundamental coefficient $4/\pi$ times the peak-to-peak amplitude, so the effective coupling at the fundamental Bragg wavelength is
 
 $$\kappa_{\text{DBR}} = \frac{2 \Delta n}{\lambda_0}, \qquad \Delta n \equiv n_H - n_L.$$
 
-The stopband width in frequency (from [§ 4](#sec-4)) is $\Delta\omega = 2\kappa v_g$, giving a fractional bandwidth
+Using the coupling coefficient in equation \eqref{eq:kappa-bragg}, the stopband width in frequency is $\Delta\omega = 2\kappa v_g$, giving a fractional bandwidth
 
 $$\frac{\Delta\omega}{\omega_0} = \frac{4}{\pi}\frac{\Delta n}{n_{\text{avg}}}.$$
 
@@ -1443,7 +1444,7 @@ A pure index-modulated DFB has two nearly-degenerate band-edge modes, and generi
 
 - **Gain coupling.** If the modulation is not pure index but has a gain-modulation component, one band-edge mode overlaps the high-gain regions and the other overlaps the low-gain regions — the two are no longer degenerate. [§ 10.4](#sec-10-4) develops this.
 
-The defect mode of the $\lambda/4$-shifted DFB is exactly analogous to a bound state in a semiconductor's electronic bandgap: a localized state inside the gap, decaying exponentially into the surrounding stopband. The decay length is the Bragg length $L_B = 1/\kappa$ from [§ 0.6](#sec-0-6).
+The defect mode of the $\lambda/4$-shifted DFB is exactly analogous to a bound state in a semiconductor's electronic bandgap: a localized state inside the gap, decaying exponentially into the surrounding stopband. The decay length is the center-gap value $L_B = 1/\kappa$ obtained from the imaginary-$q$ branch of equation \eqref{eq:hyperbola-q}.
 
 ### § 10.4. Index-coupled vs. gain-coupled DFB {#sec-10-4}
 
@@ -1555,7 +1556,7 @@ With no bias, the disk is a passive circular resonator. Its electromagnetic mode
 
 #### Step 2 — modes with bias.
 
-Turn on $\vec B_0$. Section 5 established that the CP eigenmodes (which are the $m = +1$ and $m = -1$ modes with respect to axial rotation) see different effective permeabilities $\mu_\pm = \mu \pm \kappa_P$, and hence resonate at different frequencies $\omega_\pm \propto 1/\sqrt{\mu_\pm}$. The two formerly-degenerate modes are split by an energy gap of order $\kappa_P \omega_0$.
+Turn on $\vec B_0$. Applying equation \eqref{eq:pauli-eigenvalues} to the Polder tensor derived in [§ 5](#sec-5), the CP eigenmodes (which are the $m = +1$ and $m = -1$ modes with respect to axial rotation) see different effective permeabilities $\mu_\pm = \mu \pm \kappa_P$, and hence resonate at different frequencies $\omega_\pm \propto 1/\sqrt{\mu_\pm}$. The two formerly-degenerate modes are split by an energy gap of order $\kappa_P \omega_0$.
 
 #### Step 3 — operating at the mid-frequency.
 
@@ -1679,7 +1680,7 @@ $$\chi^{(2)}(z) = \sum_m \chi_m^{(2)} e^{imG z}, \qquad G = 2\pi/\Lambda,$$
 
 each Fourier component provides a "grating momentum" $mG$ available to compensate a specific phase mismatch. Choosing $\Lambda$ so that $G = \Delta k$ compensates the fundamental mismatch: the polarization now drives a wave at $2\omega$ with an effective wavevector $2k(\omega) + G = k(2\omega)$, and perfect phase matching is recovered *through momentum contribution from the grating*.
 
-This is the same momentum-conservation argument that produced Bragg reflection in [§ 3](#sec-3), applied to a nonlinear polarization instead of a linear wave. **Quasi-phase matching (QPM)** in periodically poled lithium niobate or KTP is the workhorse of frequency-conversion devices for telecom wavelength conversion, entangled-photon-pair generation, and quantum-communication protocols. The design principle is the Bragg condition wearing a different physical hat: momentum kick from a periodic modulation, tuned to close a mismatch that the underlying medium alone could not close.
+This is the same momentum-balance condition as equation \eqref{eq:bragg-condition}, applied to a nonlinear polarization instead of a linear wave. **Quasi-phase matching (QPM)** in periodically poled lithium niobate or KTP is the workhorse of frequency-conversion devices for telecom wavelength conversion, entangled-photon-pair generation, and quantum-communication protocols. The design principle is the Bragg condition wearing a different physical hat: momentum kick from a periodic modulation, tuned to close a mismatch that the underlying medium alone could not close.
 
 ---
 
@@ -1689,7 +1690,7 @@ Every result so far has been 1D: one direction of propagation, one direction of 
 
 ### 2D and 3D photonic crystals
 
-The Bloch-theorem foundation of [§ 2](#sec-2) extends immediately to any dimension: for a medium with $\varepsilon(\mathbf{r} + \mathbf{R}) = \varepsilon(\mathbf{r})$ for lattice vectors $\mathbf{R}$, the Bloch waves are
+The foundation developed in [the Bloch-theorem refresher](#picture-3-bloch-theorem) extends immediately to any dimension: for a medium with $\varepsilon(\mathbf{r} + \mathbf{R}) = \varepsilon(\mathbf{r})$ for lattice vectors $\mathbf{R}$, the Bloch waves are
 
 $$\mathbf{E}(\mathbf{r}) = e^{i\mathbf{k}\cdot\mathbf{r}}\, \mathbf{u}_{\mathbf{k}}(\mathbf{r}),$$
 
@@ -1786,16 +1787,16 @@ Each generalization has its own literature; the *core two-mode formalism* is uni
 
 Every phenomenon in the sections above is a reading of the same $2 \times 2$ Hermitian eigenvalue problem introduced in [§ 0](#sec-0). A specific physical setting fixes the values of $c_0, c_x, c_y, c_z$ in the Pauli decomposition; the eigenvalues, eigenvectors, and dispersion hyperbola then follow by universal algebra. The table summarizes:
 
-| Setting                        | $c_x$ (σₓ)         | $c_y$ (σᵧ)             | $c_z$ (σ_z)                  | Section |
-| ------------------------------ | ------------------ | ---------------------- | ---------------------------- | ------- |
-| Coupled mechanical oscillators | mechanical spring  | 0                      | difference of stiffnesses    | [§ 0](#sec-0)     |
-| Bragg grating                  | index modulation   | 0                      | $k - k_B$                    | [§ 4](#sec-4)     |
+| Setting                        | $c_x$ (σₓ)         | $c_y$ (σᵧ)             | $c_z$ (σ_z)                  | Reference |
+| ------------------------------ | ------------------ | ---------------------- | ---------------------------- | --------- |
+| Coupled mechanical oscillators | mechanical spring  | 0                      | difference of stiffnesses    | equations \eqref{eq:hyperbola-eigenvalue}–\eqref{eq:mixing-angle} |
+| Bragg grating                  | index modulation   | 0                      | $k - k_B$                    | equations \eqref{eq:delta-bragg}–\eqref{eq:kappa-bragg} |
 | Biased ferrite                 | 0                  | Polder $\kappa_P$      | 0                            | [§ 5](#sec-5)     |
 | Magneto-optic dielectric       | 0                  | Zeeman off-diagonal    | 0                            | [§ 5](#sec-5)     |
-| Waveguide mode                 | 0                  | 0                      | $\omega^2 - \omega_c^2$      | [§ 6](#sec-6)     |
-| Plasma                         | 0                  | 0                      | $\omega^2 - \omega_p^2$      | [§ 6](#sec-6)     |
-| Klein–Gordon                   | 0                  | 0                      | $E^2 - (mc^2)^2$             | [§ 6](#sec-6)     |
+| Waveguide mode                 | 0                  | 0                      | $\omega^2 - \omega_c^2$      | equation \eqref{eq:hyperbola-q} |
+| Plasma                         | 0                  | 0                      | $\omega^2 - \omega_p^2$      | equation \eqref{eq:hyperbola-q} |
+| Klein–Gordon                   | 0                  | 0                      | $E^2 - (mc^2)^2$             | equation \eqref{eq:hyperbola-q} |
 
-The gap width in every row is $2\sqrt{c_x^2 + c_y^2 + c_z^2}$ at the operating point; the mixing angle is $\tan 2\theta = \sqrt{c_x^2+c_y^2}/c_z$; the eigenvalue hyperbola is $q^2 = \delta^2 - \kappa^2$ with $\delta \leftrightarrow c_z$ and $\kappa \leftrightarrow \sqrt{c_x^2+c_y^2}$. Every subsequent design formula — stopband width, penetration depth, Bragg reflectivity, group velocity vanishing at the edge, Faraday rotation angle — is a reading of that hyperbola at a specific point.
+The gap width in every row is the quadrature form of equation \eqref{eq:pauli-gap}; the mixing angle is equation \eqref{eq:mixing-angle} with $\kappa' \to \sqrt{c_x^2+c_y^2}$ and $\delta \to c_z$; the dispersion hyperbola is equation \eqref{eq:hyperbola-q} with $\delta \leftrightarrow c_z$ and $\kappa \leftrightarrow \sqrt{c_x^2+c_y^2}$. Every subsequent design formula — stopband width, penetration depth, Bragg reflectivity, group velocity vanishing at the edge, Faraday rotation angle — is a reading of that hyperbola at a specific point.
 
-The whole document is one $2 \times 2$ eigenvalue problem taken seriously, with each section identifying the physical mechanism that populates one Pauli component of the general Hermitian matrix. Every design formula in every application section reduces to a reading of $q^2 = \delta^2 - \kappa^2$ at the appropriate parameter values.
+The whole document is one $2 \times 2$ eigenvalue problem taken seriously, with each section identifying the physical mechanism that populates one Pauli component of the general Hermitian matrix. Every design formula in every application section reduces to a reading of equation \eqref{eq:hyperbola-q} at the appropriate parameter values.
