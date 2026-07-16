@@ -1,88 +1,1035 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Inspect a motion</title>
-<script>
-(() => {
-  const root = document.documentElement;
-  try {
-    const p = window.parent.document.documentElement;
-    const b = window.parent.document.body;
-    const raw = `${p.dataset.theme || ""} ${p.className || ""} ${b?.dataset?.theme || ""} ${b?.className || ""}`.toLowerCase();
-    root.dataset.theme = raw.includes("dark") ? "dark" : raw.includes("light") ? "light" : "";
-  } catch (_) {}
-})();
-</script>
-<style>
-:root{
-  color-scheme:light;
-  --page:var(--color-bg,#fbfaf7);--surface:var(--color-surface,#fff);--soft:var(--color-surface-muted,#f3f5f2);
-  --ink:var(--color-text,#1c2520);--muted:var(--color-text-muted,#667169);--line:var(--color-border,#d4dcd6);
-  --viz-accent:var(--post-accent,var(--accent,#276b8f));--viz-accent-soft:var(--post-accent-soft,#e8f2f7);--warm:#a65f2c;--warm-soft:#faeee5;
-  --serif:"STIX Two Text",Georgia,"Times New Roman",serif;--sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
-}
-:root[data-theme="dark"]{color-scheme:dark;--page:#111612;--surface:#181f1a;--soft:#202922;--ink:#edf2ee;--muted:#aab6ad;--line:#39463d;--viz-accent:var(--post-accent,var(--accent,#8fc8e5));--viz-accent-soft:#173243;--warm:#e3a372;--warm-soft:#3a281d}
-*{box-sizing:border-box}html,body{margin:0;min-width:0;overflow-x:hidden;background:transparent;color:var(--ink)}body{padding:clamp(10px,2.5vw,24px);font-family:var(--serif)}
-.frame{width:min(1060px,100%);margin:auto;border:1px solid var(--line);background:var(--surface);overflow:hidden}
-.head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:end;padding:clamp(20px,4vw,38px);border-bottom:1px solid var(--line);background:linear-gradient(135deg,var(--viz-accent-soft),var(--surface) 72%)}
-.eyebrow{margin:0 0 7px;font:700 .7rem/1 var(--sans);letter-spacing:.11em;text-transform:uppercase;color:var(--viz-accent)}h1{margin:0;font-size:clamp(1.65rem,4.5vw,2.65rem);font-weight:500;line-height:1.1;letter-spacing:-.03em}.head p{max-width:650px;margin:10px 0 0;color:var(--muted);line-height:1.6}
-.status{min-width:210px;padding:12px 14px;border:1px solid var(--line);background:var(--surface);font-family:var(--sans)}.status span{display:block;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}.status strong{display:block;margin-top:4px;font-size:1.1rem;color:var(--viz-accent)}
-.controls{display:flex;flex-wrap:wrap;gap:8px;padding:16px clamp(18px,4vw,38px);border-bottom:1px solid var(--line);background:var(--soft)}button{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 13px;font:650 .8rem/1 var(--sans);cursor:pointer}button[aria-pressed="true"]{border-color:var(--viz-accent);background:var(--viz-accent-soft);color:var(--viz-accent)}
-.stage{padding:clamp(16px,3vw,30px)}svg{display:block;width:100%;height:auto;border:1px solid var(--line);background:var(--soft)}.wall{fill:var(--line)}.rail{stroke:var(--line);stroke-width:3}.spring{fill:none;stroke:var(--viz-accent);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.spring.coupling{stroke:var(--warm)}.mass{fill:var(--surface);stroke:var(--ink);stroke-width:2.4}.mass-label,.eq-label{font-family:var(--serif);fill:var(--ink)}.guide{stroke:var(--line);stroke-width:1.3;stroke-dasharray:5 5}.anchor{fill:var(--muted)}
-.readout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-top:0}.readout div{padding:15px 16px}.readout div+div{border-left:1px solid var(--line)}.readout span{display:block;color:var(--muted);font:700 .69rem/1.2 var(--sans);letter-spacing:.07em;text-transform:uppercase}.readout strong{display:block;margin-top:7px;font-size:clamp(1.05rem,2.4vw,1.35rem);font-weight:500}.readout .extension strong{color:var(--warm)}
-.scrub{display:grid;grid-template-columns:auto minmax(120px,1fr) auto;gap:14px;align-items:center;margin-top:18px;padding:15px 16px;border:1px solid var(--line);font-family:var(--sans)}input{width:100%;accent-color:var(--viz-accent)}.scrub label,.scrub output{font-size:.78rem;color:var(--muted)}
-.note{display:grid;grid-template-columns:4px minmax(0,1fr);gap:14px;margin-top:18px;color:var(--muted);line-height:1.65}.note:before{content:"";background:var(--viz-accent)}.note p{margin:0}
-@media(max-width:700px){.head{grid-template-columns:1fr}.status{min-width:0}.readout{grid-template-columns:1fr}.readout div+div{border-left:0;border-top:1px solid var(--line)}.scrub{grid-template-columns:1fr}.scrub output{text-align:right}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Coupled mechanical oscillators</title>
+  <style>
+    :root {
+      --page: #fbfbf8;
+      --surface: #ffffff;
+      --surface-muted: #f4f5f1;
+      --ink: #1c2420;
+      --muted: #667169;
+      --border: #d6ddd7;
+      --border-strong: #a6b2a9;
+      --accent: #85295e;
+      --accent-soft: #fdeef6;
+      --accent-border: #e8b2d1;
+      --accent-ink: #70204d;
+      --neutral-spring: #7e8a82;
+      --compression: #9e4b1b;
+      --compression-soft: #fff2e9;
+      --shadow: rgba(28, 36, 32, 0.08);
+      color-scheme: light;
+    }
+
+    :root[data-theme="dark"] {
+      --page: #101511;
+      --surface: #171e19;
+      --surface-muted: #1d2720;
+      --ink: #e9efeb;
+      --muted: #a7b5aa;
+      --border: #344138;
+      --border-strong: #617168;
+      --accent: #ffb9df;
+      --accent-soft: #3f2033;
+      --accent-border: #914f75;
+      --accent-ink: #ffb9df;
+      --neutral-spring: #8d9b91;
+      --compression: #ffcb9f;
+      --compression-soft: #40291f;
+      --shadow: rgba(0, 0, 0, 0.22);
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      overflow: hidden;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    body {
+      padding: 1px;
+      font-family: Georgia, "Times New Roman", serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font: inherit; }
+
+    .viz {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      box-shadow: 0 18px 45px -38px var(--shadow);
+    }
+
+    .viz__header {
+      display: grid;
+      gap: 8px;
+      padding: clamp(22px, 4vw, 34px) clamp(20px, 4vw, 38px) 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--accent-ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.055em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(1.55rem, 4.8vw, 2.65rem);
+      font-weight: 500;
+      letter-spacing: -0.045em;
+      line-height: 1.05;
+    }
+
+    .lede {
+      max-width: 720px;
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: clamp(0.98rem, 2.2vw, 1.08rem);
+      line-height: 1.56;
+    }
+
+    .derivation {
+      display: grid;
+      grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
+      gap: clamp(18px, 3vw, 30px);
+      align-items: start;
+      padding: 22px clamp(16px, 3vw, 28px) 24px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(90deg, var(--accent-soft), transparent 78%);
+    }
+
+    .derivation__intro {
+      display: grid;
+      gap: 7px;
+      padding-top: 3px;
+    }
+
+    .derivation__intro h2 {
+      margin: 0;
+      color: var(--accent-ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.78rem;
+      letter-spacing: -0.012em;
+    }
+
+    .derivation__intro p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .derivation__rows {
+      display: grid;
+      border: 1px solid var(--accent-border);
+      background: color-mix(in srgb, var(--surface) 90%, var(--accent-soft));
+    }
+
+    .derivation__row {
+      display: grid;
+      grid-template-columns: minmax(118px, 0.26fr) minmax(0, 1fr);
+      gap: 16px;
+      align-items: baseline;
+      min-width: 0;
+      padding: 13px 15px;
+      border-top: 1px solid var(--accent-border);
+    }
+
+    .derivation__row:first-child {
+      border-top: 0;
+    }
+
+    .derivation__label {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .math {
+      min-width: 0;
+      color: var(--ink);
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      line-height: 1.45;
+    }
+
+    .math--result {
+      color: var(--accent-ink);
+      font-size: clamp(1.06rem, 2.45vw, 1.3rem);
+      font-weight: 600;
+    }
+
+    .cancel {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-thickness: 1px;
+      text-decoration-color: var(--accent);
+    }
+
+    .derivation__note {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 0.82rem;
+      font-weight: 400;
+      line-height: 1.45;
+    }
+
+    .interactive {
+      padding: 22px clamp(16px, 3vw, 28px) 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .controls__label {
+      margin-right: 4px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.71rem;
+      font-weight: 700;
+      letter-spacing: 0.035em;
+      text-transform: uppercase;
+    }
+
+    .mode-button,
+    .pause-button {
+      min-height: 34px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.72rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .mode-button:hover,
+    .pause-button:hover {
+      border-color: var(--accent-border);
+      color: var(--accent-ink);
+    }
+
+    .mode-button[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--page);
+    }
+
+    :root[data-theme="dark"] .mode-button[aria-pressed="true"] {
+      color: #24101b;
+    }
+
+    .pause-button {
+      margin-left: auto;
+      min-width: 74px;
+      color: var(--ink);
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .scene-shell {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(var(--surface-muted) 1px, transparent 1px) 0 0 / 100% 48px,
+        var(--surface);
+    }
+
+    #scene {
+      display: block;
+      width: 100%;
+      height: 330px;
+      overflow: visible;
+    }
+
+    .scene-text {
+      fill: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .scene-text--muted { fill: var(--muted); }
+    .scene-text--accent { fill: var(--accent-ink); font-weight: 700; }
+    .scene-text--mass { font-family: Georgia, "Times New Roman", serif; font-size: 19px; font-style: italic; }
+
+    .wall,
+    .wall-hatch,
+    .baseline,
+    .equilibrium,
+    .ruler,
+    .ruler-tick,
+    .displacement-line {
+      vector-effect: non-scaling-stroke;
+    }
+
+    .wall { stroke: var(--border-strong); stroke-width: 2; }
+    .wall-hatch { stroke: var(--border-strong); stroke-width: 1; }
+    .baseline { stroke: var(--border); stroke-width: 1; }
+    .equilibrium { stroke: var(--border-strong); stroke-width: 1; stroke-dasharray: 4 5; }
+    .ruler { stroke: var(--muted); stroke-width: 1.25; }
+    .ruler--current { stroke: var(--accent); stroke-width: 1.6; }
+    .ruler-tick { stroke: currentColor; stroke-width: 1.25; }
+    .displacement-line { stroke: var(--accent); stroke-width: 1.5; }
+
+    .mass {
+      fill: color-mix(in srgb, var(--surface) 78%, var(--accent-soft));
+      stroke: var(--accent);
+      stroke-width: 1.7;
+      vector-effect: non-scaling-stroke;
+      filter: drop-shadow(0 5px 9px var(--shadow));
+    }
+
+    .spring {
+      fill: none;
+      stroke: var(--neutral-spring);
+      stroke-width: 2;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      vector-effect: non-scaling-stroke;
+      transition: stroke 180ms ease, stroke-width 180ms ease;
+    }
+
+    .spring--coupling { stroke-width: 2.3; }
+    .spring--stretched { stroke: var(--accent); stroke-width: 3; }
+    .spring--compressed { stroke: var(--compression); stroke-width: 3; }
+
+    .readout {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border: 1px solid var(--border);
+      border-top: 0;
+    }
+
+    .readout__cell {
+      min-width: 0;
+      padding: 15px 16px 16px;
+      border-left: 1px solid var(--border);
+    }
+
+    .readout__cell:first-child { border-left: 0; }
+
+    .readout__label {
+      margin: 0 0 7px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .readout__value {
+      margin: 0;
+      font-size: 0.97rem;
+      line-height: 1.48;
+    }
+
+    .readout__value strong {
+      color: var(--accent-ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.88em;
+    }
+
+    .consequences {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      padding: 22px clamp(16px, 3vw, 28px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .case {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 15px;
+      align-items: start;
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid var(--border);
+      background: var(--surface-muted);
+    }
+
+    .case__symbol {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--accent-border);
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .case h2 {
+      margin: 0 0 6px;
+      color: var(--accent-ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.82rem;
+      letter-spacing: -0.015em;
+    }
+
+    .case p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.53;
+    }
+
+    .case .case__equation {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-size: 1.02rem;
+    }
+
+    .equations {
+      display: grid;
+      gap: 17px;
+      padding: 24px clamp(16px, 3vw, 28px) 26px;
+      background: linear-gradient(90deg, var(--accent-soft), transparent 82%);
+    }
+
+    .equations__header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(220px, 0.62fr);
+      gap: 22px;
+      align-items: end;
+    }
+
+    .equations__eyebrow {
+      margin: 0 0 5px;
+      color: var(--accent-ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.045em;
+      text-transform: uppercase;
+    }
+
+    .equations h2 {
+      margin: 0;
+      font-size: clamp(1.2rem, 3vw, 1.65rem);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+      line-height: 1.16;
+    }
+
+    .equations__summary {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.91rem;
+      line-height: 1.5;
+    }
+
+    .equation-flow {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.08fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .equation-stage {
+      display: grid;
+      align-content: start;
+      gap: 11px;
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .equation-stage--final {
+      border-color: var(--accent-border);
+      background: color-mix(in srgb, var(--surface) 88%, var(--accent-soft));
+    }
+
+    .equation-stage__number {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--accent-border);
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.69rem;
+      font-weight: 700;
+    }
+
+    .equation-stage h3 {
+      margin: 0;
+      color: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.76rem;
+      letter-spacing: -0.01em;
+      line-height: 1.35;
+    }
+
+    .equation-pair {
+      display: grid;
+      gap: 9px;
+    }
+
+    .equation-line {
+      min-width: 0;
+      padding: 10px 11px;
+      border-left: 3px solid var(--accent);
+      background: var(--surface-muted);
+      color: var(--ink);
+      font-family: "Cambria Math", Cambria, Georgia, serif;
+      font-size: clamp(0.94rem, 1.7vw, 1.08rem);
+      line-height: 1.48;
+      overflow-wrap: anywhere;
+    }
+
+    .equation-stage--final .equation-line {
+      color: var(--accent-ink);
+      background: color-mix(in srgb, var(--surface) 82%, var(--accent-soft));
+      font-weight: 600;
+    }
+
+    .equation-stage p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.48;
+    }
+
+    .equation-flow__arrow {
+      align-self: center;
+      color: var(--accent);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 1.2rem;
+    }
+
+    .cross-term {
+      color: var(--accent-ink);
+      font-weight: 700;
+    }
+
+    .equations__closing {
+      margin: 0;
+      padding: 13px 15px;
+      border-left: 3px solid var(--accent);
+      background: color-mix(in srgb, var(--surface) 88%, var(--accent-soft));
+      color: var(--muted);
+      font-size: 0.91rem;
+      line-height: 1.52;
+    }
+
+    .equations__closing strong {
+      color: var(--accent-ink);
+    }
+
+    @media (max-width: 760px) {
+      .derivation {
+        grid-template-columns: 1fr;
+      }
+
+      .derivation__row {
+        grid-template-columns: 1fr;
+        gap: 5px;
+      }
+
+      .pause-button { margin-left: 0; }
+
+      #scene { height: 350px; }
+
+      .readout {
+        grid-template-columns: 1fr;
+      }
+
+      .readout__cell {
+        border-top: 1px solid var(--border);
+        border-left: 0;
+      }
+
+      .readout__cell:first-child { border-top: 0; }
+
+      .consequences {
+        grid-template-columns: 1fr;
+      }
+
+      .equations__header {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .equation-flow {
+        grid-template-columns: 1fr;
+      }
+
+      .equation-flow__arrow {
+        justify-self: center;
+        transform: rotate(90deg);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .viz__header { padding-inline: 18px; }
+      .interactive { padding-inline: 12px; }
+      .controls { align-items: stretch; }
+      .controls__label { flex-basis: 100%; }
+      .mode-button { flex: 1 1 calc(50% - 8px); }
+      .pause-button { flex: 1 1 100%; }
+      #scene { height: 360px; }
+      .case { grid-template-columns: 1fr; }
+      .math { overflow-wrap: anywhere; }
+      .equation-line { font-size: 0.94rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
 </head>
 <body>
-<main class="frame">
-  <header class="head">
-    <div><p class="eyebrow">endpoint coordinates</p><h1>Inspect a motion</h1><p>Move through three motions and watch the endpoints of the coupling spring. The diagram reports the two displacements separately and computes the change in spring length from them.</p></div>
-    <div class="status"><span>selected motion</span><strong id="motionName">common displacement</strong></div>
-  </header>
-  <nav class="controls" aria-label="Choose a motion">
-    <button type="button" data-mode="common" aria-pressed="true">common</button>
-    <button type="button" data-mode="differential" aria-pressed="false">differential</button>
-    <button type="button" data-mode="unequal" aria-pressed="false">unequal amplitudes</button>
-  </nav>
-  <section class="stage">
-    <svg viewBox="0 0 960 430" role="img" aria-labelledby="t d">
-      <title id="t">Two masses attached to outer springs and joined by a coupling spring</title>
-      <desc id="d">The masses move horizontally. Their displacements and the coupling spring extension update with the selected motion and phase.</desc>
-      <rect class="wall" x="34" y="94" width="22" height="242"/><rect class="wall" x="904" y="94" width="22" height="242"/>
-      <line class="rail" x1="56" y1="258" x2="904" y2="258"/>
-      <line class="guide" x1="305" y1="112" x2="305" y2="345"/><line class="guide" x1="655" y1="112" x2="655" y2="345"/>
-      <circle class="anchor" cx="305" cy="258" r="4"/><circle class="anchor" cx="655" cy="258" r="4"/>
-      <path id="leftSpring" class="spring"/><path id="middleSpring" class="spring coupling"/><path id="rightSpring" class="spring"/>
-      <g id="massA"><rect class="mass" x="0" y="0" width="104" height="78" rx="8"/><text class="mass-label" x="52" y="48" text-anchor="middle" font-size="25">A</text></g>
-      <g id="massB"><rect class="mass" x="0" y="0" width="104" height="78" rx="8"/><text class="mass-label" x="52" y="48" text-anchor="middle" font-size="25">B</text></g>
-      <text class="eq-label" x="305" y="375" text-anchor="middle" font-size="18">A₀</text><text class="eq-label" x="655" y="375" text-anchor="middle" font-size="18">B₀</text>
-      <text class="eq-label" x="480" y="76" text-anchor="middle" font-size="18" fill="var(--warm)">coupling spring</text>
-    </svg>
-    <div class="readout">
-      <div><span>left endpoint</span><strong id="xa">xₐ = 0.00</strong></div>
-      <div><span>right endpoint</span><strong id="xb">xᵦ = 0.00</strong></div>
-      <div class="extension"><span>change in length</span><strong id="dl">ΔL = xᵦ − xₐ = 0.00</strong></div>
-    </div>
-    <div class="scrub"><label for="phase">motion phase</label><input id="phase" type="range" min="0" max="6.283" step="0.01" value="0.85"><output id="phaseOut">0.85 rad</output></div>
-    <div class="note"><p>The dashed lines mark the equilibrium attachment points. They stay fixed while the masses move, so the displayed extension is measured relative to the equilibrium distance between those points.</p></div>
-  </section>
-</main>
-<script>
-(() => {
-  const state={mode:'common'};
-  const phase=document.getElementById('phase'), phaseOut=document.getElementById('phaseOut');
-  const massA=document.getElementById('massA'),massB=document.getElementById('massB');
-  const xaEl=document.getElementById('xa'),xbEl=document.getElementById('xb'),dlEl=document.getElementById('dl'),name=document.getElementById('motionName');
-  const paths=[document.getElementById('leftSpring'),document.getElementById('middleSpring'),document.getElementById('rightSpring')];
-  function spring(x1,x2,y,turns=12,amp=16){const lead=18;let d=`M ${x1} ${y} L ${x1+lead} ${y}`;const a=x1+lead,b=x2-lead,steps=turns*2;for(let i=1;i<steps;i++){const x=a+(b-a)*i/steps;const yy=y+(i%2? -amp:amp);d+=` L ${x} ${yy}`;}return d+` L ${b} ${y} L ${x2} ${y}`;}
-  function amplitudes(t){const s=Math.sin(t);if(state.mode==='common')return [72*s,72*s];if(state.mode==='differential')return [72*s,-72*s];return [78*s,28*Math.sin(t+.7)];}
-  function render(){const t=+phase.value,[a,b]=amplitudes(t);const ca=305+a,cb=655+b;massA.setAttribute('transform',`translate(${ca-52} 219)`);massB.setAttribute('transform',`translate(${cb-52} 219)`);paths[0].setAttribute('d',spring(56,ca-52,258,9,13));paths[1].setAttribute('d',spring(ca+52,cb-52,258,14,15));paths[2].setAttribute('d',spring(cb+52,904,258,9,13));const dl=b-a;xaEl.textContent=`xₐ = ${(a/72).toFixed(2)} a`;xbEl.textContent=`xᵦ = ${(b/72).toFixed(2)} a`;dlEl.textContent=`ΔL = xᵦ − xₐ = ${(dl/72).toFixed(2)} a`;phaseOut.textContent=`${t.toFixed(2)} rad`;}
-  document.querySelectorAll('button[data-mode]').forEach(btn=>btn.addEventListener('click',()=>{state.mode=btn.dataset.mode;document.querySelectorAll('button[data-mode]').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));name.textContent={common:'common displacement',differential:'opposite displacement',unequal:'unequal amplitudes'}[state.mode];render();}));phase.addEventListener('input',render);render();
-})();
-</script>
+  <main class="viz" aria-labelledby="viz-title">
+    <header class="viz__header">
+      <p class="eyebrow">Play, pause, or pick a motion</p>
+      <h1 id="viz-title">Two masses joined by a coupling spring</h1>
+      <p class="lede">Choose one of four representative motions. Play runs the animation; each mode tag names the endpoint relation that is being enforced.</p>
+    </header>
+
+
+    <section class="interactive" aria-label="Animated coupled oscillator diagram">
+      <div class="controls" role="group" aria-label="Choose a motion to inspect">
+        <span class="controls__label">Inspect a motion</span>
+        <button class="mode-button" type="button" data-mode="a-only" aria-pressed="false">move A only</button>
+        <button class="mode-button" type="button" data-mode="b-only" aria-pressed="true">move B only</button>
+        <button class="mode-button" type="button" data-mode="together" aria-pressed="false">move together</button>
+        <button class="mode-button" type="button" data-mode="opposite" aria-pressed="false">move oppositely</button>
+        <button class="pause-button" type="button" aria-pressed="false">pause</button>
+      </div>
+
+      <div class="scene-shell">
+        <svg id="scene" role="img" aria-labelledby="scene-title scene-desc">
+          <title id="scene-title">Two masses joined by a coupling spring</title>
+          <desc id="scene-desc">The diagram compares the equilibrium separation L zero with the current separation L while the selected motion animates the two masses.</desc>
+          <defs>
+            <marker id="arrow-accent" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"></path>
+            </marker>
+            <marker id="arrow-accent-start" markerWidth="8" markerHeight="8" refX="1.5" refY="4" orient="auto-start-reverse" markerUnits="strokeWidth">
+              <path d="M8,0 L0,4 L8,8 Z" fill="var(--accent)"></path>
+            </marker>
+          </defs>
+          <g id="drawing"></g>
+        </svg>
+      </div>
+
+      <div class="readout" aria-live="polite">
+        <div class="readout__cell">
+          <p class="readout__label">Motion relation</p>
+          <p class="readout__value" id="relation-readout"></p>
+        </div>
+        <div class="readout__cell">
+          <p class="readout__label">What the middle spring sees</p>
+          <p class="readout__value" id="extension-readout"></p>
+        </div>
+        <div class="readout__cell">
+          <p class="readout__label">Mechanical consequence</p>
+          <p class="readout__value" id="consequence-readout"></p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const svg = document.getElementById('scene');
+      const drawing = document.getElementById('drawing');
+      const modeButtons = Array.from(document.querySelectorAll('.mode-button'));
+      const pauseButton = document.querySelector('.pause-button');
+      const relationReadout = document.getElementById('relation-readout');
+      const extensionReadout = document.getElementById('extension-readout');
+      const consequenceReadout = document.getElementById('consequence-readout');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const modes = {
+        'a-only': {
+          relation: '<strong>x<sub>B</sub> = 0</strong>; only the left endpoint changes.',
+          extension: '<strong>ΔL = −x<sub>A</sub></strong>. Moving A right shortens the spring; moving A left lengthens it.',
+          consequence: 'The coupling force on each mass follows the motion of A with the opposite sign.',
+          motion: t => [Math.sin(t), 0]
+        },
+        'b-only': {
+          relation: '<strong>x<sub>A</sub> = 0</strong>; only the right endpoint changes.',
+          extension: '<strong>ΔL = x<sub>B</sub></strong>. Moving B right lengthens the spring; moving B left shortens it.',
+          consequence: 'The coupling force is set directly by the displacement of B.',
+          motion: t => [0, Math.sin(t)]
+        },
+        'together': {
+          relation: '<strong>x<sub>A</sub> = x<sub>B</sub></strong>; the whole pair translates.',
+          extension: '<strong>ΔL = x<sub>B</sub> − x<sub>A</sub> = 0</strong>. The spring keeps its equilibrium length.',
+          consequence: 'The middle spring is mechanically silent in this motion.',
+          motion: t => [Math.sin(t), Math.sin(t)]
+        },
+        'opposite': {
+          relation: '<strong>x<sub>A</sub> = −x<sub>B</sub></strong>; the endpoints move apart and together.',
+          extension: '<strong>|ΔL| = 2|x<sub>A</sub>|</strong>. Relative motion doubles the change in separation.',
+          consequence: 'The middle spring adds the strongest restoring force and raises this mode’s frequency.',
+          motion: t => [Math.sin(t), -Math.sin(t)]
+        }
+      };
+
+      let activeMode = 'b-only';
+      let paused = reducedMotion;
+      let phase = 0.72;
+      let lastTime = performance.now();
+      let dimensions = { width: 0, height: 330 };
+
+      function syncTheme() {
+        let theme = 'light';
+        try {
+          theme = window.parent.document.documentElement.dataset.theme || 'light';
+        } catch (error) {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = theme;
+      }
+
+      function watchParentTheme() {
+        syncTheme();
+        try {
+          const parentRoot = window.parent.document.documentElement;
+          new MutationObserver(syncTheme).observe(parentRoot, {
+            attributes: true,
+            attributeFilter: ['data-theme']
+          });
+        } catch (error) {
+          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncTheme);
+        }
+      }
+
+      function resizeFrame() {
+        requestAnimationFrame(() => {
+          try {
+            const frame = window.frameElement;
+            if (frame) {
+              frame.style.height = Math.ceil(document.documentElement.scrollHeight + 2) + 'px';
+              frame.style.overflow = 'hidden';
+            }
+          } catch (error) {
+            // The standalone file still works when it is not embedded.
+          }
+        });
+      }
+
+      function svgNode(name, attrs, text) {
+        const node = document.createElementNS('http://www.w3.org/2000/svg', name);
+        Object.entries(attrs || {}).forEach(([key, value]) => node.setAttribute(key, String(value)));
+        if (text !== undefined) node.textContent = text;
+        return node;
+      }
+
+      function add(parent, name, attrs, text) {
+        const node = svgNode(name, attrs, text);
+        parent.appendChild(node);
+        return node;
+      }
+
+      function springPath(x1, x2, y, coils, amplitude) {
+        const lead = Math.min(18, Math.max(10, (x2 - x1) * 0.08));
+        const start = x1 + lead;
+        const end = x2 - lead;
+        const usable = Math.max(1, end - start);
+        const segments = coils * 2;
+        let d = `M ${x1} ${y} L ${start} ${y}`;
+        for (let i = 0; i <= segments; i += 1) {
+          const x = start + usable * (i / segments);
+          const offset = i === 0 || i === segments ? 0 : (i % 2 === 0 ? -amplitude : amplitude);
+          d += ` L ${x} ${y + offset}`;
+        }
+        d += ` L ${x2} ${y}`;
+        return d;
+      }
+
+      function drawWall(group, x, yTop, yBottom, side) {
+        add(group, 'line', { x1: x, y1: yTop, x2: x, y2: yBottom, class: 'wall' });
+        const direction = side === 'left' ? -1 : 1;
+        for (let y = yTop + 4; y < yBottom; y += 10) {
+          add(group, 'line', {
+            x1: x,
+            y1: y,
+            x2: x + direction * 10,
+            y2: y + 8,
+            class: 'wall-hatch'
+          });
+        }
+      }
+
+      function drawArrow(group, x0, x1, y, label, labelOffset) {
+        if (Math.abs(x1 - x0) < 2) {
+          add(group, 'circle', { cx: x0, cy: y, r: 2.5, fill: 'var(--accent)' });
+          add(group, 'text', {
+            x: x0,
+            y: y + labelOffset,
+            'text-anchor': 'middle',
+            class: 'scene-text scene-text--accent'
+          }, `${label} = 0`);
+          return;
+        }
+
+        add(group, 'line', {
+          x1: x0,
+          y1: y,
+          x2: x1,
+          y2: y,
+          class: 'displacement-line',
+          'marker-end': 'url(#arrow-accent)'
+        });
+        add(group, 'text', {
+          x: (x0 + x1) / 2,
+          y: y + labelOffset,
+          'text-anchor': 'middle',
+          class: 'scene-text scene-text--accent'
+        }, label);
+      }
+
+      function drawRuler(group, x1, x2, y, label, current) {
+        const cls = current ? 'ruler ruler--current' : 'ruler';
+        add(group, 'line', { x1, y1: y, x2, y2: y, class: cls });
+        add(group, 'line', { x1, y1: y - 6, x2: x1, y2: y + 6, class: 'ruler-tick', color: current ? 'var(--accent)' : 'var(--muted)' });
+        add(group, 'line', { x1: x2, y1: y - 6, x2, y2: y + 6, class: 'ruler-tick', color: current ? 'var(--accent)' : 'var(--muted)' });
+        add(group, 'text', {
+          x: (x1 + x2) / 2,
+          y: y - 9,
+          'text-anchor': 'middle',
+          class: current ? 'scene-text scene-text--accent' : 'scene-text scene-text--muted'
+        }, label);
+      }
+
+      function renderScene(xANorm, xBNorm) {
+        const width = Math.max(320, Math.round(svg.getBoundingClientRect().width));
+        const height = width <= 480 ? 360 : width <= 760 ? 350 : 330;
+        if (dimensions.width !== width || dimensions.height !== height) {
+          dimensions = { width, height };
+          svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+          svg.style.height = `${height}px`;
+        }
+
+        drawing.replaceChildren();
+
+        const compact = width < 580;
+        const wallInset = compact ? 18 : 28;
+        const massW = compact ? 58 : 76;
+        const massH = compact ? 46 : 54;
+        const eqA = width * (compact ? 0.31 : 0.315);
+        const eqB = width * (compact ? 0.69 : 0.685);
+        const amplitude = Math.max(18, Math.min(48, width * 0.065));
+        const xA = xANorm * amplitude;
+        const xB = xBNorm * amplitude;
+        const a = eqA + xA;
+        const b = eqB + xB;
+        const massY = compact ? 142 : 138;
+        const centerY = massY + massH / 2;
+        const leftWall = wallInset;
+        const rightWall = width - wallInset;
+        const leftEdgeA = a - massW / 2;
+        const rightEdgeA = a + massW / 2;
+        const leftEdgeB = b - massW / 2;
+        const rightEdgeB = b + massW / 2;
+        const extension = xB - xA;
+        const springState = Math.abs(extension) < 1.2 ? 'neutral' : extension > 0 ? 'stretched' : 'compressed';
+        const springClass = springState === 'stretched'
+          ? 'spring spring--coupling spring--stretched'
+          : springState === 'compressed'
+            ? 'spring spring--coupling spring--compressed'
+            : 'spring spring--coupling';
+
+        add(drawing, 'line', {
+          x1: leftWall,
+          y1: centerY,
+          x2: rightWall,
+          y2: centerY,
+          class: 'baseline'
+        });
+
+        drawWall(drawing, leftWall, centerY - 34, centerY + 34, 'left');
+        drawWall(drawing, rightWall, centerY - 34, centerY + 34, 'right');
+
+        [eqA, eqB].forEach((x, index) => {
+          add(drawing, 'line', {
+            x1: x,
+            y1: compact ? 34 : 30,
+            x2: x,
+            y2: compact ? 310 : 288,
+            class: 'equilibrium'
+          });
+          add(drawing, 'text', {
+            x,
+            y: compact ? 26 : 22,
+            'text-anchor': 'middle',
+            class: 'scene-text scene-text--muted'
+          }, index === 0 ? 'A₀' : 'B₀');
+        });
+
+        add(drawing, 'path', {
+          d: springPath(leftWall, leftEdgeA, centerY, compact ? 5 : 7, 7),
+          class: 'spring'
+        });
+        add(drawing, 'path', {
+          d: springPath(rightEdgeA, leftEdgeB, centerY, compact ? 7 : 10, 9),
+          class: springClass
+        });
+        add(drawing, 'path', {
+          d: springPath(rightEdgeB, rightWall, centerY, compact ? 5 : 7, 7),
+          class: 'spring'
+        });
+
+        add(drawing, 'rect', {
+          x: leftEdgeA,
+          y: massY,
+          width: massW,
+          height: massH,
+          rx: compact ? 5 : 6,
+          class: 'mass'
+        });
+        add(drawing, 'rect', {
+          x: leftEdgeB,
+          y: massY,
+          width: massW,
+          height: massH,
+          rx: compact ? 5 : 6,
+          class: 'mass'
+        });
+
+        add(drawing, 'text', {
+          x: a,
+          y: massY - 10,
+          'text-anchor': 'middle',
+          class: 'scene-text scene-text--accent'
+        }, 'A');
+        add(drawing, 'text', {
+          x: b,
+          y: massY - 10,
+          'text-anchor': 'middle',
+          class: 'scene-text scene-text--accent'
+        }, 'B');
+        add(drawing, 'text', {
+          x: a,
+          y: centerY + 6,
+          'text-anchor': 'middle',
+          class: 'scene-text scene-text--mass'
+        }, 'm');
+        add(drawing, 'text', {
+          x: b,
+          y: centerY + 6,
+          'text-anchor': 'middle',
+          class: 'scene-text scene-text--mass'
+        }, 'm');
+
+        const arrowY = compact ? 82 : 76;
+        drawArrow(drawing, eqA, a, arrowY, 'x_A', -9);
+        drawArrow(drawing, eqB, b, arrowY, 'x_B', -9);
+
+        const couplingLabel = compact
+          ? (springState === 'neutral' ? 'κ · unchanged' : springState === 'stretched' ? 'κ · stretched' : 'κ · compressed')
+          : (springState === 'neutral' ? 'coupling spring κ · unchanged' : springState === 'stretched' ? 'coupling spring κ · stretched' : 'coupling spring κ · compressed');
+
+        add(drawing, 'text', {
+          x: (rightEdgeA + leftEdgeB) / 2,
+          y: massY + massH + (compact ? 25 : 27),
+          'text-anchor': 'middle',
+          class: springState === 'neutral' ? 'scene-text scene-text--muted' : 'scene-text scene-text--accent'
+        }, couplingLabel);
+
+        const rulerY0 = compact ? 274 : 262;
+        const rulerY = compact ? 324 : 304;
+        drawRuler(drawing, eqA, eqB, rulerY0, 'equilibrium separation  L₀', false);
+        drawRuler(drawing, a, b, rulerY, 'current separation  L', true);
+      }
+
+      function updateReadout() {
+        const mode = modes[activeMode];
+        relationReadout.innerHTML = mode.relation;
+        extensionReadout.innerHTML = mode.extension;
+        consequenceReadout.innerHTML = mode.consequence;
+      }
+
+      function setMode(mode) {
+        activeMode = mode;
+        modeButtons.forEach(button => {
+          button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+        });
+        phase = mode === 'together' ? 0.82 : mode === 'opposite' ? 0.65 : 0.72;
+        updateReadout();
+      }
+
+      function togglePause() {
+        paused = !paused;
+        pauseButton.setAttribute('aria-pressed', String(paused));
+        pauseButton.textContent = paused ? 'play' : 'pause';
+      }
+
+      function animate(now) {
+        const delta = Math.min(64, now - lastTime);
+        lastTime = now;
+        if (!paused) phase += delta * 0.00125;
+        const [xA, xB] = modes[activeMode].motion(phase);
+        renderScene(xA, xB);
+        requestAnimationFrame(animate);
+      }
+
+      modeButtons.forEach(button => {
+        button.addEventListener('click', () => setMode(button.dataset.mode));
+      });
+      pauseButton.addEventListener('click', togglePause);
+
+      watchParentTheme();
+      setMode(activeMode);
+      pauseButton.setAttribute('aria-pressed', String(paused));
+      pauseButton.textContent = paused ? 'play' : 'pause';
+
+      new ResizeObserver(() => {
+        const [xA, xB] = modes[activeMode].motion(phase);
+        renderScene(xA, xB);
+        resizeFrame();
+      }).observe(document.body);
+
+      window.addEventListener('load', resizeFrame);
+      document.fonts && document.fonts.ready.then(resizeFrame);
+      requestAnimationFrame(animate);
+    }());
+  </script>
 </body>
 </html>

@@ -644,8 +644,8 @@
         </div>
 
         <div class="order-block">
-          <span>Place an exact integer number of wavelengths in the extra path</span>
-          <div class="order-buttons" role="group" aria-label="Set exact Bragg diffraction order">
+          <span>Snap the wavelength slider above to place exactly <em>m</em> whole wavelengths in the added path, at the current angle θ. This solves the Bragg condition <span class="math">m λ<sub>medium</sub> = 2Λ sin θ</span> for λ<sub>medium</sub> and moves the slider there.</span>
+          <div class="order-buttons" role="group" aria-label="Snap wavelength slider to exact Bragg diffraction order">
             <button type="button" data-order="1">m = 1</button>
             <button type="button" data-order="2">m = 2</button>
             <button type="button" data-order="3">m = 3</button>
@@ -944,6 +944,46 @@
           { width: 108, fill: "var(--path-soft)", stroke: "var(--path)", color: "var(--path)", fontSize: 20 }
         );
 
+        // Right-angle markers at C and D showing that AC ⊥ CB and AD ⊥ BD.
+        // Each is a small square aligned with the two legs of the triangle at that corner.
+        const rightAngleSize = 12;
+        // At C: one leg is A→C (direction from A to C), other leg is C→B (direction of the ray, uIn)
+        (function () {
+          const AC = { x: C.x - A.x, y: C.y - A.y };
+          const lenAC = Math.hypot(AC.x, AC.y) || 1;
+          const AChat = { x: AC.x / lenAC, y: AC.y / lenAC };
+          const p1 = C;
+          const p2 = { x: C.x - rightAngleSize * AChat.x, y: C.y - rightAngleSize * AChat.y };
+          const p3 = { x: p2.x - rightAngleSize * uIn.x, y: p2.y - rightAngleSize * uIn.y };
+          const p4 = { x: C.x - rightAngleSize * uIn.x, y: C.y - rightAngleSize * uIn.y };
+          geometryGroup.appendChild(el("polyline", {
+            points: `${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`,
+            fill: "none", stroke: "var(--path)", "stroke-width": 1.8
+          }));
+        }());
+        // At D: one leg is A→D, other leg is D→B (direction -uOut, since ray goes B→D on outgoing)
+        (function () {
+          const AD = { x: D.x - A.x, y: D.y - A.y };
+          const lenAD = Math.hypot(AD.x, AD.y) || 1;
+          const ADhat = { x: AD.x / lenAD, y: AD.y / lenAD };
+          const p2 = { x: D.x - rightAngleSize * ADhat.x, y: D.y - rightAngleSize * ADhat.y };
+          const p3 = { x: p2.x + rightAngleSize * uOut.x, y: p2.y + rightAngleSize * uOut.y };
+          const p4 = { x: D.x + rightAngleSize * uOut.x, y: D.y + rightAngleSize * uOut.y };
+          geometryGroup.appendChild(el("polyline", {
+            points: `${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`,
+            fill: "none", stroke: "var(--path)", "stroke-width": 1.8
+          }));
+        }());
+
+        // Draw the AB segment (vertical) so the reader can see Λ as the hypotenuse of both triangles.
+        geometryGroup.appendChild(line(A.x, A.y, B.x, B.y, {
+          stroke: "var(--accent)", "stroke-width": 2.2, "stroke-dasharray": "5 5", opacity: 0.9
+        }));
+        // Λ label on the vertical AB
+        labelBox(geometryGroup, A.x + 24, (A.y + B.y) / 2, "Λ", {
+          width: 36, height: 30, fill: "var(--accent-soft)", stroke: "var(--accent)", color: "var(--accent)", fontSize: 20
+        });
+
         // Angle arc measured from the plane, not the normal.
         geometryGroup.appendChild(el("path", {
           d: arcPath(A.x, A.y, 69, theta),
@@ -1139,73 +1179,5 @@
       render();
     })();
   </script>
-
-<script data-article-visualization-bridge>
-/* Height-sync bridge with the parent article page. This version is
-   drift-free: it never adds a fudge factor to the reported height, it
-   never writes window.frameElement.style.height directly (which
-   raced with the parent's own write), and it measures the article
-   content (`.viz`) rather than `document.body`/`document.documentElement`,
-   whose scrollHeight follows the viewport height and therefore fed
-   back into itself once the parent applied the reported number.
-   A last-reported memo cheaply de-dupes identical measurements so we
-   don't send a message on every animation frame. */
-(() => {
-  const root = document.documentElement;
-  const syncTheme = () => {
-    try {
-      const theme = window.parent.document.documentElement.dataset.theme;
-      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
-    } catch (_) {}
-  };
-  let lastReported = 0;
-  const report = () => {
-    /* Measure the article content itself rather than body/documentElement.
-       body.scrollHeight and root.scrollHeight both include the viewport's
-       own dimensions once the iframe has been sized by the parent, so
-       reading them creates a feedback loop with the parent's iframe.style.
-       .viz sits at the top of the flow, doesn't depend on viewport height,
-       and gives a stable content measurement. */
-    const target = document.querySelector(".viz") || document.body;
-    const rect = target.getBoundingClientRect();
-    const height = Math.max(1, Math.ceil(rect.bottom + window.scrollY));
-    /* De-dup identical reports without any accumulating fudge. The parent
-       has its own hysteresis, but sending fewer messages avoids waking
-       its handler needlessly. */
-    if (Math.abs(height - lastReported) < 2) return;
-    lastReported = height;
-    try {
-      window.parent.postMessage(
-        { type: "article-visualization:resize", height },
-        window.location.origin
-      );
-    } catch (_) {}
-  };
-  syncTheme();
-  try {
-    new MutationObserver(() => { syncTheme(); report(); })
-      .observe(window.parent.document.documentElement, {
-        attributes: true,
-        attributeFilter: ["data-theme"],
-      });
-  } catch (_) {}
-  window.addEventListener("load", report, { once: true });
-  /* Deliberately do NOT listen for `resize` on the iframe's own window.
-     That event fires whenever the parent applies iframe.style.height,
-     which turns any tiny mismatch between our measurement and the
-     applied value into a feedback loop that grows on every frame. */
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(report).catch(() => {});
-  }
-  if ("ResizeObserver" in window) {
-    /* Observe the content, not the body. Watching body reflects the
-       viewport (which the parent controls) back into our height
-       report — that was the runaway. */
-    const target = document.querySelector(".viz") || document.body;
-    new ResizeObserver(report).observe(target);
-  }
-  requestAnimationFrame(report);
-})();
-</script>
 </body>
 </html>
