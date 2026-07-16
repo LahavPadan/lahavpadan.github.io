@@ -52,16 +52,17 @@
   {% endif %}
   {% if page.math %}
   {%- comment -%}
-  Block equations arrive already wrapped in div.math-block from the
-  mathjax_block engine. The article reaches its final shape before MathJax
-  scans it, and MathJax owns every node it emits from then on.
+  The build hands MathJax finished delimiters: _plugins/markdown_preprocessor.rb
+  rewrites authored `$…$` into Kramdown's span math, and
+  _plugins/kramdown_math_engine.rb wraps every block equation in div.math-block.
+  Every equation therefore arrives as \(…\) or \[…\], and MathJax has no reason
+  to look for a dollar sign — so a dollar sign in prose stays a dollar sign.
   {%- endcomment -%}
-  <script src="{{ '/assets/js/mathjax-setup.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
   <script>
     window.MathJax = {
       tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
       },
       svg: { fontCache: 'global' },
       options: {
@@ -69,9 +70,9 @@
       },
       startup: {
         /* MathJax reaches pageReady as soon as its bundle finishes loading,
-           which can be while the parser is still inside <body>. Preparation
-           has to see the whole article, so wait for DOMContentLoaded before
-           restructuring, and restructure before the document scan begins. */
+           which can be while the parser is still inside <body>. Guided reading
+           has to see the whole article, and has to finish before the document
+           scan begins, so it runs between DOMContentLoaded and the scan. */
         pageReady: function () {
           var domReady = document.readyState === 'loading'
             ? new Promise(function (resolve) {
@@ -81,10 +82,15 @@
 
           return domReady
             .then(function () {
-              window.__lahavMathPrep();
+              {%- if page.reading_mode == "guided" %}
+              window.__lahavPrepareGuidedReading();
+              {%- endif %}
               return MathJax.startup.defaultPageReady();
             })
-            .then(window.__lahavMathPost);
+            .then(function () {
+              document.documentElement.dataset.mathReady = 'true';
+              document.dispatchEvent(new CustomEvent('lahav:math-ready'));
+            });
         }
       }
     };

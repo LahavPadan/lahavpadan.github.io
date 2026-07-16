@@ -403,9 +403,7 @@
   function prepareGuidedReading() {
     var page = document.querySelector('.post-page--guided');
     var prose = page && page.querySelector('.article-prose[data-reading-mode="guided"]');
-    if (!page || !prose || prose.dataset.guidedReady === 'true') return;
-
-    prose.dataset.guidedReady = 'true';
+    if (!prose) return;
 
     var internalTitle = directChildren(prose, 'h1')[0];
     if (internalTitle) internalTitle.classList.add('article-internal-title');
@@ -428,11 +426,15 @@
     document.dispatchEvent(new CustomEvent('lahav:guided-ready'));
   }
 
+  /**
+   * Restructuring has to happen before MathJax scans the article, so on a page
+   * that loads MathJax its startup calls this and owns the ordering. Deferred
+   * scripts run after parsing, so the tag is present here exactly when the
+   * layout emitted it.
+   */
   window.__lahavPrepareGuidedReading = prepareGuidedReading;
 
-  if (document.readyState === 'loading') {
+  if (!document.getElementById('MathJax-script')) {
     document.addEventListener('DOMContentLoaded', prepareGuidedReading, { once: true });
-  } else {
-    prepareGuidedReading();
   }
 }());

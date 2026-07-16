@@ -727,6 +727,8 @@ $$T_n(t) := \tilde y(\arccos t) = \cos(n \arccos t), \qquad \text{equivalently,}
 
 Everything about $T_n$ — orthogonality, node structure, the strength of $T_n$ as a polynomial-approximation basis — follows from the fact that in the $\theta$-variable $T_n$ is literally $\cos(n\theta)$. In the $t$-variable it is a polynomial because the identity $\cos(n\theta) = 2\cos\theta \cos((n-1)\theta) - \cos((n-2)\theta)$ recurses down to $T_0 = 1$ and $T_1 = t$, so $T_n$ is expressible as a polynomial of degree $n$ in $\cos\theta = t$. The sine branch, similarly transported, defines the Chebyshev polynomials of the second kind, which we meet in § 16.
 
+{% include visualization.html src="chebyshev.html#coordinate" title="Chebyshev polynomials as ordinary cosine modes under t equals cos theta" %}
+
 Now trace where the weight $w(t) = 1/\sqrt{1 - t^2}$ comes from. Chebyshev orthogonality demands $\int_{-1}^1 T_m(t) T_n(t) w(t) \, dt = 0$ for $m \neq n$. Change variables to $\theta$: $t = \cos\theta$, $dt = -\sin\theta \, d\theta$, $\theta$ runs from $\pi$ down to $0$ as $t$ runs from $-1$ up to $1$, so
 
 $$\int_{-1}^{1} T_m(t) T_n(t) \, w(t) \, dt = \int_{0}^{\pi} \cos(m \theta) \cos(n \theta) \, w(\cos\theta) \sin\theta \, d\theta.$$
@@ -805,6 +807,8 @@ The group $ISO(2)$ consists of rigid motions of the plane (translations and rota
 
 This is why Bessel functions describe wave modes in cylindrically symmetric geometries: the wave equation in the plane commutes with $ISO(2)$, so its eigenmodes fall into the irreducibles of $ISO(2)$, whose radial matrix coefficients are Bessel functions.
 
+{% include visualization.html src="bessel.html" title="Why circular geometry and plane-wave symmetry produce Bessel modes" %}
+
 ### Chebyshev polynomials from $SU(2)$
 
 The group $SU(2)$ consists of $2 \times 2$ complex matrices $g$ satisfying $g^\dagger g = I$ and $\det g = 1$. It is non-abelian and compact. It is closely related to $SO(3)$: every rotation of 3-space corresponds to two elements of $SU(2)$ (a matrix and its negative), which is why we get different representation-theoretic content from $SU(2)$ than from $SO(3)$.
@@ -826,6 +830,8 @@ The first-kind Chebyshev polynomials $T_n$ arise from taking the *real part* of 
 $$e^{in\theta} + e^{-in\theta} = 2\cos(n\theta) = 2 T_n(\cos\theta).$$
 
 So both kinds of Chebyshev polynomials live inside the character theory of $SU(2)$: $U_{n-1}$ as the full character of the $n$-dimensional irrep, $T_n$ as (half) the trace of the $n$-th power of the fundamental. The trigonometric identity $T_n(\cos\theta) = \cos(n\theta)$ that made the Sturm–Liouville substitution work in § 15 is not a special feature of Chebyshev polynomials — it is the fact that these polynomials are literally sums of $e^{\pm i n \theta}$ evaluated at the eigenvalues of $D_\theta$, and $\theta$ is the natural coordinate on the circle of diagonal elements of $SU(2)$.
+
+{% include visualization.html src="chebyshev.html#trace" title="Chebyshev polynomials from traces of opposite phases" %}
 
 ### The unified picture
 

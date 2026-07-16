@@ -14,14 +14,7 @@ The physical model used to develop the algebra is a pair of coupled mechanical o
 
 Take two masses $m$, one at displacement $x_A$ and one at displacement $x_B$, each pulled back toward its own equilibrium point by a spring of stiffness $k_A$ or $k_B$. In isolation, each mass obeys $m\ddot{x}=-kx$, so a trial motion $x(t)=X\cos(\omega t+\phi)$ gives the natural frequency $\omega=\sqrt{k/m}$. Thus $A$ alone would oscillate at $\omega_A=\sqrt{k_A/m}$ and $B$ alone at $\omega_B=\sqrt{k_B/m}$.
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/coupled-oscillators.html"
-  title="Inspect the endpoint motion of two masses joined by a coupling spring"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="coupled-oscillators.html" title="Inspect the endpoint motion of two masses joined by a coupling spring" %}
 
 #### The middle spring measures separation, not position
 
@@ -199,14 +192,7 @@ This is the **mixing angle**. It has two limiting cases:
 
 At exact tuning, those two combinations can be read directly from the spring motion:
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/exact-tuning-modes.html"
-  title="Common and differential normal modes at exact tuning"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="exact-tuning-modes.html" title="Common and differential normal modes at exact tuning" %}
 
 In the **common mode**, $x_A=x_B$ at every instant, so $\Delta L=x_B-x_A=0$: the coupling spring exerts no force. Its frequency is
 
@@ -264,14 +250,7 @@ $$
 
 This is a hyperbola in the $(\delta,\omega^2-\bar\omega^2)$ plane. The two branches are the two mode frequencies, and at $\delta=0$ they are separated by $2\kappa'$.
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/eigenvalue-gap.html"
-  title="How coupling changes a crossing into an avoided crossing"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="eigenvalue-gap.html" title="How coupling changes a crossing into an avoided crossing" %}
 
 The vertical separation between the branches is the **gap**.
 
@@ -292,14 +271,7 @@ $$
 
 Keeping the sign of $q$ displays the two propagation directions. Plotting $q^2$ instead folds those directions together, so the same relation appears with a different visible geometry. The physical meaning of $q$ depends on the problem — a spatial wavenumber inside a Bragg grating (§ 4), a plane-wave $k_z$ in a waveguide (§ 6), a plasma wavenumber (§ 6) — but the interpretation is universal:
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/hyperbola-propagation.html"
-  title="Propagation, evanescence, and the same relation in three coordinate views"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="hyperbola-propagation.html" title="Propagation, evanescence, and the same relation in three coordinate views" %}
 
 #### Outside the gap ($|\delta|>\kappa$)
 
@@ -525,6 +497,8 @@ Expressing in the vacuum wavelength $\lambda_0 = n_{\text{avg}}\lambda_{\text{me
 
 $$m\lambda_0 = 2 n_{\text{avg}} \Lambda \sin\theta.$$
 
+{% include visualization.html src="bragg-path-difference.html" title="Classical Bragg path difference and constructive reflection" %}
+
 The integer $m$ is the **order** of diffraction. The formula is intuitive but has two limitations that motivate the next two derivations: it treats the reflection as if it happened at discrete planes, and it does not answer why no Bragg reflection exists for $\lambda > 2n_{\text{avg}}\Lambda$ or what the width of the resulting stopband is.
 
 ### Picture 2: elastic scattering with reciprocal-lattice momentum
@@ -542,6 +516,8 @@ Combined with elasticity $|\mathbf{k}_{\text{out}}| = |\mathbf{k}_{\text{in}}| =
 $$m G_1 = 2 k \sin\theta \implies m\lambda_0 = 2 n_{\text{avg}} \Lambda \sin\theta,$$
 
 the same formula as Picture 1.
+
+{% include visualization.html src="bragg-reciprocal-lattice.html" title="Elastic reciprocal-lattice scattering construction" %}
 
 ### Picture 3: Fourier convolution and the master equation
 
@@ -673,6 +649,8 @@ i.e., the discrepancy between the aliased wavenumber $k + nG_1$ and the free-spa
 
 ### The two-wave truncation via amplitude suppression
 
+{% include visualization.html src="two-wave-truncation.html" title="Why the full Fourier matrix reduces to two near-resonant waves" %}
+
 <div class="guided-fold-start" data-guided-version="content-preserving-v2" data-label="Why all Fourier components except two are suppressed" data-tone="derivation"></div>
 
 Take any off-resonant mode, say $E_{+1}$, and solve its master equation row for $E_{+1}$ in terms of the others:
@@ -762,6 +740,8 @@ Section 4 identified the two-wave coupled-mode matrix of a Bragg grating as an i
 This section deals only with the theory of the gyromagnetic material; the device applications (Y-junction circulator, optical isolator, materials selection) are deferred to § 11 alongside the other applications.
 
 ### § 5.1. Gyroscopic precession as the underlying mechanism
+
+{% include visualization.html src="gyroscopic-precession.html" title="Gyroscopic precession as the origin of the transverse response" %}
 
 Angular momentum $\vec{L}$ obeys a first-order equation of motion. If a torque $\vec\tau$ acts on a spinning body, then
 
@@ -936,14 +916,7 @@ Here $v$ is the propagation speed at high frequencies (far above cutoff). Readin
 - $\omega > \omega_c$: propagation, $q$ real, group velocity $v_g = v\sqrt{1 - (\omega_c/\omega)^2}$.
 - $\omega = \omega_c$: $q = 0$, standing wave, $v_g = 0$.
 - $\omega < \omega_c$: evanescent, $q$ imaginary, spatial decay rate $\alpha = \sqrt{\omega_c^2 - \omega^2}/v$.
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/cutoff-propagation.html"
-  title="How one cutoff dispersion curve separates propagating, threshold, and evanescent regimes"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="cutoff-propagation.html" title="How one cutoff dispersion curve separates propagating, threshold, and evanescent regimes" %}
 
 Every setting below is this formula with a specific mechanism setting $\omega_c$.
 
@@ -1060,14 +1033,7 @@ Compare two reflections in a quarter-wave $HL$ stack at the same return plane:
 
 Both reflected amplitudes therefore return with total phase $\pi$ and add constructively. Repeating the argument interface by interface explains why a quarter-wave stack reflects strongly at its design wavelength. Away from that wavelength, the round-trip phase is no longer exactly $\pi$; the resulting phase error accumulates with depth, as quantified in § 7.4.
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/fresnel-quarter-wave-phase.html"
-  title="Fresnel phase and quarter-wave propagation phase compared at one return plane"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="fresnel-quarter-wave-phase.html" title="Fresnel phase and quarter-wave propagation phase compared at one return plane" %}
 
 ### § 7.3. Penetration into a finite Bragg mirror
 
@@ -1165,14 +1131,7 @@ $$
 
 They show why the finite problem cannot be represented by one decaying exponential alone: the far boundary selects a particular combination of the growing and decaying eigen-solutions. As $\kappa L$ increases, that combination approaches the semi-infinite decay over the entrance region.
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/bragg-mirror-penetration.html"
-  title="Infinite-medium decay, finite-boundary envelopes, and Bragg-mirror reflectivity"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="bragg-mirror-penetration.html" title="Infinite-medium decay, finite-boundary envelopes, and Bragg-mirror reflectivity" %}
 
 The dimensionless product $\kappa L=L/L_B$ is the mirror length measured in Bragg lengths. Requiring $R>0.99$ gives
 
@@ -1243,14 +1202,7 @@ The matrix $A(z)$ has zero trace, and a standard theorem on linear ODEs states t
 $$W(z) = E_1(z) E_2'(z) - E_2(z) E_1'(z)$$
 
 of any two solutions $E_1, E_2$; it is proportional to the Poynting flux of any coherent superposition of the two and its preservation is energy conservation in a lossless medium. Matrices with $\det = 1$ form the group $SL(2, \mathbb{R})$ (or $SL(2, \mathbb{C})$ if losses are present), and everything below is the representation theory of $SL(2, \mathbb{R})$ applied to wave propagation.
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/transfer-matrix-cascade.html"
-  title="A local wave state propagated by one transfer matrix and then by a cascade of layer matrices"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="transfer-matrix-cascade.html" title="A local wave state propagated by one transfer matrix and then by a cascade of layer matrices" %}
 
 ### § 8.3. Band structure from the trace
 
@@ -1357,38 +1309,17 @@ Two engineering opportunities follow:
 ### § 9.4. Angular dependence: polarization sensitivity
 
 At normal incidence, both polarizations of the incoming wave see the same reflectivity because the layer normal has no preferred transverse direction. When the wave is incident at an angle $\theta_0$ from the layer normal, three things change simultaneously: the effective path length through each layer becomes $d/\cos\theta_i$ (with $\theta_i$ the in-layer angle from Snell's law), which shifts the Bragg condition; and the two polarizations (transverse-electric TE, and transverse-magnetic TM) see different Fresnel coefficients at each interface, so they now have distinct coupling constants and distinct stopbands.
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/oblique-bragg-phase.html"
-  title="Why oblique incidence shifts the Bragg wavelength through the normal wavevector component"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="oblique-bragg-phase.html" title="Why oblique incidence shifts the Bragg wavelength through the normal wavevector component" %}
 
 The Fresnel coefficients at the interface between $n_1$ and $n_2$ are
 
 $$r_{\text{TE}} = \frac{n_1\cos\theta_1 - n_2\cos\theta_2}{n_1\cos\theta_1 + n_2\cos\theta_2}, \qquad r_{\text{TM}} = \frac{n_2\cos\theta_1 - n_1\cos\theta_2}{n_2\cos\theta_1 + n_1\cos\theta_2}.$$
 
 The two are equal at $\theta_i = 0$; they diverge with angle. Critically, $r_{\text{TM}}$ vanishes at the **Brewster angle** $\theta_B = \arctan(n_2/n_1)$, at which TM light passes through the interface with zero reflection.
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/te-tm-boundary-admittance.html"
-  title="How oblique incidence distinguishes TE and TM boundary admittances"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="te-tm-boundary-admittance.html" title="How oblique incidence distinguishes TE and TM boundary admittances" %}
 
 The consequence for a DBR: when the in-medium angle approaches Brewster's angle, the TM coupling coefficient shrinks toward zero, the TM stopband narrows and eventually disappears, and the DBR becomes a **polarization-selective mirror** — reflecting TE but transmitting TM at the same wavelength. This is exploited in laser cavities to force operation in a single polarization; and it matters in the design of edge-emitting laser waveguides where the internal mode angle is not zero.
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/brewster-stopband-closure.html"
-  title="Why TE reflection increments accumulate while the TM stopband closes at Brewster incidence"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="brewster-stopband-closure.html" title="Why TE reflection increments accumulate while the TM stopband closes at Brewster incidence" %}
 
 At the small internal angles of a VCSEL (§ 10), polarization effects are negligible and normal-incidence design suffices. At the larger internal angles of a strong-confinement waveguide, the two polarizations may need separate designs.
 
@@ -1491,14 +1422,7 @@ $$
 
 The symbol $\mathcal P$ denotes a Cauchy principal value: a symmetric interval around the pole is omitted and then shrunk to zero, so the singular contributions cancel between its two sides.
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/kramers-kronig.html"
-  title="Causality, the contour argument, and the Kramers–Kronig transform pair"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="kramers-kronig.html" title="Causality, the contour argument, and the Kramers–Kronig transform pair" %}
 
 <div class="guided-fold-end"></div>
 

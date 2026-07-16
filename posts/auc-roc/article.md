@@ -64,14 +64,7 @@ $$\text{AUC} = \sum_{k=0}^{N-1} \frac{T_k + T_{k+1}}{2} \cdot (F_{k+1} - F_k)$$
 
 
 <!-- combined-visualizations:auc-area:v1 -->
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/auc-area.html"
-  title="How one ROC segment contributes rectangle and triangle area"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="auc-area.html" title="How one ROC segment contributes rectangle and triangle area" %}
 
 
 When scores are all distinct, each step changes exactly one of $F$ or $T$, and the trapezoid becomes a rectangle. Ties produce diagonal steps and honest trapezoids; we return to what that means below.
@@ -89,14 +82,7 @@ $$\text{AUC} = \Pr[S(x_+) > S(x_-)] + \tfrac{1}{2} \Pr[S(x_+) = S(x_-)]$$
 with ties contributing half. To see why this equals the area, we go back to the sorted walk.
 
 <!-- combined-visualizations:auc-ranking:v1 -->
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="./visualizations/auc-ranking.html"
-  title="AUC as positive-versus-negative ranking probability"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="auc-ranking.html" title="AUC as positive-versus-negative ranking probability" %}
 
 
 Area accumulates under the curve only when we take a rightward step: a rightward step at height $T$ adds a rectangle of area $(1/|N|) \cdot T$. Upward steps add nothing (zero width).

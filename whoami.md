@@ -32,9 +32,9 @@ permalink: /whoami/
   <div class="whoami__resources">
     <section class="whoami-panel" aria-labelledby="reading-title">
       <h2 id="reading-title">blogs I would recommend to others</h2>
-      <ul class="reading-list">
+      <ul class="reading-list whoami-blog-grid">
         {% for blog in profile.recommended_blogs %}
-        <li>
+        <li class="whoami-blog-card">
           <a href="{{ blog.url }}" rel="noopener">{{ blog.name }}</a>
           {% if blog.note %}<span>{{ blog.note }}</span>{% endif %}
         </li>

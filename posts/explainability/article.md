@@ -153,14 +153,7 @@ $$
 
 Thus the eigenvectors identify orthogonal directions in feature-space, while each eigenvalue measures how much the training samples spread along its direction, up to the usual normalization by the number of samples. A near-dependency is a direction $q_i$ for which a weighted combination of the columns almost vanishes: $Xq_i\approx 0$. The sample projections then form a tight cluster rather than a broad spread, and $\lambda_i=\|Xq_i\|^2$ is tiny.
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="compact"
-  src="assets/feature-space-eigendirections.html"
-  title="How the eigenvectors and eigenvalues of X transpose X encode spread in feature space"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="assets/feature-space-eigendirections.html" title="How the eigenvectors and eigenvalues of X transpose X encode spread in feature space" layout="compact" %}
 
 The per-coefficient variance is the $j$-th diagonal element of $\sigma^2 (X^\top X)^{-1}$:
 
@@ -293,14 +286,7 @@ which unpacks componentwise to "$\text{sign}(\beta_j)$ equals a specific number 
 - $\ell_1$ : spreads weight arbitrarily (all weights same sign).
 - $\ell_2$ : spreads weight evenly.
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="assets/identical-feature-regularization.html"
-  title="How L1 and L2 regularization distribute weight between identical features"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="assets/identical-feature-regularization.html" title="How L1 and L2 regularization distribute weight between identical features" %}
 
 <div class="guided-fold-start" data-label="Why ℓ₁ distributes identical-feature weight arbitrarily" data-tone="proof"></div>
 
@@ -331,14 +317,7 @@ Meaning that $\ell_1$ spreads weight arbitrarily for identical features.
 - $\ell_1$ : chooses the variable with larger scale, and gives $0$ weight to the others.
 - $\ell_2$ : prefers variables with larger scale — spreads weight proportional to scale.
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="assets/dependent-feature-regularization.html"
-  title="Why L1 selects an axis while L2 shares weight for linearly dependent features"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="assets/dependent-feature-regularization.html" title="Why L1 selects an axis while L2 shares weight for linearly dependent features" %}
 
 
 <div class="guided-fold-start" data-label="Why ℓ₁ selects the larger-scale variable" data-tone="derivation"></div>
@@ -544,14 +523,7 @@ Using the notation introduced above, a PDP fixes $x_j$ and averages over $x_{-j}
     - **Range:** $\max f_j(x_j) - \min f_j(x_j)$.
     - **Variance:** The variance of $f_j(x_j)$ over the distribution of $x_j$.
 
-<iframe
-  class="article-visualization"
-  data-article-visualization="responsive"
-  src="assets/partial-dependence.html"
-  title="How a partial dependence plot averages predictions and can hide heterogeneous effects"
-  loading="lazy"
-  scrolling="no"
-></iframe>
+{% include visualization.html src="assets/partial-dependence.html" title="How a partial dependence plot averages predictions and can hide heterogeneous effects" %}
 
 #### Disadvantages of Partial Dependence Plots:
 
