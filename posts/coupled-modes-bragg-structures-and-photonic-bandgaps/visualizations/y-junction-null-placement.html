@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Y-junction circulator: 30-degree null placement</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: var(--viz-page, #fbfbf8);
+  --surface: var(--viz-surface, #ffffff);
+  --surface-muted: var(--viz-surface-muted, #f4f5f1);
+  --ink: var(--viz-ink, #1c2420);
+  --muted: var(--viz-muted, #667169);
+  --border: var(--viz-border, #d6ddd7);
+  --border-strong: var(--viz-border-strong, #a6b2a9);
+  --accent: var(--viz-accent, #85295e);
+  --accent-soft: var(--viz-accent-soft, #fdeef6);
+  --accent-ink: var(--viz-accent-ink, #70204d);
+  --secondary: color-mix(in oklab, var(--accent) 67%, var(--ink));
+  --secondary-soft: color-mix(in srgb, var(--accent-soft) 72%, var(--surface));
+  --tertiary: color-mix(in oklab, var(--accent) 46%, var(--muted));
+  --positive-lobe: var(--accent);
+  --negative-lobe: var(--secondary);
+  --input: var(--accent-ink);
+  --output: color-mix(in oklab, var(--accent) 72%, #0b7b61);
+  --isolated: var(--muted);
+  --sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "STIX Two Text", Georgia, "Times New Roman", serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: var(--viz-page, #101511);
+  --surface: var(--viz-surface, #171e19);
+  --surface-muted: var(--viz-surface-muted, #1d2720);
+  --ink: var(--viz-ink, #e9efeb);
+  --muted: var(--viz-muted, #a7b5aa);
+  --border: var(--viz-border, #344138);
+  --border-strong: var(--viz-border-strong, #617168);
+  --accent: var(--viz-accent, #ffb9df);
+  --accent-soft: var(--viz-accent-soft, #3f2033);
+  --accent-ink: var(--viz-accent-ink, #ffb9df);
+}
+* { box-sizing: border-box; }
+.intro-line { display: block; }
+.intro-line + .intro-line { margin-top: 3px; }
+.state-math { display: grid; gap: 8px; }
+.state-line {
+  padding: 10px 11px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface-muted);
+  font-size: .96rem;
+  line-height: 1.5;
+}
+.state-line strong {
+  color: var(--accent-ink);
+  font: 800 .72rem/1.2 var(--sans);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+html, body {
+  margin: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  background: transparent;
+  color: var(--ink);
+}
+body {
+  padding: clamp(10px, 2.4vw, 24px);
+  font-family: var(--serif);
+}
+button { font: inherit; }
+.viz {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.viz__header {
+  padding: clamp(20px, 3.5vw, 34px);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 72%);
+}
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--accent-ink);
+  font: 700 .69rem/1 var(--sans);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(1.45rem, 3.5vw, 2.3rem);
+  font-weight: 500;
+  letter-spacing: -.035em;
+  line-height: 1.12;
+}
+.viz__header p {
+  max-width: 790px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: clamp(.94rem, 1.8vw, 1.05rem);
+  line-height: 1.58;
+}
+.controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+.control-group {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 13px 16px;
+}
+.control-group + .control-group { border-left: 1px solid var(--border); }
+.control-label {
+  color: var(--muted);
+  font: 700 .69rem/1 var(--sans);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.segmented {
+  display: flex;
+  min-width: 0;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+}
+.segmented button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font: 700 .76rem/1.1 var(--sans);
+  cursor: pointer;
+}
+.segmented button:first-child { border-left: 0; }
+.segmented button:hover { color: var(--ink); background: var(--surface-muted); }
+.segmented button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--page);
+}
+.segmented button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.28fr) minmax(290px, .72fr);
+  min-width: 0;
+}
+.diagram-panel {
+  min-width: 0;
+  padding: clamp(14px, 2.4vw, 24px);
+  border-right: 1px solid var(--border);
+  background:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px),
+    var(--surface);
+  background-size: 28px 28px;
+  background-position: -1px -1px;
+}
+.diagram-shell {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1.18 / 1;
+  max-height: 560px;
+  margin: 0 auto;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+}
+#diskSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.svg-label {
+  font-family: var(--sans);
+  fill: var(--ink);
+}
+.svg-muted { fill: var(--muted); }
+.svg-port-name { font-size: 17px; font-weight: 800; }
+.svg-port-angle { font-size: 12px; font-weight: 600; }
+.svg-status { font-size: 12px; font-weight: 800; letter-spacing: .02em; }
+.svg-axis-label { font-size: 13px; font-weight: 700; }
+.svg-angle-label { font-size: 14px; font-weight: 800; fill: var(--accent-ink); }
+.readout {
+  min-width: 0;
+  background: var(--surface);
+}
+.readout__block {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.readout__block:last-child { border-bottom: 0; }
+.readout__title {
+  margin: 0 0 6px;
+  font: 800 .72rem/1.2 var(--sans);
+  letter-spacing: .075em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+.formula {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1rem, 2.2vw, 1.16rem);
+  line-height: 1.55;
+}
+.formula i { font-style: italic; }
+.formula sub { font-size: .7em; }
+.formula-note {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font: .78rem/1.5 var(--sans);
+}
+.sample-list {
+  display: grid;
+  gap: 13px;
+  margin-top: 15px;
+}
+.sample {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+.sample__port {
+  font: 800 .78rem/1 var(--sans);
+  color: var(--ink);
+}
+.sample__track {
+  position: relative;
+  height: 17px;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+.sample__track::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: var(--border-strong);
+}
+.sample__bar {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  width: 0;
+  background: var(--accent);
+  transition: left .34s ease, width .34s ease, background-color .2s ease;
+}
+.sample[data-sign="negative"] .sample__bar { background: var(--secondary); }
+.sample[data-sign="zero"] .sample__bar { background: var(--isolated); }
+.sample__value {
+  min-width: 64px;
+  text-align: right;
+  font: 700 .76rem/1 var(--mono);
+  color: var(--muted);
+}
+.sample__role {
+  grid-column: 2 / -1;
+  margin-top: -6px;
+  font: 700 .66rem/1.2 var(--sans);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sample__role[data-role="input"] { color: var(--input); }
+.sample__role[data-role="output"] { color: var(--output); }
+.sample__role[data-role="isolated"] { color: var(--isolated); }
+.route-result {
+  display: grid;
+  gap: 8px;
+}
+.route-result__line {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.4;
+}
+.route-result__line strong {
+  color: var(--accent-ink);
+  font-family: var(--sans);
+  font-size: .95em;
+}
+.route-result__reason {
+  margin: 0;
+  color: var(--muted);
+  font: .82rem/1.55 var(--sans);
+}
+.geometry {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  border-top: 1px solid var(--border);
+}
+.geometry__proof,
+.geometry__routes {
+  min-width: 0;
+  padding: clamp(18px, 2.8vw, 28px);
+}
+.geometry__proof { border-right: 1px solid var(--border); }
+.geometry h2 {
+  margin: 0 0 13px;
+  font: 800 .74rem/1.2 var(--sans);
+  letter-spacing: .075em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+.proof-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--border);
+}
+.proof-step {
+  min-width: 0;
+  padding: 13px 14px;
+  background: var(--surface-muted);
+}
+.proof-step + .proof-step { border-left: 1px solid var(--border); }
+.proof-step__label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font: 700 .65rem/1 var(--sans);
+  text-transform: uppercase;
+  letter-spacing: .055em;
+}
+.proof-step__math {
+  display: block;
+  font-size: clamp(.92rem, 1.9vw, 1.06rem);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.proof-conclusion {
+  margin: 13px 0 0;
+  padding-left: 13px;
+  border-left: 3px solid var(--accent);
+  color: var(--ink);
+  line-height: 1.55;
+}
+.route-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.route-card {
+  min-width: 0;
+  padding: 11px 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  color: var(--ink);
+  text-align: center;
+  cursor: pointer;
+}
+.route-card:hover { border-color: var(--accent); }
+.route-card[aria-current="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.route-card__path {
+  display: block;
+  font: 800 .82rem/1.2 var(--sans);
+  white-space: nowrap;
+}
+.route-card__iso {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font: 700 .64rem/1.25 var(--sans);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.bias-explanation {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font: .8rem/1.5 var(--sans);
+}
+.bias-explanation strong { color: var(--ink); }
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  padding: 13px 18px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font: .71rem/1.3 var(--sans);
+}
+.legend__item { display: inline-flex; align-items: center; gap: 7px; }
+.legend__line {
+  width: 25px;
+  height: 0;
+  border-top: 2px solid var(--accent);
+}
+.legend__line--node { border-top-style: dashed; border-top-color: var(--muted); }
+.legend__swatch { width: 12px; height: 12px; border-radius: 50%; background: var(--positive-lobe); }
+.legend__swatch--negative { background: var(--negative-lobe); }
+@media (max-width: 820px) {
+  .controls { grid-template-columns: 1fr; }
+  .control-group + .control-group { border-left: 0; border-top: 1px solid var(--border); }
+  .main { grid-template-columns: 1fr; }
+  .diagram-panel { border-right: 0; border-bottom: 1px solid var(--border); }
+  .diagram-shell { aspect-ratio: 1.28 / 1; max-height: 520px; }
+  .geometry { grid-template-columns: 1fr; }
+  .geometry__proof { border-right: 0; border-bottom: 1px solid var(--border); }
+}
+@media (max-width: 560px) {
+  body { padding: 8px; }
+  .viz__header { padding: 18px; }
+  .control-group { grid-template-columns: 1fr; gap: 8px; }
+  .segmented button { padding: 9px 6px; font-size: .7rem; }
+  .diagram-panel { padding: 10px; }
+  .diagram-shell { aspect-ratio: 1 / 1; }
+  .readout__block { padding: 17px; }
+  .proof-steps { grid-template-columns: 1fr; }
+  .proof-step + .proof-step { border-left: 0; border-top: 1px solid var(--border); }
+  .route-grid { grid-template-columns: 1fr; }
+  .route-card { display: grid; grid-template-columns: 1fr auto; align-items: center; text-align: left; }
+  .route-card__iso { margin-top: 0; }
+  .legend { gap: 9px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+<article aria-labelledby="viz-title" class="viz">
+<header class="viz__header">
+<p class="eyebrow">Y-junction circulator · null placement</p>
+<h1 id="viz-title">A 30° rotation puts a dipole null exactly on one port</h1>
+<p><span class="intro-line">φ is the angle around the disk, measured from the ray toward P1 and increasing counterclockwise.</span><span class="intro-line">φₐ is the angle of the antinode axis.</span><span class="intro-line">The nodal diameter is perpendicular to the antinode axis, so its directions satisfy φ = φₐ ± 90°.</span><span class="intro-line">The dipole field is E(φ) ∝ cos(φ − φₐ).</span></p>
+</header>
+<div aria-label="Visualization controls" class="controls">
+<div class="control-group">
+<span class="control-label">Input port</span>
+<div aria-label="Choose the input port" class="segmented" id="inputControls" role="group">
+<button aria-pressed="true" data-input="P1" type="button">P1</button>
+<button aria-pressed="false" data-input="P2" type="button">P2</button>
+<button aria-pressed="false" data-input="P3" type="button">P3</button>
+</div>
+</div>
+<div class="control-group">
+<span class="control-label">Pattern rotation</span>
+<div aria-label="Choose the gyrotropic rotation" class="segmented" id="biasControls" role="group">
+<button aria-pressed="false" data-bias="0" type="button">No bias · 0°</button>
+<button aria-pressed="true" data-bias="1" type="button">+B₀ · +30°</button>
+<button aria-pressed="false" data-bias="-1" type="button">−B₀ · −30°</button>
+</div>
+</div>
+</div>
+<div class="main">
+<section aria-label="Ferrite disk and dipole field pattern" class="diagram-panel">
+<div class="diagram-shell">
+<svg aria-labelledby="diskTitle diskDesc" id="diskSvg" role="img" viewbox="0 0 640 540">
+<title id="diskTitle">Dipole null placement in a three-port ferrite circulator</title>
+<desc id="diskDesc">A circular ferrite disk has ports P1, P2, and P3 spaced by 120 degrees. The colored dipole lobes and antinode axis rotate by zero, plus 30, or minus 30 degrees relative to the selected input. The perpendicular dashed nodal diameter lands on the isolated port.</desc>
+<defs>
+<marker id="arrowInput" markerheight="7" markerwidth="7" orient="auto" refx="8.1" refy="5" viewbox="0 0 10 10">
+<path d="M1,1 L9,5 L1,9" fill="none" stroke="var(--input)" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</marker>
+<marker id="arrowOutput" markerheight="7" markerwidth="7" orient="auto" refx="8.1" refy="5" viewbox="0 0 10 10">
+<path d="M1,1 L9,5 L1,9" fill="none" stroke="var(--output)" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</marker>
+<marker id="arrowAngle" markerheight="6" markerwidth="6" orient="auto" refx="8.2" refy="5" viewbox="0 0 10 10">
+<path d="M1,1 L9,5 L1,9" fill="none" stroke="var(--accent)" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</marker>
+<clippath id="diskClip"><circle cx="320" cy="270" r="158"></circle></clippath>
+</defs><circle cx="320" cy="270" fill="var(--surface)" r="159" stroke="var(--border-strong)" stroke-width="2"></circle>
+<circle cx="320" cy="270" fill="none" r="145" stroke="var(--border)" stroke-width="1"></circle>
+<g clip-path="url(#diskClip)">
+<path d="M 320.00 270.00 L 320.00 270.00 L 323.09 274.86 L 326.60 279.42 L 330.49 283.67 L 334.73 287.56 L 339.30 291.06 L 344.16 294.16 L 349.26 296.82 L 354.58 299.02 L 360.08 300.75 L 365.70 302.00 L 371.41 302.75 L 377.16 303.00 L 382.91 302.75 L 388.62 302.00 L 394.24 300.75 L 399.73 299.02 L 405.05 296.82 L 410.16 294.16 L 415.01 291.06 L 419.58 287.56 L 423.83 283.67 L 427.72 279.42 L 431.22 274.86 L 434.32 270.00 L 436.97 264.89 L 439.18 259.57 L 440.91 254.08 L 442.15 248.46 L 442.91 242.75 L 443.16 237.00 L 442.91 231.25 L 442.15 225.54 L 440.91 219.92 L 439.18 214.43 L 436.97 209.11 L 434.32 204.00 L 431.22 199.14 L 427.72 194.58 L 423.83 190.33 L 419.58 186.44 L 415.01 182.94 L 410.16 179.84 L 405.05 177.18 L 399.73 174.98 L 394.24 173.25 L 388.62 172.00 L 382.91 171.25 L 377.16 171.00 L 371.41 171.25 L 365.70 172.00 L 360.08 173.25 L 354.58 174.98 L 349.26 177.18 L 344.16 179.84 L 339.30 182.94 L 334.73 186.44 L 330.49 190.33 L 326.60 194.58 L 323.09 199.14 L 320.00 204.00 L 317.34 209.11 L 315.14 214.43 L 313.41 219.92 L 312.16 225.54 L 311.41 231.25 L 311.16 237.00 L 311.41 242.75 L 312.16 248.46 L 313.41 254.08 L 315.14 259.57 L 317.34 264.89 L 320.00 270.00 L 320.00 270.00 Z" fill="var(--positive-lobe)" id="positiveLobe" opacity=".42"></path>
+<path d="M 320.00 270.00 L 320.00 270.00 L 316.91 265.14 L 313.40 260.58 L 309.51 256.33 L 305.27 252.44 L 300.70 248.94 L 295.84 245.84 L 290.74 243.18 L 285.42 240.98 L 279.92 239.25 L 274.30 238.00 L 268.59 237.25 L 262.84 237.00 L 257.09 237.25 L 251.38 238.00 L 245.76 239.25 L 240.27 240.98 L 234.95 243.18 L 229.84 245.84 L 224.99 248.94 L 220.42 252.44 L 216.17 256.33 L 212.28 260.58 L 208.78 265.14 L 205.68 270.00 L 203.03 275.11 L 200.82 280.43 L 199.09 285.92 L 197.85 291.54 L 197.09 297.25 L 196.84 303.00 L 197.09 308.75 L 197.85 314.46 L 199.09 320.08 L 200.82 325.57 L 203.03 330.89 L 205.68 336.00 L 208.78 340.86 L 212.28 345.42 L 216.17 349.67 L 220.42 353.56 L 224.99 357.06 L 229.84 360.16 L 234.95 362.82 L 240.27 365.02 L 245.76 366.75 L 251.38 368.00 L 257.09 368.75 L 262.84 369.00 L 268.59 368.75 L 274.30 368.00 L 279.92 366.75 L 285.42 365.02 L 290.74 362.82 L 295.84 360.16 L 300.70 357.06 L 305.27 353.56 L 309.51 349.67 L 313.40 345.42 L 316.91 340.86 L 320.00 336.00 L 322.66 330.89 L 324.86 325.57 L 326.59 320.08 L 327.84 314.46 L 328.59 308.75 L 328.84 303.00 L 328.59 297.25 L 327.84 291.54 L 326.59 285.92 L 324.86 280.43 L 322.66 275.11 L 320.00 270.00 L 320.00 270.00 Z" fill="var(--negative-lobe)" id="negativeLobe" opacity=".34"></path>
+<line id="antinodeAxis" stroke="var(--accent)" stroke-linecap="round" stroke-width="2.4" x1="444.71" x2="195.29" y1="198.00" y2="342.00"></line>
+<line id="nodeAxis" stroke="var(--muted)" stroke-dasharray="8 7" stroke-linecap="round" stroke-width="2" x1="243.00" x2="397.00" y1="136.63" y2="403.37"></line>
+</g>
+<g id="portLayer"><g data-port="P1">
+<line stroke="var(--border-strong)" stroke-linecap="butt" stroke-width="10" x1="482.00" x2="538.00" y1="270.00" y2="270.00"></line>
+<line class="port-flow" marker-end="url(#arrowInput)" stroke="var(--input)" stroke-dasharray="none" stroke-linecap="round" stroke-width="3" x1="535.00" x2="484.00" y1="270.00" y2="270.00"></line>
+<circle class="port-cap" cx="538.00" cy="270.00" fill="var(--surface)" r="6" stroke="var(--input)" stroke-width="2"></circle>
+<text class="svg-label svg-port-name" text-anchor="middle" x="571.00" y="275.00">P1</text>
+<text class="svg-label svg-port-angle svg-muted" text-anchor="middle" x="571.00" y="293.00">φ1 = 0°</text>
+<rect class="status-bg" fill="var(--surface)" height="22" rx="5" stroke="var(--input)" width="54.00" x="482.00" y="259.00"></rect>
+<text class="svg-label svg-status" fill="var(--input)" text-anchor="middle" x="509.00" y="274.00">INPUT</text>
+</g><g data-port="P3">
+<line stroke="var(--border-strong)" stroke-linecap="butt" stroke-width="10" x1="239.00" x2="211.00" y1="129.70" y2="81.21"></line>
+<line class="port-flow" stroke="var(--isolated)" stroke-dasharray="5 5" stroke-linecap="round" stroke-width="3" x1="238.00" x2="212.50" y1="127.97" y2="83.80"></line>
+<circle class="port-cap" cx="211.00" cy="81.21" fill="var(--surface)" r="6" stroke="var(--isolated)" stroke-width="2"></circle>
+<text class="svg-label svg-port-name" text-anchor="middle" x="194.50" y="57.63">P3</text>
+<text class="svg-label svg-port-angle svg-muted" text-anchor="middle" x="194.50" y="75.63">φ3 = 120°</text>
+<rect class="status-bg" fill="var(--surface-muted)" height="22" rx="5" stroke="var(--isolated)" width="75.60" x="187.70" y="95.32"></rect>
+<text class="svg-label svg-status" fill="var(--isolated)" text-anchor="middle" x="225.50" y="110.32">ISOLATED</text>
+</g><g data-port="P2">
+<line stroke="var(--border-strong)" stroke-linecap="butt" stroke-width="10" x1="239.00" x2="211.00" y1="410.30" y2="458.79"></line>
+<line class="port-flow" marker-end="url(#arrowOutput)" stroke="var(--output)" stroke-dasharray="none" stroke-linecap="round" stroke-width="3" x1="238.00" x2="212.50" y1="412.03" y2="456.20"></line>
+<circle class="port-cap" cx="211.00" cy="458.79" fill="var(--surface)" r="6" stroke="var(--output)" stroke-width="2"></circle>
+<text class="svg-label svg-port-name" text-anchor="middle" x="194.50" y="492.37">P2</text>
+<text class="svg-label svg-port-angle svg-muted" text-anchor="middle" x="194.50" y="510.37">φ2 = 240°</text>
+<rect class="status-bg" fill="var(--surface)" height="22" rx="5" stroke="var(--output)" width="61.20" x="194.90" y="422.68"></rect>
+<text class="svg-label svg-status" fill="var(--output)" text-anchor="middle" x="225.50" y="437.68">OUTPUT</text>
+</g></g>
+<path d="M 424.00 270.00 A 104 104 0 0 0 410.07 218.00" fill="none" id="rotationArc" marker-end="url(#arrowAngle)" stroke="var(--accent)" stroke-width="2.2"></path>
+<text class="svg-label svg-angle-label" id="rotationLabel" text-anchor="middle" x="443.64" y="240.87">α = +30°</text>
+<g transform="translate(320 270)">
+<circle fill="var(--surface)" r="30" stroke="var(--border-strong)" stroke-width="1.5"></circle>
+<text class="svg-label" font-size="25" font-weight="800" id="biasSymbol" text-anchor="middle" x="0" y="3">⊙</text>
+<text class="svg-label svg-muted" font-size="12" font-weight="700" text-anchor="middle" x="0" y="51">B₀ ⟂ disk</text>
+</g>
+<g id="axisLabels">
+<rect fill="var(--surface)" height="24" id="antinodeLabelBg" rx="5" stroke="var(--border)" width="150" x="148.01" y="314.00"></rect>
+<text class="svg-label svg-axis-label" id="antinodeLabel" text-anchor="middle" x="223.01" y="330.00">antinode · φₐ = 30°</text>
+<rect fill="var(--surface)" height="38" id="nodeLabelBg" rx="5" stroke="var(--border)" width="214" x="187.00" y="161.01"></rect>
+<text class="svg-label svg-axis-label svg-muted" id="nodeLabelLine1" text-anchor="middle" x="264.00" y="177.01">nodal diameter · φ = φₐ ± 90°</text><text class="svg-label svg-port-angle svg-muted" id="nodeLabelLine2" text-anchor="middle">here: φnull = 120°</text>
+</g>
+</svg>
+</div>
+</section>
+<aside aria-live="polite" class="readout"><section class="readout__block">
+<h2 class="readout__title">Port angles</h2>
+<p class="formula">φ<sub>1</sub> = 0°,   φ<sub>3</sub> = 120°,   φ<sub>2</sub> = 240°.</p>
+</section>
+<section class="readout__block">
+<h2 class="readout__title">Current geometry</h2>
+<div class="state-math">
+<div class="state-line" id="stateInputLine"><strong>Input direction</strong><br/>φ<sub>in</sub> = 0°</div>
+<div class="state-line" id="stateAntinodeLine"><strong>Antinode axis</strong><br/>φ<sub>a</sub> = φ<sub>in</sub> + α = 0° + 30° = 30°</div>
+<div class="state-line" id="stateNullLine"><strong>Nodal diameter</strong><br/>φ<sub>null</sub> = φ<sub>a</sub> + 90° = 120°</div>
+</div>
+</section><section class="readout__block">
+<h2 class="readout__title">Field sampled at each port</h2>
+<p class="formula"><i>E</i>(P<sub>j</sub>) / <i>E</i><sub>0</sub> = cos(φ<sub>j</sub> − φ<sub>a</sub>)</p>
+<p class="formula-note">Here φⱼ is the angle of port Pⱼ, and φₐ is the angle of the antinode axis. The sign is field phase, not power; isolation occurs only at zero.</p>
+<div class="sample-list" id="sampleList">
+<div class="sample" data-sign="positive"><span class="sample__port">P1</span><div class="sample__track"><span class="sample__bar" style="width:43.301%;left:50%"></span></div><span class="sample__value">+√3/2</span><span class="sample__role" data-role="input">input</span></div>
+<div class="sample" data-sign="negative"><span class="sample__port">P2</span><div class="sample__track"><span class="sample__bar" style="width:43.301%;left:6.699%"></span></div><span class="sample__value">−√3/2</span><span class="sample__role" data-role="output">output</span></div>
+<div class="sample" data-sign="zero"><span class="sample__port">P3</span><div class="sample__track"><span class="sample__bar" style="width:0%;left:50%"></span></div><span class="sample__value">0</span><span class="sample__role" data-role="isolated">isolated</span></div>
+</div>
+</section>
+<section class="readout__block route-result">
+<h2 class="readout__title">Current routing</h2>
+<p class="route-result__line" id="routeLine"><strong>P1 → P2</strong>, with <strong>P3</strong> isolated.</p>
+<p class="route-result__reason" id="routeReason">P3 lies exactly on the nodal diameter, so E(P3) = 0. The remaining neighboring port has nonzero overlap with the rotated dipole.</p>
+</section>
+
+</aside>
+</div>
+<div class="geometry">
+<section class="geometry__proof">
+<h2>Why the required rotation is 30°</h2>
+<div class="proof-steps">
+<div class="proof-step">
+<span class="proof-step__label">Port spacing</span>
+<span class="proof-step__math">φ<sub>target</sub> − φ<sub>in</sub> = 120°</span>
+</div>
+<div class="proof-step">
+<span class="proof-step__label">Dipole geometry</span>
+<span class="proof-step__math">φ<sub>null</sub> − φ<sub>a</sub> = 90°</span>
+</div>
+<div class="proof-step">
+<span class="proof-step__label">Required shift</span>
+<span class="proof-step__math">α = 120° − 90° = 30°</span>
+</div>
+</div>
+<p class="proof-conclusion">Rotating the antinode axis by +30° rotates the nodal diameter by the same +30°. Reversing the bias changes α to −30°, so the other neighboring port lies on the null.</p>
+</section>
+<section class="geometry__routes">
+<h2 id="routeHeading">Same bias, all three inputs</h2>
+<div class="route-grid" id="routeGrid">
+<button aria-current="true" class="route-card" data-input="P1" type="button"><span class="route-card__path">P1 → P2</span><span class="route-card__iso">P3 isolated</span></button>
+<button aria-current="false" class="route-card" data-input="P2" type="button"><span class="route-card__path">P2 → P3</span><span class="route-card__iso">P1 isolated</span></button>
+<button aria-current="false" class="route-card" data-input="P3" type="button"><span class="route-card__path">P3 → P1</span><span class="route-card__iso">P2 isolated</span></button>
+</div>
+<p class="bias-explanation" id="biasExplanation"><strong>+B₀</strong> fixes α = +30° for every input. Rotating the entire construction by 120° gives the cycle <strong>P1 → P2 → P3 → P1</strong>.</p>
+</section>
+</div>
+<footer aria-label="Diagram legend" class="legend">
+<span class="legend__item"><span class="legend__swatch"></span>positive dipole lobe</span>
+<span class="legend__item"><span class="legend__swatch legend__swatch--negative"></span>opposite field phase</span>
+<span class="legend__item"><span class="legend__line"></span>antinode axis</span>
+<span class="legend__item"><span class="legend__line legend__line--node"></span>nodal diameter</span>
+</footer>
+</article>
+<script>
+(() => {
+  'use strict';
+
+  const ports = {
+    P1: { angle: 0 },
+    P3: { angle: 120 },
+    P2: { angle: 240 }
+  };
+  const portOrder = ['P1', 'P2', 'P3'];
+  const cyclicPlus = { P1: 'P2', P2: 'P3', P3: 'P1' };
+  const isolatedPlus = { P1: 'P3', P2: 'P1', P3: 'P2' };
+  const cyclicMinus = { P1: 'P3', P3: 'P2', P2: 'P1' };
+  const isolatedMinus = { P1: 'P2', P3: 'P1', P2: 'P3' };
+
+  const state = { input: 'P1', bias: 1 };
+  const svg = document.getElementById('diskSvg');
+  const ns = 'http://www.w3.org/2000/svg';
+  const cx = 320;
+  const cy = 270;
+  const diskR = 158;
+  const armInner = 162;
+  const armOuter = 218;
+
+  function normalize(angle) {
+    return ((angle % 360) + 360) % 360;
+  }
+
+  function signedDifference(a, b) {
+    let d = normalize(a - b);
+    if (d > 180) d -= 360;
+    return d;
+  }
+
+  function point(angle, radius) {
+    const t = angle * Math.PI / 180;
+    return { x: cx + radius * Math.cos(t), y: cy - radius * Math.sin(t) };
+  }
+
+  function fmtAngle(angle) {
+    const n = normalize(angle);
+    return `${Math.round(n)}°`;
+  }
+
+  function fieldValue(portAngle, axisAngle) {
+    return Math.cos((portAngle - axisAngle) * Math.PI / 180);
+  }
+
+  function prettyValue(value) {
+    if (Math.abs(value) < 1e-6) return '0';
+    if (Math.abs(Math.abs(value) - 1) < 1e-6) return value > 0 ? '+1' : '−1';
+    if (Math.abs(Math.abs(value) - .5) < 1e-6) return value > 0 ? '+1/2' : '−1/2';
+    if (Math.abs(Math.abs(value) - Math.sqrt(3) / 2) < 1e-6) return value > 0 ? '+√3/2' : '−√3/2';
+    return `${value >= 0 ? '+' : '−'}${Math.abs(value).toFixed(2)}`;
+  }
+
+  function lobePath(axisAngle, positive) {
+    const start = axisAngle + (positive ? -90 : 90);
+    const end = axisAngle + (positive ? 90 : 270);
+    const points = [{ x: cx, y: cy }];
+    const steps = 72;
+    for (let i = 0; i <= steps; i += 1) {
+      const angle = start + (end - start) * i / steps;
+      const c = Math.cos((angle - axisAngle) * Math.PI / 180);
+      const radius = 132 * Math.abs(c);
+      points.push(point(angle, radius));
+    }
+    points.push({ x: cx, y: cy });
+    return points.map((p, i) => `${i ? 'L' : 'M'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' ') + ' Z';
+  }
+
+  function setLine(el, angle, radius) {
+    const a = point(angle, radius);
+    const b = point(angle + 180, radius);
+    el.setAttribute('x1', a.x);
+    el.setAttribute('y1', a.y);
+    el.setAttribute('x2', b.x);
+    el.setAttribute('y2', b.y);
+  }
+
+  function arcPath(startAngle, endAngle, radius) {
+    let delta = signedDifference(endAngle, startAngle);
+    if (Math.abs(delta) < 0.01) return '';
+    const start = point(startAngle, radius);
+    const end = point(startAngle + delta, radius);
+    const sweep = delta < 0 ? 1 : 0;
+    return `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} A ${radius} ${radius} 0 0 ${sweep} ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+  }
+
+  function createSvg(tag, attrs = {}) {
+    const el = document.createElementNS(ns, tag);
+    Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+    return el;
+  }
+
+  function buildPorts() {
+    const layer = document.getElementById('portLayer');
+    layer.textContent = '';
+
+    Object.entries(ports).forEach(([name, port]) => {
+      const group = createSvg('g', { 'data-port': name });
+      const inner = point(port.angle, armInner);
+      const outer = point(port.angle, armOuter);
+      const label = point(port.angle, armOuter + 33);
+      const angleLabel = point(port.angle, armOuter + 53);
+
+      const arm = createSvg('line', {
+        x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y,
+        stroke: 'var(--border-strong)', 'stroke-width': 10, 'stroke-linecap': 'butt'
+      });
+      const flow = createSvg('line', {
+        class: 'port-flow', x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y,
+        stroke: 'transparent', 'stroke-width': 3, 'stroke-linecap': 'round'
+      });
+      const cap = createSvg('circle', {
+        class: 'port-cap', cx: outer.x, cy: outer.y, r: 6,
+        fill: 'var(--surface)', stroke: 'var(--border-strong)', 'stroke-width': 2
+      });
+      const text = createSvg('text', {
+        class: 'svg-label svg-port-name', x: label.x, y: label.y + 5, 'text-anchor': 'middle'
+      });
+      text.textContent = name;
+      const angleText = createSvg('text', {
+        class: 'svg-label svg-port-angle svg-muted', x: label.x, y: label.y + 23, 'text-anchor': 'middle'
+      });
+      angleText.textContent = `φ${name.slice(1)} = ${port.angle}°`;
+      const statusBg = createSvg('rect', { class: 'status-bg', rx: 5, fill: 'var(--surface)', stroke: 'var(--border)' });
+      const status = createSvg('text', { class: 'svg-label svg-status', 'text-anchor': 'middle' });
+
+      group.append(arm, flow, cap, text, angleText, statusBg, status);
+      layer.appendChild(group);
+    });
+  }
+
+  function setStatusBadge(group, text, role, angle) {
+    const status = group.querySelector('.svg-status');
+    const bg = group.querySelector('.status-bg');
+    const pos = point(angle, armOuter - 29);
+    const width = Math.max(54, text.length * 7.2 + 18);
+    const roleColor = role === 'input' ? 'var(--input)' : role === 'output' ? 'var(--output)' : 'var(--isolated)';
+    status.textContent = text;
+    status.setAttribute('x', pos.x);
+    status.setAttribute('y', pos.y + 4);
+    status.setAttribute('fill', roleColor);
+    bg.setAttribute('x', pos.x - width / 2);
+    bg.setAttribute('y', pos.y - 11);
+    bg.setAttribute('width', width);
+    bg.setAttribute('height', 22);
+    bg.setAttribute('fill', role === 'isolated' ? 'var(--surface-muted)' : 'var(--surface)');
+    bg.setAttribute('stroke', roleColor);
+  }
+
+  function updatePortGraphics(output, isolated) {
+    Object.entries(ports).forEach(([name, port]) => {
+      const group = document.querySelector(`[data-port="${name}"]`);
+      const flow = group.querySelector('.port-flow');
+      const cap = group.querySelector('.port-cap');
+      const inner = point(port.angle, armInner + 2);
+      const outer = point(port.angle, armOuter - 3);
+      flow.removeAttribute('marker-end');
+      flow.setAttribute('stroke-dasharray', 'none');
+
+      if (name === state.input) {
+        flow.setAttribute('x1', outer.x);
+        flow.setAttribute('y1', outer.y);
+        flow.setAttribute('x2', inner.x);
+        flow.setAttribute('y2', inner.y);
+        flow.setAttribute('stroke', 'var(--input)');
+        flow.setAttribute('marker-end', 'url(#arrowInput)');
+        cap.setAttribute('stroke', 'var(--input)');
+        setStatusBadge(group, 'INPUT', 'input', port.angle);
+      } else if (name === output) {
+        flow.setAttribute('x1', inner.x);
+        flow.setAttribute('y1', inner.y);
+        flow.setAttribute('x2', outer.x);
+        flow.setAttribute('y2', outer.y);
+        flow.setAttribute('stroke', 'var(--output)');
+        flow.setAttribute('marker-end', 'url(#arrowOutput)');
+        cap.setAttribute('stroke', 'var(--output)');
+        setStatusBadge(group, 'OUTPUT', 'output', port.angle);
+      } else if (name === isolated) {
+        flow.setAttribute('x1', inner.x);
+        flow.setAttribute('y1', inner.y);
+        flow.setAttribute('x2', outer.x);
+        flow.setAttribute('y2', outer.y);
+        flow.setAttribute('stroke', 'var(--isolated)');
+        flow.setAttribute('stroke-dasharray', '5 5');
+        cap.setAttribute('stroke', 'var(--isolated)');
+        setStatusBadge(group, 'ISOLATED', 'isolated', port.angle);
+      } else {
+        flow.setAttribute('stroke', 'transparent');
+        cap.setAttribute('stroke', 'var(--border-strong)');
+        setStatusBadge(group, 'EQUAL', 'isolated', port.angle);
+      }
+    });
+  }
+
+  function placeAxisLabel(textEl, bgEl, angle, radius, text, width) {
+    const p = point(angle, radius);
+    textEl.textContent = text;
+    textEl.setAttribute('x', p.x);
+    textEl.setAttribute('y', p.y + 4);
+    bgEl.setAttribute('x', p.x - width / 2);
+    bgEl.setAttribute('y', p.y - 12);
+    bgEl.setAttribute('width', width);
+    bgEl.setAttribute('height', 24);
+  }
+
+  function placeNodeLabel(angle, radius, line2) {
+    const p = point(angle, radius);
+    const bg = document.getElementById('nodeLabelBg');
+    const first = document.getElementById('nodeLabelLine1');
+    const second = document.getElementById('nodeLabelLine2');
+    bg.setAttribute('x', p.x - 107);
+    bg.setAttribute('y', p.y - 20);
+    bg.setAttribute('width', 214);
+    bg.setAttribute('height', 38);
+    first.setAttribute('x', p.x);
+    first.setAttribute('y', p.y - 3);
+    second.textContent = line2;
+    second.setAttribute('x', p.x);
+    second.setAttribute('y', p.y + 12);
+  }
+
+  function sampleRole(name, output, isolated) {
+    if (name === state.input) return 'input';
+    if (state.bias === 0) return 'equal coupling';
+    if (name === output) return 'output';
+    if (name === isolated) return 'isolated';
+    return '';
+  }
+
+  function updateSamples(axisAngle, output, isolated) {
+    const list = document.getElementById('sampleList');
+    list.textContent = '';
+    portOrder.forEach((name) => {
+      const value = fieldValue(ports[name].angle, axisAngle);
+      const sample = document.createElement('div');
+      sample.className = 'sample';
+      sample.dataset.sign = Math.abs(value) < 1e-6 ? 'zero' : value > 0 ? 'positive' : 'negative';
+
+      const port = document.createElement('span');
+      port.className = 'sample__port';
+      port.textContent = name;
+
+      const track = document.createElement('div');
+      track.className = 'sample__track';
+      const bar = document.createElement('span');
+      bar.className = 'sample__bar';
+      const width = Math.abs(value) * 50;
+      bar.style.width = `${width}%`;
+      bar.style.left = value >= 0 ? '50%' : `${50 - width}%`;
+      track.appendChild(bar);
+
+      const displayed = document.createElement('span');
+      displayed.className = 'sample__value';
+      displayed.textContent = prettyValue(value);
+
+      const role = document.createElement('span');
+      role.className = 'sample__role';
+      const roleName = sampleRole(name, output, isolated);
+      role.dataset.role = roleName === 'equal coupling' ? '' : roleName;
+      role.textContent = roleName;
+
+      sample.append(port, track, displayed, role);
+      list.appendChild(sample);
+    });
+  }
+
+  function routingFor(input, bias) {
+    if (bias === 0) return { output: null, isolated: null };
+    return bias > 0
+      ? { output: cyclicPlus[input], isolated: isolatedPlus[input] }
+      : { output: cyclicMinus[input], isolated: isolatedMinus[input] };
+  }
+
+  function updateRouteGrid() {
+    const grid = document.getElementById('routeGrid');
+    const explanation = document.getElementById('biasExplanation');
+    const heading = document.getElementById('routeHeading');
+    grid.textContent = '';
+
+    if (state.bias === 0) {
+      heading.textContent = 'Without bias';
+      const card = document.createElement('div');
+      card.className = 'route-card';
+      card.style.gridColumn = '1 / -1';
+      card.innerHTML = '<span class="route-card__path">P2 and P3 are equivalent</span><span class="route-card__iso">no port lies on the null</span>';
+      grid.appendChild(card);
+      explanation.innerHTML = 'With α = 0°, the selected input sets the antinode axis. The other two ports both sample <strong>−1/2</strong>, so the passive disk cannot choose between them.';
+      return;
+    }
+
+    heading.textContent = 'Same bias, all three inputs';
+    const mapping = state.bias > 0 ? cyclicPlus : cyclicMinus;
+    const isolated = state.bias > 0 ? isolatedPlus : isolatedMinus;
+    portOrder.forEach((input) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'route-card';
+      card.dataset.input = input;
+      card.setAttribute('aria-current', String(input === state.input));
+      card.innerHTML = `<span class="route-card__path">${input} → ${mapping[input]}</span><span class="route-card__iso">${isolated[input]} isolated</span>`;
+      card.addEventListener('click', () => {
+        state.input = input;
+        updateControls();
+        update();
+      });
+      grid.appendChild(card);
+    });
+    const sign = state.bias > 0 ? '+' : '−';
+    const cycle = state.bias > 0 ? 'P1 → P2 → P3 → P1' : 'P1 → P3 → P2 → P1';
+    explanation.innerHTML = `<strong>${sign}B₀</strong> fixes α = ${sign}30° for every input. Rotating the entire construction by 120° gives the cycle <strong>${cycle}</strong>.`;
+  }
+
+  function updateControls() {
+    document.querySelectorAll('[data-input]').forEach((button) => {
+      if (button.closest('#routeGrid')) return;
+      button.setAttribute('aria-pressed', String(button.dataset.input === state.input));
+    });
+    document.querySelectorAll('[data-bias]').forEach((button) => {
+      button.setAttribute('aria-pressed', String(Number(button.dataset.bias) === state.bias));
+    });
+  }
+
+  function update() {
+    const inputAngle = ports[state.input].angle;
+    const alpha = state.bias * 30;
+    const axisAngle = normalize(inputAngle + alpha);
+    const nodeAngle = normalize(axisAngle + 90);
+    const { output, isolated } = routingFor(state.input, state.bias);
+
+    document.getElementById('positiveLobe').setAttribute('d', lobePath(axisAngle, true));
+    document.getElementById('negativeLobe').setAttribute('d', lobePath(axisAngle, false));
+    setLine(document.getElementById('antinodeAxis'), axisAngle, 144);
+    setLine(document.getElementById('nodeAxis'), nodeAngle, 154);
+
+    const arc = document.getElementById('rotationArc');
+    const rotationLabel = document.getElementById('rotationLabel');
+    if (state.bias === 0) {
+      arc.setAttribute('d', '');
+      rotationLabel.textContent = 'α = 0°';
+      const labelPoint = point(inputAngle + 16, 112);
+      rotationLabel.setAttribute('x', labelPoint.x);
+      rotationLabel.setAttribute('y', labelPoint.y);
+    } else {
+      arc.setAttribute('d', arcPath(inputAngle, axisAngle, 104));
+      const mid = inputAngle + alpha / 2;
+      const labelPoint = point(mid, 128);
+      rotationLabel.textContent = `α = ${alpha > 0 ? '+' : '−'}30°`;
+      rotationLabel.setAttribute('x', labelPoint.x);
+      rotationLabel.setAttribute('y', labelPoint.y + 4);
+    }
+
+    placeAxisLabel(
+      document.getElementById('antinodeLabel'),
+      document.getElementById('antinodeLabelBg'),
+      axisAngle + 180,
+      112,
+      `antinode · φₐ = ${fmtAngle(axisAngle)}`,
+      150
+    );
+    placeNodeLabel(
+      nodeAngle,
+      112,
+      state.bias === 0
+        ? `null directions: ${fmtAngle(nodeAngle)} and ${fmtAngle(nodeAngle + 180)}`
+        : `here: φnull = ${fmtAngle(nodeAngle)} at ${isolated}`
+    );
+
+    const biasSymbol = document.getElementById('biasSymbol');
+    biasSymbol.textContent = state.bias > 0 ? '⊙' : state.bias < 0 ? '⊗' : '○';
+    biasSymbol.setAttribute('fill', state.bias === 0 ? 'var(--muted)' : 'var(--accent-ink)');
+
+    updatePortGraphics(output, isolated);
+    updateSamples(axisAngle, output, isolated);
+
+    const routeLine = document.getElementById('routeLine');
+    const routeReason = document.getElementById('routeReason');
+    if (state.bias === 0) {
+      const others = portOrder.filter((p) => p !== state.input);
+      routeLine.innerHTML = `<strong>${state.input}</strong> excites <strong>${others[0]}</strong> and <strong>${others[1]}</strong> equally.`;
+      routeReason.textContent = 'The nodal diameter misses every port, while both non-input ports have the same field magnitude |E|/E₀ = 1/2.';
+    } else {
+      routeLine.innerHTML = `<strong>${state.input} → ${output}</strong>, with <strong>${isolated}</strong> isolated.`;
+      routeReason.textContent = `${isolated} lies exactly on the nodal diameter, so E(${isolated}) = 0. The remaining neighboring port has nonzero overlap with the rotated dipole.`;
+    }
+
+    document.getElementById('stateInputLine').innerHTML =
+      `<strong>Input direction</strong><br>φ<sub>in</sub> = ${fmtAngle(inputAngle)}`;
+
+    document.getElementById('stateAntinodeLine').innerHTML =
+      `<strong>Antinode axis</strong><br>φ<sub>a</sub> = φ<sub>in</sub> ${alpha >= 0 ? '+' : '−'} ${Math.abs(alpha)}° = ${fmtAngle(axisAngle)}`;
+
+    document.getElementById('stateNullLine').innerHTML = state.bias === 0
+      ? `<strong>Nodal diameter</strong><br>φ = φ<sub>a</sub> ± 90° = ${fmtAngle(nodeAngle)} or ${fmtAngle(nodeAngle + 180)}`
+      : `<strong>Nodal diameter</strong><br>φ<sub>null</sub> = φ<sub>a</sub> + 90° = ${fmtAngle(nodeAngle)} = φ<sub>${isolated.slice(1)}</sub>`;
+
+    updateRouteGrid();
+    sendHeight();
+  }
+
+  function syncThemeFromParent() {
+    try {
+      const parentDoc = window.parent.document;
+      const root = parentDoc.documentElement;
+      document.documentElement.dataset.theme = root.dataset.theme || '';
+      const post = parentDoc.querySelector('.post-page') || root;
+      const computed = window.parent.getComputedStyle(post);
+      const mapping = {
+        '--page': '--page',
+        '--surface': '--surface',
+        '--surface-muted': '--surface-muted',
+        '--ink': '--ink',
+        '--muted': '--muted',
+        '--border': '--border',
+        '--border-strong': '--border-strong',
+        '--accent': '--post-accent',
+        '--accent-soft': '--post-accent-soft',
+        '--accent-ink': '--post-accent-ink'
+      };
+      Object.entries(mapping).forEach(([localName, parentName]) => {
+        const value = computed.getPropertyValue(parentName).trim();
+        if (value) document.documentElement.style.setProperty(localName, value);
+      });
+    } catch (_) {}
+  }
+
+  function sendHeight() {
+    window.requestAnimationFrame(() => {
+      const height = Math.ceil(Math.max(document.body.scrollHeight, document.documentElement.scrollHeight));
+      try { window.parent.postMessage({ height }, window.location.origin); } catch (_) {}
+    });
+  }
+
+  buildPorts();
+  syncThemeFromParent();
+  updateControls();
+  update();
+
+  document.getElementById('inputControls').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-input]');
+    if (!button) return;
+    state.input = button.dataset.input;
+    updateControls();
+    update();
+  });
+
+  document.getElementById('biasControls').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-bias]');
+    if (!button) return;
+    state.bias = Number(button.dataset.bias);
+    updateControls();
+    update();
+  });
+
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(sendHeight).observe(document.body);
+  }
+  window.addEventListener('load', sendHeight, { once: true });
+  window.addEventListener('resize', sendHeight, { passive: true });
+})();
+</script>
+</body>
+</html>

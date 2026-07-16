@@ -40,6 +40,9 @@ Sort the samples in decreasing order of score, $S(x_{(1)}) \geq S(x_{(2)}) \geq 
 
 So we can draw the ROC curve by walking down the sorted list: step up for each positive, step right for each negative. Every quantitative property of the ROC curve can be read off this walk.
 
+<!-- embedded-visualization:roc-threshold-walk:v1 -->
+{% include visualization.html src="roc-threshold-walk.html" title="Build the ROC curve by walking through the score ordering" %}
+
 The walk depends only on the *order* of samples by score, not on the score values. Any strictly increasing transformation $S \to f(S)$ (a logistic squash, a rank transform, an exponential) preserves every pairwise ordering, produces the identical walk, and yields the identical ROC curve. The curve captures *rank quality* — how well the score separates positives from negatives — and is blind to what the scores actually are.
 
 That other property of a scoring classifier — whether the scores themselves are meaningful — is called *calibration*. A classifier is calibrated when, among samples assigned score $s$, a fraction $s$ actually belong to the positive class. The *calibration curve* plots the score against the observed positive fraction (binned by score); perfect calibration is the diagonal $y = x$. Rank quality and calibration are independent: a classifier can rank perfectly while outputting badly-scaled scores (all crushed near 0.5, or systematically overconfident), and a well-calibrated classifier can rank mediocre-ly. The ROC curve sees the first property and hides the second.

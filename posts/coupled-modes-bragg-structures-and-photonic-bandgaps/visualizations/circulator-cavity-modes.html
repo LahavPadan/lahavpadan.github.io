@@ -1,0 +1,1443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cavity modes and the three port responses</title>
+  <style>
+    :root {
+      --page: var(--viz-page, #fbfbf8);
+      --surface: var(--viz-surface, #ffffff);
+      --surface-muted: var(--viz-surface-muted, #f4f5f1);
+      --ink: var(--viz-ink, #1d2420);
+      --muted: var(--viz-muted, #687169);
+      --border: var(--viz-border, #d7ddd8);
+      --border-strong: var(--viz-border-strong, #a6b1a9);
+      --accent: var(--viz-accent, #85295e);
+      --accent-soft: var(--viz-accent-soft, #fdeef6);
+      --accent-border: var(--viz-accent-border, #e8b2d1);
+      --accent-ink: var(--viz-accent-ink, #85295e);
+      --negative: color-mix(in oklab, var(--accent) 58%, var(--ink));
+      --negative-soft: color-mix(in srgb, var(--negative) 18%, transparent);
+      --grid: color-mix(in srgb, var(--border) 74%, transparent);
+      --serif: "STIX Two Text", "Times New Roman", Georgia, serif;
+      --math: "STIX Two Math", "Cambria Math", "Times New Roman", serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      min-width: 0;
+      overflow-x: clip;
+      background: transparent;
+    }
+
+    body {
+      padding: clamp(7px, 1.6vw, 18px);
+      color: var(--ink);
+      font-family: var(--serif);
+      line-height: 1.5;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font: inherit; }
+
+    .plate {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+
+    .plate-header {
+      padding: clamp(24px, 4vw, 40px) clamp(18px, 4vw, 42px) clamp(20px, 3vw, 30px);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--accent-ink);
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      font-weight: 850;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p { overflow-wrap: anywhere; }
+
+    .plate-header h1 {
+      margin: 0;
+      font-size: clamp(1.7rem, 4vw, 2.65rem);
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .plate-header > p:last-of-type {
+      max-width: 800px;
+      margin: 11px auto 0;
+      color: var(--muted);
+      font-size: clamp(0.94rem, 1.45vw, 1.05rem);
+    }
+
+    .definition {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 15px;
+      align-items: center;
+      max-width: 890px;
+      margin: 18px auto 0;
+      padding: 14px 16px;
+      border: 1px solid var(--accent-border);
+      border-radius: 9px;
+      background: var(--accent-soft);
+      text-align: left;
+    }
+
+    .definition-equation {
+      color: var(--accent-ink);
+      font-family: var(--math);
+      font-size: clamp(1rem, 2vw, 1.22rem);
+      white-space: nowrap;
+    }
+
+    .definition-copy {
+      color: var(--ink);
+      font-size: 0.88rem;
+    }
+
+    .definition-copy strong {
+      color: var(--accent-ink);
+      font-family: var(--sans);
+      font-size: 0.92em;
+    }
+
+    .controls {
+      padding: 18px clamp(18px, 3.6vw, 38px);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-muted);
+    }
+
+    .control-label {
+      display: block;
+      margin: 0 0 9px;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .mode-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .mode-button {
+      min-height: 40px;
+      padding: 8px 13px;
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: 0.82rem;
+      font-weight: 750;
+      transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+    }
+
+    .mode-button:hover {
+      border-color: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    .mode-button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .mode-button[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--page);
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.93fr) minmax(350px, 1.07fr);
+      min-width: 0;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: clamp(22px, 3.7vw, 40px);
+    }
+
+    .panel + .panel {
+      border-left: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface-muted) 42%, var(--surface));
+    }
+
+    .panel-heading {
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr);
+      gap: 11px;
+      align-items: start;
+      margin-bottom: 17px;
+    }
+
+    .step-number {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      color: var(--accent-ink);
+      font-family: var(--sans);
+      font-size: 0.74rem;
+      font-weight: 900;
+    }
+
+    .panel-heading h2 {
+      margin: 1px 0 0;
+      font-size: clamp(1.1rem, 2vw, 1.4rem);
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    .panel-intro {
+      margin: -5px 0 17px 41px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .cavity-stage {
+      width: min(540px, 100%);
+      margin: 0 auto;
+    }
+
+    .cavity-svg,
+    .profile-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .disk-shell {
+      fill: var(--surface);
+      stroke: var(--border-strong);
+      stroke-width: 2;
+    }
+
+    .disk-outline {
+      fill: none;
+      stroke: var(--border-strong);
+      stroke-width: 2;
+      pointer-events: none;
+    }
+
+    .radial-ring {
+      fill: none;
+      stroke: var(--grid);
+      stroke-width: 1;
+    }
+
+    .waveguide {
+      fill: var(--surface-muted);
+      stroke: var(--border-strong);
+      stroke-width: 1.5;
+    }
+
+    .port-mouth {
+      stroke: var(--accent);
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .positive-lobe {
+      fill: var(--accent);
+      fill-opacity: 0.34;
+      stroke: var(--accent-ink);
+      stroke-opacity: 0.6;
+      stroke-width: 1.2;
+    }
+
+    .negative-lobe {
+      fill: var(--negative);
+      fill-opacity: 0.2;
+      stroke: var(--negative);
+      stroke-opacity: 0.62;
+      stroke-width: 1.2;
+    }
+
+    .breathing-fill {
+      fill: var(--accent-soft);
+      stroke: var(--accent-border);
+      stroke-width: 1.2;
+    }
+
+    .breathing-ring {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 11;
+      stroke-opacity: 0.14;
+    }
+
+    .node-line {
+      stroke: var(--muted);
+      stroke-width: 1.2;
+      stroke-dasharray: 5 5;
+      stroke-opacity: 0.78;
+    }
+
+    .port-dot {
+      fill: var(--surface);
+      stroke: var(--accent);
+      stroke-width: 3;
+    }
+
+    .port-label,
+    .angle-label,
+    .center-label {
+      dominant-baseline: middle;
+      font-family: var(--sans);
+    }
+
+    .port-label {
+      fill: var(--ink);
+      font-size: 15px;
+      font-weight: 850;
+    }
+
+    .angle-label {
+      fill: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .center-label {
+      fill: var(--ink);
+      font-family: var(--math);
+      font-size: 18px;
+      font-style: italic;
+      font-weight: 600;
+      text-anchor: middle;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      justify-content: center;
+      margin-top: 6px;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 0.74rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .legend-swatch {
+      width: 18px;
+      height: 10px;
+      border: 1px solid var(--border-strong);
+      border-radius: 3px;
+    }
+
+    .legend-swatch.positive { background: color-mix(in srgb, var(--accent) 34%, transparent); }
+    .legend-swatch.negative { background: var(--negative-soft); }
+    .legend-swatch.node {
+      height: 0;
+      border: 0;
+      border-top: 1px dashed var(--muted);
+      border-radius: 0;
+    }
+
+    .shown-equation {
+      margin-top: 17px;
+      padding: 12px 14px;
+      border-left: 3px solid var(--accent);
+      background: var(--accent-soft);
+      font-size: 0.9rem;
+    }
+
+    .shown-equation strong {
+      color: var(--accent-ink);
+      font-family: var(--sans);
+      font-size: 0.82em;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .shown-equation .math-line {
+      display: block;
+      margin-top: 4px;
+      font-family: var(--math);
+      font-size: 1.08rem;
+    }
+
+    .profile-box {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface);
+    }
+
+    .profile-title {
+      padding: 12px 15px 10px;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink);
+      font-size: 0.88rem;
+    }
+
+    .profile-title strong {
+      color: var(--accent-ink);
+      font-family: var(--math);
+      font-weight: 650;
+    }
+
+    .profile-wrap { padding: 7px 8px 1px; }
+
+    .plot-axis {
+      stroke: var(--border-strong);
+      stroke-width: 1.2;
+    }
+
+    .plot-grid {
+      stroke: var(--grid);
+      stroke-width: 1;
+      stroke-dasharray: 3 5;
+    }
+
+    .plot-curve {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .plot-port-line {
+      stroke: var(--accent);
+      stroke-width: 1.1;
+      stroke-dasharray: 4 5;
+      stroke-opacity: 0.64;
+    }
+
+    .plot-point {
+      fill: var(--surface);
+      stroke: var(--accent);
+      stroke-width: 3;
+    }
+
+    .plot-label,
+    .plot-port-label,
+    .plot-value-label {
+      font-family: var(--sans);
+      dominant-baseline: middle;
+    }
+
+    .plot-label {
+      fill: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .plot-port-label {
+      fill: var(--ink);
+      font-size: 12px;
+      font-weight: 850;
+      text-anchor: middle;
+    }
+
+    .plot-value-label {
+      fill: var(--accent-ink);
+      font-size: 12px;
+      font-weight: 850;
+      text-anchor: middle;
+    }
+
+    .evaluation-heading {
+      margin: 17px 0 9px;
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 0.76rem;
+      font-weight: 850;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .evaluation-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .evaluation-card {
+      min-width: 0;
+      padding: 11px 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      text-align: center;
+    }
+
+    .evaluation-port {
+      color: var(--accent-ink);
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .evaluation-angle {
+      margin-top: 3px;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 0.72rem;
+    }
+
+    .evaluation-formula {
+      margin-top: 8px;
+      color: var(--ink);
+      font-family: var(--math);
+      font-size: clamp(0.82rem, 1.45vw, 0.96rem);
+      line-height: 1.35;
+    }
+
+    .evaluation-value {
+      display: block;
+      margin-top: 5px;
+      color: var(--accent-ink);
+      font-family: var(--math);
+      font-size: 1.12rem;
+      font-weight: 700;
+    }
+
+    .meaning {
+      padding: clamp(22px, 3.7vw, 38px);
+      border-top: 1px solid var(--border);
+    }
+
+    .meaning-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .meaning-card,
+    .degeneracy-card {
+      min-width: 0;
+      padding: 18px 19px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface-muted);
+    }
+
+    .meaning-card h3,
+    .degeneracy-card h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 650;
+    }
+
+    .meaning-card p,
+    .degeneracy-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .meaning-card p strong,
+    .degeneracy-card p strong { color: var(--ink); }
+
+    .power-row {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .power-name {
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 0.76rem;
+      font-weight: 850;
+    }
+
+    .power-track {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--surface);
+    }
+
+    .power-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent);
+      transition: width 180ms ease;
+    }
+
+    .power-value {
+      color: var(--accent-ink);
+      font-family: var(--math);
+      font-size: 0.82rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .degeneracy-equation {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--accent-border);
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      font-family: var(--math);
+      font-size: clamp(0.9rem, 1.65vw, 1.05rem);
+      text-align: center;
+    }
+
+    .family-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid var(--border);
+    }
+
+    .family-card {
+      min-width: 0;
+      padding: 19px clamp(16px, 2.8vw, 27px) 21px;
+      background: var(--surface);
+    }
+
+    .family-card + .family-card { border-left: 1px solid var(--border); }
+
+    .family-tag {
+      display: inline-flex;
+      margin-bottom: 8px;
+      padding: 4px 7px;
+      border: 1px solid var(--accent-border);
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      font-family: var(--sans);
+      font-size: 0.66rem;
+      font-weight: 850;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .family-card h3 {
+      margin: 0;
+      font-size: 0.98rem;
+      font-weight: 650;
+    }
+
+    .family-card p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .family-card.is-active {
+      background: color-mix(in srgb, var(--accent-soft) 58%, var(--surface));
+      box-shadow: inset 0 3px 0 var(--accent);
+    }
+
+    .conclusion {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 13px;
+      align-items: start;
+      padding: 19px clamp(18px, 3.7vw, 39px) 23px;
+      border-top: 1px solid var(--border);
+      background: var(--accent-soft);
+    }
+
+    .conclusion-mark {
+      display: grid;
+      width: 29px;
+      height: 29px;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      color: var(--accent-ink);
+      font-family: var(--sans);
+      font-size: 0.77rem;
+      font-weight: 900;
+    }
+
+    .conclusion p {
+      margin: 1px 0 0;
+      font-size: 0.91rem;
+    }
+
+    .conclusion strong {
+      color: var(--accent-ink);
+      font-family: var(--sans);
+      font-size: 0.92em;
+    }
+
+    @media (max-width: 860px) {
+      .flow-grid { grid-template-columns: 1fr; }
+
+      .panel + .panel {
+        border-top: 1px solid var(--border);
+        border-left: 0;
+      }
+
+      .meaning-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 650px) {
+      body { padding: 5px; }
+      .plate { border-radius: 9px; }
+      .definition { grid-template-columns: 1fr; gap: 7px; }
+      .definition-equation { white-space: normal; }
+      .family-strip { grid-template-columns: 1fr; }
+      .family-card + .family-card {
+        border-top: 1px solid var(--border);
+        border-left: 0;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .plate-header,
+      .panel,
+      .meaning {
+        padding-right: 15px;
+        padding-left: 15px;
+      }
+
+      .controls {
+        padding-right: 13px;
+        padding-left: 13px;
+      }
+
+      .mode-button {
+        min-height: 38px;
+        padding: 7px 10px;
+        font-size: 0.76rem;
+      }
+
+      .panel-intro {
+        margin-left: 0;
+      }
+
+      .evaluation-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .evaluation-card {
+        display: grid;
+        grid-template-columns: 64px 72px minmax(0, 1fr) 44px;
+        gap: 6px;
+        align-items: center;
+        text-align: left;
+      }
+
+      .evaluation-angle,
+      .evaluation-formula,
+      .evaluation-value { margin-top: 0; }
+
+      .evaluation-value { text-align: right; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="plate" aria-labelledby="viz-title">
+    <header class="plate-header">
+      <p class="eyebrow">Step 1 · cavity modes without magnetic bias</p>
+      <h1 id="viz-title">From one cavity mode to the three port responses</h1>
+      <p>
+        The circular cavity sets the standing-wave shape. The three waveguides then read that same field
+        at the three angles where they meet the disk.
+      </p>
+
+      <div class="definition">
+        <div class="definition-equation">
+          Ψ<sub>m</sub>(r, φ) = J<sub>|m|</sub>(kr) cos(mφ)
+        </div>
+        <div class="definition-copy">
+          Choose the real standing wave whose antinode is aligned with port 1. Because all three ports touch
+          the cavity at the same radius <em>r = R</em>, the radial factor is common to all three. Therefore the
+          <strong>relative port fields</strong> come only from
+          <span style="font-family:var(--math)">E<sub>m</sub>(φ) = cos(mφ)</span>.
+        </div>
+      </div>
+    </header>
+
+    <section class="controls" aria-label="Standing-wave family controls">
+      <span class="control-label">Choose the standing-wave family</span>
+      <div class="mode-tabs" role="group" aria-label="Choose azimuthal family">
+        <button class="mode-button" type="button" data-family="0" aria-pressed="false">m = 0 · breathing</button>
+        <button class="mode-button" type="button" data-family="1" aria-pressed="true">|m| = 1 · dipole</button>
+        <button class="mode-button" type="button" data-family="2" aria-pressed="false">|m| = 2 · quadrupole</button>
+      </div>
+    </section>
+
+    <div class="flow-grid">
+      <section class="panel" aria-labelledby="disk-heading">
+        <div class="panel-heading">
+          <span class="step-number">1</span>
+          <h2 id="disk-heading">Draw the P1-aligned standing wave inside the disk</h2>
+        </div>
+        <p class="panel-intro" id="disk-intro">
+          For the dipole, one antinode points toward P1 and one nodal diameter cuts across the disk.
+        </p>
+
+        <div class="cavity-stage">
+          <svg class="cavity-svg" id="cavity-svg" viewBox="0 0 520 440" role="img" aria-labelledby="cavity-title cavity-desc">
+            <title id="cavity-title">Standing wave in a circular cavity with three ports</title>
+            <desc id="cavity-desc">A circular cavity has ports at zero, one hundred twenty, and two hundred forty degrees. The selected real mode is aligned with port one.</desc>
+            <g id="waveguides"></g>
+            <circle class="disk-shell" cx="260" cy="215" r="130"></circle>
+            <g id="radial-rings"></g>
+            <g id="mode-fill"></g>
+            <g id="node-lines"></g>
+            <circle class="disk-outline" cx="260" cy="215" r="130"></circle>
+            <g id="port-markers"></g>
+            <text class="center-label" id="center-label" x="260" y="215">cos φ</text>
+          </svg>
+        </div>
+
+        <div class="legend" aria-label="Standing-wave field legend">
+          <span class="legend-item"><span class="legend-swatch positive"></span>positive field phase</span>
+          <span class="legend-item"><span class="legend-swatch negative"></span>opposite field phase</span>
+          <span class="legend-item"><span class="legend-swatch node"></span>zero-field line</span>
+        </div>
+
+        <div class="shown-equation" aria-live="polite">
+          <strong>Standing wave shown</strong>
+          <span class="math-line" id="shown-equation">E<sub>1</sub>(φ) = cos φ</span>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="profile-heading">
+        <div class="panel-heading">
+          <span class="step-number">2</span>
+          <h2 id="profile-heading">Follow that same field around the cavity rim</h2>
+        </div>
+        <p class="panel-intro">
+          The curve is not a second model. It is the angular dependence of the field drawn in the disk,
+          unwrapped from φ = 0° to 360°.
+        </p>
+
+        <div class="profile-box">
+          <div class="profile-title" id="profile-title">
+            Normalized rim field: <strong>E<sub>1</sub>(φ) = cos φ</strong>
+          </div>
+          <div class="profile-wrap">
+            <svg class="profile-svg" id="profile-svg" viewBox="0 0 610 285" role="img" aria-labelledby="profile-svg-title profile-svg-desc">
+              <title id="profile-svg-title">Angular field profile and the three port positions</title>
+              <desc id="profile-svg-desc">The normalized field is plotted against angle. Markers show the field values at ports one, two, and three.</desc>
+              <g id="plot-grid"></g>
+              <g id="plot-axes"></g>
+              <path class="plot-curve" id="plot-curve"></path>
+              <g id="plot-ports"></g>
+            </svg>
+          </div>
+        </div>
+
+        <h3 class="evaluation-heading">Evaluate the field at each waveguide</h3>
+        <div class="evaluation-grid" id="evaluation-grid" aria-live="polite"></div>
+      </section>
+    </div>
+
+    <section class="meaning" aria-labelledby="meaning-heading">
+      <div class="panel-heading">
+        <span class="step-number">3</span>
+        <h2 id="meaning-heading">Interpret what the three field values mean</h2>
+      </div>
+
+      <div class="meaning-grid">
+        <article class="meaning-card">
+          <h3 id="meaning-title">Equal magnitudes at P2 and P3</h3>
+          <p id="meaning-text">
+            The dipole gives E(P2) = E(P3) = −1/2. The minus sign means that the local oscillating field is
+            reversed in phase relative to P1; it does not mean negative energy. Coupled power depends on
+            |E|², so P2 and P3 receive equal power.
+          </p>
+          <div id="power-rows"></div>
+        </article>
+
+        <article class="degeneracy-card" id="degeneracy-card">
+          <h3 id="degeneracy-title">Where m = +1 and m = −1 enter</h3>
+          <p id="degeneracy-text">
+            The drawn dipole is a real standing wave, not a third independent mode. It is the equal
+            superposition of the two counter-rotating cavity modes.
+          </p>
+          <div class="degeneracy-equation" id="degeneracy-equation">
+            cos φ = ½(e<sup>iφ</sup> + e<sup>−iφ</sup>)
+          </div>
+          <p id="degeneracy-foot">
+            Without magnetic bias these two modes have the same resonance frequency, so neither circulation
+            direction is preferred. The result is the stationary dipole above and symmetric coupling toward P2 and P3.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="family-strip" aria-label="Comparison of the three mode families">
+      <article class="family-card" data-family-card="0">
+        <span class="family-tag">m = 0</span>
+        <h3>Breathing mode</h3>
+        <p>No angular variation: E(φ) = 1, so the three ports read (1, 1, 1).</p>
+      </article>
+      <article class="family-card is-active" data-family-card="1">
+        <span class="family-tag">m = ±1</span>
+        <h3>Dipole doublet</h3>
+        <p>One nodal diameter. A P1-aligned dipole gives (1, −1/2, −1/2), hence equal coupling toward P2 and P3.</p>
+      </article>
+      <article class="family-card" data-family-card="2">
+        <span class="family-tag">m = ±2</span>
+        <h3>Quadrupole doublet</h3>
+        <p>Two nodal diameters. The same three point values recur, so three samples alone do not distinguish it from the dipole.</p>
+      </article>
+    </section>
+
+    <footer class="conclusion">
+      <span class="conclusion-mark">1</span>
+      <p id="conclusion-text">
+        <strong>Before bias:</strong> port 1 excites a dipole standing wave aligned with itself. The field magnitudes at ports 2 and 3 are equal, so the passive disk cannot choose one output over the other. Magnetic bias is needed in the next step to split the m = ±1 pair and rotate the standing pattern.
+      </p>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var SVG_NS = 'http://www.w3.org/2000/svg';
+      var family = 1;
+      var portAngles = [0, 120, 240];
+      var portNames = ['P1', 'P2', 'P3'];
+
+      var modeButtons = Array.prototype.slice.call(document.querySelectorAll('.mode-button'));
+      var familyCards = Array.prototype.slice.call(document.querySelectorAll('[data-family-card]'));
+      var waveguides = document.getElementById('waveguides');
+      var radialRings = document.getElementById('radial-rings');
+      var modeFill = document.getElementById('mode-fill');
+      var nodeLines = document.getElementById('node-lines');
+      var portMarkers = document.getElementById('port-markers');
+      var centerLabel = document.getElementById('center-label');
+      var diskIntro = document.getElementById('disk-intro');
+      var shownEquation = document.getElementById('shown-equation');
+      var profileTitle = document.getElementById('profile-title');
+      var plotGrid = document.getElementById('plot-grid');
+      var plotAxes = document.getElementById('plot-axes');
+      var plotCurve = document.getElementById('plot-curve');
+      var plotPorts = document.getElementById('plot-ports');
+      var evaluationGrid = document.getElementById('evaluation-grid');
+      var meaningTitle = document.getElementById('meaning-title');
+      var meaningText = document.getElementById('meaning-text');
+      var powerRows = document.getElementById('power-rows');
+      var degeneracyTitle = document.getElementById('degeneracy-title');
+      var degeneracyText = document.getElementById('degeneracy-text');
+      var degeneracyEquation = document.getElementById('degeneracy-equation');
+      var degeneracyFoot = document.getElementById('degeneracy-foot');
+      var conclusionText = document.getElementById('conclusion-text');
+
+      function svgEl(name, attrs) {
+        var node = document.createElementNS(SVG_NS, name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function clear(node) {
+        while (node.firstChild) node.removeChild(node.firstChild);
+      }
+
+      function addSvgText(parent, attrs, text) {
+        var node = svgEl('text', attrs);
+        node.textContent = text;
+        parent.appendChild(node);
+        return node;
+      }
+
+      function pointAt(angleDeg, radius) {
+        var angle = angleDeg * Math.PI / 180;
+        return {
+          x: 260 + radius * Math.sin(angle),
+          y: 215 - radius * Math.cos(angle)
+        };
+      }
+
+      function fieldAt(angleDeg) {
+        return family === 0 ? 1 : Math.cos(family * angleDeg * Math.PI / 180);
+      }
+
+      function formatValue(value) {
+        if (Math.abs(value - 1) < 1e-8) return '1';
+        if (Math.abs(value + 1) < 1e-8) return '−1';
+        if (Math.abs(value - 0.5) < 1e-8) return '1/2';
+        if (Math.abs(value + 0.5) < 1e-8) return '−1/2';
+        if (Math.abs(value) < 1e-8) return '0';
+        return value.toFixed(2).replace('-', '−');
+      }
+
+      function modeFormula() {
+        if (family === 0) return 'E₀(φ) = 1';
+        return 'E' + family + '(φ) = cos(' + (family === 1 ? '' : family) + 'φ)';
+      }
+
+      function htmlModeFormula() {
+        if (family === 0) return 'E<sub>0</sub>(φ) = 1';
+        return 'E<sub>' + family + '</sub>(φ) = cos(' + (family === 1 ? '' : family) + 'φ)';
+      }
+
+      function drawStaticCavity() {
+        clear(waveguides);
+        clear(radialRings);
+
+        [58, 91, 115].forEach(function (radius) {
+          radialRings.appendChild(svgEl('circle', {
+            'class': 'radial-ring',
+            cx: 260,
+            cy: 215,
+            r: radius
+          }));
+        });
+
+        portAngles.forEach(function (angle) {
+          var group = svgEl('g', { transform: 'rotate(' + angle + ' 260 215)' });
+          group.appendChild(svgEl('rect', {
+            'class': 'waveguide',
+            x: 235,
+            y: 18,
+            width: 50,
+            height: 67,
+            rx: 8
+          }));
+          group.appendChild(svgEl('line', {
+            'class': 'port-mouth',
+            x1: 239,
+            y1: 85,
+            x2: 281,
+            y2: 85
+          }));
+          waveguides.appendChild(group);
+        });
+      }
+
+      function lobeSegments(order) {
+        var segments = [];
+        var total = 720;
+        var current = null;
+
+        for (var i = 0; i <= total; i += 1) {
+          var phi = (i / total) * Math.PI * 2;
+          var value = Math.cos(order * phi);
+          var side = value >= 0 ? 1 : -1;
+          var radius = 116 * Math.pow(Math.abs(value), 0.72);
+          var point = {
+            x: 260 + radius * Math.sin(phi),
+            y: 215 - radius * Math.cos(phi)
+          };
+
+          if (!current || current.side !== side) {
+            if (current && current.points.length > 1) segments.push(current);
+            current = { side: side, points: [point] };
+          } else {
+            current.points.push(point);
+          }
+        }
+
+        if (current && current.points.length > 1) segments.push(current);
+        if (segments.length > 1 && segments[0].side === segments[segments.length - 1].side) {
+          segments[0].points = segments[segments.length - 1].points.concat(segments[0].points);
+          segments.pop();
+        }
+        return segments;
+      }
+
+      function drawMode() {
+        clear(modeFill);
+        clear(nodeLines);
+
+        if (family === 0) {
+          modeFill.appendChild(svgEl('circle', {
+            'class': 'breathing-fill',
+            cx: 260,
+            cy: 215,
+            r: 114
+          }));
+          [38, 72, 103].forEach(function (radius) {
+            modeFill.appendChild(svgEl('circle', {
+              'class': 'breathing-ring',
+              cx: 260,
+              cy: 215,
+              r: radius
+            }));
+          });
+          centerLabel.textContent = 'm = 0';
+          return;
+        }
+
+        lobeSegments(family).forEach(function (segment) {
+          var d = 'M 260 215';
+          segment.points.forEach(function (point) {
+            d += ' L ' + point.x.toFixed(2) + ' ' + point.y.toFixed(2);
+          });
+          d += ' Z';
+          modeFill.appendChild(svgEl('path', {
+            'class': segment.side > 0 ? 'positive-lobe' : 'negative-lobe',
+            d: d
+          }));
+        });
+
+        for (var k = 0; k < family; k += 1) {
+          var phi = (90 / family) + (180 / family) * k;
+          var a = pointAt(phi, 124);
+          var b = pointAt(phi + 180, 124);
+          nodeLines.appendChild(svgEl('line', {
+            'class': 'node-line',
+            x1: a.x,
+            y1: a.y,
+            x2: b.x,
+            y2: b.y
+          }));
+        }
+
+        centerLabel.textContent = family === 1 ? 'cos φ' : 'cos 2φ';
+      }
+
+      function drawPorts() {
+        clear(portMarkers);
+
+        portAngles.forEach(function (angle, index) {
+          var dot = pointAt(angle, 130);
+          var label = pointAt(angle, 207);
+          var anglePosition = pointAt(angle, 181);
+          var anchor = 'middle';
+          if (angle === 120) anchor = 'start';
+          if (angle === 240) anchor = 'end';
+
+          portMarkers.appendChild(svgEl('circle', {
+            'class': 'port-dot',
+            cx: dot.x,
+            cy: dot.y,
+            r: 7
+          }));
+
+          addSvgText(portMarkers, {
+            'class': 'port-label',
+            x: label.x,
+            y: label.y,
+            'text-anchor': anchor
+          }, portNames[index]);
+
+          addSvgText(portMarkers, {
+            'class': 'angle-label',
+            x: anglePosition.x,
+            y: anglePosition.y,
+            'text-anchor': anchor
+          }, 'φ = ' + angle + '°');
+        });
+      }
+
+      function plotPoint(angleDeg, value) {
+        var left = 58;
+        var right = 581;
+        var top = 33;
+        var bottom = 231;
+        var center = (top + bottom) / 2;
+        var amplitude = (bottom - top) * 0.4;
+        return {
+          x: left + (angleDeg / 360) * (right - left),
+          y: center - value * amplitude
+        };
+      }
+
+      function drawPlotScaffold() {
+        clear(plotGrid);
+        clear(plotAxes);
+
+        [-1, 0, 1].forEach(function (value) {
+          var p = plotPoint(0, value);
+          plotGrid.appendChild(svgEl('line', {
+            'class': value === 0 ? 'plot-axis' : 'plot-grid',
+            x1: 58,
+            y1: p.y,
+            x2: 581,
+            y2: p.y
+          }));
+          addSvgText(plotAxes, {
+            'class': 'plot-label',
+            x: 43,
+            y: p.y,
+            'text-anchor': 'end'
+          }, value > 0 ? '+1' : String(value).replace('-', '−'));
+        });
+
+        plotAxes.appendChild(svgEl('line', {
+          'class': 'plot-axis',
+          x1: 58,
+          y1: 231,
+          x2: 581,
+          y2: 231
+        }));
+
+        [0, 120, 240, 360].forEach(function (angle) {
+          var p = plotPoint(angle, 0);
+          addSvgText(plotAxes, {
+            'class': 'plot-label',
+            x: p.x,
+            y: 252,
+            'text-anchor': 'middle'
+          }, angle + '°');
+        });
+
+        addSvgText(plotAxes, {
+          'class': 'plot-label',
+          x: 581,
+          y: 274,
+          'text-anchor': 'end'
+        }, 'angle φ around the rim');
+
+        addSvgText(plotAxes, {
+          'class': 'plot-label',
+          x: 16,
+          y: 27,
+          'text-anchor': 'start'
+        }, 'E(φ)');
+      }
+
+      function drawProfile() {
+        var d = '';
+        for (var angle = 0; angle <= 360; angle += 2) {
+          var p = plotPoint(angle, fieldAt(angle));
+          d += (angle === 0 ? 'M ' : ' L ') + p.x.toFixed(2) + ' ' + p.y.toFixed(2);
+        }
+        plotCurve.setAttribute('d', d);
+
+        clear(plotPorts);
+        portAngles.forEach(function (angle, index) {
+          var value = fieldAt(angle);
+          var p = plotPoint(angle, value);
+
+          plotPorts.appendChild(svgEl('line', {
+            'class': 'plot-port-line',
+            x1: p.x,
+            y1: 33,
+            x2: p.x,
+            y2: 231
+          }));
+
+          plotPorts.appendChild(svgEl('circle', {
+            'class': 'plot-point',
+            cx: p.x,
+            cy: p.y,
+            r: 6
+          }));
+
+          var labelY = value > 0.55 ? p.y + 24 : p.y - 23;
+          addSvgText(plotPorts, {
+            'class': 'plot-port-label',
+            x: p.x,
+            y: labelY
+          }, portNames[index]);
+
+          var valueY = value > 0.55 ? p.y + 41 : p.y - 40;
+          addSvgText(plotPorts, {
+            'class': 'plot-value-label',
+            x: p.x,
+            y: valueY
+          }, formatValue(value));
+        });
+      }
+
+      function evaluationFormula(angle) {
+        if (family === 0) return 'cos(0 × ' + angle + '°)';
+        return 'cos(' + family + ' × ' + angle + '°)';
+      }
+
+      function drawEvaluations() {
+        clear(evaluationGrid);
+        portAngles.forEach(function (angle, index) {
+          var value = fieldAt(angle);
+          var card = document.createElement('article');
+          card.className = 'evaluation-card';
+
+          var port = document.createElement('div');
+          port.className = 'evaluation-port';
+          port.textContent = portNames[index];
+
+          var angleText = document.createElement('div');
+          angleText.className = 'evaluation-angle';
+          angleText.textContent = 'φ = ' + angle + '°';
+
+          var formula = document.createElement('div');
+          formula.className = 'evaluation-formula';
+          formula.textContent = evaluationFormula(angle);
+
+          var result = document.createElement('span');
+          result.className = 'evaluation-value';
+          result.textContent = '= ' + formatValue(value);
+
+          card.appendChild(port);
+          card.appendChild(angleText);
+          card.appendChild(formula);
+          card.appendChild(result);
+          evaluationGrid.appendChild(card);
+        });
+      }
+
+      function drawPowerRows(values) {
+        clear(powerRows);
+        values.forEach(function (entry) {
+          var row = document.createElement('div');
+          row.className = 'power-row';
+
+          var name = document.createElement('div');
+          name.className = 'power-name';
+          name.textContent = entry.name;
+
+          var track = document.createElement('div');
+          track.className = 'power-track';
+          var fill = document.createElement('div');
+          fill.className = 'power-fill';
+          fill.style.width = (entry.power * 100) + '%';
+          track.appendChild(fill);
+
+          var value = document.createElement('div');
+          value.className = 'power-value';
+          value.textContent = entry.label;
+
+          row.appendChild(name);
+          row.appendChild(track);
+          row.appendChild(value);
+          powerRows.appendChild(row);
+        });
+      }
+
+      function updateCopy() {
+        shownEquation.innerHTML = htmlModeFormula();
+        profileTitle.innerHTML = 'Normalized rim field: <strong>' + htmlModeFormula() + '</strong>';
+
+        if (family === 0) {
+          diskIntro.textContent = 'The breathing mode has no angular node: every direction around the rim has the same field value.';
+          meaningTitle.textContent = 'All three ports read the same field';
+          meaningText.innerHTML = 'For m = 0, E(P1) = E(P2) = E(P3) = 1. This is the uniform angular pattern. It does not explain the P1-aligned dipole response used in the circulator argument.';
+          drawPowerRows([
+            { name: 'P1', power: 1, label: '|E|² = 1' },
+            { name: 'P2', power: 1, label: '|E|² = 1' },
+            { name: 'P3', power: 1, label: '|E|² = 1' }
+          ]);
+          degeneracyTitle.textContent = 'No ±m pair for m = 0';
+          degeneracyText.textContent = 'Changing m from +0 to −0 changes nothing. The breathing mode is a single angular pattern.';
+          degeneracyEquation.innerHTML = 'e<sup>i·0·φ</sup> = 1';
+          degeneracyFoot.textContent = 'Its resonance can exist in the cavity, but it is not the twofold dipole pair that magnetic bias later splits.';
+          conclusionText.innerHTML = '<strong>For m = 0:</strong> the three ports see one uniform angular field. This mode is useful as a contrast: it has no directionality and no degenerate ±1 pair to rotate.';
+        } else if (family === 1) {
+          diskIntro.textContent = 'For the dipole, one antinode points toward P1 and one nodal diameter cuts across the disk.';
+          meaningTitle.textContent = 'Equal magnitudes at P2 and P3';
+          meaningText.innerHTML = 'The dipole gives E(P2) = E(P3) = −1/2. The minus sign means that the local oscillating field is reversed in phase relative to P1; it does not mean negative energy. Coupled power depends on |E|², so P2 and P3 receive equal power.';
+          drawPowerRows([
+            { name: 'P1', power: 1, label: '|E|² = 1' },
+            { name: 'P2', power: 0.25, label: '|E|² = 1/4' },
+            { name: 'P3', power: 0.25, label: '|E|² = 1/4' }
+          ]);
+          degeneracyTitle.textContent = 'Where m = +1 and m = −1 enter';
+          degeneracyText.textContent = 'The drawn dipole is a real standing wave, not a third independent mode. It is the equal superposition of the two counter-rotating cavity modes.';
+          degeneracyEquation.innerHTML = 'cos φ = ½(e<sup>iφ</sup> + e<sup>−iφ</sup>)';
+          degeneracyFoot.textContent = 'Without magnetic bias these two modes have the same resonance frequency, so neither circulation direction is preferred. The result is the stationary dipole above and symmetric coupling toward P2 and P3.';
+          conclusionText.innerHTML = '<strong>Before bias:</strong> port 1 excites a dipole standing wave aligned with itself. The field magnitudes at ports 2 and 3 are equal, so the passive disk cannot choose one output over the other. Magnetic bias is needed in the next step to split the m = ±1 pair and rotate the standing pattern.';
+        } else {
+          diskIntro.textContent = 'The quadrupole has four alternating lobes and two nodal diameters, even though the three ports happen to read the same three numbers as for the dipole.';
+          meaningTitle.textContent = 'The three samples repeat, but the cavity pattern does not';
+          meaningText.innerHTML = 'At P1, P2, and P3, cos(2φ) again gives (1, −1/2, −1/2). This does not make the quadrupole the same mode: the disk now contains four lobes and two nodal diameters. It only shows that three equally spaced point measurements cannot distinguish every angular order.';
+          drawPowerRows([
+            { name: 'P1', power: 1, label: '|E|² = 1' },
+            { name: 'P2', power: 0.25, label: '|E|² = 1/4' },
+            { name: 'P3', power: 0.25, label: '|E|² = 1/4' }
+          ]);
+          degeneracyTitle.textContent = 'The ±2 pair';
+          degeneracyText.textContent = 'The real quadrupole is likewise formed from two counter-rotating modes, now with two phase windings around the disk.';
+          degeneracyEquation.innerHTML = 'cos 2φ = ½(e<sup>i2φ</sup> + e<sup>−i2φ</sup>)';
+          degeneracyFoot.textContent = 'Its different resonance frequency and radial structure, not the three point values alone, separate it from the lowest dipole doublet.';
+          conclusionText.innerHTML = '<strong>For |m| = 2:</strong> the full disk pattern clearly differs from the dipole, but the three port values alias. Therefore the circulator selects the lowest nonuniform resonance through the cavity spectrum, not by the three sample values alone.';
+        }
+      }
+
+      function updateButtons() {
+        modeButtons.forEach(function (button) {
+          button.setAttribute('aria-pressed', Number(button.dataset.family) === family ? 'true' : 'false');
+        });
+        familyCards.forEach(function (card) {
+          card.classList.toggle('is-active', Number(card.dataset.familyCard) === family);
+        });
+      }
+
+      function notifyHeight() {
+        window.requestAnimationFrame(function () {
+          var height = Math.ceil(Math.max(document.documentElement.scrollHeight, document.body.scrollHeight));
+          try {
+            var target = window.location.origin === 'null' ? '*' : window.location.origin;
+            window.parent.postMessage({ type: 'article-visualization-height', height: height }, target);
+          } catch (_error) {}
+        });
+      }
+
+      function update() {
+        updateButtons();
+        drawMode();
+        drawPorts();
+        drawProfile();
+        drawEvaluations();
+        updateCopy();
+        notifyHeight();
+      }
+
+      modeButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          family = Number(button.dataset.family);
+          update();
+        });
+      });
+
+      drawStaticCavity();
+      drawPlotScaffold();
+      update();
+
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(notifyHeight).observe(document.querySelector('.plate'));
+      }
+      window.addEventListener('load', notifyHeight);
+    }());
+  </script>
+</body>
+</html>

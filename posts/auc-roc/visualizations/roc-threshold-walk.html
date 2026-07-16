@@ -1,0 +1,1337 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Build the ROC curve from the score ordering</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --viz-page: #fbfbf8;
+      --viz-surface: #ffffff;
+      --viz-surface-muted: #f4f5f1;
+      --viz-ink: #1c2420;
+      --viz-muted: #667169;
+      --viz-border: #d6ddd7;
+      --viz-border-strong: #a6b2a9;
+      --viz-accent: #5f3f9c;
+      --viz-accent-soft: #f4effd;
+      --viz-accent-border: #cdbce7;
+      --viz-accent-ink: #4c327f;
+
+      --bg: var(--auc-bg, var(--viz-page));
+      --surface: var(--auc-surface, var(--viz-surface));
+      --surface-soft: var(--auc-surface-soft, var(--viz-surface-muted));
+      --ink: var(--auc-text, var(--viz-ink));
+      --muted: var(--auc-muted, var(--viz-muted));
+      --faint: var(--auc-faint, color-mix(in srgb, var(--muted) 72%, transparent));
+      --line: var(--auc-line, var(--viz-border));
+      --line-strong: var(--border-strong, var(--viz-border-strong));
+      --positive: var(--auc-purple, var(--viz-accent));
+      --positive-strong: var(--auc-purple-strong, var(--viz-accent-ink));
+      --positive-soft: var(--auc-purple-soft, var(--viz-accent-soft));
+      --positive-border: var(--accent-border, var(--viz-accent-border));
+      --negative-color: var(--negative, color-mix(in oklab, var(--viz-accent) 68%, var(--viz-ink)));
+      --negative-soft: var(--warm-soft, color-mix(in srgb, var(--viz-accent-soft) 72%, var(--viz-surface)));
+      --shadow: 0 18px 42px -36px color-mix(in srgb, var(--ink) 48%, transparent);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      min-width: 0;
+      margin: 0;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    body {
+      padding: 8px 0 12px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    .roc-walk {
+      width: min(100%, 1040px);
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow: clip;
+    }
+
+    .viz-head {
+      display: grid;
+      gap: 9px;
+      padding: clamp(20px, 4vw, 34px);
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--positive-soft) 78%, transparent), transparent 58%),
+        var(--surface);
+    }
+
+    .eyebrow,
+    .panel-kicker,
+    .control-label,
+    .metric-label,
+    .legend,
+    .rank-label,
+    .step-number {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--positive-strong);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.055em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1,
+    h2 {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      letter-spacing: -0.035em;
+      line-height: 1.16;
+    }
+
+    h1 {
+      max-width: 760px;
+      font-size: clamp(1.35rem, 3.1vw, 2.05rem);
+    }
+
+    .viz-head > p:last-child {
+      max-width: 790px;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: auto minmax(150px, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      padding: 14px clamp(16px, 3vw, 28px);
+      border-bottom: 1px solid var(--line);
+      background: var(--surface-soft);
+    }
+
+    .button-group {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .control-button {
+      min-height: 36px;
+      padding: 7px 11px;
+      border: 1px solid var(--line-strong);
+      border-radius: 0;
+      background: var(--surface);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.76rem;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      transition: border-color 150ms ease, background 150ms ease, color 150ms ease, opacity 150ms ease;
+    }
+
+    .control-button:hover:not(:disabled),
+    .control-button:focus-visible {
+      border-color: var(--positive);
+      color: var(--positive-strong);
+      outline: none;
+    }
+
+    .control-button.primary {
+      border-color: var(--positive);
+      background: var(--positive);
+      color: var(--bg);
+    }
+
+    .control-button.primary:hover:not(:disabled),
+    .control-button.primary:focus-visible {
+      background: var(--positive-strong);
+      color: var(--bg);
+    }
+
+    .control-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.38;
+    }
+
+    .scrubber {
+      display: grid;
+      grid-template-columns: auto minmax(80px, 1fr) auto;
+      gap: 11px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .control-label,
+    .step-number {
+      color: var(--muted);
+      font-size: 0.72rem;
+      white-space: nowrap;
+    }
+
+    .step-number {
+      min-width: 50px;
+      text-align: right;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      min-width: 0;
+      accent-color: var(--positive);
+      cursor: pointer;
+    }
+
+    .panels {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 0;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: clamp(18px, 3vw, 28px);
+    }
+
+    .panel + .panel {
+      border-left: 1px solid var(--line);
+    }
+
+    .panel-head {
+      display: grid;
+      gap: 7px;
+      min-height: 116px;
+      margin-bottom: 14px;
+    }
+
+    .panel-kicker {
+      color: var(--positive-strong);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.045em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-size: clamp(1.02rem, 2.1vw, 1.28rem);
+    }
+
+    .panel-head p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .graphic {
+      position: relative;
+      min-width: 0;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .score-graphic {
+      background:
+        linear-gradient(to bottom, transparent 0 71%, color-mix(in srgb, var(--surface-soft) 66%, transparent) 71% 100%),
+        var(--surface);
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    svg text {
+      fill: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    .svg-muted { fill: var(--muted); }
+    .svg-faint { fill: var(--faint); }
+    .axis-line { stroke: var(--line-strong); }
+    .grid-line { stroke: var(--line); }
+    .baseline { stroke: var(--line-strong); }
+    .positive-stroke { stroke: var(--positive); }
+    .negative-stroke { stroke: var(--negative-color); }
+    .positive-fill { fill: var(--positive); }
+    .negative-fill { fill: var(--negative-color); }
+    .surface-fill { fill: var(--surface); }
+    .surface-soft-fill { fill: var(--surface-soft); }
+    .positive-soft-fill { fill: var(--positive-soft); }
+    .negative-soft-fill { fill: var(--negative-soft); }
+    .line-stroke { stroke: var(--line); }
+    .strong-line-stroke { stroke: var(--line-strong); }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      align-items: center;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .legend-dot {
+      width: 9px;
+      height: 9px;
+      border: 2px solid currentColor;
+      border-radius: 50%;
+      background: var(--surface);
+    }
+
+    .legend-item.positive { color: var(--positive); }
+    .legend-item.negative { color: var(--negative-color); }
+
+    .connection {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      padding: 12px clamp(18px, 3vw, 28px);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: var(--surface-soft);
+    }
+
+    .connection-line {
+      height: 1px;
+      background: var(--line-strong);
+    }
+
+    .connection-copy {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.72rem;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .readout {
+      display: grid;
+      grid-template-columns: 0.8fr 1fr 1.2fr;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 17px clamp(14px, 2.5vw, 24px);
+      background: var(--surface);
+    }
+
+    .metric + .metric {
+      border-left: 1px solid var(--line);
+    }
+
+    .metric-label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.045em;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      display: block;
+      min-height: 1.55em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: clamp(0.84rem, 1.7vw, 0.98rem);
+      font-weight: 700;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .metric-note {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+
+    .step-explanation {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+      padding: clamp(18px, 3vw, 28px);
+      background:
+        linear-gradient(90deg, color-mix(in srgb, var(--positive-soft) 76%, transparent), transparent 65%),
+        var(--surface);
+    }
+
+    .class-badge {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 2px solid var(--positive);
+      border-radius: 50%;
+      background: var(--surface);
+      color: var(--positive-strong);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 1rem;
+      font-weight: 800;
+      transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
+    }
+
+    .class-badge.negative {
+      border-color: var(--negative-color);
+      color: var(--negative-color);
+    }
+
+    .step-copy {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .step-copy strong {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.95rem;
+    }
+
+    .step-copy p {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .step-formula {
+      display: inline-block;
+      width: fit-content;
+      max-width: 100%;
+      margin-top: 3px;
+      padding: 8px 10px;
+      border-left: 3px solid var(--positive);
+      background: var(--surface-soft);
+      color: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: clamp(0.76rem, 1.7vw, 0.88rem);
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    .step-formula.negative {
+      border-left-color: var(--negative-color);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 760px) {
+      .controls {
+        grid-template-columns: 1fr;
+        gap: 11px;
+      }
+
+      .button-group {
+        justify-content: center;
+      }
+
+      .scrubber {
+        order: -1;
+      }
+
+      .panels {
+        grid-template-columns: 1fr;
+      }
+
+      .panel + .panel {
+        border-top: 1px solid var(--line);
+        border-left: 0;
+      }
+
+      .panel-head {
+        min-height: 0;
+      }
+
+      .readout {
+        grid-template-columns: 1fr;
+      }
+
+      .metric + .metric {
+        border-top: 1px solid var(--line);
+        border-left: 0;
+      }
+    }
+
+    @media (max-width: 470px) {
+      body { font-size: 15px; }
+
+      .viz-head,
+      .panel,
+      .step-explanation {
+        padding-right: 16px;
+        padding-left: 16px;
+      }
+
+      .controls {
+        padding-right: 12px;
+        padding-left: 12px;
+      }
+
+      .control-button {
+        flex: 1;
+        padding-inline: 8px;
+      }
+
+      .button-group {
+        width: 100%;
+      }
+
+      .connection-copy {
+        white-space: normal;
+      }
+
+      .step-explanation {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="roc-walk" aria-labelledby="roc-walk-title">
+    <header class="viz-head">
+      <p class="eyebrow">threshold sweep · one sample per step</p>
+      <h1 id="roc-walk-title">Build the ROC curve from the score ordering</h1>
+      <p>
+        The two panels show the same threshold state. Raising the threshold moves it from left to right through increasing scores; each sample left behind is removed from the predicted-positive set and produces exactly one downward or leftward ROC step.
+      </p>
+    </header>
+
+    <section class="controls" aria-label="Visualization controls">
+      <div class="button-group">
+        <button class="control-button" id="previous" type="button" aria-label="Previous threshold state">← previous</button>
+        <button class="control-button primary" id="next" type="button">next →</button>
+      </div>
+
+      <label class="scrubber" for="step-slider">
+        <span class="control-label">threshold passed</span>
+        <input id="step-slider" type="range" min="0" max="10" step="1" value="0">
+        <span class="step-number" id="step-number">0 / 10</span>
+      </label>
+
+      <div class="button-group">
+        <button class="control-button" id="play" type="button">play</button>
+        <button class="control-button" id="reset" type="button">reset</button>
+      </div>
+    </section>
+
+    <section class="panels">
+      <article class="panel" aria-labelledby="score-title">
+        <header class="panel-head">
+          <span class="panel-kicker">1 · score ordering</span>
+          <h2 id="score-title">Raise t; the next sample leaves</h2>
+          <p>
+            Scores increase from left to right. The threshold begins below every score and moves right, so the predicted-positive set remains the region to its right while low-scored samples leave it one at a time.
+          </p>
+        </header>
+
+        <div class="graphic score-graphic">
+          <svg id="score-svg" viewBox="0 0 560 276" role="img" aria-labelledby="score-svg-title score-svg-desc">
+            <title id="score-svg-title">Increasing threshold moving left to right through samples ordered by classifier score</title>
+            <desc id="score-svg-desc">Scores increase to the right. As the threshold moves right, low-scored samples leave the predicted-positive set one at a time.</desc>
+            <defs>
+              <marker id="score-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line-strong)"></path>
+              </marker>
+              <filter id="active-shadow" x="-60%" y="-60%" width="220%" height="220%">
+                <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="var(--positive)" flood-opacity="0.28"></feDropShadow>
+              </filter>
+            </defs>
+
+            <rect id="predicted-region" x="520" y="72" width="0" height="104" class="positive-soft-fill" opacity="0.78"></rect>
+            <text id="predicted-label" x="514" y="90" text-anchor="end" font-size="11" class="svg-muted">predicted positive</text>
+
+            <line x1="52" y1="176" x2="520" y2="176" class="axis-line" stroke-width="1.4" marker-end="url(#score-arrow)"></line>
+            <text x="52" y="205" font-size="11" class="svg-muted">lower score</text>
+            <text x="520" y="205" text-anchor="end" font-size="11" class="svg-muted">higher score</text>
+
+            <line x1="76" y1="42" x2="500" y2="42" class="strong-line-stroke" stroke-width="1" marker-end="url(#score-arrow)"></line>
+            <text x="288" y="28" text-anchor="middle" font-size="11" class="svg-muted">threshold sweep as t increases</text>
+
+            <g id="score-samples"></g>
+
+            <g id="threshold-group">
+              <line id="threshold-line" x1="536" y1="58" x2="536" y2="188" class="positive-stroke" stroke-width="2"></line>
+              <path id="threshold-cap" d="M 529 58 L 543 58 L 536 68 Z" class="positive-fill"></path>
+              <rect id="threshold-pill" x="514" y="213" width="44" height="28" rx="14" class="surface-fill" stroke="var(--positive)" stroke-width="1.3"></rect>
+              <text id="threshold-text" x="536" y="232" text-anchor="middle" font-size="12" font-weight="700" fill="var(--positive-strong)">t</text>
+            </g>
+
+            <text x="52" y="256" font-size="10.5" class="svg-muted">leftmost sample leaves first</text>
+          </svg>
+        </div>
+
+        <div class="legend" aria-label="Sample class legend">
+          <span class="legend-item positive"><span class="legend-dot"></span>actual positive</span>
+          <span class="legend-item negative"><span class="legend-dot"></span>actual negative</span>
+        </div>
+      </article>
+
+      <article class="panel" aria-labelledby="roc-title">
+        <header class="panel-head">
+          <span class="panel-kicker">2 · ROC space</span>
+          <h2 id="roc-title">The same sample becomes one step</h2>
+          <p>
+            Removing a positive changes only TPR, so the walk moves down. Removing a negative changes only FPR, so the walk moves left.
+          </p>
+        </header>
+
+        <div class="graphic">
+          <svg id="roc-svg" viewBox="0 0 560 420" role="img" aria-labelledby="roc-svg-title roc-svg-desc">
+            <title id="roc-svg-title">ROC staircase traced one ordered sample at a time</title>
+            <desc id="roc-svg-desc">Removing positive samples creates downward steps of one over the number of positives. Removing negative samples creates leftward steps of one over the number of negatives.</desc>
+            <defs>
+              <marker id="roc-positive-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--positive)"></path>
+              </marker>
+              <marker id="roc-negative-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--negative-color)"></path>
+              </marker>
+            </defs>
+
+            <g id="roc-grid"></g>
+            <line id="roc-diagonal" x1="78" y1="342" x2="510" y2="42" class="baseline" stroke-width="1" stroke-dasharray="5 6" opacity="0.72"></line>
+            <text x="430" y="112" font-size="10.5" class="svg-muted" transform="rotate(-34 430 112)">random-order baseline</text>
+
+            <g id="roc-future"></g>
+            <g id="roc-complete"></g>
+            <g id="roc-active"></g>
+            <g id="roc-points"></g>
+
+            <line x1="78" y1="342" x2="510" y2="342" class="axis-line" stroke-width="1.4"></line>
+            <line x1="78" y1="342" x2="78" y2="42" class="axis-line" stroke-width="1.4"></line>
+
+            <text x="294" y="397" text-anchor="middle" font-size="12" font-weight="700">false-positive rate · FPR</text>
+            <text x="23" y="192" text-anchor="middle" font-size="12" font-weight="700" transform="rotate(-90 23 192)">true-positive rate · TPR</text>
+
+            <g id="active-step-label" visibility="hidden">
+              <rect id="active-step-label-bg" x="0" y="0" width="92" height="28" rx="14" class="surface-fill" stroke="var(--positive)" stroke-width="1.2"></rect>
+              <text id="active-step-label-text" x="46" y="19" text-anchor="middle" font-size="10.5" font-weight="700">−1 / |P|</text>
+            </g>
+
+            <circle id="roc-marker-halo" cx="78" cy="342" r="10" fill="var(--positive-soft)" opacity="0.9"></circle>
+            <circle id="roc-marker" cx="78" cy="342" r="5.2" class="surface-fill" stroke="var(--positive)" stroke-width="2.4"></circle>
+          </svg>
+        </div>
+
+        <div class="legend" aria-label="ROC step legend">
+          <span class="legend-item positive">downward step = remove positive</span>
+          <span class="legend-item negative">leftward step = remove negative</span>
+        </div>
+      </article>
+    </section>
+
+    <div class="connection" aria-hidden="true">
+      <span class="connection-line"></span>
+      <span class="connection-copy">same threshold state in both panels</span>
+      <span class="connection-line"></span>
+    </div>
+
+    <section class="readout" aria-label="Current threshold state">
+      <div class="metric">
+        <span class="metric-label">threshold state</span>
+        <span class="metric-value" id="state-value">k = 0</span>
+        <span class="metric-note" id="state-note">Every sample is predicted positive.</span>
+      </div>
+
+      <div class="metric">
+        <span class="metric-label">class counts</span>
+        <span class="metric-value" id="count-value">TP = 5, FP = 5</span>
+        <span class="metric-note">|P| = 5 and |N| = 5 in this ordering.</span>
+      </div>
+
+      <div class="metric">
+        <span class="metric-label">ROC point</span>
+        <span class="metric-value" id="point-value">(F₀, T₀) = (1, 1)</span>
+        <span class="metric-note" id="point-note">F₀ = FP / |N|, T₀ = TP / |P|</span>
+      </div>
+    </section>
+
+    <section class="step-explanation" aria-live="polite" aria-atomic="true">
+      <div class="class-badge" id="class-badge">t</div>
+      <div class="step-copy">
+        <strong id="step-title">Threshold below every score</strong>
+        <p id="step-description">Start at (F₀, T₀) = (1, 1). Press next to raise the threshold past the lowest-scored sample.</p>
+        <div class="step-formula" id="step-formula">predicted positive set = all samples</div>
+      </div>
+    </section>
+
+    <p class="sr-only" id="screen-reader-status" aria-live="polite"></p>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const samples = [
+        { rank: 10, label: 'x₁₀', positive: false },
+        { rank: 9, label: 'x₉', positive: true },
+        { rank: 8, label: 'x₈', positive: false },
+        { rank: 7, label: 'x₇', positive: false },
+        { rank: 6, label: 'x₆', positive: true },
+        { rank: 5, label: 'x₅', positive: false },
+        { rank: 4, label: 'x₄', positive: true },
+        { rank: 3, label: 'x₃', positive: false },
+        { rank: 2, label: 'x₂', positive: true },
+        { rank: 1, label: 'x₁', positive: true }
+      ];
+
+      const P = samples.filter(sample => sample.positive).length;
+      const N = samples.length - P;
+      const NS = 'http://www.w3.org/2000/svg';
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const elements = {
+        previous: document.getElementById('previous'),
+        next: document.getElementById('next'),
+        play: document.getElementById('play'),
+        reset: document.getElementById('reset'),
+        slider: document.getElementById('step-slider'),
+        stepNumber: document.getElementById('step-number'),
+        scoreSamples: document.getElementById('score-samples'),
+        predictedRegion: document.getElementById('predicted-region'),
+        predictedLabel: document.getElementById('predicted-label'),
+        thresholdGroup: document.getElementById('threshold-group'),
+        thresholdLine: document.getElementById('threshold-line'),
+        thresholdCap: document.getElementById('threshold-cap'),
+        thresholdPill: document.getElementById('threshold-pill'),
+        thresholdText: document.getElementById('threshold-text'),
+        rocGrid: document.getElementById('roc-grid'),
+        rocFuture: document.getElementById('roc-future'),
+        rocComplete: document.getElementById('roc-complete'),
+        rocActive: document.getElementById('roc-active'),
+        rocPoints: document.getElementById('roc-points'),
+        rocMarker: document.getElementById('roc-marker'),
+        rocMarkerHalo: document.getElementById('roc-marker-halo'),
+        activeStepLabel: document.getElementById('active-step-label'),
+        activeStepLabelBg: document.getElementById('active-step-label-bg'),
+        activeStepLabelText: document.getElementById('active-step-label-text'),
+        stateValue: document.getElementById('state-value'),
+        stateNote: document.getElementById('state-note'),
+        countValue: document.getElementById('count-value'),
+        pointValue: document.getElementById('point-value'),
+        pointNote: document.getElementById('point-note'),
+        classBadge: document.getElementById('class-badge'),
+        stepTitle: document.getElementById('step-title'),
+        stepDescription: document.getElementById('step-description'),
+        stepFormula: document.getElementById('step-formula'),
+        screenReaderStatus: document.getElementById('screen-reader-status')
+      };
+
+      const scoreAxis = { left: 72, right: 500, y: 146 };
+      const scoreSpacing = (scoreAxis.right - scoreAxis.left) / (samples.length - 1);
+      const sampleX = samples.map((_, index) => scoreAxis.left + index * scoreSpacing);
+      const thresholdX = [scoreAxis.left - 30];
+
+      for (let k = 1; k < samples.length; k += 1) {
+        thresholdX.push((sampleX[k - 1] + sampleX[k]) / 2);
+      }
+      thresholdX.push(scoreAxis.right + 36);
+
+      const rocPlot = { left: 78, right: 510, top: 42, bottom: 342 };
+      const rocX = fpr => rocPlot.left + fpr * (rocPlot.right - rocPlot.left);
+      const rocY = tpr => rocPlot.bottom - tpr * (rocPlot.bottom - rocPlot.top);
+
+      const states = [{ tp: P, fp: N, fpr: 1, tpr: 1 }];
+      samples.forEach(sample => {
+        const previous = states[states.length - 1];
+        const tp = previous.tp - (sample.positive ? 1 : 0);
+        const fp = previous.fp - (sample.positive ? 0 : 1);
+        states.push({ tp, fp, fpr: fp / N, tpr: tp / P });
+      });
+
+      let step = 0;
+      let visualPosition = 0;
+      let animationFrame = 0;
+      let animationToken = 0;
+      let playTimer = 0;
+      let playing = false;
+
+      function svgElement(name, attributes = {}) {
+        const node = document.createElementNS(NS, name);
+        Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, String(value)));
+        return node;
+      }
+
+      function clear(node) {
+        while (node.firstChild) node.removeChild(node.firstChild);
+      }
+
+      function formatRate(value) {
+        if (value === 0 || value === 1) return String(value);
+        return value.toFixed(1).replace(/\.0$/, '');
+      }
+
+      function subscriptNumber(number) {
+        const chars = { '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉' };
+        return String(number).split('').map(char => chars[char] || char).join('');
+      }
+
+      function stateAt(position) {
+        const bounded = Math.max(0, Math.min(samples.length, position));
+        const full = Math.min(samples.length, Math.floor(bounded + 1e-9));
+        const fraction = full >= samples.length ? 0 : bounded - full;
+        const base = states[full];
+
+        if (!fraction || full >= samples.length) {
+          return { ...base, full, fraction: 0, x: rocX(base.fpr), y: rocY(base.tpr) };
+        }
+
+        const next = states[full + 1];
+        const fpr = base.fpr + (next.fpr - base.fpr) * fraction;
+        const tpr = base.tpr + (next.tpr - base.tpr) * fraction;
+        return { ...base, full, fraction, fpr, tpr, x: rocX(fpr), y: rocY(tpr) };
+      }
+
+      function buildScoreSamples() {
+        clear(elements.scoreSamples);
+
+        samples.forEach((sample, index) => {
+          const group = svgElement('g', {
+            'data-sample-index': index,
+            transform: `translate(${sampleX[index]} 0)`
+          });
+
+          const stem = svgElement('line', {
+            x1: 0,
+            y1: 134,
+            x2: 0,
+            y2: 176,
+            class: 'line-stroke',
+            'stroke-width': 1
+          });
+
+          const halo = svgElement('circle', {
+            cx: 0,
+            cy: 120,
+            r: 23,
+            fill: sample.positive ? 'var(--positive-soft)' : 'var(--negative-soft)',
+            opacity: 0,
+            'data-role': 'halo'
+          });
+
+          const circle = svgElement('circle', {
+            cx: 0,
+            cy: 120,
+            r: 14,
+            fill: 'var(--surface)',
+            stroke: sample.positive ? 'var(--positive)' : 'var(--negative-color)',
+            'stroke-width': 2,
+            'data-role': 'circle'
+          });
+
+          const sign = svgElement('text', {
+            x: 0,
+            y: 125,
+            'text-anchor': 'middle',
+            'font-size': 15,
+            'font-weight': 800,
+            fill: sample.positive ? 'var(--positive-strong)' : 'var(--negative-color)',
+            'data-role': 'sign'
+          });
+          sign.textContent = sample.positive ? '+' : '−';
+
+          const label = svgElement('text', {
+            x: 0,
+            y: 100,
+            'text-anchor': 'middle',
+            'font-size': 10.5,
+            class: 'svg-muted',
+            'data-role': 'label'
+          });
+          label.textContent = sample.label;
+
+          const rank = svgElement('text', {
+            x: 0,
+            y: 225,
+            'text-anchor': 'middle',
+            'font-size': 9.5,
+            class: 'svg-muted',
+            'data-role': 'rank'
+          });
+          rank.textContent = `rank ${sample.rank}`;
+
+          group.append(stem, halo, circle, sign, label, rank);
+          elements.scoreSamples.appendChild(group);
+        });
+      }
+
+      function buildRocGrid() {
+        clear(elements.rocGrid);
+
+        for (let i = 0; i <= 5; i += 1) {
+          const value = i / 5;
+          const x = rocX(value);
+          const y = rocY(value);
+
+          elements.rocGrid.appendChild(svgElement('line', {
+            x1: x,
+            y1: rocPlot.top,
+            x2: x,
+            y2: rocPlot.bottom,
+            class: 'grid-line',
+            'stroke-width': i === 0 || i === 5 ? 0 : 0.8
+          }));
+
+          elements.rocGrid.appendChild(svgElement('line', {
+            x1: rocPlot.left,
+            y1: y,
+            x2: rocPlot.right,
+            y2: y,
+            class: 'grid-line',
+            'stroke-width': i === 0 || i === 5 ? 0 : 0.8
+          }));
+
+          const xLabel = svgElement('text', {
+            x,
+            y: rocPlot.bottom + 23,
+            'text-anchor': 'middle',
+            'font-size': 10.5,
+            class: 'svg-muted'
+          });
+          xLabel.textContent = formatRate(value);
+          elements.rocGrid.appendChild(xLabel);
+
+          const yLabel = svgElement('text', {
+            x: rocPlot.left - 13,
+            y: y + 4,
+            'text-anchor': 'end',
+            'font-size': 10.5,
+            class: 'svg-muted'
+          });
+          yLabel.textContent = formatRate(value);
+          elements.rocGrid.appendChild(yLabel);
+        }
+      }
+
+      function updateScore(position) {
+        const bounded = Math.max(0, Math.min(samples.length, position));
+        const full = Math.floor(bounded + 1e-9);
+        const fraction = full >= samples.length ? 0 : bounded - full;
+        const fromX = thresholdX[full];
+        const toX = thresholdX[Math.min(samples.length, full + 1)];
+        const x = fromX + (toX - fromX) * fraction;
+        const regionRight = 520;
+        const regionX = Math.max(52, Math.min(regionRight, x));
+
+        elements.predictedRegion.setAttribute('x', regionX);
+        elements.predictedRegion.setAttribute('width', Math.max(0, regionRight - regionX));
+        elements.predictedLabel.setAttribute('visibility', bounded > 0.05 ? 'visible' : 'hidden');
+
+        elements.thresholdLine.setAttribute('x1', x);
+        elements.thresholdLine.setAttribute('x2', x);
+        elements.thresholdCap.setAttribute('d', `M ${x - 7} 58 L ${x + 7} 58 L ${x} 68 Z`);
+        elements.thresholdPill.setAttribute('x', x - 22);
+        elements.thresholdText.setAttribute('x', x);
+        elements.thresholdText.textContent = full === samples.length ? 't > max S' : full === 0 ? 't < min S' : 't';
+
+        const pillWidth = full === samples.length || full === 0 ? 84 : 44;
+        elements.thresholdPill.setAttribute('width', pillWidth);
+        elements.thresholdPill.setAttribute('x', x - pillWidth / 2);
+
+        const groups = elements.scoreSamples.querySelectorAll('[data-sample-index]');
+        groups.forEach((group, index) => {
+          const removed = index < bounded - 0.001;
+          const active = index === full && fraction > 0.001 && full < samples.length;
+          const circle = group.querySelector('[data-role="circle"]');
+          const halo = group.querySelector('[data-role="halo"]');
+          const sign = group.querySelector('[data-role="sign"]');
+          const label = group.querySelector('[data-role="label"]');
+          const rank = group.querySelector('[data-role="rank"]');
+
+          group.setAttribute('opacity', removed && !active ? '0.42' : '1');
+          halo.setAttribute('opacity', active ? String(0.32 + 0.48 * fraction) : '0');
+          halo.setAttribute('r', active ? String(19 + 5 * fraction) : '19');
+          circle.setAttribute('fill', removed ? 'var(--surface)' : (samples[index].positive ? 'var(--positive-soft)' : 'var(--negative-soft)'));
+          circle.setAttribute('stroke-width', active ? '3' : removed ? '1.7' : '2.4');
+          sign.setAttribute('font-size', active ? '17' : '15');
+          label.setAttribute('font-weight', active || !removed ? '700' : '400');
+          rank.setAttribute('font-weight', active ? '700' : '400');
+        });
+      }
+
+      function drawRocSegment(container, startState, endState, sample, options = {}) {
+        const line = svgElement('line', {
+          x1: rocX(startState.fpr),
+          y1: rocY(startState.tpr),
+          x2: rocX(endState.fpr),
+          y2: rocY(endState.tpr),
+          stroke: options.future ? 'var(--line-strong)' : sample.positive ? 'var(--positive)' : 'var(--negative-color)',
+          'stroke-width': options.future ? 1.2 : options.active ? 4 : 3,
+          'stroke-linecap': 'round',
+          opacity: options.future ? 0.34 : 1
+        });
+
+        if (options.future) line.setAttribute('stroke-dasharray', '4 6');
+        if (options.active) {
+          line.setAttribute('marker-end', sample.positive ? 'url(#roc-positive-arrow)' : 'url(#roc-negative-arrow)');
+        }
+        container.appendChild(line);
+      }
+
+      function updateActiveStepLabel(startState, currentState, sample, fraction) {
+        if (!sample || fraction <= 0.04) {
+          elements.activeStepLabel.setAttribute('visibility', 'hidden');
+          return;
+        }
+
+        const x1 = rocX(startState.fpr);
+        const y1 = rocY(startState.tpr);
+        const x2 = currentState.x;
+        const y2 = currentState.y;
+        let x;
+        let y;
+        let width = 94;
+
+        if (sample.positive) {
+          x = x1 < rocPlot.right - 110 ? x1 + 14 : x1 - 108;
+          y = (y1 + y2) / 2 - 14;
+          elements.activeStepLabelText.textContent = '−1 / |P|';
+        } else {
+          x = (x1 + x2) / 2 - 47;
+          y = y1 > rocPlot.top + 45 ? y1 - 38 : y1 + 10;
+          elements.activeStepLabelText.textContent = '−1 / |N|';
+        }
+
+        x = Math.max(84, Math.min(rocPlot.right - width, x));
+        y = Math.max(10, Math.min(rocPlot.bottom - 30, y));
+
+        elements.activeStepLabel.setAttribute('transform', `translate(${x} ${y})`);
+        elements.activeStepLabel.setAttribute('visibility', 'visible');
+        elements.activeStepLabelBg.setAttribute('stroke', sample.positive ? 'var(--positive)' : 'var(--negative-color)');
+        elements.activeStepLabelText.setAttribute('fill', sample.positive ? 'var(--positive-strong)' : 'var(--negative-color)');
+      }
+
+      function updateRoc(position) {
+        clear(elements.rocFuture);
+        clear(elements.rocComplete);
+        clear(elements.rocActive);
+        clear(elements.rocPoints);
+
+        const current = stateAt(position);
+        const full = current.full;
+
+        for (let i = 0; i < full; i += 1) {
+          drawRocSegment(elements.rocComplete, states[i], states[i + 1], samples[i]);
+        }
+
+        if (current.fraction > 0 && full < samples.length) {
+          drawRocSegment(
+            elements.rocActive,
+            states[full],
+            { fpr: current.fpr, tpr: current.tpr },
+            samples[full],
+            { active: true }
+          );
+        }
+
+        const futureStart = current.fraction > 0 ? full + 1 : full;
+        if (current.fraction > 0 && full < samples.length) {
+          drawRocSegment(
+            elements.rocFuture,
+            { fpr: current.fpr, tpr: current.tpr },
+            states[full + 1],
+            samples[full],
+            { future: true }
+          );
+        }
+        for (let i = futureStart; i < samples.length; i += 1) {
+          drawRocSegment(elements.rocFuture, states[i], states[i + 1], samples[i], { future: true });
+        }
+
+        for (let i = 0; i <= full; i += 1) {
+          const state = states[i];
+          const point = svgElement('circle', {
+            cx: rocX(state.fpr),
+            cy: rocY(state.tpr),
+            r: i === full && current.fraction === 0 ? 4.2 : 2.7,
+            fill: 'var(--surface)',
+            stroke: i === 0 ? 'var(--line-strong)' : samples[i - 1].positive ? 'var(--positive)' : 'var(--negative-color)',
+            'stroke-width': i === full && current.fraction === 0 ? 2 : 1.4
+          });
+          elements.rocPoints.appendChild(point);
+        }
+
+        elements.rocMarker.setAttribute('cx', current.x);
+        elements.rocMarker.setAttribute('cy', current.y);
+        elements.rocMarkerHalo.setAttribute('cx', current.x);
+        elements.rocMarkerHalo.setAttribute('cy', current.y);
+
+        const activeSample = current.fraction > 0 && full < samples.length ? samples[full] : full > 0 ? samples[full - 1] : null;
+        const markerColor = activeSample ? (activeSample.positive ? 'var(--positive)' : 'var(--negative-color)') : 'var(--positive)';
+        const markerSoft = activeSample ? (activeSample.positive ? 'var(--positive-soft)' : 'var(--negative-soft)') : 'var(--positive-soft)';
+        elements.rocMarker.setAttribute('stroke', markerColor);
+        elements.rocMarkerHalo.setAttribute('fill', markerSoft);
+        elements.rocMarkerHalo.setAttribute('r', current.fraction > 0 ? String(9 + 4 * current.fraction) : '10');
+
+        updateActiveStepLabel(states[full], current, full < samples.length ? samples[full] : null, current.fraction);
+      }
+
+      function updateReadout(targetStep) {
+        const state = states[targetStep];
+        const sub = subscriptNumber(targetStep);
+
+        elements.stepNumber.textContent = `${targetStep} / ${samples.length}`;
+        elements.slider.value = String(targetStep);
+        elements.previous.disabled = targetStep === 0;
+        elements.next.disabled = targetStep === samples.length;
+        elements.reset.disabled = targetStep === 0 && !playing;
+
+        elements.stateValue.textContent = `k = ${targetStep}`;
+        elements.stateNote.textContent = targetStep === 0
+          ? 'Every sample is predicted positive.'
+          : targetStep === samples.length
+            ? 'No sample is predicted positive.'
+            : `The threshold has passed the ${targetStep} lowest-scored sample${targetStep === 1 ? '' : 's'}; the ${samples.length - targetStep} highest-scored sample${samples.length - targetStep === 1 ? '' : 's'} remain predicted positive.`;
+
+        elements.countValue.textContent = `TP = ${state.tp}, FP = ${state.fp}`;
+        elements.pointValue.textContent = `(F${sub}, T${sub}) = (${formatRate(state.fpr)}, ${formatRate(state.tpr)})`;
+        elements.pointNote.textContent = `F${sub} = ${state.fp} / ${N}, T${sub} = ${state.tp} / ${P}`;
+
+        elements.classBadge.classList.remove('negative');
+        elements.stepFormula.classList.remove('negative');
+
+        if (targetStep === 0) {
+          elements.classBadge.textContent = 't';
+          elements.stepTitle.textContent = 'Threshold below every score';
+          elements.stepDescription.textContent = 'Start at (F₀, T₀) = (1, 1). Press next to raise the threshold past the lowest-scored sample.';
+          elements.stepFormula.textContent = 'predicted positive set = all samples';
+          elements.screenReaderStatus.textContent = 'Threshold state zero. Every sample is predicted positive. ROC point one, one.';
+          return;
+        }
+
+        const sample = samples[targetStep - 1];
+        const previousSub = subscriptNumber(targetStep - 1);
+        elements.classBadge.textContent = sample.positive ? '+' : '−';
+        elements.classBadge.classList.toggle('negative', !sample.positive);
+        elements.stepFormula.classList.toggle('negative', !sample.positive);
+
+        if (sample.positive) {
+          elements.stepTitle.textContent = `${sample.label} is actually positive: step down`;
+          elements.stepDescription.textContent = `This positive sample leaves the predicted-positive set. TP decreases by one while FP is unchanged, so TPR falls by 1 / |P| and FPR stays fixed.`;
+          elements.stepFormula.textContent = `F${sub} = F${previousSub},    T${sub} = T${previousSub} − 1 / |P|`;
+          elements.screenReaderStatus.textContent = `Threshold passed ${targetStep} of ${samples.length} samples. ${sample.label} is positive. The ROC curve steps down to false positive rate ${formatRate(state.fpr)} and true positive rate ${formatRate(state.tpr)}.`;
+        } else {
+          elements.stepTitle.textContent = `${sample.label} is actually negative: step left`;
+          elements.stepDescription.textContent = `This negative sample leaves the predicted-positive set. FP decreases by one while TP is unchanged, so FPR falls by 1 / |N| and TPR stays fixed.`;
+          elements.stepFormula.textContent = `F${sub} = F${previousSub} − 1 / |N|,    T${sub} = T${previousSub}`;
+          elements.screenReaderStatus.textContent = `Threshold passed ${targetStep} of ${samples.length} samples. ${sample.label} is negative. The ROC curve steps left to false positive rate ${formatRate(state.fpr)} and true positive rate ${formatRate(state.tpr)}.`;
+        }
+      }
+
+      function render(position, targetStep = step, updateText = false) {
+        visualPosition = Math.max(0, Math.min(samples.length, position));
+        updateScore(visualPosition);
+        updateRoc(visualPosition);
+        if (updateText) updateReadout(targetStep);
+      }
+
+      function stopAnimation() {
+        animationToken += 1;
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        animationFrame = 0;
+      }
+
+      function easeInOutCubic(value) {
+        return value < 0.5
+          ? 4 * value * value * value
+          : 1 - Math.pow(-2 * value + 2, 3) / 2;
+      }
+
+      function animateTo(target, { announce = true } = {}) {
+        target = Math.max(0, Math.min(samples.length, Math.round(target)));
+        stopAnimation();
+
+        const from = visualPosition;
+        const distance = Math.abs(target - from);
+        step = target;
+        elements.slider.value = String(target);
+        elements.stepNumber.textContent = `${target} / ${samples.length}`;
+
+        if (distance < 0.001 || reducedMotion) {
+          render(target, target, true);
+          if (announce) elements.screenReaderStatus.textContent = elements.screenReaderStatus.textContent;
+          reportHeight();
+          return;
+        }
+
+        const token = animationToken;
+        const duration = Math.min(760, 310 + distance * 58);
+        const startTime = performance.now();
+
+        const tick = now => {
+          if (token !== animationToken) return;
+          const elapsed = Math.min(1, (now - startTime) / duration);
+          const eased = easeInOutCubic(elapsed);
+          render(from + (target - from) * eased, target, false);
+
+          if (elapsed < 1) {
+            animationFrame = requestAnimationFrame(tick);
+          } else {
+            animationFrame = 0;
+            render(target, target, true);
+            reportHeight();
+          }
+        };
+
+        animationFrame = requestAnimationFrame(tick);
+      }
+
+      function stopPlaying() {
+        playing = false;
+        if (playTimer) window.clearTimeout(playTimer);
+        playTimer = 0;
+        elements.play.textContent = 'play';
+        elements.play.setAttribute('aria-pressed', 'false');
+      }
+
+      function schedulePlayStep() {
+        if (!playing) return;
+        if (step >= samples.length) {
+          stopPlaying();
+          return;
+        }
+
+        animateTo(step + 1);
+        playTimer = window.setTimeout(schedulePlayStep, reducedMotion ? 260 : 820);
+      }
+
+      function togglePlay() {
+        if (playing) {
+          stopPlaying();
+          return;
+        }
+
+        if (step >= samples.length) {
+          step = 0;
+          render(0, 0, true);
+        }
+
+        playing = true;
+        elements.play.textContent = 'pause';
+        elements.play.setAttribute('aria-pressed', 'true');
+        schedulePlayStep();
+      }
+
+      function reportHeight() {
+        const height = Math.ceil(document.documentElement.scrollHeight);
+        try {
+          window.parent.postMessage({ type: 'article-visualization-height', height }, window.location.origin);
+        } catch (_error) {
+          // The parent also measures this document with ResizeObserver.
+        }
+      }
+
+      elements.previous.addEventListener('click', () => {
+        stopPlaying();
+        animateTo(step - 1);
+      });
+
+      elements.next.addEventListener('click', () => {
+        stopPlaying();
+        animateTo(step + 1);
+      });
+
+      elements.play.addEventListener('click', togglePlay);
+
+      elements.reset.addEventListener('click', () => {
+        stopPlaying();
+        animateTo(0);
+      });
+
+      elements.slider.addEventListener('input', event => {
+        stopPlaying();
+        animateTo(Number(event.target.value));
+      });
+
+      document.addEventListener('keydown', event => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          stopPlaying();
+          animateTo(step - 1);
+        } else if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          stopPlaying();
+          animateTo(step + 1);
+        } else if (event.key === 'Home') {
+          event.preventDefault();
+          stopPlaying();
+          animateTo(0);
+        } else if (event.key === 'End') {
+          event.preventDefault();
+          stopPlaying();
+          animateTo(samples.length);
+        }
+      });
+
+      window.addEventListener('resize', reportHeight, { passive: true });
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(reportHeight).catch(() => {});
+      }
+
+      buildScoreSamples();
+      buildRocGrid();
+      render(0, 0, true);
+      reportHeight();
+      window.setTimeout(reportHeight, 120);
+    })();
+  </script>
+</body>
+</html>

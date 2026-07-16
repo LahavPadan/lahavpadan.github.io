@@ -1,582 +1,836 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conceptual AUC ranking visualization</title>
+  <meta name="color-scheme" content="light dark">
+  <title>AUC as ranking probability</title>
   <style>
-    html { background: #0d1511; }
-    body {
-      margin: 0;
-      min-width: 320px;
-      padding: 20px 0 42px;
-      background: #0d1511;
-      color: #f1eee6;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    :root {
+      --page: var(--viz-page, #f7f5f1);
+      --panel: var(--viz-surface, #fffdfa);
+      --panel-2: var(--viz-surface-muted, #f2eef4);
+      --ink: var(--viz-ink, #20232b);
+      --muted: var(--viz-muted, #68717e);
+      --line: var(--viz-border, #d9d2dc);
+      --line-strong: var(--viz-border-strong, #a89daa);
+      --accent: var(--viz-accent, #6d3fa0);
+      --accent-ink: var(--viz-accent-ink, #5b3188);
+      --accent-soft: var(--viz-accent-soft, #f0e7f8);
+      --shadow: 0 18px 44px rgba(42, 30, 50, .08);
+      --serif: Georgia, "Times New Roman", serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --math: "Cambria Math", "STIX Two Math", "Times New Roman", serif;
+      color-scheme: light;
     }
-    @media (prefers-color-scheme: light) {
-      html, body { background: #f6f6f2; color: #1d2520; }
+
+    :root[data-theme="dark"] {
+      --page: var(--viz-page, #0d1411);
+      --panel: var(--viz-surface, #111b17);
+      --panel-2: var(--viz-surface-muted, #17231e);
+      --ink: var(--viz-ink, #f4f0e7);
+      --muted: var(--viz-muted, #b6c0b8);
+      --line: var(--viz-border, #314139);
+      --line-strong: var(--viz-border-strong, #66766e);
+      --accent: var(--viz-accent, #d7a8f5);
+      --accent-ink: var(--viz-accent-ink, #e3c3fa);
+      --accent-soft: var(--viz-accent-soft, #34233e);
+      --shadow: 0 18px 48px rgba(0, 0, 0, .28);
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-width: 0; background: transparent; color: var(--ink); }
+    body { padding: 1px; font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+    button, input { font: inherit; }
+
+    .ranking-viz {
+      width: 100%;
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .ranking-viz::before {
+      content: "";
+      display: block;
+      height: 3px;
+      background: var(--accent);
+    }
+
+    .viz-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+      align-items: end;
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow,
+    .panel-kicker,
+    .metric-label,
+    .control-readout {
+      font-family: var(--mono);
+      font-weight: 750;
+      letter-spacing: .075em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow {
+      margin: 0 0 4px;
+      color: var(--accent-ink);
+      font-size: .66rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: clamp(1.22rem, 3vw, 1.68rem);
+      font-weight: 600;
+      letter-spacing: -.025em;
+      line-height: 1.12;
+    }
+
+    .lede {
+      max-width: 680px;
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-family: var(--serif);
+      font-size: .9rem;
+      line-height: 1.43;
+    }
+
+    .reset-button {
+      appearance: none;
+      min-height: 34px;
+      padding: 7px 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--muted);
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: .68rem;
+      font-weight: 700;
+    }
+
+    .reset-button:hover,
+    .reset-button:focus-visible {
+      border-color: var(--accent);
+      color: var(--accent-ink);
+      outline: none;
+    }
+
+    .control-strip {
+      display: grid;
+      grid-template-columns: auto minmax(180px, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel-2) 70%, var(--panel));
+    }
+
+    .control-readout {
+      color: var(--accent-ink);
+      font-size: .65rem;
+      white-space: nowrap;
+    }
+
+    .control-strip .control-readout:first-child { min-width: 10.5rem; }
+    .control-strip .control-readout:last-child { min-width: 13.5rem; text-align: right; }
+
+    .control-value {
+      color: var(--ink);
+      font-family: var(--math);
+      font-size: .9rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    #processedValue {
+      display: inline-block;
+      min-width: 7.75ch;
+      text-align: right;
+    }
+
+    .sweep {
+      width: 100%;
+      min-width: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .sweep:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+    .mobile-tabs {
+      display: none;
+      padding: 10px 10px 0;
+      gap: 6px;
+    }
+
+    .mobile-tab {
+      appearance: none;
+      flex: 1 1 0;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--muted);
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: .65rem;
+      font-weight: 750;
+      letter-spacing: .045em;
+      text-transform: uppercase;
+    }
+
+    .mobile-tab.is-active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr);
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .panel {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel);
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      padding: 10px 12px 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-kicker {
+      color: var(--accent-ink);
+      font-size: .62rem;
+    }
+
+    .panel-title {
+      margin: 2px 0 0;
+      font-family: var(--serif);
+      font-size: .98rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .panel-state {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: .62rem;
+      text-align: right;
+    }
+
+    .plot-wrap {
+      min-width: 0;
+      padding: 6px 8px 8px;
+      background:
+        linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 38px,
+        color-mix(in srgb, var(--panel-2) 54%, var(--panel));
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+      touch-action: manipulation;
+    }
+
+    #rankPlot { aspect-ratio: 600 / 245; }
+    #rocPlot { aspect-ratio: 480 / 245; }
+
+    svg text { fill: var(--ink); font-family: var(--sans); }
+    .svg-muted { fill: var(--muted); }
+    .svg-accent { fill: var(--accent-ink); }
+    .axis { stroke: var(--line-strong); stroke-width: 1.4; }
+    .grid { stroke: var(--line); stroke-width: 1; }
+    .guide { stroke: var(--accent); stroke-width: 1.6; stroke-dasharray: 5 5; }
+    .roc-path { fill: none; stroke: var(--line-strong); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+    .active-segment { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; }
+    .area-strip { fill: color-mix(in srgb, var(--accent-soft) 84%, transparent); stroke: var(--accent); stroke-width: 1; }
+    .sample { cursor: pointer; transition: opacity .18s ease, transform .18s ease; transform-box: fill-box; transform-origin: center; }
+    .sample:hover, .sample:focus { transform: scale(1.08); }
+    .sample:focus { outline: none; }
+    .sample circle { stroke: var(--panel); stroke-width: 3; }
+    .sample--p circle { fill: var(--accent); }
+    .sample--n circle { fill: var(--muted); }
+    .sample--future { opacity: .33; }
+    .sample--current circle { stroke: var(--accent-ink); stroke-width: 4; }
+    .sample-label { fill: var(--panel); font-family: var(--mono); font-size: 12px; font-weight: 800; pointer-events: none; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 11px 13px 12px;
+    }
+
+    .metric + .metric { border-left: 1px solid var(--line); }
+    .metric-label { color: var(--muted); font-size: .59rem; }
+    .metric-value {
+      min-height: 4.2em;
+      margin-top: 4px;
+      color: var(--ink);
+      font-family: var(--math);
+      font-size: clamp(.82rem, 2vw, .98rem);
+      line-height: 1.38;
+    }
+    .metric-value strong { color: var(--accent-ink); font-weight: 600; }
+    #heightMetric { font-size: clamp(.74rem, 1.55vw, .9rem); }
+
+    figcaption {
+      margin: 0;
+      padding: 11px 14px 13px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-family: var(--serif);
+      font-size: .84rem;
+      line-height: 1.45;
+    }
+    figcaption strong { color: var(--ink); }
+    .math { font-family: var(--math); color: var(--accent-ink); }
+
+    @media (max-width: 690px) {
+      .viz-head { grid-template-columns: 1fr; gap: 8px; }
+      .reset-button { justify-self: start; }
+      .mobile-tabs { display: flex; }
+      .workspace { grid-template-columns: 1fr; padding-top: 8px; }
+      .workspace[data-mobile-panel="rank"] #rocPanel,
+      .workspace[data-mobile-panel="roc"] #rankPanel { display: none; }
+      #rankPlot { aspect-ratio: 600 / 225; }
+      #rocPlot { width: min(100%, 520px); margin-inline: auto; aspect-ratio: 480 / 245; }
+    }
+
+    @media (max-width: 520px) {
+      .ranking-viz { border-radius: 16px; }
+      .viz-head { padding: 14px 14px 12px; }
+      .lede { font-size: .84rem; }
+      .control-strip {
+        grid-template-columns: 1fr auto;
+        gap: 8px 10px;
+        padding: 11px 14px 12px;
+      }
+      .sweep { grid-column: 1 / -1; grid-row: 2; }
+      .control-strip .control-readout:first-child,
+      .control-strip .control-readout:last-child { min-width: 0; }
+      .control-strip .control-readout:last-child { text-align: right; }
+      .workspace { gap: 10px; padding: 10px; }
+      .panel-head { align-items: flex-start; }
+      .panel-state { max-width: 120px; }
+      .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .metric { padding: 8px 8px 9px; }
+      .metric-label { font-size: .52rem; }
+      .metric-value { font-size: .76rem; line-height: 1.3; }
+      #heightMetric { font-size: .68rem; }
+      figcaption { font-size: .8rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
     }
   </style>
 </head>
 <body>
-<!--
-  Conceptual AUC ranking visualization.
-  Self-contained and scoped: no external fonts, scripts, or libraries.
-  Paste this block directly into the article.
--->
-<style>
-  .auc-proof {
-    --auc-bg: #101813;
-    --auc-surface: #131e18;
-    --auc-surface-soft: #17231c;
-    --auc-text: #f1eee6;
-    --auc-muted: #b8c0ba;
-    --auc-faint: #75817a;
-    --auc-line: #3a4a41;
-    --auc-grid: #28362f;
-    --auc-purple: #bd8bec;
-    --auc-purple-strong: #d7b4f7;
-    --auc-purple-soft: rgba(189, 139, 236, .15);
-    --auc-purple-fill: rgba(189, 139, 236, .20);
-    --auc-gray: #aab2ad;
-    --auc-white: #fffdf6;
-    color: var(--auc-text);
-    color-scheme: dark;
-    width: min(100%, 1120px);
-    margin: 2rem auto;
-    border: 1px solid var(--auc-line);
-    border-radius: 18px;
-    overflow: hidden;
-    background:
-      radial-gradient(circle at 80% 0%, rgba(189, 139, 236, .09), transparent 32%),
-      var(--auc-bg);
-    box-shadow: 0 18px 48px rgba(0, 0, 0, .18);
-  }
-
-  .auc-proof,
-  .auc-proof * { box-sizing: border-box; }
-
-  .auc-proof__header {
-    padding: clamp(1.35rem, 3vw, 2.35rem) clamp(1.1rem, 3.5vw, 2.6rem) 1.15rem;
-  }
-
-  .auc-proof__kicker {
-    margin: 0 0 .55rem;
-    color: var(--auc-purple-strong);
-    font: 750 .76rem/1.2 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-  }
-
-  .auc-proof h2 {
-    margin: 0;
-    max-width: 880px;
-    color: var(--auc-text);
-    font: 500 clamp(1.55rem, 3.7vw, 2.45rem)/1.14 Georgia, "Times New Roman", serif;
-    letter-spacing: -.02em;
-  }
-
-  .auc-proof__lede {
-    max-width: 830px;
-    margin: .8rem 0 0;
-    color: var(--auc-muted);
-    font: 400 clamp(.96rem, 1.65vw, 1.06rem)/1.65 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  .auc-proof__relation {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 84px minmax(0, 1fr);
-    gap: 0;
-    align-items: stretch;
-    padding: .7rem clamp(.8rem, 2.5vw, 1.75rem) 1.45rem;
-  }
-
-  .auc-proof__panel {
-    min-width: 0;
-    border: 1px solid var(--auc-line);
-    border-radius: 14px;
-    background: linear-gradient(180deg, rgba(255,255,255,.015), transparent), var(--auc-surface);
-    overflow: hidden;
-  }
-
-  .auc-proof__panel-head {
-    min-height: 108px;
-    padding: 1.05rem 1.15rem .75rem;
-    border-bottom: 1px solid var(--auc-grid);
-  }
-
-  .auc-proof__step {
-    display: inline-flex;
-    align-items: center;
-    gap: .55rem;
-    margin: 0 0 .42rem;
-    color: var(--auc-purple-strong);
-    font: 700 .78rem/1.2 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-
-  .auc-proof__step::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: var(--auc-purple);
-    box-shadow: 0 0 0 4px var(--auc-purple-soft);
-  }
-
-  .auc-proof__panel h3 {
-    margin: 0;
-    color: var(--auc-text);
-    font: 500 clamp(1.16rem, 2.3vw, 1.45rem)/1.25 Georgia, "Times New Roman", serif;
-  }
-
-  .auc-proof__panel-copy {
-    margin: .42rem 0 0;
-    color: var(--auc-muted);
-    font: 400 .91rem/1.55 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  .auc-proof__canvas {
-    padding: .8rem .8rem .9rem;
-  }
-
-  .auc-proof svg {
-    display: block;
-    width: 100%;
-    height: auto;
-    overflow: visible;
-  }
-
-  .auc-proof__bridge {
-    display: grid;
-    place-items: center;
-    padding: 0 .5rem;
-    color: var(--auc-purple-strong);
-    text-align: center;
-  }
-
-  .auc-proof__bridge-inner {
-    display: grid;
-    justify-items: center;
-    gap: .55rem;
-    width: 100%;
-  }
-
-  .auc-proof__bridge-line {
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--auc-purple), transparent);
-    position: relative;
-  }
-
-  .auc-proof__bridge-line::after {
-    content: "";
-    position: absolute;
-    right: 7px;
-    top: 50%;
-    width: 8px;
-    height: 8px;
-    border-top: 1.5px solid var(--auc-purple);
-    border-right: 1.5px solid var(--auc-purple);
-    transform: translateY(-50%) rotate(45deg);
-  }
-
-  .auc-proof__bridge-label {
-    max-width: 74px;
-    color: var(--auc-muted);
-    font: 650 .72rem/1.35 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  .auc-proof__equations {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-top: 1px solid var(--auc-line);
-    background: var(--auc-surface-soft);
-  }
-
-  .auc-proof__equation {
-    min-width: 0;
-    padding: 1.15rem clamp(1rem, 2.6vw, 1.75rem) 1.25rem;
-  }
-
-  .auc-proof__equation + .auc-proof__equation {
-    border-left: 1px solid var(--auc-line);
-  }
-
-  .auc-proof__equation-label {
-    margin: 0 0 .42rem;
-    color: var(--auc-muted);
-    font: 700 .72rem/1.25 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    letter-spacing: .07em;
-    text-transform: uppercase;
-  }
-
-  .auc-proof__math {
-    margin: 0;
-    color: var(--auc-text);
-    font: 400 clamp(1rem, 2vw, 1.26rem)/1.5 Georgia, "Times New Roman", serif;
-  }
-
-  .auc-proof__math em {
-    color: var(--auc-purple-strong);
-    font-style: italic;
-  }
-
-  .auc-proof__note {
-    margin: 0;
-    padding: 1.05rem clamp(1.1rem, 3.5vw, 2.6rem) 1.25rem;
-    border-top: 1px solid var(--auc-line);
-    color: var(--auc-muted);
-    font: 400 .95rem/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  .auc-proof__note strong { color: var(--auc-text); font-weight: 650; }
-
-  /* SVG styling */
-  .auc-proof svg text {
-    fill: var(--auc-text);
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  .auc-proof svg .svg-serif { font-family: Georgia, "Times New Roman", serif; }
-  .auc-proof svg .svg-muted { fill: var(--auc-muted); }
-  .auc-proof svg .svg-faint { fill: var(--auc-faint); }
-  .auc-proof svg .svg-accent { fill: var(--auc-purple-strong); }
-  .auc-proof svg .svg-axis { stroke: var(--auc-line); stroke-width: 1.5; }
-  .auc-proof svg .svg-grid { stroke: var(--auc-grid); stroke-width: 1; }
-  .auc-proof svg .svg-guide { stroke: var(--auc-purple); stroke-width: 1.6; stroke-dasharray: 5 5; }
-  .auc-proof svg .svg-positive { fill: var(--auc-purple); }
-  .auc-proof svg .svg-negative { fill: var(--auc-gray); }
-  .auc-proof svg .svg-dim { opacity: .33; }
-  .auc-proof svg .svg-ring { fill: none; stroke: var(--auc-purple-strong); stroke-width: 3; }
-  .auc-proof svg .svg-roc { fill: none; stroke: var(--auc-faint); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
-  .auc-proof svg .svg-segment { stroke: var(--auc-purple-strong); stroke-width: 6; stroke-linecap: round; }
-  .auc-proof svg .svg-area { fill: var(--auc-purple-fill); stroke: var(--auc-purple); stroke-width: 1.2; }
-  .auc-proof svg .svg-bracket { fill: none; stroke: var(--auc-purple); stroke-width: 1.6; }
-  .auc-proof svg .svg-dot-outline { stroke: var(--auc-surface); stroke-width: 3; }
-
-  .auc-proof [data-link="positive-set"],
-  .auc-proof [data-link="negative-strip"] {
-    transition: opacity .2s ease, filter .2s ease, transform .2s ease;
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-
-  .auc-proof.is-active [data-link="positive-set"],
-  .auc-proof.is-active [data-link="negative-strip"] {
-    filter: drop-shadow(0 0 7px rgba(189, 139, 236, .45));
-  }
-
-  .auc-proof.is-active [data-link="negative-strip"] { transform: translateY(-2px); }
-
-  .auc-proof__focus-target {
-    cursor: pointer;
-    outline: none;
-  }
-
-  .auc-proof__focus-target:focus-visible .svg-ring {
-    stroke-width: 5;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .auc-proof.is-active .svg-guide {
-      animation: auc-dash 1.4s linear infinite;
-    }
-    @keyframes auc-dash { to { stroke-dashoffset: -20; } }
-  }
-
-  @media (prefers-color-scheme: light) {
-    .auc-proof {
-      --auc-bg: #fbfbf8;
-      --auc-surface: #ffffff;
-      --auc-surface-soft: #f6f3f8;
-      --auc-text: #1d2520;
-      --auc-muted: #5f6963;
-      --auc-faint: #8b948f;
-      --auc-line: #cbd2ce;
-      --auc-grid: #e7ebe8;
-      --auc-purple: #7040a8;
-      --auc-purple-strong: #5d2f92;
-      --auc-purple-soft: rgba(112, 64, 168, .10);
-      --auc-purple-fill: rgba(112, 64, 168, .14);
-      --auc-gray: #7f8883;
-      --auc-white: #ffffff;
-      color-scheme: light;
-      box-shadow: 0 18px 46px rgba(31, 40, 35, .09);
-    }
-  }
-
-  @media (max-width: 820px) {
-    .auc-proof__relation {
-      grid-template-columns: minmax(0, 1fr);
-      gap: .75rem;
-    }
-
-    .auc-proof__bridge {
-      min-height: 68px;
-      padding: .2rem 0;
-    }
-
-    .auc-proof__bridge-inner { gap: .4rem; }
-
-    .auc-proof__bridge-line {
-      width: 1px;
-      height: 34px;
-      background: linear-gradient(180deg, transparent, var(--auc-purple), transparent);
-    }
-
-    .auc-proof__bridge-line::after {
-      right: auto;
-      left: 50%;
-      top: auto;
-      bottom: 3px;
-      transform: translateX(-50%) rotate(135deg);
-    }
-
-    .auc-proof__bridge-label { max-width: none; }
-
-    .auc-proof__equations {
-      grid-template-columns: 1fr;
-    }
-
-    .auc-proof__equation + .auc-proof__equation {
-      border-left: 0;
-      border-top: 1px solid var(--auc-line);
-    }
-  }
-
-  @media (max-width: 520px) {
-    .auc-proof { border-radius: 14px; }
-    .auc-proof__panel-head { min-height: 0; }
-    .auc-proof__canvas { padding: .6rem .45rem .75rem; }
-  }
-</style>
-
-<figure class="auc-proof" id="auc-proof-figure" aria-labelledby="auc-proof-title auc-proof-desc">
-  <figcaption class="auc-proof__header">
-    <p class="auc-proof__kicker">One negative, seen in two coordinate systems</p>
-    <h2 id="auc-proof-title">The position of a negative in the score ordering becomes a horizontal strip under the ROC curve</h2>
-    <p class="auc-proof__lede" id="auc-proof-desc">
-      There is no separate numerical trick. The score ordering tells us which positives have already been passed; the ROC curve records that same fact as its current height.
-    </p>
-  </figcaption>
-
-  <div class="auc-proof__relation">
-    <section class="auc-proof__panel" aria-labelledby="auc-order-title">
-      <header class="auc-proof__panel-head">
-        <p class="auc-proof__step">Score ordering</p>
-        <h3 id="auc-order-title">Stop when the sweep reaches a negative <span style="font-style:italic">x</span><sub>−</sub></h3>
-        <p class="auc-proof__panel-copy">Everything to its left has a strictly higher score. The purple points there are exactly the positives ranked above this negative.</p>
-      </header>
-      <div class="auc-proof__canvas">
-        <svg viewBox="0 0 520 330" role="img" aria-labelledby="order-svg-title order-svg-desc">
-          <title id="order-svg-title">A negative in a schematic score ordering</title>
-          <desc id="order-svg-desc">A selected negative lies on a score axis. Positive samples with higher score are highlighted to its left, while later samples are faded.</desc>
-
-          <text x="34" y="35" class="svg-accent" font-size="14" font-weight="700">higher score</text>
-          <text x="486" y="35" class="svg-accent" font-size="14" font-weight="700" text-anchor="end">lower score</text>
-          <line x1="34" y1="62" x2="486" y2="62" class="svg-axis" />
-          <path d="M480 56 L490 62 L480 68" fill="none" stroke="var(--auc-line)" stroke-width="1.5" />
-
-          <path d="M62 112 C62 91, 76 91, 92 91 H284 C300 91, 314 91, 314 112" class="svg-bracket" data-link="positive-set" />
-          <text x="188" y="82" class="svg-accent svg-serif" font-size="17" text-anchor="middle">positives with score greater than S(x₋)</text>
-
-          <g data-link="positive-set">
-            <circle cx="82" cy="150" r="13" class="svg-positive svg-dot-outline" />
-            <circle cx="130" cy="150" r="13" class="svg-positive svg-dot-outline" />
-            <circle cx="181" cy="150" r="13" class="svg-positive svg-dot-outline" />
-            <circle cx="236" cy="150" r="13" class="svg-positive svg-dot-outline" />
-            <circle cx="284" cy="150" r="13" class="svg-positive svg-dot-outline" />
-          </g>
-
-          <circle cx="106" cy="203" r="12" class="svg-negative svg-dot-outline" />
-          <circle cx="208" cy="203" r="12" class="svg-negative svg-dot-outline" />
-
-          <g class="auc-proof__focus-target" data-auc-focus tabindex="0" role="button" aria-label="Highlight the selected negative and its ROC strip">
-            <circle cx="330" cy="177" r="23" class="svg-ring" />
-            <circle cx="330" cy="177" r="13" class="svg-negative svg-dot-outline" />
-            <text x="330" y="220" class="svg-accent svg-serif" font-size="22" font-style="italic" text-anchor="middle">x₋</text>
-          </g>
-
-          <circle cx="379" cy="150" r="13" class="svg-positive svg-dot-outline svg-dim" />
-          <circle cx="430" cy="203" r="12" class="svg-negative svg-dot-outline svg-dim" />
-          <circle cx="467" cy="150" r="13" class="svg-positive svg-dot-outline svg-dim" />
-
-          <line x1="330" y1="118" x2="330" y2="258" class="svg-guide" />
-          <text x="330" y="281" class="svg-muted" font-size="14" font-weight="650" text-anchor="middle">the sweep is here</text>
-
-          <g transform="translate(38 296)">
-            <circle cx="0" cy="0" r="7" class="svg-positive" />
-            <text x="14" y="5" class="svg-muted" font-size="13">positive</text>
-            <circle cx="100" cy="0" r="7" class="svg-negative" />
-            <text x="114" y="5" class="svg-muted" font-size="13">negative</text>
-            <text x="452" y="5" class="svg-faint" font-size="15" text-anchor="end">schematic ordering — not a counted example</text>
-          </g>
-        </svg>
+  <figure class="ranking-viz" id="rankingFigure" aria-labelledby="rankingTitle rankingDescription">
+    <header class="viz-head">
+      <div>
+        <p class="eyebrow">AUC as a ranking probability</p>
+        <h1 id="rankingTitle">The score sweep and the ROC walk are the same ordering</h1>
+        <p class="lede" id="rankingDescription">Raise the threshold from lower scores to higher scores. Crossing a positive moves the ROC point down; crossing a negative moves it left and identifies its strip of area at the current height.</p>
       </div>
-    </section>
+    </header>
 
-    <div class="auc-proof__bridge" aria-hidden="true">
-      <div class="auc-proof__bridge-inner">
-        <div class="auc-proof__bridge-label">same moment in the sweep</div>
-        <div class="auc-proof__bridge-line"></div>
+    <div class="control-strip">
+      <div class="control-readout">processed <span class="control-value" id="processedValue">4 / 9</span></div>
+      <input class="sweep" id="sweep" type="range" min="0" max="9" step="0.01" value="4" aria-label="Raise the threshold from lower scores to higher scores">
+      <div class="control-readout">threshold <span class="control-value" id="thresholdValue">after score 0.53</span></div>
+    </div>
+
+    <div class="mobile-tabs" role="tablist" aria-label="Choose the coordinate view">
+      <button type="button" class="mobile-tab is-active" id="rankTab" role="tab" aria-selected="true" aria-controls="rankPanel">score ordering</button>
+      <button type="button" class="mobile-tab" id="rocTab" role="tab" aria-selected="false" aria-controls="rocPanel">ROC geometry</button>
+    </div>
+
+    <div class="workspace" id="workspace" data-mobile-panel="rank">
+      <section class="panel" id="rankPanel" aria-labelledby="rankPanelTitle">
+        <div class="panel-head">
+          <div>
+            <div class="panel-kicker">score ordering</div>
+            <h2 class="panel-title" id="rankPanelTitle">Click a sample or move the threshold</h2>
+          </div>
+          <div class="panel-state" id="rankState">lower score → higher score</div>
+        </div>
+        <div class="plot-wrap">
+          <svg id="rankPlot" viewBox="0 0 600 245" role="img" aria-label="Samples sorted from low score to high score with an interactive threshold"></svg>
+        </div>
+      </section>
+
+      <section class="panel" id="rocPanel" aria-labelledby="rocPanelTitle">
+        <div class="panel-head">
+          <div>
+            <div class="panel-kicker">ROC geometry</div>
+            <h2 class="panel-title" id="rocPanelTitle">The same threshold crossing in rate coordinates</h2>
+          </div>
+          <div class="panel-state" id="rocState">negative → left</div>
+        </div>
+        <div class="plot-wrap">
+          <svg id="rocPlot" viewBox="0 0 480 245" role="img" aria-label="Interactive ROC staircase with the current segment highlighted"></svg>
+        </div>
+      </section>
+    </div>
+
+    <div class="metrics" aria-live="polite">
+      <div class="metric">
+        <div class="metric-label">current step</div>
+        <div class="metric-value" id="stepMetric"><strong>negative</strong>: ΔFPR = −1/|N|</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">height before the step</div>
+        <div class="metric-value" id="heightMetric"><span class="math">T(x<sub>−</sub>) = #{x<sub>+</sub> ∈ P : S(x<sub>+</sub>) &gt; S(x<sub>−</sub>)}/|P| = 4/5</span></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">area strip at this step</div>
+        <div class="metric-value" id="areaMetric"><span class="math">T(x<sub>−</sub>)/|N|</span> = 1/5</div>
       </div>
     </div>
 
-    <section class="auc-proof__panel" aria-labelledby="auc-roc-title">
-      <header class="auc-proof__panel-head">
-        <p class="auc-proof__step">ROC geometry</p>
-        <h3 id="auc-roc-title">At that moment, the curve has height <span style="font-style:italic">T</span>(<span style="font-style:italic">x</span><sub>−</sub>)</h3>
-        <p class="auc-proof__panel-copy">Processing this negative moves the ROC walk right without changing its height, creating one horizontal strip of area.</p>
-      </header>
-      <div class="auc-proof__canvas">
-        <svg viewBox="0 0 520 330" role="img" aria-labelledby="roc-svg-title roc-svg-desc">
-          <title id="roc-svg-title">The horizontal ROC strip contributed by one negative</title>
-          <desc id="roc-svg-desc">A schematic ROC step curve. One horizontal segment is highlighted, with height T of the selected negative and width one over the number of negatives.</desc>
+    <figcaption><strong>The traversal direction does not change the area.</strong> Raising the threshold walks along the same ROC staircase from <span class="math">(1,1)</span> back to <span class="math">(0,0)</span>. For a negative <span class="math">x<sub>−</sub></span>, the leftward step still spans the strip of height <span class="math">T(x<sub>−</sub>)</span>, the fraction of positives ranked above it. Summing those strips gives <span class="math">AUC = (1/|N|) Σ<sub>x−</sub> T(x<sub>−</sub>)</span>.</figcaption>
+  </figure>
 
-          <line x1="72" y1="270" x2="480" y2="270" class="svg-axis" />
-          <line x1="72" y1="270" x2="72" y2="42" class="svg-axis" />
-          <path d="M474 264 L484 270 L474 276" fill="none" stroke="var(--auc-line)" stroke-width="1.5" />
-          <path d="M66 48 L72 38 L78 48" fill="none" stroke="var(--auc-line)" stroke-width="1.5" />
+  <script>
+    (() => {
+      'use strict';
 
-          <text x="476" y="300" class="svg-muted" font-size="14" text-anchor="end">false-positive rate</text>
-          <text x="24" y="160" class="svg-muted" font-size="14" text-anchor="middle" transform="rotate(-90 24 160)">true-positive rate</text>
+      // Samples are stored in ascending score order so the interaction follows
+      // the score axis from left to right. Raising the threshold removes each
+      // crossed sample from the predicted-positive set and therefore traverses
+      // the ordinary ROC staircase from (1,1) back to (0,0).
+      const samples = [
+        { kind: 'N', score: 0.18 },
+        { kind: 'N', score: 0.30 },
+        { kind: 'P', score: 0.42 },
+        { kind: 'N', score: 0.53 },
+        { kind: 'P', score: 0.62 },
+        { kind: 'P', score: 0.70 },
+        { kind: 'N', score: 0.78 },
+        { kind: 'P', score: 0.89 },
+        { kind: 'P', score: 0.96 }
+      ];
 
-          <line x1="72" y1="215" x2="480" y2="215" class="svg-grid" />
-          <line x1="72" y1="160" x2="480" y2="160" class="svg-grid" />
-          <line x1="72" y1="105" x2="480" y2="105" class="svg-grid" />
+      const totalP = samples.filter(d => d.kind === 'P').length;
+      const totalN = samples.length - totalP;
+      const defaultStep = 4;
+      const figure = document.getElementById('rankingFigure');
+      const sweep = document.getElementById('sweep');
+      const processedValue = document.getElementById('processedValue');
+      const thresholdValue = document.getElementById('thresholdValue');
+      const rankState = document.getElementById('rankState');
+      const rocState = document.getElementById('rocState');
+      const stepMetric = document.getElementById('stepMetric');
+      const heightMetric = document.getElementById('heightMetric');
+      const areaMetric = document.getElementById('areaMetric');
+      const rankPlot = document.getElementById('rankPlot');
+      const rocPlot = document.getElementById('rocPlot');
+      const workspace = document.getElementById('workspace');
+      const rankTab = document.getElementById('rankTab');
+      const rocTab = document.getElementById('rocTab');
+      const NS = 'http://www.w3.org/2000/svg';
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-          <path d="M72 270 L72 238 L126 238 L126 202 L184 202 L184 160 L246 160 L246 132 L320 132 L320 93 L387 93 L387 67 L466 67" class="svg-roc" />
+      let displayedK = defaultStep;
+      let targetK = defaultStep;
+      let animationFrame = 0;
+      let dragging = false;
 
-          <g data-link="negative-strip">
-            <rect x="184" y="160" width="62" height="110" class="svg-area" />
-            <line x1="184" y1="160" x2="246" y2="160" class="svg-segment" />
-          </g>
+      function node(name, attrs = {}, text = '') {
+        const el = document.createElementNS(NS, name);
+        Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, String(value)));
+        if (text) el.textContent = text;
+        return el;
+      }
 
-          <line x1="184" y1="160" x2="184" y2="270" class="svg-guide" />
-          <line x1="246" y1="160" x2="246" y2="270" class="svg-guide" />
+      function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+      function clamp(value, low, high) { return Math.min(high, Math.max(low, value)); }
+      function lerp(a, b, t) { return a + (b - a) * t; }
+      function easeInOutCubic(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
 
-          <path d="M56 270 C45 270, 45 260, 45 250 V180 C45 170, 45 160, 56 160" class="svg-bracket" />
-          <text x="38" y="216" class="svg-accent svg-serif" font-size="20" text-anchor="middle" transform="rotate(-90 38 216)">T(x₋)</text>
+      function reverseRocPoints() {
+        let p = totalP;
+        let n = totalN;
+        const result = [{ fpr: 1, tpr: 1 }];
+        samples.forEach(sample => {
+          if (sample.kind === 'P') p -= 1;
+          else n -= 1;
+          result.push({ fpr: n / totalN, tpr: p / totalP });
+        });
+        return result;
+      }
 
-          <path d="M184 286 C184 298, 194 298, 204 298 H226 C236 298, 246 298, 246 286" class="svg-bracket" />
-          <text x="215" y="320" class="svg-accent svg-serif" font-size="18" text-anchor="middle">1 / |N|</text>
+      const points = reverseRocPoints();
 
-          <circle cx="215" cy="160" r="7" fill="var(--auc-purple-strong)" stroke="var(--auc-surface)" stroke-width="3" />
-          <text x="267" y="152" class="svg-accent" font-size="14" font-weight="700">this negative moves right</text>
-          <text x="267" y="172" class="svg-muted" font-size="14">while the height stays fixed</text>
-        </svg>
-      </div>
-    </section>
-  </div>
+      function thresholdPosition(k, x0, x1, step) {
+        const positions = [x0 - step * .55];
+        for (let i = 1; i < samples.length; i += 1) positions.push(x0 + (i - .5) * step);
+        positions.push(x1 + step * .55);
+        const bounded = clamp(k, 0, samples.length);
+        const low = Math.floor(bounded);
+        const high = Math.ceil(bounded);
+        return lerp(positions[low], positions[high], bounded - low);
+      }
 
-  <div class="auc-proof__equations" aria-label="Meaning of the highlighted strip">
-    <section class="auc-proof__equation">
-      <p class="auc-proof__equation-label">Its height</p>
-      <p class="auc-proof__math"><em>T(x<sub>−</sub>)</em> = the fraction of positives ranked above <em>x<sub>−</sub></em></p>
-    </section>
-    <section class="auc-proof__equation">
-      <p class="auc-proof__equation-label">Its area</p>
-      <p class="auc-proof__math">strip area = <em>T(x<sub>−</sub>)</em> · 1 / |N|</p>
-    </section>
-    <section class="auc-proof__equation">
-      <p class="auc-proof__equation-label">All strips together</p>
-      <p class="auc-proof__math"><em>AUC</em> = (1 / |N|) Σ<sub>x₋∈N</sub> <em>T(x<sub>−</sub>)</em></p>
-    </section>
-  </div>
+      // The active step is always the sample immediately to the right of the
+      // threshold. At an integer state k, that is sample k (the next crossing),
+      // not sample k - 1 (the crossing that just finished). This keeps the
+      // semantic state continuous when an animation begins at k.
+      function activeStepAt(k) {
+        const bounded = clamp(k, 0, samples.length);
+        if (bounded >= samples.length) {
+          return { current: null, index: -1, fraction: 1, before: points[points.length - 1] };
+        }
+        const index = Math.floor(bounded);
+        return {
+          current: samples[index],
+          index,
+          fraction: bounded - index,
+          before: points[index]
+        };
+      }
 
-  <p class="auc-proof__note">
-    <strong>Why this becomes a pairwise statement.</strong> Every positive to the left of <em>x</em><sub>−</sub> forms one correctly ordered positive–negative pair with it. Repeating the same construction for every negative counts each possible pair exactly once.
-  </p>
-</figure>
+      function renderRanking(k) {
+        clear(rankPlot);
+        const x0 = 48;
+        const x1 = 552;
+        const y = 116;
+        const step = (x1 - x0) / (samples.length - 1);
+        const thresholdX = thresholdPosition(k, x0, x1, step);
+        const stepInfo = activeStepAt(k);
+        const activeIndex = stepInfo.current ? stepInfo.index : null;
 
-<script>
-(() => {
-  const figure = document.getElementById('auc-proof-figure');
-  if (!figure) return;
+        rankPlot.append(
+          node('line', { x1: x0 - 22, y1: y, x2: x1 + 22, y2: y, class: 'axis' }),
+          node('line', { x1: thresholdX, y1: 45, x2: thresholdX, y2: 190, class: 'guide' }),
+          node('text', { x: x0 - 22, y: 31, 'font-size': 12, class: 'svg-accent' }, 'lower score'),
+          node('text', { x: x1 + 22, y: 31, 'font-size': 12, 'text-anchor': 'end', class: 'svg-accent' }, 'higher score'),
+          node('text', { x: x0, y: 207, 'font-size': 11, class: 'svg-muted' }, 'score < threshold'),
+          node('text', { x: x1, y: 207, 'font-size': 11, 'text-anchor': 'end', class: 'svg-muted' }, 'score ≥ threshold')
+        );
 
-  const targets = figure.querySelectorAll('[data-auc-focus], [data-link="negative-strip"]');
-  const activate = () => figure.classList.add('is-active');
-  const deactivate = () => figure.classList.remove('is-active');
+        samples.forEach((sample, index) => {
+          const x = x0 + index * step;
+          const crossed = clamp(k - index, 0, 1);
+          const crossingPulse = 4 * crossed * (1 - crossed);
+          const opacity = 1 - .67 * crossed;
+          const scale = 1 + .14 * crossingPulse;
+          const isActive = index === activeIndex;
+          const g = node('g', {
+            class: `sample sample--${sample.kind.toLowerCase()} ${isActive ? 'sample--current' : ''}`,
+            tabindex: '0',
+            role: 'button',
+            'aria-label': `Score ${sample.score.toFixed(2)}: ${sample.kind === 'P' ? 'positive' : 'negative'} sample; raise threshold past this score`,
+            'data-index': index,
+            style: `opacity:${opacity.toFixed(3)};transform:scale(${scale.toFixed(3)})`
+          });
+          g.append(
+            node('circle', { cx: x, cy: y, r: 17 }),
+            node('text', { x, y: y + 4, 'text-anchor': 'middle', class: 'sample-label' }, sample.kind),
+            node('text', { x, y: y + 35, 'text-anchor': 'middle', 'font-size': 10, class: 'svg-muted' }, sample.score.toFixed(2))
+          );
+          rankPlot.append(g);
+        });
 
-  targets.forEach((target) => {
-    target.addEventListener('mouseenter', activate);
-    target.addEventListener('mouseleave', deactivate);
-    target.addEventListener('focus', activate);
-    target.addEventListener('blur', deactivate);
-    target.addEventListener('click', () => figure.classList.toggle('is-active'));
-  });
-})();
-</script>
+        const completed = Math.floor(clamp(k + 1e-7, 0, samples.length));
+        const processedP = samples.slice(0, completed).filter(d => d.kind === 'P').length;
+        const processedN = completed - processedP;
+        const remaining = samples.length - completed;
+        rankPlot.append(
+          node('text', { x: x0, y: 232, 'font-size': 11, class: 'svg-muted' }, `crossed: ${processedP} positive, ${processedN} negative`),
+          node('text', { x: x1, y: 232, 'font-size': 11, 'text-anchor': 'end', class: 'svg-muted' }, `${remaining} remain above threshold`)
+        );
+      }
 
-<script data-article-visualization-bridge>
-/* Height-sync bridge with the parent article page. This version is
-   drift-free: it never adds a fudge factor to the reported height, it
-   never writes window.frameElement.style.height directly (which
-   raced with the parent's own write), and it measures the article
-   content (`.viz`) rather than `document.body`/`document.documentElement`,
-   whose scrollHeight follows the viewport height and therefore fed
-   back into itself once the parent applied the reported number.
-   A last-reported memo cheaply de-dupes identical measurements so we
-   don't send a message on every animation frame. */
-(() => {
-  const root = document.documentElement;
-  const syncTheme = () => {
-    try {
-      const theme = window.parent.document.documentElement.dataset.theme;
-      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
-    } catch (_) {}
-  };
-  let lastReported = 0;
-  const report = () => {
-    /* Measure the article content itself rather than body/documentElement.
-       body.scrollHeight and root.scrollHeight both include the viewport's
-       own dimensions once the iframe has been sized by the parent, so
-       reading them creates a feedback loop with the parent's iframe.style.
-       .viz sits at the top of the flow, doesn't depend on viewport height,
-       and gives a stable content measurement. */
-    const target = document.querySelector(".viz") || document.body;
-    const rect = target.getBoundingClientRect();
-    const height = Math.max(1, Math.ceil(rect.bottom + window.scrollY));
-    /* De-dup identical reports without any accumulating fudge. The parent
-       has its own hysteresis, but sending fewer messages avoids waking
-       its handler needlessly. */
-    if (Math.abs(height - lastReported) < 2) return;
-    lastReported = height;
-    try {
-      window.parent.postMessage(
-        { type: "article-visualization:resize", height },
-        window.location.origin
-      );
-    } catch (_) {}
-  };
-  syncTheme();
-  try {
-    new MutationObserver(() => { syncTheme(); report(); })
-      .observe(window.parent.document.documentElement, {
-        attributes: true,
-        attributeFilter: ["data-theme"],
+      function renderRoc(k) {
+        clear(rocPlot);
+        const left = 54;
+        const right = 446;
+        const top = 24;
+        const bottom = 207;
+        const X = value => left + value * (right - left);
+        const Y = value => bottom - value * (bottom - top);
+
+        [0, .25, .5, .75, 1].forEach(value => {
+          rocPlot.append(
+            node('line', { x1: X(value), y1: top, x2: X(value), y2: bottom, class: 'grid' }),
+            node('line', { x1: left, y1: Y(value), x2: right, y2: Y(value), class: 'grid' })
+          );
+        });
+        rocPlot.append(
+          node('line', { x1: left, y1: bottom, x2: right, y2: bottom, class: 'axis' }),
+          node('line', { x1: left, y1: bottom, x2: left, y2: top, class: 'axis' }),
+          node('text', { x: (left + right) / 2, y: 237, 'font-size': 12, 'text-anchor': 'middle', class: 'svg-muted' }, 'false-positive rate'),
+          node('text', { x: 15, y: (top + bottom) / 2, 'font-size': 12, 'text-anchor': 'middle', class: 'svg-muted', transform: `rotate(-90 15 ${(top + bottom) / 2})` }, 'true-positive rate')
+        );
+
+        const pathData = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${X(point.fpr)} ${Y(point.tpr)}`).join(' ');
+        rocPlot.append(node('path', { d: pathData, class: 'roc-path' }));
+
+        const stepInfo = activeStepAt(k);
+        if (!stepInfo.current) {
+          const endPoint = points[points.length - 1];
+          rocPlot.append(node('circle', { cx: X(endPoint.fpr), cy: Y(endPoint.tpr), r: 6.5, fill: 'var(--accent)', stroke: 'var(--panel)', 'stroke-width': 3 }));
+          return;
+        }
+
+        const current = stepInfo.current;
+        const start = points[stepInfo.index];
+        const end = points[stepInfo.index + 1];
+        const endpoint = {
+          fpr: lerp(start.fpr, end.fpr, stepInfo.fraction),
+          tpr: lerp(start.tpr, end.tpr, stepInfo.fraction)
+        };
+
+        if (current.kind === 'N') {
+          rocPlot.append(node('rect', {
+            x: X(endpoint.fpr),
+            y: Y(start.tpr),
+            width: Math.max(0, X(start.fpr) - X(endpoint.fpr)),
+            height: bottom - Y(start.tpr),
+            class: 'area-strip'
+          }));
+        }
+
+        rocPlot.append(
+          node('line', {
+            x1: X(start.fpr), y1: Y(start.tpr),
+            x2: X(endpoint.fpr), y2: Y(endpoint.tpr),
+            class: 'active-segment'
+          }),
+          node('circle', {
+            cx: X(endpoint.fpr), cy: Y(endpoint.tpr), r: 6.5,
+            fill: 'var(--accent)', stroke: 'var(--panel)', 'stroke-width': 3
+          })
+        );
+
+        if (stepInfo.fraction > .12) {
+          rocPlot.append(node('text', {
+            x: current.kind === 'N' ? (X(start.fpr) + X(endpoint.fpr)) / 2 : X(endpoint.fpr) + 10,
+            y: current.kind === 'N' ? Y(start.tpr) - 10 : (Y(start.tpr) + Y(endpoint.tpr)) / 2,
+            'font-size': 11,
+            'text-anchor': current.kind === 'N' ? 'middle' : 'start',
+            class: 'svg-accent'
+          }, current.kind === 'N' ? 'left by 1/|N|' : 'down by 1/|P|'));
+        }
+      }
+
+      function formatFraction(numerator, denominator) {
+        if (numerator === 0) return '0';
+        if (numerator === denominator) return '1';
+        const gcd = (a, b) => b === 0 ? Math.abs(a) : gcd(b, a % b);
+        const divisor = gcd(numerator, denominator);
+        return `${numerator / divisor}/${denominator / divisor}`;
+      }
+
+
+      function updateText(k, settled = false) {
+        const bounded = clamp(k, 0, samples.length);
+        const low = Math.floor(bounded + 1e-7);
+        const high = Math.min(samples.length, Math.ceil(bounded - 1e-7));
+        const info = activeStepAt(bounded);
+
+        if (!settled && high > low) processedValue.textContent = `${low} → ${high} / ${samples.length}`;
+        else processedValue.textContent = `${Math.round(bounded)} / ${samples.length}`;
+
+        if (bounded <= 0) {
+          thresholdValue.textContent = 'below every score';
+        } else if (bounded >= samples.length) {
+          thresholdValue.textContent = 'above every score';
+        } else if (!settled && info.current) {
+          thresholdValue.textContent = `crossing ${info.current.score.toFixed(2)}`;
+        } else {
+          thresholdValue.textContent = `after score ${samples[Math.round(bounded) - 1].score.toFixed(2)}`;
+        }
+
+        if (!info.current) {
+          rankState.textContent = 'all scores crossed';
+          rocState.textContent = 'finish at (0, 0)';
+          stepMetric.innerHTML = '<strong>complete</strong>: no sample remains above threshold';
+          heightMetric.innerHTML = '<span class="math">TPR = 0</span>';
+          areaMetric.innerHTML = '<span class="math">0</span>';
+          return;
+        }
+
+        const positivesAbove = Math.round(info.before.tpr * totalP);
+        rankState.textContent = `${info.current.kind === 'P' ? 'positive' : 'negative'} at score ${info.current.score.toFixed(2)}`;
+        rocState.textContent = info.current.kind === 'P' ? 'positive → down' : 'negative → left';
+
+        if (info.current.kind === 'P') {
+          stepMetric.innerHTML = '<strong>positive</strong>: ΔTPR = −1/|P|';
+          heightMetric.innerHTML = `<span class="math">TPR</span> falls from ${formatFraction(positivesAbove, totalP)}`;
+          areaMetric.innerHTML = '<span class="math">0</span> — a vertical step has zero width';
+        } else {
+          const areaNumerator = positivesAbove;
+          const areaDenominator = totalP * totalN;
+          stepMetric.innerHTML = '<strong>negative</strong>: ΔFPR = −1/|N|';
+          heightMetric.innerHTML = `<span class="math">T(x<sub>−</sub>) = #{x<sub>+</sub> ∈ P : S(x<sub>+</sub>) &gt; S(x<sub>−</sub>)}/|P| = ${formatFraction(positivesAbove, totalP)}</span>`;
+          areaMetric.innerHTML = `<span class="math">T(x<sub>−</sub>)/|N| = (${formatFraction(positivesAbove, totalP)})(1/${totalN}) = ${formatFraction(areaNumerator, areaDenominator)}</span>`;
+        }
+      }
+
+      function renderVisuals(k, settled = false) {
+        renderRanking(k);
+        renderRoc(k);
+        updateText(k, settled);
+        figure.dataset.step = String(k);
+      }
+
+      function animateTo(nextK, immediate = false) {
+        nextK = clamp(Number(nextK), 0, samples.length);
+        targetK = nextK;
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+
+        const startK = displayedK;
+        const delta = nextK - startK;
+        if (immediate || reducedMotion.matches || Math.abs(delta) < 1e-6) {
+          displayedK = nextK;
+          sweep.value = String(nextK);
+          renderVisuals(displayedK, true);
+          reportHeight();
+          return;
+        }
+
+        // An adjacent state deliberately takes long enough to make the threshold,
+        // sample crossing, ROC endpoint, and area strip visibly move together.
+        const duration = Math.min(1400, 680 + Math.max(0, Math.abs(delta) - 1) * 120);
+        let startTime = 0;
+
+        function frame(time) {
+          if (!startTime) startTime = time;
+          const progress = clamp((time - startTime) / duration, 0, 1);
+          displayedK = lerp(startK, nextK, easeInOutCubic(progress));
+          sweep.value = String(displayedK);
+          renderVisuals(displayedK, false);
+
+          if (progress < 1) {
+            animationFrame = requestAnimationFrame(frame);
+          } else {
+            animationFrame = 0;
+            displayedK = nextK;
+            sweep.value = String(nextK);
+            renderVisuals(displayedK, true);
+            reportHeight();
+          }
+        }
+
+        animationFrame = requestAnimationFrame(frame);
+      }
+
+      let heightFrame = 0;
+      function reportHeight() {
+        if (heightFrame) cancelAnimationFrame(heightFrame);
+        heightFrame = requestAnimationFrame(() => {
+          heightFrame = requestAnimationFrame(() => {
+            heightFrame = 0;
+            const rect = figure.getBoundingClientRect();
+            const height = Math.ceil(rect.bottom + window.scrollY + 2);
+            try {
+              if (window.frameElement) {
+                window.frameElement.style.minHeight = '0px';
+                window.frameElement.style.height = `${height}px`;
+              }
+            } catch (_) {}
+            if (window.parent !== window) window.parent.postMessage({ type: 'article-visualization-resize', height }, '*');
+          });
+        });
+      }
+
+      function syncParentTheme() {
+        try {
+          const parentTheme = window.parent.document.documentElement.dataset.theme;
+          if (parentTheme) document.documentElement.dataset.theme = parentTheme;
+        } catch (_) {}
+      }
+
+      function setMobilePanel(panel) {
+        workspace.dataset.mobilePanel = panel;
+        const rankActive = panel === 'rank';
+        rankTab.classList.toggle('is-active', rankActive);
+        rocTab.classList.toggle('is-active', !rankActive);
+        rankTab.setAttribute('aria-selected', String(rankActive));
+        rocTab.setAttribute('aria-selected', String(!rankActive));
+        reportHeight();
+      }
+
+      function activateSample(event) {
+        const sample = event.target.closest('[data-index]');
+        if (!sample) return;
+        animateTo(Number(sample.dataset.index) + 1);
+      }
+
+      rankPlot.addEventListener('click', activateSample);
+      rankPlot.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        if (!event.target.closest('[data-index]')) return;
+        event.preventDefault();
+        activateSample(event);
       });
-  } catch (_) {}
-  window.addEventListener("load", report, { once: true });
-  /* Deliberately do NOT listen for `resize` on the iframe's own window.
-     That event fires whenever the parent applies iframe.style.height,
-     which turns any tiny mismatch between our measurement and the
-     applied value into a feedback loop that grows on every frame. */
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(report).catch(() => {});
-  }
-  if ("ResizeObserver" in window) {
-    /* Observe the content, not the body. Watching body reflects the
-       viewport (which the parent controls) back into our height
-       report — that was the runaway. */
-    const target = document.querySelector(".viz") || document.body;
-    new ResizeObserver(report).observe(target);
-  }
-  requestAnimationFrame(report);
-})();
-</script>
+      rankTab.addEventListener('click', () => setMobilePanel('rank'));
+      rocTab.addEventListener('click', () => setMobilePanel('roc'));
+
+      sweep.addEventListener('pointerdown', () => {
+        dragging = true;
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+      });
+      sweep.addEventListener('input', () => {
+        if (!dragging) return;
+        displayedK = clamp(Number(sweep.value), 0, samples.length);
+        targetK = displayedK;
+        renderVisuals(displayedK, Number.isInteger(displayedK));
+      });
+      sweep.addEventListener('change', () => {
+        dragging = false;
+        animateTo(Math.round(Number(sweep.value)));
+      });
+      sweep.addEventListener('keydown', event => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        if (event.key === 'Home') animateTo(0);
+        else if (event.key === 'End') animateTo(samples.length);
+        else animateTo(clamp(Math.round(displayedK) + (event.key === 'ArrowRight' ? 1 : -1), 0, samples.length));
+      });
+
+      window.addEventListener('resize', reportHeight, { passive: true });
+      window.addEventListener('load', reportHeight, { once: true });
+      if ('ResizeObserver' in window) new ResizeObserver(reportHeight).observe(figure);
+
+      syncParentTheme();
+      animateTo(defaultStep, true);
+    })();
+  </script>
 </body>
 </html>

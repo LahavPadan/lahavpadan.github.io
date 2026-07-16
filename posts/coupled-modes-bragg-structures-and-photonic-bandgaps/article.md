@@ -1548,11 +1548,17 @@ Section 5 derived the linearized gyromagnetic response — the Polder tensor $\h
 
 A **circulator** is a three-port device that routes signals cyclically: an input at port 1 emerges at port 2 with port 3 isolated; an input at port 2 emerges at port 3 with port 1 isolated; and so on around the cycle. It is the microwave workhorse of non-reciprocity.
 
+<!-- embedded-visualization:y-junction-circulator-routing:v1 -->
+{% include visualization.html src="y-junction-circulator-routing.html" title="How the biased Y-junction routes each input to the next port" %}
+
 The device is a thin disk of ferrite biased perpendicular to the disk plane ($\vec B_0 \parallel \hat z$, disk in the $xy$-plane), with three coplanar waveguide ports coupling in and out at 120° around the rim (at angles $\phi = 0°, 120°, 240°$).
 
 #### Step 1 — cavity modes without bias.
 
 With no bias, the disk is a passive circular resonator. Its electromagnetic modes are Bessel-function standing waves labeled by an azimuthal quantum number $m = 0, \pm 1, \pm 2, \ldots$ The two dipole modes at $m = \pm 1$ have one nodal diameter and one antinodal diameter perpendicular to it. Because the disk has rotational symmetry, $m = +1$ and $m = -1$ are exactly degenerate and every linear combination is also an eigenmode. Exciting the disk from port 1 induces a standing wave whose antinode aligns with port 1 and whose nodal line lies perpendicular to it. Ports 2 and 3, at 120° from port 1, receive equal amounts of energy — a passive 3-way power splitter, not a circulator.
+
+<!-- embedded-visualization:circulator-cavity-modes:v1 -->
+{% include visualization.html src="circulator-cavity-modes.html" title="The unbiased cavity modes and their responses at the three ports" %}
 
 #### Step 2 — modes with bias.
 
@@ -1567,6 +1573,9 @@ Operate at $\omega_{\text{op}} = (\omega_+ + \omega_-)/2$. At this frequency bot
 With the standing-wave pattern rotated by $30°$, the antinode moves from $\phi = 0°$ to $\phi = 30°$ and the nodal line from $\phi = 90°$ to $\phi = 120°$ — **exactly on port 3**. Port 3 sees zero field and receives zero energy: it is isolated. Port 2, which sits closer to the rotated antinode than port 3, receives all the energy. So port 1 → port 2 with port 3 isolated. The disk's 120° rotational symmetry then gives port 2 → port 3 and port 3 → port 1 by the same argument.
 
 Reversing $\vec B_0$ reverses the sense of gyrotropic precession and hence the direction of circulation: the device is non-reciprocal, and its non-reciprocity is what makes the routing cyclic rather than symmetric.
+
+<!-- embedded-visualization:y-junction-null-placement:v1 -->
+{% include visualization.html src="y-junction-null-placement.html" title="How a 30° rotation places the field null on the isolated port" %}
 
 ### § 11.2. Ferrite vs. metal: why the circulator body must be an insulator {#sec-11-2}
 
@@ -1627,6 +1636,9 @@ The most common optical isolator combines a Faraday rotator with two linear pola
 - Net backward rotation $+90°$; throughput $\sim 0\%$.
 
 The device isolates the laser from back-reflections. Extended to a three-port geometry (using polarizing beam splitters instead of polarizers, so the blocked back-reflection is routed to a third port rather than dumped), it becomes an **optical circulator** — the fiber-optic analog of the Y-junction circulator, essential for bidirectional transmission on a single fiber.
+
+<!-- embedded-visualization:faraday-isolator:v1 -->
+{% include visualization.html src="faraday-isolator.html" title="Forward transmission and backward isolation in a Faraday isolator" %}
 
 Non-reciprocity is a scarce physical resource — impossible to achieve with any passive, dielectric, non-magnetic medium — and the entire ecosystem of optical isolators and circulators relies on Bi:YIG and TGG. Their importance to the fiber-optic industry is out of proportion to their volume.
 

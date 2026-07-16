@@ -2290,3 +2290,28 @@ body.has-lightbox {
   }
 }
 
+/* restored-title-typography:pre-8ca9728:v1 */
+/* Keep the new Lora reading face and Inter UI, but restore the former
+   title treatment used before commit 8ca9728. */
+.home-intro__hi {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: -0.055em;
+}
+
+.post-card h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.post-page__header > h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: -0.065em;
+}
+
+.post-page--cyber .post-page__header > h1 {
+  font-family: var(--font-mono);
+}
+

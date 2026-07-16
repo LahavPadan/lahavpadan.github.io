@@ -1,0 +1,1285 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Y-junction circulator routing</title>
+
+  <style>
+    :root {
+      --viz-page: #fbfbf8;
+      --viz-surface: #ffffff;
+      --viz-surface-muted: #f4f5f1;
+      --viz-ink: #1c2420;
+      --viz-muted: #667169;
+      --viz-border: #d6ddd7;
+      --viz-border-strong: #a6b2a9;
+      --viz-accent: #85295e;
+      --viz-accent-soft: #fdeef6;
+      --viz-accent-border: #e8b2d1;
+      --viz-accent-ink: #70204d;
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-width: 280px;
+      background: var(--viz-page);
+      color: var(--viz-ink);
+    }
+
+    body {
+      padding: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--viz-accent);
+      outline-offset: 3px;
+    }
+
+    .circulator-viz {
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid var(--viz-border);
+      border-top: 3px solid var(--viz-accent);
+      background: var(--viz-surface);
+    }
+
+    .viz-header {
+      display: grid;
+      gap: 7px;
+      padding:
+        clamp(17px, 3vw, 25px)
+        clamp(16px, 3.6vw, 28px)
+        16px;
+      border-bottom: 1px solid var(--viz-border);
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--viz-accent-ink);
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.055em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 670px;
+      margin: 0;
+      font-size: clamp(1.35rem, 3.2vw, 1.95rem);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+      line-height: 1.13;
+    }
+
+    .lede {
+      max-width: 720px;
+      margin: 0;
+      color: var(--viz-muted);
+      font-size: clamp(0.95rem, 1.8vw, 1.04rem);
+      line-height: 1.5;
+    }
+
+    .control-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 20px;
+      padding: 12px clamp(16px, 3.6vw, 28px);
+      border-bottom: 1px solid var(--viz-border);
+      background: var(--viz-surface-muted);
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+    }
+
+    .control-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-label {
+      margin-right: 2px;
+      color: var(--viz-muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.035em;
+      text-transform: uppercase;
+    }
+
+    .segmented {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .segmented button {
+      min-height: 33px;
+      padding: 7px 10px;
+      border: 1px solid var(--viz-border-strong);
+      border-radius: 0;
+      background: var(--viz-surface);
+      color: var(--viz-muted);
+      cursor: pointer;
+      font-size: 0.76rem;
+      font-weight: 700;
+      line-height: 1;
+      transition:
+        border-color 160ms ease,
+        background 160ms ease,
+        color 160ms ease,
+        transform 160ms ease;
+    }
+
+    .segmented button:hover {
+      border-color: var(--viz-accent);
+      color: var(--viz-accent-ink);
+    }
+
+    .segmented button[aria-pressed="true"] {
+      border-color: var(--viz-accent);
+      background: var(--viz-accent);
+      color: var(--viz-page);
+    }
+
+    .segmented button:active {
+      transform: translateY(1px);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns:
+        minmax(0, 1.52fr)
+        minmax(225px, 0.8fr);
+      align-items: stretch;
+    }
+
+    .diagram-panel {
+      display: grid;
+      min-width: 0;
+      place-items: center;
+      padding: clamp(8px, 1.8vw, 14px);
+      border-right: 1px solid var(--viz-border);
+      background: var(--viz-surface);
+    }
+
+    .diagram-panel svg {
+      display: block;
+      width: min(100%, 650px);
+      height: auto;
+      margin: 0 auto;
+      overflow: visible;
+    }
+
+    .guide {
+      fill: none;
+      stroke: var(--viz-border-strong);
+      stroke-width: 42;
+      stroke-linecap: butt;
+      transition:
+        stroke 220ms ease,
+        opacity 220ms ease;
+    }
+
+    .guide-edge {
+      fill: none;
+      stroke: var(--viz-ink);
+      stroke-width: 1.35;
+      stroke-linecap: butt;
+      opacity: 0.7;
+    }
+
+    .guide[data-state="input"] {
+      stroke: var(--viz-surface-muted);
+    }
+
+    .guide[data-state="output"] {
+      stroke: var(--viz-accent-soft);
+    }
+
+    .guide[data-state="isolated"] {
+      stroke: var(--viz-surface-muted);
+      opacity: 0.62;
+    }
+
+    .disk {
+      fill: var(--viz-surface);
+      stroke: var(--viz-accent);
+      stroke-width: 3;
+    }
+
+    .disk-inner {
+      fill: var(--viz-accent-soft);
+      stroke: var(--viz-accent-border);
+      stroke-width: 1.5;
+    }
+
+    .signal-path {
+      fill: none;
+      stroke: var(--viz-accent);
+      stroke-width: 7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 10 8;
+      marker-end: url(#signal-arrow);
+      animation: route-flow 1.15s linear infinite;
+      transition: d 280ms ease;
+    }
+
+    .port-node circle {
+      fill: var(--viz-surface);
+      stroke: var(--viz-border-strong);
+      stroke-width: 2.4;
+      transition:
+        fill 220ms ease,
+        stroke 220ms ease,
+        opacity 220ms ease;
+    }
+
+    .port-node text {
+      fill: var(--viz-ink);
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+      font-size: 24px;
+      font-weight: 800;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    .port-node[data-state="input"] circle {
+      fill: var(--viz-ink);
+      stroke: var(--viz-ink);
+    }
+
+    .port-node[data-state="input"] text {
+      fill: var(--viz-surface);
+    }
+
+    .port-node[data-state="output"] circle {
+      fill: var(--viz-accent);
+      stroke: var(--viz-accent);
+    }
+
+    .port-node[data-state="output"] text {
+      fill: var(--viz-page);
+    }
+
+    .port-node[data-state="isolated"] circle {
+      fill: var(--viz-surface-muted);
+      stroke: var(--viz-muted);
+      stroke-dasharray: 5 4;
+      opacity: 0.82;
+    }
+
+    .port-node[data-state="isolated"] text {
+      fill: var(--viz-muted);
+    }
+
+    .bias-ring {
+      fill: var(--viz-surface);
+      stroke: var(--viz-accent-ink);
+      stroke-width: 2;
+    }
+
+    .bias-mark-ring {
+      fill: none;
+      stroke: var(--viz-accent-ink);
+      stroke-width: 2;
+    }
+
+    .bias-dot {
+      fill: var(--viz-accent-ink);
+    }
+
+    .bias-cross {
+      fill: none;
+      stroke: var(--viz-accent-ink);
+      stroke-width: 2.4;
+      stroke-linecap: round;
+    }
+
+    .bias-caption {
+      fill: var(--viz-accent-ink);
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+      font-size: 13px;
+      font-weight: 800;
+      text-anchor: middle;
+    }
+
+    .disk-label {
+      fill: var(--viz-ink);
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+      font-size: 15px;
+      font-weight: 800;
+      text-anchor: middle;
+    }
+
+    .disk-sub {
+      fill: var(--viz-muted);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 13px;
+      text-anchor: middle;
+    }
+
+    .status-panel {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      justify-content: center;
+      gap: 16px;
+      padding: clamp(17px, 2.8vw, 23px);
+      background: var(--viz-surface-muted);
+    }
+
+    .status-kicker {
+      margin: 0 0 6px;
+      color: var(--viz-muted);
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+      font-size: 0.71rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .route-equation {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0;
+      color: var(--viz-accent-ink);
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+      font-size: clamp(1.75rem, 3.7vw, 2.35rem);
+      font-weight: 800;
+      letter-spacing: -0.06em;
+      line-height: 1;
+    }
+
+    .route-arrow {
+      color: var(--viz-muted);
+    }
+
+    .isolation-line {
+      margin: 8px 0 0;
+      color: var(--viz-ink);
+      font-size: 0.97rem;
+      line-height: 1.4;
+    }
+
+    .isolation-line strong {
+      color: var(--viz-muted);
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+      font-size: 0.9em;
+    }
+
+    .bias-order-block {
+      padding-top: 14px;
+      border-top: 1px solid var(--viz-border);
+    }
+
+    .bias-order {
+      margin: 0;
+      color: var(--viz-accent-ink);
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+      font-size: clamp(0.98rem, 2vw, 1.12rem);
+      font-weight: 800;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .bias-order-note {
+      margin: 7px 0 0;
+      color: var(--viz-muted);
+      font-size: 0.87rem;
+      line-height: 1.45;
+    }
+
+    .principle {
+      margin: 0;
+      padding: 11px 0 0 13px;
+      border-top: 1px solid var(--viz-border);
+      border-left: 3px solid var(--viz-accent);
+      color: var(--viz-muted);
+      font-size: 0.89rem;
+      line-height: 1.46;
+    }
+
+    .principle strong {
+      color: var(--viz-ink);
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+      font-size: 0.9em;
+    }
+
+    .route-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid var(--viz-border);
+    }
+
+    .route-card {
+      min-width: 0;
+      padding: 12px clamp(12px, 2.3vw, 18px);
+      border-right: 1px solid var(--viz-border);
+      background: var(--viz-surface);
+      transition: background 180ms ease;
+    }
+
+    .route-card:last-child {
+      border-right: 0;
+    }
+
+    .route-card[data-active="true"] {
+      background: var(--viz-accent-soft);
+      box-shadow: inset 0 3px 0 var(--viz-accent);
+    }
+
+    .route-card__top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+    }
+
+    .route-card__path {
+      color: var(--viz-accent-ink);
+      font-size: clamp(0.96rem, 2.1vw, 1.1rem);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .route-card__iso {
+      color: var(--viz-muted);
+      font-size: 0.68rem;
+      white-space: nowrap;
+    }
+
+    @keyframes route-flow {
+      to {
+        stroke-dashoffset: -18;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .diagram-panel {
+        border-right: 0;
+        border-bottom: 1px solid var(--viz-border);
+      }
+
+      .diagram-panel svg {
+        width: min(100%, 560px);
+      }
+
+      .status-panel {
+        justify-content: flex-start;
+        gap: 14px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .control-bar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .control-group {
+        width: 100%;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .segmented {
+        width: 100%;
+      }
+
+      .segmented button {
+        flex: 1 1 0;
+      }
+
+      .route-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .route-card {
+        border-right: 0;
+        border-bottom: 1px solid var(--viz-border);
+      }
+
+      .route-card:last-child {
+        border-bottom: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="circulator-viz" id="circulator-viz">
+    <header class="viz-header">
+      <p class="eyebrow">Three-port routing rule</p>
+
+      <h1>
+        A Y-junction circulator sends each input to the next port
+      </h1>
+
+      <p class="lede">
+        Select an input port. The highlighted path is the transmitted
+        route; the remaining port is isolated. Reversing the magnetic
+        bias selects the other neighboring output.
+      </p>
+    </header>
+
+    <section class="control-bar" aria-label="Circulator controls">
+      <div class="control-group">
+        <span class="control-label">Input port</span>
+
+        <div
+          class="segmented"
+          role="group"
+          aria-label="Choose input port"
+        >
+          <button
+            type="button"
+            data-input="1"
+            aria-pressed="true"
+          >
+            port 1
+          </button>
+
+          <button
+            type="button"
+            data-input="2"
+            aria-pressed="false"
+          >
+            port 2
+          </button>
+
+          <button
+            type="button"
+            data-input="3"
+            aria-pressed="false"
+          >
+            port 3
+          </button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <span class="control-label">Magnetic bias</span>
+
+        <div
+          class="segmented"
+          role="group"
+          aria-label="Choose magnetic bias direction"
+        >
+          <button
+            type="button"
+            data-direction="forward"
+            aria-pressed="true"
+          >
+            ⊙ +z
+          </button>
+
+          <button
+            type="button"
+            data-direction="reverse"
+            aria-pressed="false"
+          >
+            ⊗ −z
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div class="diagram-panel">
+        <svg
+          viewBox="0 0 540 360"
+          role="img"
+          aria-labelledby="diagram-title diagram-desc"
+        >
+          <title id="diagram-title">
+            Interactive Y-junction circulator routing diagram
+          </title>
+
+          <desc id="diagram-desc">
+            A central ferrite disk couples three ports separated by
+            120 degrees. The highlighted route joins the selected input
+            to the bias-selected output, while the third port is
+            isolated. Reversing the magnetic bias selects the other
+            neighboring output.
+          </desc>
+
+          <defs>
+            <marker
+              id="signal-arrow"
+              viewBox="0 0 10 10"
+              refX="8.5"
+              refY="5"
+              markerWidth="7"
+              markerHeight="7"
+              orient="auto"
+            >
+              <path
+                d="M 1 1 L 9 5 L 1 9"
+                fill="none"
+                stroke="var(--viz-accent)"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </marker>
+          </defs>
+
+          <g aria-hidden="true">
+            <path
+              class="guide"
+              data-port="1"
+              d="M 40 180 L 244 180"
+              data-state="input"
+            />
+
+            <path
+              class="guide-edge"
+              d="
+                M 40 159 L 244 159
+                M 40 201 L 244 201
+              "
+            />
+
+            <path
+              class="guide"
+              data-port="2"
+              d="M 388 96.9 L 428 27"
+              data-state="output"
+            />
+
+            <path
+              class="guide-edge"
+              d="
+                M 406.2 107.3 L 446.2 37.4
+                M 369.8 86.5 L 409.8 16.6
+              "
+            />
+
+            <path
+              class="guide"
+              data-port="3"
+              d="M 388 263.1 L 428 333"
+              data-state="isolated"
+            />
+
+            <path
+              class="guide-edge"
+              d="
+                M 369.8 273.5 L 409.8 343.4
+                M 406.2 252.7 L 446.2 322.6
+              "
+            />
+
+            <circle
+              class="disk"
+              cx="340"
+              cy="180"
+              r="96"
+            />
+
+            <circle
+              class="disk-inner"
+              cx="340"
+              cy="180"
+              r="76"
+            />
+
+            <!--
+              The route is drawn only as
+
+                  input -> disk center -> selected output.
+
+              No circular arrow is used. The bias selects a
+              port-to-port route; it is not being represented
+              as a physical orbit inside the ferrite.
+            -->
+            <path
+              id="signal-path"
+              class="signal-path"
+              d="M 40 180 L 340 180 L 428 27"
+            />
+
+            <g transform="translate(340 180)">
+              <circle
+                class="bias-ring"
+                r="30"
+              />
+
+              <g
+                id="bias-out"
+                transform="translate(0 -8)"
+              >
+                <circle
+                  class="bias-mark-ring"
+                  r="10"
+                />
+
+                <circle
+                  class="bias-dot"
+                  r="3.4"
+                />
+              </g>
+
+              <g
+                id="bias-in"
+                transform="translate(0 -8)"
+                style="display: none"
+              >
+                <circle
+                  class="bias-mark-ring"
+                  r="10"
+                />
+
+                <path
+                  class="bias-cross"
+                  d="
+                    M -5 -5 L 5 5
+                    M 5 -5 L -5 5
+                  "
+                />
+              </g>
+
+              <text
+                class="bias-caption"
+                y="19"
+              >
+                B<tspan
+                  baseline-shift="sub"
+                  font-size="8"
+                >0</tspan>
+              </text>
+
+              <text
+                class="disk-label"
+                y="51"
+              >
+                ferrite disk
+              </text>
+
+              <text
+                class="disk-sub"
+                y="70"
+              >
+                bias normal to the disk
+              </text>
+            </g>
+          </g>
+
+          <g
+            class="port-node"
+            data-port="1"
+            data-state="input"
+            transform="translate(40 180)"
+          >
+            <circle r="26" />
+            <text y="1">1</text>
+          </g>
+
+          <g
+            class="port-node"
+            data-port="2"
+            data-state="output"
+            transform="translate(428 27)"
+          >
+            <circle r="26" />
+            <text y="1">2</text>
+          </g>
+
+          <g
+            class="port-node"
+            data-port="3"
+            data-state="isolated"
+            transform="translate(428 333)"
+          >
+            <circle r="26" />
+            <text y="1">3</text>
+          </g>
+        </svg>
+      </div>
+
+      <aside
+        class="status-panel"
+        aria-live="polite"
+      >
+        <div>
+          <p class="status-kicker">
+            Selected route
+          </p>
+
+          <p class="route-equation">
+            <span id="route-input">1</span>
+            <span class="route-arrow">→</span>
+            <span id="route-output">2</span>
+          </p>
+
+          <p class="isolation-line">
+            Port
+            <strong id="route-isolated">3</strong>
+            is isolated.
+          </p>
+        </div>
+
+        <div class="bias-order-block">
+          <p class="status-kicker">
+            Bias-selected routing order
+          </p>
+
+          <p
+            class="bias-order"
+            id="bias-order"
+          >
+            ⊙ +z: 1 → 2 → 3 → 1
+          </p>
+
+          <p class="bias-order-note">
+            Reversing <em>B</em><sub>0</sub> reverses this port
+            order. The highlighted arrow shows only the selected
+            input-to-output transfer.
+          </p>
+        </div>
+
+        <p class="principle">
+          <strong>Not a reciprocal splitter.</strong>
+          For a fixed bias, reversing the signal path does not send it
+          back to its source; the device advances it to the next port
+          in the same cycle.
+        </p>
+      </aside>
+    </section>
+
+    <section
+      class="route-strip"
+      id="route-strip"
+      aria-label="All routes for the selected bias direction"
+    >
+      <article
+        class="route-card"
+        data-input-card="1"
+        data-active="true"
+      >
+        <div class="route-card__top">
+          <span class="route-card__path">1 → 2</span>
+          <span class="route-card__iso">3 isolated</span>
+        </div>
+      </article>
+
+      <article
+        class="route-card"
+        data-input-card="2"
+        data-active="false"
+      >
+        <div class="route-card__top">
+          <span class="route-card__path">2 → 3</span>
+          <span class="route-card__iso">1 isolated</span>
+        </div>
+      </article>
+
+      <article
+        class="route-card"
+        data-input-card="3"
+        data-active="false"
+      >
+        <div class="route-card__top">
+          <span class="route-card__path">3 → 1</span>
+          <span class="route-card__iso">2 isolated</span>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var state = {
+        input: 1,
+        direction: 1
+      };
+
+      var outer = {
+        1: {
+          x: 40,
+          y: 180
+        },
+        2: {
+          x: 428,
+          y: 27
+        },
+        3: {
+          x: 428,
+          y: 333
+        }
+      };
+
+      var center = {
+        x: 340,
+        y: 180
+      };
+
+      var inputButtons = Array.prototype.slice.call(
+        document.querySelectorAll("[data-input]")
+      );
+
+      var directionButtons = Array.prototype.slice.call(
+        document.querySelectorAll("[data-direction]")
+      );
+
+      var portNodes = Array.prototype.slice.call(
+        document.querySelectorAll(".port-node")
+      );
+
+      var guides = Array.prototype.slice.call(
+        document.querySelectorAll(".guide")
+      );
+
+      var routeCards = Array.prototype.slice.call(
+        document.querySelectorAll("[data-input-card]")
+      );
+
+      var signalPath =
+        document.getElementById("signal-path");
+
+      var biasOut =
+        document.getElementById("bias-out");
+
+      var biasIn =
+        document.getElementById("bias-in");
+
+      function outputFor(input) {
+        return state.direction === 1
+          ? (input % 3) + 1
+          : ((input + 1) % 3) + 1;
+      }
+
+      function isolatedFor(input, output) {
+        return 6 - input - output;
+      }
+
+      function roleFor(
+        port,
+        input,
+        output,
+        isolated
+      ) {
+        if (port === input) {
+          return "input";
+        }
+
+        if (port === output) {
+          return "output";
+        }
+
+        if (port === isolated) {
+          return "isolated";
+        }
+
+        return "";
+      }
+
+      function routePath(input, output) {
+        var start = outer[input];
+        var end = outer[output];
+
+        return [
+          "M",
+          start.x,
+          start.y,
+          "L",
+          center.x,
+          center.y,
+          "L",
+          end.x,
+          end.y
+        ].join(" ");
+      }
+
+      function updateRouteCards() {
+        routeCards.forEach(function (card) {
+          var input = Number(
+            card.getAttribute("data-input-card")
+          );
+
+          var output = outputFor(input);
+          var isolated = isolatedFor(input, output);
+
+          card.dataset.active =
+            input === state.input
+              ? "true"
+              : "false";
+
+          card.querySelector(
+            ".route-card__path"
+          ).textContent =
+            input + " → " + output;
+
+          card.querySelector(
+            ".route-card__iso"
+          ).textContent =
+            isolated + " isolated";
+        });
+      }
+
+      function update() {
+        var input = state.input;
+        var output = outputFor(input);
+        var isolated = isolatedFor(input, output);
+
+        inputButtons.forEach(function (button) {
+          button.setAttribute(
+            "aria-pressed",
+            Number(button.dataset.input) === input
+              ? "true"
+              : "false"
+          );
+        });
+
+        directionButtons.forEach(function (button) {
+          var isForwardButton =
+            button.dataset.direction === "forward";
+
+          button.setAttribute(
+            "aria-pressed",
+            isForwardButton ===
+              (state.direction === 1)
+              ? "true"
+              : "false"
+          );
+        });
+
+        portNodes.forEach(function (node) {
+          var port = Number(node.dataset.port);
+
+          node.dataset.state = roleFor(
+            port,
+            input,
+            output,
+            isolated
+          );
+        });
+
+        guides.forEach(function (guide) {
+          var port = Number(guide.dataset.port);
+
+          guide.dataset.state = roleFor(
+            port,
+            input,
+            output,
+            isolated
+          );
+        });
+
+        signalPath.setAttribute(
+          "d",
+          routePath(input, output)
+        );
+
+        biasOut.style.display =
+          state.direction === 1
+            ? ""
+            : "none";
+
+        biasIn.style.display =
+          state.direction === 1
+            ? "none"
+            : "";
+
+        document.getElementById(
+          "route-input"
+        ).textContent = input;
+
+        document.getElementById(
+          "route-output"
+        ).textContent = output;
+
+        document.getElementById(
+          "route-isolated"
+        ).textContent = isolated;
+
+        document.getElementById(
+          "bias-order"
+        ).textContent =
+          state.direction === 1
+            ? "⊙ +z: 1 → 2 → 3 → 1"
+            : "⊗ −z: 1 → 3 → 2 → 1";
+
+        updateRouteCards();
+        reportHeight();
+      }
+
+      inputButtons.forEach(function (button) {
+        button.addEventListener(
+          "click",
+          function () {
+            state.input =
+              Number(button.dataset.input);
+
+            update();
+          }
+        );
+      });
+
+      directionButtons.forEach(function (button) {
+        button.addEventListener(
+          "click",
+          function () {
+            state.direction =
+              button.dataset.direction === "forward"
+                ? 1
+                : -1;
+
+            update();
+          }
+        );
+      });
+
+      function reportHeight() {
+        if (window.parent === window) {
+          return;
+        }
+
+        window.requestAnimationFrame(function () {
+          var height = Math.ceil(
+            Math.max(
+              document.documentElement.scrollHeight,
+              document.body.scrollHeight
+            )
+          );
+
+          window.parent.postMessage(
+            {
+              height: height
+            },
+            window.location.origin
+          );
+        });
+      }
+
+      window.addEventListener(
+        "load",
+        reportHeight,
+        {
+          once: true
+        }
+      );
+
+      window.addEventListener(
+        "resize",
+        reportHeight,
+        {
+          passive: true
+        }
+      );
+
+      if (
+        document.fonts &&
+        document.fonts.ready
+      ) {
+        document.fonts.ready
+          .then(reportHeight)
+          .catch(function () {});
+      }
+
+      update();
+    }());
+  </script>
+</body>
+</html>
