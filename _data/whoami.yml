@@ -1,55 +1,171 @@
-# Edit this file to update the recommendations list on /whoami/.
-# Each URL points to the blog or publication as a whole, not to one article.
+# Edit this file to update the recommendations and Spotify artists on /whoami/.
 
 recommended_blogs:
-  - name: Alex Shtoff
-    url: https://alexshtf.github.io/
-    note: Optimization, machine learning, and software engineering.
+  - name: "Alex Shtoff"
+    url: "https://alexshtf.github.io/"
+    note: "Optimization, machine learning, and software engineering."
 
-  - name: Andy Jones
-    url: https://andrewcharlesjones.github.io/menu/blog.html
-    note: Statistics, probability, machine learning, and mathematical notes.
+  - name: "Andy Jones"
+    url: "https://andrewcharlesjones.github.io/menu/blog.html"
+    note: "Statistics, probability, machine learning, and mathematical notes."
 
-  - name: Keep the Gradient Flowing
-    url: https://fa.bianp.net/archives.html
-    note: Optimization, statistics, and machine learning.
+  - name: "Keep the Gradient Flowing"
+    url: "https://fa.bianp.net/archives.html"
+    note: "Optimization, statistics, and machine learning."
 
-  - name: colah's blog
-    url: https://colah.github.io/
-    note: Visual explanations of neural networks and machine learning.
+  - name: "colah's blog"
+    url: "https://colah.github.io/"
+    note: "Visual explanations of neural networks and machine learning."
 
-  - name: Distill
-    url: https://distill.pub/
-    note: Interactive research articles about machine learning.
+  - name: "Distill"
+    url: "https://distill.pub/"
+    note: "Interactive research articles about machine learning."
 
-  - name: Gregory Gundersen
-    url: https://gregorygundersen.com/blog/
-    note: Detailed notes on statistics, machine learning, and applied mathematics.
+  - name: "Gregory Gundersen"
+    url: "https://gregorygundersen.com/blog/"
+    note: "Detailed notes on statistics, machine learning, and applied mathematics."
 
-  - name: Shell Guardians
-    url: https://www.shellguardians.com/
-    note: Unix, infrastructure, systems administration, and security.
+  - name: "Shell Guardians"
+    url: "https://www.shellguardians.com/"
+    note: "Unix, infrastructure, systems administration, and security."
 
-  - name: Exploit Reversing
-    url: https://exploitreversing.com/
-    note: Vulnerability research, exploit development, and reverse engineering.
+  - name: "Exploit Reversing"
+    url: "https://exploitreversing.com/"
+    note: "Vulnerability research, exploit development, and reverse engineering."
 
-  - name: Decoder's Blog
-    url: https://decoder.cloud/
-    note: Windows, Active Directory, offensive security, and practical research.
+  - name: "Decoder's Blog"
+    url: "https://decoder.cloud/"
+    note: "Windows, Active Directory, offensive security, and practical research."
 
-  - name: Secure Ideas — Professionally Evil Insights
-    url: https://www.secureideas.com/blog
-    note: Penetration testing, application security, hardware hacking, and security research.
+  - name: "Ardent101"
+    url: "https://ardent101.github.io/"
+    note: "Active Directory, Kerberos, Windows security, and penetration testing."
 
-  - name: Improsec Tech Blog (itm8)
-    url: https://itm8.com/articles/tag/tech-blog
-    note: Active Directory, Windows security, identity attacks, and defensive research.
+  - name: "Chudamax — I understand"
+    url: "https://www.chudamax.com/"
+    note: "Detailed information-security notes, particularly on Kerberos and Active Directory."
 
-  - name: Ardent101
-    url: https://ardent101.github.io/
-    note: Active Directory, Kerberos, Windows security, and penetration testing.
+  - name: "Matteo Malvica — uf0"
+    url: "https://www.matteomalvica.com/"
+    note: "Vulnerability research, exploit development, reverse engineering, and operating-system internals."
 
-  - name: Chudamax — I understand
-    url: https://www.chudamax.com/
-    note: Detailed information-security notes, particularly on Kerberos and Active Directory.
+  - name: "Lil’Log"
+    url: "https://lilianweng.github.io/"
+    note: "Deep learning, reinforcement learning, generative models, and modern AI research notes."
+
+  - name: "Yu He’s Blog"
+    url: "https://dorianhe.github.io/"
+    note: "Algorithms, data structures, machine learning, and software-engineering notes."
+
+  - name: "Its Neuronal"
+    url: "https://alexhwilliams.info/itsneuronalblog/"
+    note: "PCA, clustering, matrix methods, optimal transport, and machine-learning research notes."
+
+  - name: "David Rosenberg — Machine Learning"
+    url: "https://davidrosenberg.github.io/ml2018/#home"
+    note: "Course notes and materials on machine learning, statistical modeling, theory, and practical data science."
+
+  - name: "k9-data-science"
+    url: "https://everdark.github.io/k9/"
+    note: "Statistics, machine learning, natural-language understanding, data engineering, and programming."
+
+  - name: "Hugh Chen — Shapley Values for Trees"
+    url: "https://hughchen.github.io/its_blog/"
+    note: "An accessible technical treatment of Shapley values and explanations for tree-based models."
+
+  - name: "Building Babylon"
+    url: "https://building-babylon.net/"
+    note: "Mathematics, machine learning, representation theory, and programmable cryptography."
+
+  - name: "Random Realizations"
+    url: "https://randomrealizations.com/"
+    note: "Python tutorials on gradient boosting, XGBoost, SHAP, Bayesian modeling, and statistics."
+
+  - name: "Michal’s Low-Level Corner"
+    url: "https://migeel.sk/"
+    note: "C#, .NET, native AOT, reverse engineering, retrocomputing, and low-level programming."
+
+  - name: "Pavel Yosifovich"
+    url: "https://scorpiosoftware.net/"
+    note: "Windows internals, systems programming, drivers, C++, C#, and Rust."
+
+  - name: "waliedassar"
+    url: "https://waleedassar.blogspot.com/"
+    note: "Windows kernel internals, PE parsing, debugging, and vulnerability research."
+
+  - name: "Jonathan Johnson"
+    url: "https://jonny-johnson.medium.com/"
+    note: "Windows internals, telemetry, reverse engineering, and security research."
+
+  - name: "BlahCats Blog"
+    url: "https://blahcat.github.io/"
+    note: "Binary analysis, Windows internals, kernel debugging, emulation, and reverse engineering."
+
+  - name: "csandker.io"
+    url: "https://csandker.io/"
+    note: "Active Directory and Azure AD security, Windows IPC internals, phishing, and red-team tradecraft."
+
+  - name: "clearbluejar"
+    url: "https://clearbluejar.github.io/"
+    note: "Reverse engineering, Ghidra, binary diffing, Windows vulnerabilities, and AI-assisted analysis."
+
+  - name: "SpecterOps Blog"
+    url: "https://specterops.io/blog/"
+    note: "Attack-path management, red-team operations, detection engineering, identity security, and BloodHound."
+
+  - name: "LuemmelSec"
+    url: "https://luemmelsec.github.io/"
+    note: "Penetration testing, BloodHound, identity security, cloud vulnerabilities, and RFID/NFC research."
+
+  - name: "Elad Shamir"
+    url: "https://eladshamir.com/"
+    note: "Advanced Active Directory attack research, Kerberos delegation, Tier Zero, and BloodHound."
+
+  - name: "simondotsh’s infosec blog"
+    url: "https://simondotsh.com/"
+    note: "Pentesting, Active Directory, BloodHound, Azure, and Windows remote-execution research."
+
+  - name: "snovvcrash"
+    url: "https://snovvcrash.rocks/"
+    note: "Red teaming, Active Directory exploitation, Kerberos, malware development, and EDR evasion."
+
+  - name: "ServerGuruNow"
+    url: "https://servergurunow.wordpress.com/"
+    note: "Practical administration notes for Active Directory, Azure networking, DNS, and DHCP."
+
+  - name: "Security — Detailed"
+    url: "https://detailed.wordpress.com/"
+    note: "Network and security administration across firewalls, routing, SSL/TLS, operating systems, and programming."
+
+  - name: "Daniel’s Networking Blog"
+    url: "https://lostintransit.se/"
+    note: "Enterprise networking, routing protocols, SD-WAN, automation, and Cisco certification labs."
+
+  - name: "Educated Guesswork"
+    url: "https://educatedguesswork.org/"
+    note: "Technical essays on Internet security, cryptography, browsers, network protocols, and technology policy."
+
+spotify_top_artists:
+  - name: "Matilda Mann"
+    url: "https://open.spotify.com/artist/76oY04bOzECod3aGVTDtzu"
+    image: "https://image-cdn-ak.spotifycdn.com/image/ab6761610000517455a39e76ed8dd77f8e772ec8"
+
+  - name: "Sade"
+    url: "https://open.spotify.com/artist/47zz7sob9NUcODy0BTDvKx"
+    image: "https://image-cdn-fa.spotifycdn.com/image/ab6761610000517492883b0e094a36d2f43ad284"
+
+  - name: "Snoh Aalegra"
+    url: "https://open.spotify.com/artist/1A9o3Ljt67pFZ89YtPPL5X"
+    image: "https://image-cdn-ak.spotifycdn.com/image/ab6761610000517404ae2067ae0171af5cbf1cf1"
+
+  - name: "עדן בן זקן"
+    url: "https://open.spotify.com/artist/2eUKkTNZsIuZzV95DM0cbt"
+    image: "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174e259342c25fc66c4ae9b78c0"
+    lang: "he"
+    dir: "rtl"
+
+  - name: "אודיה"
+    url: "https://open.spotify.com/artist/28jEBK1RysfSUBHFofFflA"
+    image: "https://image-cdn-fa.spotifycdn.com/image/ab676161000051749562e070d80b95e08f72141b"
+    lang: "he"
+    dir: "rtl"
