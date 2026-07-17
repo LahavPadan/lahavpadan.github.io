@@ -8,7 +8,6 @@ tags:
   - math
 entry_type: comprehensive
 math: true
-reading_mode: guided
 article: article.md
 accent: machine-learning
 ---

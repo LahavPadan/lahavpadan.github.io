@@ -45,14 +45,6 @@
   document.documentElement.dataset.theme = saved || system;
   }());
   </script>
-  {% if page.reading_mode == "guided" %}
-  {%- comment -%}
-  Guided-reading must be defined before MathJax enters its startup path.
-  `defer` keeps parsing non-blocking while preserving execution order and
-  guaranteeing execution before DOMContentLoaded.
-  {%- endcomment -%}
-  <script defer src="{{ '/assets/js/guided-reading.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
-  {% endif %}
   {% if page.math %}
   {%- comment -%}
   The build hands MathJax finished delimiters: _plugins/markdown_preprocessor.rb
@@ -72,28 +64,11 @@
         skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
       },
       startup: {
-        /* MathJax reaches pageReady as soon as its bundle finishes loading,
-           which can be while the parser is still inside <body>. Guided reading
-           has to see the whole article, and has to finish before the document
-           scan begins, so it runs between DOMContentLoaded and the scan. */
         pageReady: function () {
-          var domReady = document.readyState === 'loading'
-            ? new Promise(function (resolve) {
-                document.addEventListener('DOMContentLoaded', resolve, { once: true });
-              })
-            : Promise.resolve();
-
-          return domReady
-            .then(function () {
-              {%- if page.reading_mode == "guided" %}
-              window.__lahavPrepareGuidedReading();
-              {%- endif %}
-              return MathJax.startup.defaultPageReady();
-            })
-            .then(function () {
-              document.documentElement.dataset.mathReady = 'true';
-              document.dispatchEvent(new CustomEvent('lahav:math-ready'));
-            });
+          return MathJax.startup.defaultPageReady().then(function () {
+            document.documentElement.dataset.mathReady = 'true';
+            document.dispatchEvent(new CustomEvent('lahav:math-ready'));
+          });
         }
       }
     };
@@ -109,6 +84,9 @@
   </main>
   <footer class="site-footer shell">Lahav Padan <span aria-hidden="true">·</span> looking into the internals</footer>
   <script src="{{ '/assets/js/site.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
+  {%- if page.layout == "post" %}
+  <script src="{{ '/assets/js/article-reading.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
   <script src="{{ '/assets/js/post-enhancements.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
+  {%- endif %}
 </body>
 </html>

@@ -1,6 +1,7 @@
 ---
 layout: default
 ---
+{% article_chapters %}
 {% assign is_cyber = false %}
 {% if page.tags contains "cyber" %}
   {% assign is_cyber = true %}
@@ -10,15 +11,9 @@ layout: default
 {% unless post_accent %}
   {% assign post_accent = page.tags | first %}
 {% endunless %}
-{% assign guided_reading = false %}
-{% if page.reading_mode == "guided" %}
-  {% assign guided_reading = true %}
-{% endif %}
 
-<article class="post-page shell{% if is_cyber %} post-page--cyber{% endif %}{% if post_accent %} post-page--accent-{{ post_accent | slugify }}{% endif %}{% if guided_reading %} post-page--guided{% endif %}">
-  {% if guided_reading %}
-    <div class="reading-progress" aria-hidden="true"><span></span></div>
-  {% endif %}
+<article class="post-page post-page--guided shell{% if is_cyber %} post-page--cyber{% endif %}{% if post_accent %} post-page--accent-{{ post_accent | slugify }}{% endif %}">
+  <div class="reading-progress" aria-hidden="true"><span></span></div>
 
   <header class="post-page__header">
     <div class="post-page__meta">
@@ -39,48 +34,51 @@ layout: default
 
   <div class="post-page__rule" aria-hidden="true"></div>
 
-  {% if guided_reading %}
-    <div class="post-reading-layout">
-      {% if entry_type == "comprehensive" %}
-        <aside class="post-reading-rail" aria-label="Article navigation">
-          <button class="post-toc-toggle" type="button" aria-expanded="false" aria-controls="post-toc">
-            <span>Article contents</span>
-            <span aria-hidden="true">⌄</span>
-          </button>
-          <nav class="post-toc" id="post-toc" aria-label="Table of contents">
-            <p class="post-toc__title">article route</p>
-            <ol class="post-toc__list" id="post-toc-list"></ol>
-          </nav>
-        </aside>
-      {% endif %}
+  <div class="post-reading-layout">
+    {%- comment -%}
+    An article with no chapter headings has nothing to route through, so the
+    rail is omitted rather than shipped empty. `chapters` comes from
+    _plugins/article_structure.rb by way of the article_chapters tag.
+    {%- endcomment -%}
+    {% if chapters.size > 0 %}
+      <aside class="post-reading-rail" aria-label="Article navigation">
+        <button class="post-toc-toggle" type="button" aria-expanded="false" aria-controls="post-toc">
+          <span>Article contents</span>
+          <span aria-hidden="true">&#8964;</span>
+        </button>
+        <nav class="post-toc" id="post-toc" aria-label="Table of contents" data-toc-ready="true">
+          <p class="post-toc__title">article route</p>
+          <ol class="post-toc__list" id="post-toc-list">
+            {% for chapter in chapters %}
+              <li class="post-toc__item post-toc__item--top" data-chapter-number="{{ chapter.number }}">
+                <a class="post-toc__link" href="#{{ chapter.id }}">{{ chapter.title }}</a>
+                {% if chapter.subsections.size > 0 %}
+                  <ol class="post-toc__sublist">
+                    {% for subsection in chapter.subsections %}
+                      <li class="post-toc__item post-toc__item--sub">
+                        <a class="post-toc__link" href="#{{ subsection.id }}">{{ subsection.title }}</a>
+                      </li>
+                    {% endfor %}
+                  </ol>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ol>
+        </nav>
+      </aside>
+    {% endif %}
 
-      <div class="post-reading-main">
-        <div class="reading-status" aria-live="polite">
-          <div class="reading-status__chapter">
-            <span class="reading-status__number"></span>
-            <span class="reading-status__title"></span>
-          </div>
-        </div>
-
-        <div class="article-prose{% if is_cyber %} article-prose--cyber{% endif %}"
-             data-reading-mode="guided"
-             data-article-url="{{ page.url }}"
-             data-build-version="{{ site.time | date: '%s' }}">
-          {{ content }}
+    <div class="post-reading-main">
+      <div class="reading-status" aria-live="polite">
+        <div class="reading-status__chapter">
+          <span class="reading-status__number"></span>
+          <span class="reading-status__title"></span>
         </div>
       </div>
+
+      <div class="article-prose{% if is_cyber %} article-prose--cyber{% endif %}">
+        {{ content }}
+      </div>
     </div>
-  {% else %}
-    {% if entry_type == "comprehensive" %}
-      <nav class="post-toc" id="post-toc" aria-label="Table of contents" hidden>
-        <p class="post-toc__title">on this page</p>
-        <ol class="post-toc__list" id="post-toc-list"></ol>
-      </nav>
-    {% endif %}
-    <div class="article-prose{% if is_cyber %} article-prose--cyber{% endif %}"
-         data-article-url="{{ page.url }}"
-         data-build-version="{{ site.time | date: '%s' }}">
-      {{ content }}
-    </div>
-  {% endif %}
+  </div>
 </article>

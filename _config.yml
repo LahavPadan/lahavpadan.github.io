@@ -18,7 +18,7 @@ social:
 
 google_site_verification: "WyIFwUQImflujTpThYRQEFPBTXoOeQIx2G_n1OypzWE"
 
-markdown: kramdown
+markdown: GuidedKramdown
 kramdown:
   input: Kramdown
   math_engine: mathjax

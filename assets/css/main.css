@@ -1481,8 +1481,9 @@ kbd {
 }
 
 
-/* Guided reading mode -----------------------------------------------------
-   Long-form posts opt in with `reading_mode: guided`.
+/* Guided reading ----------------------------------------------------------
+   Every post is sectioned into chapters at build time by
+   _plugins/article_structure.rb, so these rules apply to all of them.
 
    The post accent remains the visual centre. Three supporting roles are
    produced by mixing that accent with stable neighbouring hue seeds: a cool

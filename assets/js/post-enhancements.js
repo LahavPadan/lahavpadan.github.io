@@ -1,6 +1,5 @@
 /**
- * Site-wide post behaviour: table of contents, image lightbox, and the sizing
- * and theming of the visualization iframes.
+ * Image lightbox, and the sizing and theming of the visualization iframes.
  *
  * Visualizations are declared in the article source with
  * {% include visualization.html %}, so nothing here decides where they belong;
@@ -11,14 +10,6 @@
 
   function each(nodes, fn) {
     Array.prototype.forEach.call(nodes || [], fn);
-  }
-
-  function slugify(text) {
-    return String(text || '')
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\u0590-\u05ff]+/g, '-')
-      .replace(/^-+|-+$/g, '');
   }
 
   function cssValue(style, name, fallback) {
@@ -460,162 +451,6 @@
 
   /* -------------------------------------------------------------- TOC ---- */
 
-  function buildToc() {
-    var nav = document.getElementById('post-toc');
-    var listEl = document.getElementById('post-toc-list');
-    var prose = document.querySelector('.article-prose');
-    if (!nav || !listEl || !prose) return null;
-
-    var headings = Array.prototype.slice.call(prose.querySelectorAll('h2, h3, h4'));
-    if (headings.length < 2) {
-      if (nav.parentNode) nav.parentNode.removeChild(nav);
-      return null;
-    }
-
-    var hasH2 = headings.some(function (heading) { return heading.tagName === 'H2'; });
-    var topTag = hasH2 ? 'H2' : 'H3';
-    function isTop(heading) { return heading.tagName === topTag; }
-    function isSub(heading) {
-      return topTag === 'H2'
-        ? (heading.tagName === 'H3' || heading.tagName === 'H4')
-        : heading.tagName === 'H4';
-    }
-
-    var linkable = headings.filter(function (heading) { return isTop(heading) || isSub(heading); });
-    var includeSubs = linkable.length <= 40;
-    var used = {};
-
-    function ensureId(heading) {
-      if (heading.id) { used[heading.id] = true; return; }
-      var base = slugify(heading.textContent) || 'section';
-      var id = base;
-      var n = 1;
-      while (document.getElementById(id) || used[id]) {
-        id = base + '-' + n;
-        n += 1;
-      }
-      heading.id = id;
-      used[id] = true;
-    }
-
-    function makeItem(heading, cls) {
-      var item = document.createElement('li');
-      item.className = 'post-toc__item ' + cls;
-      var link = document.createElement('a');
-      link.className = 'post-toc__link';
-      link.href = '#' + heading.id;
-      link.textContent = heading.textContent;
-      item.appendChild(link);
-      return item;
-    }
-
-    listEl.textContent = '';
-    var fragment = document.createDocumentFragment();
-    var currentSub = null;
-    var currentTopItem = null;
-    var linked = [];
-
-    headings.forEach(function (heading) {
-      if (isTop(heading)) {
-        ensureId(heading);
-        currentSub = null;
-        currentTopItem = makeItem(heading, 'post-toc__item--top');
-        fragment.appendChild(currentTopItem);
-        linked.push(heading);
-      } else if (isSub(heading) && includeSubs) {
-        ensureId(heading);
-        if (!currentSub) {
-          currentSub = document.createElement('ol');
-          currentSub.className = 'post-toc__sublist';
-          (currentTopItem || fragment).appendChild(currentSub);
-        }
-        currentSub.appendChild(makeItem(heading, 'post-toc__item--sub'));
-        linked.push(heading);
-      }
-    });
-
-    listEl.appendChild(fragment);
-    nav.hidden = false;
-    nav.setAttribute('data-toc-ready', '');
-    return { nav: nav, linked: linked };
-  }
-
-  function initTocSpy(state) {
-    if (!state || !state.linked.length) return;
-    var entries = [];
-    each(state.nav.querySelectorAll('.post-toc__link'), function (link) {
-      var raw = link.getAttribute('href').slice(1);
-      var id;
-      try { id = decodeURIComponent(raw); } catch (_error) { id = raw; }
-      var heading = document.getElementById(id);
-      if (heading) entries.push({ heading: heading, link: link });
-    });
-    if (!entries.length) return;
-
-    var offsets = [];
-    var active = -1;
-    var scrollFrame = 0;
-    var measureFrame = 0;
-    var headerOffset = 96;
-
-    function setActive(index) {
-      if (index === active) return;
-      if (active >= 0 && entries[active]) {
-        entries[active].link.classList.remove('is-active');
-        entries[active].link.removeAttribute('aria-current');
-      }
-      active = index;
-      if (active >= 0 && entries[active]) {
-        entries[active].link.classList.add('is-active');
-        entries[active].link.setAttribute('aria-current', 'location');
-      }
-    }
-
-    function update() {
-      scrollFrame = 0;
-      if (!offsets.length) return;
-      var target = window.scrollY + headerOffset;
-      var low = 0;
-      var high = offsets.length - 1;
-      var chosen = 0;
-      while (low <= high) {
-        var middle = (low + high) >> 1;
-        if (offsets[middle] <= target) {
-          chosen = middle;
-          low = middle + 1;
-        } else high = middle - 1;
-      }
-      setActive(chosen);
-    }
-
-    function scheduleUpdate() {
-      if (!scrollFrame) scrollFrame = window.requestAnimationFrame(update);
-    }
-
-    function measure() {
-      measureFrame = 0;
-      offsets = entries.map(function (entry) {
-        return entry.heading.getBoundingClientRect().top + window.scrollY;
-      });
-      update();
-    }
-
-    function scheduleMeasure() {
-      if (measureFrame) window.cancelAnimationFrame(measureFrame);
-      measureFrame = window.requestAnimationFrame(measure);
-    }
-
-    window.addEventListener('scroll', scheduleUpdate, { passive: true });
-    window.addEventListener('resize', scheduleMeasure, { passive: true });
-    window.addEventListener('load', scheduleMeasure, { once: true });
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(scheduleMeasure).catch(function () {});
-    }
-    measure();
-  }
-
-  /* -------------------------------------------------- Image lightbox ---- */
-
   var lightboxState = { node: null, lastFocus: null, onKey: null };
 
   function closeLightbox() {
@@ -682,7 +517,6 @@
   }
 
   function boot() {
-    if (!document.querySelector('.post-page--guided')) initTocSpy(buildToc());
     initImageLightbox();
     initVisualizationResizing();
   }
