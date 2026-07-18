@@ -1,7 +1,5 @@
 ## § 0. Introduction {#sec-0}
 
-> **Visual-source note.** Every image embedded below is an actual screenshot published by the linked external source. Each screenshot is placed beside the command, registry location, filesystem path, or GUI concept that it illustrates; the original page is linked directly beneath it.
-
 <style>
 .etw-image-pair {
   display: grid;
