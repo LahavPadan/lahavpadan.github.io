@@ -7,42 +7,40 @@
 <style>
 :root{
   color-scheme:light dark;
-  --bg:#fbfaf7;
+  --bg:transparent;
   --paper:#ffffff;
-  --panel:#f5f3ee;
-  --ink:#1e252b;
-  --muted:#657079;
+  --panel:#edf6fe;
+  --ink:#1c2420;
+  --muted:#667169;
   --faint:#8b949b;
-  --rule:#d9dde0;
-  --rule-strong:#b9c1c7;
-  --curve:#2f6f9f;
-  --curve-dark:#174f78;
-  --line:#668b45;
-  --singular:#b95a37;
+  --rule:#d6ddd7;
+  --rule-strong:#a6b2a9;
+  --curve:#1d61a6;
+  --curve-dark:#174f87;
+  --line:#5f8c3d;
+  --singular:#a84f24;
   --tangent:#c2842f;
   --third:#6c5aa8;
   --good:#386f52;
   --shadow:0 12px 34px rgba(27,35,41,.055);
 }
-@media (prefers-color-scheme:dark){
-  :root{
-    --bg:#111417;
-    --paper:#171b1f;
-    --panel:#1d2227;
-    --ink:#eef1f3;
-    --muted:#b2bbc2;
+:root[data-theme=dark]{
+    --bg:transparent;
+    --paper:#171e19;
+    --panel:#18354e;
+    --ink:#e9efeb;
+    --muted:#a7b5aa;
     --faint:#8f9aa3;
-    --rule:#323940;
-    --rule-strong:#4c5760;
-    --curve:#70add7;
-    --curve-dark:#9bc9e8;
-    --line:#9abc73;
-    --singular:#ed8c68;
+    --rule:#344138;
+    --rule-strong:#617168;
+    --curve:#add9ff;
+    --curve-dark:#7bafe0;
+    --line:#a4c880;
+    --singular:#ffbf93;
     --tangent:#e2aa58;
     --third:#b6a7ed;
     --good:#7fbd99;
     --shadow:none;
-  }
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink)}
@@ -122,9 +120,8 @@ button,input{font:inherit}
   <div class="kicker">Singular cubic, one line parameter</div>
   <h1 id="scpe-title">Why the slope of a line determines one point on a singular cubic</h1>
   <p class="lead">
-    Every green line has equation <strong>y = tx</strong>, so it passes through the marked point <strong>S = (0,0)</strong>.
-    The useful fact is not merely that the curve has a crossing or a tip. It is the repeated factor that appears after substitution:
-    on a node or cusp, <strong>x²</strong> accounts for two of the cubic equation’s three roots, leaving one root for one other point.
+    Every green line has equation <strong>y = tx</strong>, so it passes through the marked point <strong>S = (0,0)</strong>. Substituting into the curve turns the intersection with the line into a cubic equation in <em>x</em>, whose roots are the <em>x</em>-coordinates of the intersection points.
+    On a node or cusp, that cubic factors as <strong>x² × (linear in x)</strong>: the <strong>x²</strong> consumes two of the three roots at <em>S</em>, so exactly one root — and one other intersection point — remains. A smooth cubic has no repeated factor, so the same substitution leaves two other roots and a slope through <em>S</em> does not single out one point.
   </p>
 
   <div class="causal" aria-label="The logical chain shown by the visualization">
