@@ -94,7 +94,7 @@ button {
 }
 
 .shell {
-  width: min(1100px, calc(100% - 48px));
+  width: min(1320px, calc(100% - 48px));
   margin-inline: auto;
 }
 .sr-only {
@@ -1750,7 +1750,7 @@ kbd {
   --guided-proof: var(--guide-proof);
   --guided-proof-soft: var(--guide-proof-soft);
 
-  width: min(1100px, calc(100% - 48px));
+  width: min(1320px, calc(100% - 48px));
   padding-top: clamp(48px, 7vw, 82px);
 }
 
@@ -1815,7 +1815,7 @@ kbd {
 .post-reading-main {
   width: 100%;
   min-width: 0;
-  max-width: 780px;
+  max-width: 940px;
 }
 /* When the article has no §-level chapters, post.html omits the rail. The
    single remaining child would otherwise fall into the fixed 180–220 px first
