@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Legendre transform: one selected input, one recorded value</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap">
+
+  <script>
+    (function () {
+      function applyTheme(theme) {
+        if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme;
+      }
+      try {
+        var root = window.parent.document.documentElement;
+        var body = window.parent.document.body;
+        var raw = [root.dataset.theme || '', root.className || '', body && body.dataset ? body.dataset.theme || '' : '', body ? body.className || '' : ''].join(' ').toLowerCase();
+        applyTheme(raw.indexOf('dark') >= 0 ? 'dark' : 'light');
+      } catch (_error) {
+        applyTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      }
+      window.addEventListener('message', function (event) {
+        if (event && event.data && event.data.theme) applyTheme(event.data.theme);
+      });
+    }());
+  </script>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'svg'] },
+      startup: {
+        pageReady: function () {
+          return MathJax.startup.defaultPageReady().then(function () {
+            document.documentElement.dataset.mathReady = 'true';
+            document.dispatchEvent(new CustomEvent('viz:math-ready'));
+          });
+        }
+      }
+    };
+  </script>
+  <script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #fbfbf8;
+      --surface: #ffffff;
+      --surface-muted: #f4f5f1;
+      --surface-raised: #fafbf8;
+      --ink: #1c2420;
+      --muted: #667169;
+      --border: #d6ddd7;
+      --border-strong: #a6b2a9;
+      --accent: #0d7659;
+      --accent-soft: #dcefe7;
+      --accent-ink: #075b45;
+      --orange: #a55b24;
+      --orange-soft: #fff0e4;
+      --blue: #1d61a6;
+      --blue-soft: #edf6fe;
+      --font-display: "Lora", Georgia, "Times New Roman", serif;
+      --font-reading: "Lora", Georgia, "Times New Roman", serif;
+      --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --page: #101511;
+      --surface: #171e19;
+      --surface-muted: #1d2720;
+      --surface-raised: #151b17;
+      --ink: #e9efeb;
+      --muted: #a7b5aa;
+      --border: #344138;
+      --border-strong: #617168;
+      --accent: #7cdaad;
+      --accent-soft: #1a3c2f;
+      --accent-ink: #9ee7c4;
+      --orange: #ffb780;
+      --orange-soft: #40291f;
+      --blue: #8fc6ff;
+      --blue-soft: #18354e;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-width: 320px; margin: 0; overflow-x: hidden; background: transparent; color: var(--ink); }
+    body { padding: clamp(5px, 1.4vw, 12px); font-family: var(--font-ui); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    button, input { font: inherit; }
+
+    .visualization {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(250px, 360px);
+      gap: 20px;
+      align-items: center;
+      padding: 15px 18px 13px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .heading { min-width: 0; }
+    .heading h1 { margin: 0 0 4px; font-family: var(--font-ui); font-size: clamp(1rem, 2.2vw, 1.24rem); font-weight: 750; letter-spacing: -.025em; line-height: 1.22; }
+    .heading p { margin: 0; color: var(--muted); font-family: var(--font-reading); font-size: .88rem; line-height: 1.46; }
+
+    .control {
+      display: grid;
+      grid-template-columns: auto minmax(90px, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-muted);
+    }
+    .control label { color: var(--muted); font-size: .67rem; font-weight: 780; letter-spacing: .055em; text-transform: uppercase; white-space: nowrap; }
+    .control input { width: 100%; min-width: 0; margin: 0; accent-color: var(--accent); cursor: pointer; }
+    .control output { min-width: 66px; color: var(--accent-ink); font-size: .78rem; font-weight: 780; text-align: right; white-space: nowrap; }
+
+    .equation-chain {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) auto minmax(0, .92fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: 9px;
+      padding: 9px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-raised);
+      font-size: clamp(.77rem, 1.28vw, .94rem);
+      text-align: center;
+    }
+    .equation-chain .stage { min-width: 0; }
+    .equation-chain .stage-label { display: block; margin-bottom: 1px; color: var(--muted); font-size: .61rem; font-weight: 780; letter-spacing: .055em; text-transform: uppercase; }
+    .equation-chain .arrow { color: var(--accent-ink); font-size: 1rem; font-weight: 800; }
+    .equation-chain mjx-container { margin: 0 !important; max-width: 100%; overflow: visible; }
+    .equation-chain mjx-container[jax="SVG"] > svg { max-width: 100%; height: auto; overflow: visible; }
+
+    .canvas-wrap { width: 100%; background: var(--surface); }
+    #scene { display: block; width: 100%; height: auto; background: var(--surface); }
+
+    .live-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--border); background: var(--accent-soft); }
+    .live-item { min-width: 0; padding: 9px 12px 10px; text-align: center; }
+    .live-item + .live-item { border-left: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border) 78%); }
+    .live-label { display: block; margin-bottom: 1px; color: var(--muted); font-size: .61rem; font-weight: 780; letter-spacing: .05em; text-transform: uppercase; }
+    .live-value { color: var(--ink); font-family: var(--font-reading); font-size: .92rem; font-weight: 650; white-space: nowrap; }
+    .live-value strong { color: var(--accent-ink); font-weight: 750; }
+
+    @media (max-width: 760px) {
+      .topbar { grid-template-columns: 1fr; gap: 10px; }
+      .equation-chain { gap: 5px; padding-inline: 9px; font-size: .72rem; }
+      .equation-chain .stage-label { font-size: .54rem; }
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 3px; }
+      .topbar { padding: 13px; }
+      .control { grid-template-columns: 1fr auto; }
+      .control label { grid-column: 1 / -1; }
+      .equation-chain { grid-template-columns: 1fr; gap: 3px; text-align: left; }
+      .equation-chain .stage { display: grid; grid-template-columns: 55px minmax(0, 1fr); align-items: center; gap: 7px; }
+      .equation-chain .stage-label { margin: 0; }
+      .equation-chain .arrow { display: none; }
+      .live-strip { grid-template-columns: 1fr; }
+      .live-item + .live-item { border-left: 0; border-top: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border) 78%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="visualization" id="visualization">
+    <header class="topbar">
+      <div class="heading">
+        <h1>One selected input links all three views</h1>
+        <p>The maximum gap and the derivative lookup share the same horizontal position. That attained gap is then recorded on the graph of the conjugate.</p>
+      </div>
+      <div class="control">
+        <label for="ySlider">fixed slope</label>
+        <input id="ySlider" type="range" min="-3.2" max="3.2" step="0.01" value="1">
+        <output id="yValue" for="ySlider">\(y=1.00\)</output>
+      </div>
+    </header>
+
+    <section class="equation-chain" aria-label="The three linked operations">
+      <div class="stage"><span class="stage-label">select</span><span>\(u_y^{\star}=\operatorname*{arg\,max}_{u\in\mathbb R}\{yu-f(u)\}\)</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="stage"><span class="stage-label">locate</span><span>\(f'\!\left(u_y^{\star}\right)=y\)</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="stage"><span class="stage-label">record</span><span>\(f^{*}(y)=yu_y^{\star}-f\!\left(u_y^{\star}\right)\)</span></div>
+    </section>
+
+    <div class="canvas-wrap">
+      <svg id="scene" viewBox="0 0 1080 510" role="img" aria-label="A Legendre transform visualization with an aligned maximization plot and derivative strip on the left, connected to the conjugate plot on the right"></svg>
+    </div>
+
+    <footer class="live-strip" aria-label="Current numerical values">
+      <div class="live-item"><span class="live-label">fixed slope</span><span class="live-value">\(y=\)<strong id="liveY">1.00</strong></span></div>
+      <div class="live-item"><span class="live-label">selected input</span><span class="live-value">\(u_y^{\star}=\)<strong id="liveX">0.68</strong></span></div>
+      <div class="live-item"><span class="live-label">recorded gap</span><span class="live-value">\(f^{*}(y)=\)<strong id="liveFstar">0.44</strong></span></div>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+      var NS = 'http://www.w3.org/2000/svg';
+      var scene = document.getElementById('scene');
+      var slider = document.getElementById('ySlider');
+      var output = document.getElementById('yValue');
+      var liveY = document.getElementById('liveY');
+      var liveX = document.getElementById('liveX');
+      var liveFstar = document.getElementById('liveFstar');
+
+      var L = {
+        W: 1080, H: 510,
+        top: { x: 54, y: 66, w: 548, h: 240 },
+        derivative: { x: 54, y: 356, w: 548, h: 104 },
+        bridge: { x: 626, y: 174, w: 102, h: 176 },
+        conjugate: { x: 758, y: 102, w: 278, h: 334 }
+      };
+
+      function f(u) { return 0.25 * Math.pow(u, 4) + 0.5 * u * u; }
+      function fp(u) { return u * u * u + u; }
+      function selectedInput(y) {
+        var lo = -2.2;
+        var hi = 2.2;
+        for (var i = 0; i < 70; i += 1) {
+          var mid = (lo + hi) / 2;
+          if (fp(mid) < y) lo = mid; else hi = mid;
+        }
+        return (lo + hi) / 2;
+      }
+      function conjugate(y) { var u = selectedInput(y); return y * u - f(u); }
+      function fmt(value) { var text = value.toFixed(2); return text === '-0.00' ? '0.00' : text; }
+      function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+      function colors() {
+        return {
+          surface: css('--surface'), mutedSurface: css('--surface-muted'), ink: css('--ink'), muted: css('--muted'),
+          border: css('--border'), strong: css('--border-strong'), accent: css('--accent'), accentInk: css('--accent-ink'),
+          accentSoft: css('--accent-soft'), orange: css('--orange'), orangeSoft: css('--orange-soft'), blue: css('--blue'), blueSoft: css('--blue-soft')
+        };
+      }
+      function node(name, attrs, content) {
+        var n = document.createElementNS(NS, name);
+        Object.keys(attrs || {}).forEach(function (key) { n.setAttribute(key, attrs[key]); });
+        if (content !== undefined) n.textContent = content;
+        return n;
+      }
+      function add(parent, name, attrs, content) { var n = node(name, attrs, content); parent.appendChild(n); return n; }
+      function clear() { while (scene.firstChild) scene.removeChild(scene.firstChild); }
+      function scale(frame, bounds) {
+        return {
+          sx: function (x) { return frame.x + (x - bounds.xMin) / (bounds.xMax - bounds.xMin) * frame.w; },
+          sy: function (y) { return frame.y + frame.h - (y - bounds.yMin) / (bounds.yMax - bounds.yMin) * frame.h; }
+        };
+      }
+      function samples(fn, a, b, count) {
+        var pts = [];
+        for (var i = 0; i <= count; i += 1) { var x = a + (b - a) * i / count; pts.push([x, fn(x)]); }
+        return pts;
+      }
+      function pathData(points, s) {
+        return points.map(function (p, i) { return (i ? 'L' : 'M') + s.sx(p[0]).toFixed(2) + ' ' + s.sy(p[1]).toFixed(2); }).join(' ');
+      }
+      function frame(parent, box, bounds, xTicks, yTicks, labels, C) {
+        var s = scale(box, bounds);
+        add(parent, 'rect', { x: box.x, y: box.y, width: box.w, height: box.h, rx: 3, fill: C.mutedSurface, stroke: C.border });
+        xTicks.forEach(function (v) {
+          var x = s.sx(v);
+          add(parent, 'line', { x1: x, y1: box.y, x2: x, y2: box.y + box.h, stroke: C.border, 'stroke-width': 1, opacity: .72 });
+          add(parent, 'text', { x: x, y: box.y + box.h + 17, fill: C.muted, 'font-family': 'Inter, sans-serif', 'font-size': 11, 'text-anchor': 'middle' }, String(v));
+        });
+        yTicks.forEach(function (v) {
+          var y = s.sy(v);
+          add(parent, 'line', { x1: box.x, y1: y, x2: box.x + box.w, y2: y, stroke: C.border, 'stroke-width': 1, opacity: .72 });
+          add(parent, 'text', { x: box.x - 9, y: y + 4, fill: C.muted, 'font-family': 'Inter, sans-serif', 'font-size': 11, 'text-anchor': 'end' }, String(v));
+        });
+        if (bounds.xMin <= 0 && bounds.xMax >= 0) add(parent, 'line', { x1: s.sx(0), y1: box.y, x2: s.sx(0), y2: box.y + box.h, stroke: C.strong, 'stroke-width': 1.2 });
+        if (bounds.yMin <= 0 && bounds.yMax >= 0) add(parent, 'line', { x1: box.x, y1: s.sy(0), x2: box.x + box.w, y2: s.sy(0), stroke: C.strong, 'stroke-width': 1.2 });
+        if (labels.x) add(parent, 'text', { x: box.x + box.w, y: box.y + box.h + 18, fill: C.ink, 'font-family': 'Lora, serif', 'font-size': 13, 'font-style': 'italic', 'text-anchor': 'end' }, labels.x);
+        if (labels.y) add(parent, 'text', { x: box.x + 8, y: box.y + 16, fill: C.ink, 'font-family': 'Lora, serif', 'font-size': 13, 'font-style': 'italic' }, labels.y);
+        return s;
+      }
+      function curve(parent, points, s, stroke, width, dash) {
+        add(parent, 'path', { d: pathData(points, s), fill: 'none', stroke: stroke, 'stroke-width': width, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-dasharray': dash || '' });
+      }
+      function label(parent, x, y, textValue, fill, background, C, anchor) {
+        var width = Math.max(62, textValue.length * 7.1 + 18);
+        var height = 25;
+        var left = anchor === 'end' ? x - width : anchor === 'middle' ? x - width / 2 : x;
+        add(parent, 'rect', { x: left, y: y - 17, width: width, height: height, rx: 12.5, fill: background || C.surface, stroke: C.border, 'stroke-width': 1 });
+        add(parent, 'text', { x: anchor === 'end' ? x - 9 : anchor === 'middle' ? x : x + 9, y: y, fill: fill, 'font-family': 'Lora, serif', 'font-size': 12.5, 'font-weight': 650, 'text-anchor': anchor || 'start' }, textValue);
+      }
+      function heading(parent, x, y, textValue, C) {
+        add(parent, 'text', { x: x, y: y, fill: C.muted, 'font-family': 'Inter, sans-serif', 'font-size': 11, 'font-weight': 780, 'letter-spacing': 1.05 }, textValue);
+      }
+      function reportHeight() {
+        window.requestAnimationFrame(function () {
+          var el = document.getElementById('visualization');
+          var height = Math.ceil(el.getBoundingClientRect().height + 18);
+          if (window.parent !== window) {
+            window.parent.postMessage({ type: 'article-visualization:resize', height: height }, '*');
+            window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, '*');
+            window.parent.postMessage({ height: height }, '*');
+          }
+        });
+      }
+
+      function render() {
+        var y = Number(slider.value);
+        var uStar = selectedInput(y);
+        var fStar = conjugate(y);
+        var C = colors();
+        output.textContent = 'y = ' + fmt(y);
+        liveY.textContent = fmt(y);
+        liveX.textContent = fmt(uStar);
+        liveFstar.textContent = fmt(fStar);
+        clear();
+
+        add(scene, 'rect', { x: 0, y: 0, width: L.W, height: L.H, fill: C.surface });
+        heading(scene, L.top.x, 30, 'ONE INPUT, SEEN IN TWO ALIGNED VIEWS', C);
+        heading(scene, L.conjugate.x, 67, 'THE RECORDED VALUE', C);
+
+        var topBounds = { xMin: -1.75, xMax: 1.75, yMin: -5.8, yMax: 5.8 };
+        var derivativeBounds = { xMin: -1.75, xMax: 1.75, yMin: -4.3, yMax: 4.3 };
+        var conjugateBounds = { xMin: -3.2, xMax: 3.2, yMin: -.25, yMax: 3.45 };
+        var topS = frame(scene, L.top, topBounds, [-1, 0, 1], [-4, -2, 0, 2, 4], { y: 'value' }, C);
+        var derS = frame(scene, L.derivative, derivativeBounds, [-1, 0, 1], [-4, 0, 4], { x: 'u', y: "f′(u)" }, C);
+        var conS = frame(scene, L.conjugate, conjugateBounds, [-3, 0, 3], [0, 1, 2, 3], { x: 'y', y: 'f*(y)' }, C);
+
+        curve(scene, samples(f, topBounds.xMin, topBounds.xMax, 180), topS, C.accent, 3.2);
+        curve(scene, samples(function (u) { return y * u; }, topBounds.xMin, topBounds.xMax, 2), topS, C.orange, 2.4);
+        curve(scene, samples(fp, derivativeBounds.xMin, derivativeBounds.xMax, 180), derS, C.blue, 3);
+        add(scene, 'line', { x1: L.derivative.x, y1: derS.sy(y), x2: L.derivative.x + L.derivative.w, y2: derS.sy(y), stroke: C.orange, 'stroke-width': 2.1 });
+        curve(scene, samples(conjugate, conjugateBounds.xMin, conjugateBounds.xMax, 180), conS, C.accent, 3.2);
+
+        var xGuide = topS.sx(uStar);
+        add(scene, 'line', { x1: xGuide, y1: L.top.y, x2: xGuide, y2: L.derivative.y + L.derivative.h, stroke: C.blue, 'stroke-width': 1.55, 'stroke-dasharray': '6 5' });
+
+        var curveY = topS.sy(f(uStar));
+        var lineY = topS.sy(y * uStar);
+        var gapTop = Math.min(curveY, lineY);
+        var gapBottom = Math.max(curveY, lineY);
+        var side = xGuide > L.top.x + L.top.w - 120 ? -1 : 1;
+        var bracketX = xGuide + side * 25;
+        add(scene, 'rect', { x: xGuide - 8, y: gapTop, width: 16, height: Math.max(1, gapBottom - gapTop), fill: C.orange, opacity: .12 });
+        add(scene, 'line', { x1: xGuide, y1: gapTop, x2: bracketX, y2: gapTop, stroke: C.orange, 'stroke-width': 1.4 });
+        add(scene, 'line', { x1: xGuide, y1: gapBottom, x2: bracketX, y2: gapBottom, stroke: C.orange, 'stroke-width': 1.4 });
+        add(scene, 'line', { x1: bracketX, y1: gapTop, x2: bracketX, y2: gapBottom, stroke: C.orange, 'stroke-width': 1.8 });
+        add(scene, 'circle', { cx: xGuide, cy: curveY, r: 5, fill: C.surface, stroke: C.accent, 'stroke-width': 2.2 });
+        add(scene, 'circle', { cx: xGuide, cy: lineY, r: 4.2, fill: C.orange });
+
+        var derivativeY = derS.sy(y);
+        add(scene, 'circle', { cx: derS.sx(uStar), cy: derivativeY, r: 5, fill: C.surface, stroke: C.blue, 'stroke-width': 2.3 });
+        add(scene, 'circle', { cx: derS.sx(uStar), cy: derivativeY, r: 2.5, fill: C.blue });
+
+        var conX = conS.sx(y);
+        var conY = conS.sy(fStar);
+        add(scene, 'line', { x1: conX, y1: conS.sy(0), x2: conX, y2: conY, stroke: C.orange, 'stroke-width': 1.4, 'stroke-dasharray': '5 5' });
+        add(scene, 'circle', { cx: conX, cy: conY, r: 6.5, fill: C.surface, stroke: C.accent, 'stroke-width': 2.4 });
+        add(scene, 'circle', { cx: conX, cy: conY, r: 3.1, fill: C.accent });
+
+        label(scene, L.top.x + L.top.w - 10, topS.sy(f(1.22)) - 8, 'f(u)', C.accentInk, C.accentSoft, C, 'end');
+        label(scene, L.top.x + 14, topS.sy(y * -1.35) - 7, 'yu', C.orange, C.orangeSoft, C, 'start');
+        label(scene, L.derivative.x + L.derivative.w - 12, derS.sy(fp(1.2)) - 4, "f′(u)", C.blue, C.blueSoft, C, 'end');
+        label(scene, L.conjugate.x + L.conjugate.w - 12, conS.sy(conjugate(2.45)) - 8, 'f*(y)', C.accentInk, C.accentSoft, C, 'end');
+
+        var gapLabelY = Math.max(L.top.y + 28, Math.min(L.top.y + L.top.h - 12, (gapTop + gapBottom) / 2));
+        label(scene, bracketX + side * 8, gapLabelY, 'f*(y) = ' + fmt(fStar), C.orange, C.orangeSoft, C, side === 1 ? 'start' : 'end');
+        label(scene, derS.sx(uStar), L.derivative.y - 9, 'same u*', C.blue, C.blueSoft, C, 'middle');
+
+        add(scene, 'rect', { x: L.bridge.x, y: L.bridge.y, width: L.bridge.w, height: L.bridge.h, rx: 12, fill: C.accentSoft, stroke: C.border });
+        add(scene, 'text', { x: L.bridge.x + L.bridge.w / 2, y: L.bridge.y + 44, fill: C.muted, 'font-family': 'Inter, sans-serif', 'font-size': 10.5, 'font-weight': 760, 'text-anchor': 'middle', 'letter-spacing': .6 }, 'RECORD');
+        add(scene, 'text', { x: L.bridge.x + L.bridge.w / 2, y: L.bridge.y + 78, fill: C.accentInk, 'font-family': 'Lora, serif', 'font-size': 22, 'font-weight': 650, 'text-anchor': 'middle' }, fmt(fStar));
+        add(scene, 'path', { d: 'M ' + (L.bridge.x + 24) + ' ' + (L.bridge.y + 115) + ' H ' + (L.bridge.x + L.bridge.w - 22) + ' M ' + (L.bridge.x + L.bridge.w - 35) + ' ' + (L.bridge.y + 103) + ' L ' + (L.bridge.x + L.bridge.w - 22) + ' ' + (L.bridge.y + 115) + ' L ' + (L.bridge.x + L.bridge.w - 35) + ' ' + (L.bridge.y + 127), fill: 'none', stroke: C.accentInk, 'stroke-width': 2.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+        add(scene, 'text', { x: L.bridge.x + L.bridge.w / 2, y: L.bridge.y + 151, fill: C.muted, 'font-family': 'Inter, sans-serif', 'font-size': 10.5, 'font-weight': 650, 'text-anchor': 'middle' }, 'at the chosen y');
+
+        reportHeight();
+      }
+
+      slider.addEventListener('input', render);
+      window.addEventListener('resize', function () { render(); reportHeight(); });
+      if (window.ResizeObserver) new ResizeObserver(reportHeight).observe(document.getElementById('visualization'));
+      document.addEventListener('viz:math-ready', reportHeight);
+      new MutationObserver(function () { render(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+      render();
+      window.setTimeout(reportHeight, 80);
+      window.setTimeout(reportHeight, 260);
+    }());
+  </script>
+</body>
+</html>

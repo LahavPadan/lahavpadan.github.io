@@ -1,0 +1,1593 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Min–max inequality on a rotatable surface</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap"
+  >
+
+  <script>
+    (function () {
+      function setTheme(theme) {
+        if (theme === 'dark' || theme === 'light') {
+          document.documentElement.dataset.theme = theme;
+        }
+      }
+
+      try {
+        var parentRoot = window.parent.document.documentElement;
+        var parentBody = window.parent.document.body;
+        var parentTheme = [
+          parentRoot.dataset.theme || '',
+          parentRoot.className || '',
+          parentBody && parentBody.dataset ? parentBody.dataset.theme || '' : '',
+          parentBody ? parentBody.className || '' : ''
+        ].join(' ').toLowerCase();
+
+        setTheme(parentTheme.indexOf('dark') >= 0 ? 'dark' : 'light');
+      } catch (_error) {
+        setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      }
+
+      window.addEventListener('message', function (event) {
+        if (event && event.data && event.data.theme) setTheme(event.data.theme);
+      });
+    }());
+  </script>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'canvas', 'svg']
+      },
+      startup: {
+        pageReady: function () {
+          return MathJax.startup.defaultPageReady().then(function () {
+            document.documentElement.dataset.mathReady = 'true';
+            document.dispatchEvent(new CustomEvent('viz:math-ready'));
+          });
+        }
+      }
+    };
+  </script>
+  <script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f5f2eb;
+      --surface: #fffdf8;
+      --surface-2: #f7f3ea;
+      --surface-3: #efe9dd;
+      --ink: #26231f;
+      --muted: #6f685f;
+      --faint: #968e83;
+      --border: #d9d1c4;
+      --grid: #e4ddd2;
+      --accent: #7057c7;
+      --accent-ink: #573da9;
+      --accent-soft: rgba(112, 87, 199, 0.12);
+      --warm: #b86839;
+      --warm-soft: rgba(184, 104, 57, 0.12);
+      --cool: #2f7e87;
+      --cool-soft: rgba(47, 126, 135, 0.12);
+      --good: #3d7a59;
+      --good-soft: rgba(61, 122, 89, 0.12);
+      --bad: #a45252;
+      --bad-soft: rgba(164, 82, 82, 0.11);
+      --shadow: 0 18px 45px rgba(54, 45, 31, 0.09);
+      --font-display: "Lora", Georgia, "Times New Roman", serif;
+      --font-reading: "Lora", Georgia, "Times New Roman", serif;
+      --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --serif: var(--font-display);
+      --sans: var(--font-ui);
+      --mono: var(--font-mono);
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --page: #151513;
+      --surface: #1c1c19;
+      --surface-2: #22221e;
+      --surface-3: #292823;
+      --ink: #ece8df;
+      --muted: #b5afa4;
+      --faint: #8e887e;
+      --border: #3d3a33;
+      --grid: #34322d;
+      --accent: #ab96ff;
+      --accent-ink: #c0b0ff;
+      --accent-soft: rgba(171, 150, 255, 0.14);
+      --warm: #e59a67;
+      --warm-soft: rgba(229, 154, 103, 0.14);
+      --cool: #78c3c9;
+      --cool-soft: rgba(120, 195, 201, 0.14);
+      --good: #83c69f;
+      --good-soft: rgba(131, 198, 159, 0.14);
+      --bad: #e08f8f;
+      --bad-soft: rgba(224, 143, 143, 0.14);
+      --shadow: 0 18px 46px rgba(0, 0, 0, 0.22);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-width: 0;
+      background: transparent;
+      color: var(--ink);
+      font-family: var(--font-reading);
+    }
+
+    body {
+      padding: 2px;
+      overflow-x: hidden;
+      font-size: 16px;
+      line-height: 1.58;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input { font: inherit; }
+
+    .viz {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: end;
+      padding: 24px 26px 19px;
+      border-bottom: 1px solid var(--border);
+      background:
+        radial-gradient(circle at 10% 0%, var(--accent-soft), transparent 34%),
+        var(--surface);
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--accent-ink);
+      font-family: var(--mono);
+      font-size: 0.69rem;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(1.45rem, 2.8vw, 2.2rem);
+      font-weight: 550;
+      line-height: 1.16;
+      letter-spacing: -0.035em;
+    }
+
+    .deck {
+      max-width: 800px;
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.52;
+    }
+
+    .controls {
+      width: min(385px, 100%);
+      display: grid;
+      gap: 8px;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 3px;
+      padding: 3px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-2);
+    }
+
+    .segmented button {
+      min-height: 34px;
+      padding: 6px 7px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.73rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .segmented button[aria-pressed="true"] {
+      background: var(--surface);
+      color: var(--accent-ink);
+      box-shadow: 0 1px 5px rgba(35, 29, 20, 0.1);
+    }
+
+    .control-line {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-2);
+    }
+
+    .slider-wrap label {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    .slider-wrap output {
+      color: var(--accent-ink);
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin: 7px 0 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .view-buttons {
+      display: flex;
+      gap: 5px;
+    }
+
+    .icon-button {
+      min-width: 34px;
+      height: 32px;
+      padding: 0 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .surface-section {
+      padding: 16px 16px 0;
+    }
+
+    .stage {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface-2);
+    }
+
+    .canvas-wrap {
+      position: relative;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      border-radius: 14px;
+      background: var(--surface-2);
+      touch-action: none;
+      cursor: grab;
+    }
+
+    canvas.dragging { cursor: grabbing; }
+
+    .legend {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      display: grid;
+      gap: 6px;
+      padding: 8px 9px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface);
+      pointer-events: none;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      line-height: 1.2;
+    }
+
+    .swatch {
+      width: 15px;
+      height: 7px;
+      flex: 0 0 auto;
+      border-radius: 999px;
+    }
+
+    .swatch.warm { background: var(--warm); }
+    .swatch.cool { background: var(--cool); }
+    .swatch.accent { background: var(--accent); }
+    .swatch.good { background: var(--good); }
+
+    .scene-note {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      max-width: 355px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.7rem;
+      line-height: 1.4;
+      pointer-events: none;
+    }
+
+    .proof-ribbon {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .proof-step {
+      min-width: 0;
+      padding: 11px 12px 12px;
+    }
+
+    .proof-step + .proof-step { border-left: 1px solid var(--border); }
+
+    .proof-step .index {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--accent-ink);
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .proof-step .eq {
+      display: block;
+      color: var(--ink);
+      font-family: var(--serif);
+      font-size: clamp(0.8rem, 1.5vw, 0.96rem);
+      line-height: 1.46;
+    }
+
+    .proof-step .caption {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.69rem;
+      line-height: 1.38;
+    }
+
+    .mechanisms {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      padding: 14px 16px 16px;
+    }
+
+    .mechanism {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: var(--surface-2);
+    }
+
+    .mechanism.active {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent-soft);
+    }
+
+    .mechanism-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 13px 9px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .mechanism-head h2 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 0.98rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .mechanism-head span {
+      color: var(--faint);
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      font-weight: 750;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* Scope the responsive SVG rule to the two hand-authored diagrams only.
+       MathJax also emits SVG; styling every descendant SVG would stretch each
+       equation to the full width of the mechanism card. */
+    .mechanism > svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .mechanism-flow {
+      min-height: 47px;
+      padding: 9px 11px 10px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--ink);
+      font-family: var(--serif);
+      font-size: clamp(0.72rem, 1.3vw, 0.86rem);
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .mechanism-flow .arrow-inline {
+      color: var(--accent-ink);
+      padding: 0 0.28em;
+    }
+
+    .svg-text { font-family: var(--sans); fill: var(--muted); }
+    .svg-serif { font-family: var(--serif); fill: var(--ink); }
+    .svg-mono { font-family: var(--mono); fill: var(--muted); }
+    .svg-axis { stroke: var(--border); stroke-width: 1.1; }
+    .svg-grid { stroke: var(--grid); stroke-width: 1; stroke-dasharray: 3 4; }
+    .bowl { fill: none; stroke: var(--warm); stroke-width: 2.7; stroke-linecap: round; }
+    .cap { fill: none; stroke: var(--cool); stroke-width: 2.7; stroke-linecap: round; }
+    .saddle-dot { fill: var(--good); stroke: var(--surface); stroke-width: 2.2; }
+    .arrow { fill: none; stroke: var(--good); stroke-width: 1.7; marker-end: url(#arrowhead); }
+    .support-curve { fill: none; stroke: var(--accent); stroke-width: 2.6; stroke-linecap: round; }
+    .support-line { fill: none; stroke: var(--good); stroke-width: 2.2; stroke-linecap: round; }
+    .failure-line { fill: none; stroke: var(--bad); stroke-width: 2; stroke-dasharray: 5 4; }
+    .open-dot { fill: var(--surface); stroke: var(--bad); stroke-width: 2; }
+    .closed-dot { fill: var(--bad); stroke: var(--surface); stroke-width: 2; }
+    .touch-dot { fill: var(--good); stroke: var(--surface); stroke-width: 2; }
+    .gap-line { stroke: var(--bad); stroke-width: 1.7; stroke-dasharray: 3 3; }
+
+
+    .deck,
+    .proof-step .eq,
+    .mechanism-flow,
+    .mechanism-head h2 {
+      font-family: var(--font-reading);
+    }
+
+    .deck { line-height: 1.62; }
+
+    .eyebrow,
+    .controls,
+    .legend,
+    .scene-note,
+    .proof-step .index,
+    .proof-step .caption,
+    .mechanism-head > span {
+      font-family: var(--font-ui);
+    }
+
+    .mechanism-head h2 {
+      font-weight: 550;
+    }
+
+    .svg-text { font-family: var(--font-ui); }
+    .svg-serif {
+      font-family: var(--font-reading);
+      font-style: italic;
+    }
+    .svg-mono { font-family: var(--font-mono); }
+
+    mjx-container { color: inherit; }
+    mjx-container[jax="SVG"] { line-height: 1; }
+
+    /* Keep MathJax equations at their intrinsic size inside cards. */
+    mjx-container[jax="SVG"] > svg {
+      display: inline-block !important;
+      width: auto !important;
+      max-width: 100%;
+      height: auto !important;
+      vertical-align: middle;
+    }
+
+    .deck mjx-container,
+    .legend mjx-container,
+    .proof-ribbon mjx-container,
+    .mechanism-flow mjx-container,
+    .mechanism-head mjx-container {
+      margin: 0 0.03em !important;
+    }
+
+    @media (max-width: 900px) {
+      .header { grid-template-columns: 1fr; align-items: start; }
+      .controls { width: min(520px, 100%); }
+    }
+
+    @media (max-width: 720px) {
+      .viz { border-radius: 14px; }
+      .header { padding: 20px 16px 16px; }
+      .surface-section { padding: 12px 12px 0; }
+      .proof-ribbon { grid-template-columns: 1fr; }
+      .proof-step + .proof-step {
+        border-left: 0;
+        border-top: 1px solid var(--border);
+      }
+      .mechanisms { grid-template-columns: 1fr; padding: 12px; }
+      .legend {
+        position: static;
+        margin: 8px 8px 0;
+      }
+      .scene-note {
+        position: static;
+        max-width: none;
+        margin: 0 8px 8px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      body { padding: 0; }
+      .viz { border-radius: 0; border-left: 0; border-right: 0; }
+      .segmented { grid-template-columns: 1fr; }
+      .control-line { grid-template-columns: 1fr; }
+      .view-buttons { justify-content: flex-start; }
+      .mechanism-head { align-items: flex-start; flex-direction: column; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="viz" id="viz">
+    <header class="header">
+      <div>
+        <p class="eyebrow">Weak duality and the geometry behind equality</p>
+        <h1>The two optimisation orders are read from one rotatable surface</h1>
+        <p class="deck">
+          Drag to rotate, use the mouse wheel to zoom, or look beneath the surface. The warm ridge takes the highest point over \(y\) for each fixed \(x\); the cool ridge takes the lowest point over \(x\) for each fixed \(y\). The violet slice is the arbitrary \(y_0\) used in the proof.
+        </p>
+      </div>
+
+      <div class="controls">
+        <div class="segmented" role="group" aria-label="Choose a surface">
+          <button type="button" data-scenario="gap" aria-pressed="true">strict gap</button>
+          <button type="button" data-scenario="saddle" aria-pressed="false">saddle point</button>
+          <button type="button" data-scenario="convex" aria-pressed="false">convex Lagrangian</button>
+        </div>
+
+        <div class="control-line">
+          <div class="slider-wrap">
+            <label for="y-slider">
+              <span>chosen column</span>
+              <output id="y-output">y₀ = 0.00</output>
+            </label>
+            <input id="y-slider" type="range" min="0" max="28" step="1" value="14" aria-label="Choose y zero">
+          </div>
+          <div class="view-buttons">
+            <button type="button" class="icon-button" id="reset-view">reset</button>
+            <button type="button" class="icon-button" id="under-view">beneath</button>
+            <button type="button" class="icon-button" id="top-view">top</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="surface-section">
+      <div class="stage" id="stage">
+        <div class="canvas-wrap">
+        <div class="legend" aria-hidden="true">
+          <div class="legend-row"><span class="swatch warm"></span><span>highest point over \(y\), for each \(x\)</span></div>
+          <div class="legend-row"><span class="swatch cool"></span><span>lowest point over \(x\), for each \(y\)</span></div>
+          <div class="legend-row"><span class="swatch accent"></span><span>the fixed slice \(y=y_0\)</span></div>
+          <div class="legend-row"><span class="swatch good"></span><span>saddle point</span></div>
+        </div>
+
+        <canvas id="surface-canvas" aria-label="Interactive surface of F(x,y)"></canvas>
+
+        <div class="scene-note" id="scene-note">
+          The warm ridge dominates the violet slice at every fixed <em>x</em>. That pointwise comparison is the whole weak-duality argument.
+        </div>
+        </div>
+
+        <div class="proof-ribbon">
+          <div class="proof-step">
+            <span class="index">fixed x</span>
+            <span class="eq">\(\displaystyle \sup_y F(x,y) \geq F(x,y_0)\)</span>
+            <span class="caption">The warm point is the highest point among all slices, including the violet one.</span>
+          </div>
+          <div class="proof-step">
+            <span class="index">take the lowest x</span>
+            <span class="eq">\(\displaystyle \inf_x \sup_y F(x,y) \geq \inf_x F(x,y_0)\)</span>
+            <span class="caption">Taking an infimum preserves a pointwise inequality.</span>
+          </div>
+          <div class="proof-step">
+            <span class="index">let the slice vary</span>
+            <span class="eq">\(\displaystyle \inf_x \sup_y F(x,y) \geq \sup_y \inf_x F(x,y)\)</span>
+            <span class="caption">Choose the fixed slice whose lowest point is highest.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mechanisms" aria-label="Visual mechanisms behind strong duality">
+      <article class="mechanism" id="saddle-mechanism">
+        <header class="mechanism-head">
+          <h2>A saddle point forces the reverse comparison</h2>
+          <span>one point · two directions</span>
+        </header>
+
+        <svg viewBox="0 0 520 242" role="img" aria-label="A point that is a minimum in x and a maximum in y">
+          <defs>
+            <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="var(--good)"></path>
+            </marker>
+          </defs>
+
+          <line x1="48" y1="192" x2="472" y2="192" class="svg-axis"></line>
+          <line x1="260" y1="215" x2="260" y2="24" class="svg-axis"></line>
+          <text x="479" y="196" class="svg-text" font-size="11">direction through the point</text>
+          <text x="249" y="18" class="svg-text" text-anchor="end" font-size="11">F</text>
+
+          <path d="M58 48 C132 78, 194 116, 260 117 C326 116, 388 78, 462 48" class="bowl"></path>
+          <path d="M58 186 C132 156, 194 118, 260 117 C326 118, 388 156, 462 186" class="cap"></path>
+
+          <circle cx="260" cy="117" r="7" class="saddle-dot"></circle>
+          <line x1="260" y1="117" x2="260" y2="62" class="arrow"></line>
+          <line x1="260" y1="117" x2="260" y2="172" class="arrow"></line>
+
+          <text x="350" y="70" class="svg-text" font-size="11">x-slice: minimum at x*</text>
+          <text x="350" y="87" class="svg-serif" font-size="13">F(x*,y*) ≤ F(x,y*)</text>
+
+          <text x="70" y="153" class="svg-text" font-size="11">y-slice: maximum at y*</text>
+          <text x="70" y="170" class="svg-serif" font-size="13">F(x*,y) ≤ F(x*,y*)</text>
+
+          <rect x="132" y="202" width="256" height="27" rx="8" fill="var(--good-soft)"></rect>
+          <text x="260" y="220" class="svg-serif" font-size="13" text-anchor="middle">
+            both orders are pinned to F(x*,y*)
+          </text>
+        </svg>
+
+        <div class="mechanism-flow">
+          \(\displaystyle
+            \inf_x \sup_y F
+            \leq \sup_y F(x^{*},y)
+            =F(x^{*},y^{*})
+            =\inf_x F(x,y^{*})
+            \leq \sup_y \inf_x F
+          \)
+        </div>
+      </article>
+
+      <article class="mechanism" id="cq-mechanism">
+        <header class="mechanism-head">
+          <h2>What convexity and a constraint qualification contribute</h2>
+          <span>perturbation-value geometry</span>
+        </header>
+
+        <svg viewBox="0 0 520 242" role="img" aria-label="A convex perturbation value function without and with a supporting line at zero">
+          <line x1="260" y1="22" x2="260" y2="220" class="svg-grid"></line>
+
+          <text x="126" y="23" class="svg-mono" font-size="9" text-anchor="middle">without CQ: the closure may lie below p(0)</text>
+          <line x1="28" y1="196" x2="236" y2="196" class="svg-axis"></line>
+          <line x1="75" y1="214" x2="75" y2="39" class="svg-axis"></line>
+          <text x="229" y="211" class="svg-text" font-size="10">u</text>
+          <text x="64" y="36" class="svg-text" font-size="10" text-anchor="end">p(u)</text>
+
+          <path d="M78 165 C105 137, 139 108, 181 88 C201 78, 218 73, 232 70" class="support-curve"></path>
+          <circle cx="78" cy="165" r="5.5" class="open-dot"></circle>
+          <circle cx="78" cy="121" r="5.5" class="closed-dot"></circle>
+          <line x1="78" y1="128" x2="78" y2="158" class="gap-line"></line>
+          <path d="M30 178 L232 83" class="failure-line"></path>
+          <text x="91" y="113" class="svg-text" font-size="10">primal value p(0)</text>
+          <text x="91" y="175" class="svg-text" font-size="10">closed convex lower envelope</text>
+          <text x="125" y="151" class="svg-text" font-size="10">duality gap</text>
+
+          <text x="390" y="23" class="svg-mono" font-size="9" text-anchor="middle">with CQ: a support touches at u = 0</text>
+          <line x1="284" y1="196" x2="492" y2="196" class="svg-axis"></line>
+          <line x1="331" y1="214" x2="331" y2="39" class="svg-axis"></line>
+          <text x="485" y="211" class="svg-text" font-size="10">u</text>
+          <text x="320" y="36" class="svg-text" font-size="10" text-anchor="end">p(u)</text>
+
+          <path d="M292 171 C318 147, 351 116, 393 91 C425 72, 455 64, 488 61" class="support-curve"></path>
+          <path d="M286 181 L488 68" class="support-line"></path>
+          <circle cx="331" cy="140" r="6" class="touch-dot"></circle>
+          <text x="344" y="132" class="svg-text" font-size="10">supporting line</text>
+          <text x="344" y="146" class="svg-serif" font-size="12">slope = optimal multiplier</text>
+          <rect x="321" y="202" width="152" height="27" rx="8" fill="var(--good-soft)"></rect>
+          <text x="397" y="220" class="svg-serif" font-size="13" text-anchor="middle">dual value = p(0)</text>
+        </svg>
+
+        <div class="mechanism-flow">
+          convex perturbation value \(p(u)\)
+          <span class="arrow-inline">+</span>
+          constraint qualification
+          <span class="arrow-inline">\(\Longrightarrow\)</span>
+          supporting hyperplane touches at \(u=0\)
+          <span class="arrow-inline">\(\Longrightarrow\)</span>
+          dual value \(=p(0)\)
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const N = 29;
+      const values = Array.from({ length: N }, (_, i) => -1 + (2 * i) / (N - 1));
+      const state = {
+        scenario: 'gap',
+        yIndex: 14,
+        yaw: -0.72,
+        pitch: 0.63,
+        zoom: 1,
+        dragging: false,
+        lastX: 0,
+        lastY: 0,
+        logicalWidth: 800,
+        logicalHeight: 480
+      };
+
+      const root = document.documentElement;
+      const viz = document.getElementById('viz');
+      const stage = document.getElementById('stage');
+      const canvas = document.getElementById('surface-canvas');
+      const ctx = canvas.getContext('2d');
+      const sceneNote = document.getElementById('scene-note');
+      const ySlider = document.getElementById('y-slider');
+      const yOutput = document.getElementById('y-output');
+      const scenarioButtons = Array.from(document.querySelectorAll('[data-scenario]'));
+      const resetView = document.getElementById('reset-view');
+      const underView = document.getElementById('under-view');
+      const topView = document.getElementById('top-view');
+      const saddleMechanism = document.getElementById('saddle-mechanism');
+      const cqMechanism = document.getElementById('cq-mechanism');
+
+      function css(name) {
+        return getComputedStyle(root).getPropertyValue(name).trim();
+      }
+
+      function hexToRgb(hex) {
+        const c = hex.replace('#', '').trim();
+        const parts = c.length === 3
+          ? c.split('').map(ch => parseInt(ch + ch, 16))
+          : [c.slice(0, 2), c.slice(2, 4), c.slice(4, 6)].map(s => parseInt(s, 16));
+        return { r: parts[0], g: parts[1], b: parts[2] };
+      }
+
+      function rgbToHex(rgb) {
+        return '#' + [rgb.r, rgb.g, rgb.b]
+          .map(v => v.toString(16).padStart(2, '0'))
+          .join('');
+      }
+
+      function mix(a, b, t) {
+        const A = hexToRgb(a);
+        const B = hexToRgb(b);
+        const u = Math.max(0, Math.min(1, t));
+        return rgbToHex({
+          r: Math.round(A.r + (B.r - A.r) * u),
+          g: Math.round(A.g + (B.g - A.g) * u),
+          b: Math.round(A.b + (B.b - A.b) * u)
+        });
+      }
+
+      function clamp(v, a, b) {
+        return Math.max(a, Math.min(b, v));
+      }
+
+      function formatCoordinate(v) {
+        return (Math.abs(v) < 1e-9 ? 0 : v).toFixed(2);
+      }
+
+      function F(x, y) {
+        if (state.scenario === 'saddle') {
+          return x * x - y * y;
+        }
+        if (state.scenario === 'convex') {
+          return (x - 0.22) * (x - 0.22)
+            - 0.84 * (y + 0.12) * (y + 0.12)
+            + 0.16 * x * y
+            + 0.12;
+        }
+        const d = x - y;
+        return d * d;
+      }
+
+      function computeData() {
+        const z = values.map(x => values.map(y => F(x, y)));
+        const rowSup = [];
+        const rowArg = [];
+        const colInf = [];
+        const colArg = [];
+
+        for (let i = 0; i < N; i += 1) {
+          let maxValue = -Infinity;
+          let maxIndex = 0;
+          for (let j = 0; j < N; j += 1) {
+            if (z[i][j] > maxValue) {
+              maxValue = z[i][j];
+              maxIndex = j;
+            }
+          }
+          rowSup.push(maxValue);
+          rowArg.push(maxIndex);
+        }
+
+        for (let j = 0; j < N; j += 1) {
+          let minValue = Infinity;
+          let minIndex = 0;
+          for (let i = 0; i < N; i += 1) {
+            if (z[i][j] < minValue) {
+              minValue = z[i][j];
+              minIndex = i;
+            }
+          }
+          colInf.push(minValue);
+          colArg.push(minIndex);
+        }
+
+        const left = Math.min(...rowSup);
+        const right = Math.max(...colInf);
+        const leftIndex = rowSup.indexOf(left);
+        const rightIndex = colInf.indexOf(right);
+        const slice = z.map(row => row[state.yIndex]);
+        const sliceMin = Math.min(...slice);
+        const sliceMinIndex = slice.indexOf(sliceMin);
+
+        let zMin = Infinity;
+        let zMax = -Infinity;
+        for (let i = 0; i < N; i += 1) {
+          for (let j = 0; j < N; j += 1) {
+            zMin = Math.min(zMin, z[i][j]);
+            zMax = Math.max(zMax, z[i][j]);
+          }
+        }
+
+        let saddle = null;
+        if (state.scenario === 'saddle') {
+          saddle = { x: 0, y: 0, z: 0 };
+        } else if (state.scenario === 'convex') {
+          const A = 2;
+          const B = 0.16;
+          const C = 0.16;
+          const D = -1.68;
+          const r1 = 0.44;
+          const r2 = 0.2016;
+          const det = A * D - B * C;
+          const x = (r1 * D - B * r2) / det;
+          const y = (A * r2 - r1 * C) / det;
+          saddle = { x, y, z: F(x, y) };
+        }
+
+        return {
+          z,
+          rowSup,
+          rowArg,
+          colInf,
+          colArg,
+          left,
+          right,
+          leftIndex,
+          rightIndex,
+          slice,
+          sliceMin,
+          sliceMinIndex,
+          zMin,
+          zMax,
+          saddle
+        };
+      }
+
+      function resizeCanvas() {
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        const width = Math.max(320, stage.clientWidth);
+        const height = clamp(width * 0.62, 370, 535);
+
+        state.logicalWidth = width;
+        state.logicalHeight = height;
+
+        canvas.style.height = height + 'px';
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function projector(data) {
+        const w = state.logicalWidth;
+        const h = state.logicalHeight;
+        const cx = w * 0.53;
+        const cy = h * 0.57;
+        const horizontal = Math.min(w * 0.24, 225) * state.zoom;
+        const vertical = Math.min(h * 0.31, 165) * state.zoom;
+        const camera = 4.5;
+        const span = Math.max(0.35, data.zMax - data.zMin);
+        const center = 0.5 * (data.zMax + data.zMin);
+        const zScale = 1.85 / span;
+
+        return function project(x, y, z) {
+          const X0 = x;
+          const Y0 = y;
+          const Z0 = (z - center) * zScale;
+
+          const cyaw = Math.cos(state.yaw);
+          const syaw = Math.sin(state.yaw);
+          const cp = Math.cos(state.pitch);
+          const sp = Math.sin(state.pitch);
+
+          const X1 = cyaw * X0 - syaw * Y0;
+          const Y1 = syaw * X0 + cyaw * Y0;
+          const Z1 = Z0;
+
+          const X2 = X1;
+          const Y2 = cp * Y1 - sp * Z1;
+          const Z2 = sp * Y1 + cp * Z1;
+          const perspective = camera / (camera - Y2);
+
+          return {
+            x: cx + horizontal * X2 * perspective,
+            y: cy - vertical * Z2 * perspective,
+            depth: Y2
+          };
+        };
+      }
+
+      function path(points, color, width, dash) {
+        if (points.length < 2) return;
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i += 1) {
+          ctx.lineTo(points[i].x, points[i].y);
+        }
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.setLineDash(dash || []);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      function dot(point, color, radius) {
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = css('--surface');
+        ctx.stroke();
+      }
+
+      function drawLabel(point, text, dx, dy, align, options) {
+        const x = point.x + (dx || 0);
+        const y = point.y + (dy || 0);
+        const alignment = align || 'left';
+        const settings = options || {};
+        const fontSize = settings.fontSize || 11;
+        const family = settings.math ? css('--font-reading') : css('--font-ui');
+        const style = settings.math ? 'italic ' : '';
+        const weight = settings.math ? '550 ' : '600 ';
+        ctx.font = style + weight + fontSize + 'px ' + family;
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = alignment;
+
+        const pad = 5;
+        const width = ctx.measureText(text).width + pad * 2;
+        const height = 19;
+        let left = x;
+        if (alignment === 'right') left = x - width;
+        if (alignment === 'center') left = x - width / 2;
+
+        left = clamp(left, 4, state.logicalWidth - width - 4);
+        const top = clamp(y - height / 2, 4, state.logicalHeight - height - 4);
+
+        ctx.fillStyle = css('--surface');
+        ctx.strokeStyle = css('--border');
+        ctx.lineWidth = 1;
+        roundRect(left, top, width, height, 7);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = css('--muted');
+        const textX = alignment === 'right'
+          ? left + width - pad
+          : alignment === 'center'
+            ? left + width / 2
+            : left + pad;
+        ctx.fillText(text, textX, top + height / 2 + 0.3);
+      }
+
+      function boxesOverlap(first, second, padding) {
+        const p = padding || 0;
+        return !(
+          first.right + p <= second.left
+          || first.left >= second.right + p
+          || first.bottom + p <= second.top
+          || first.top >= second.bottom + p
+        );
+      }
+
+      function drawCurveLabel(points, text, color, usedBoxes, candidateIndices) {
+        if (!points.length) return;
+
+        const fontSize = 11;
+        const boxHeight = 23;
+        const padLeft = 27;
+        const padRight = 7;
+        const candidates = candidateIndices || [
+          Math.floor(points.length * 0.18),
+          Math.floor(points.length * 0.38),
+          Math.floor(points.length * 0.62),
+          Math.floor(points.length * 0.82)
+        ];
+        const placements = [
+          { dx: 14, dy: -18, align: 'left' },
+          { dx: 14, dy: 18, align: 'left' },
+          { dx: -14, dy: -18, align: 'right' },
+          { dx: -14, dy: 18, align: 'right' }
+        ];
+
+        ctx.font = 'italic 550 ' + fontSize + 'px ' + css('--font-reading');
+        ctx.textBaseline = 'middle';
+        const boxWidth = ctx.measureText(text).width + padLeft + padRight;
+        const forbidden = [];
+
+        if (state.logicalWidth > 720) {
+          forbidden.push({
+            left: 8,
+            top: 8,
+            right: Math.min(330, state.logicalWidth * 0.42),
+            bottom: 116
+          });
+          forbidden.push({
+            left: Math.max(0, state.logicalWidth - 385),
+            top: Math.max(0, state.logicalHeight - 92),
+            right: state.logicalWidth - 8,
+            bottom: state.logicalHeight - 8
+          });
+        }
+
+        let best = null;
+
+        candidates.forEach(rawIndex => {
+          const index = clamp(rawIndex, 0, points.length - 1);
+          const anchor = points[index];
+
+          placements.forEach(placement => {
+            const labelX = anchor.x + placement.dx;
+            const labelY = anchor.y + placement.dy;
+            let left = placement.align === 'right'
+              ? labelX - boxWidth
+              : labelX;
+            let top = labelY - boxHeight / 2;
+
+            const unclampedLeft = left;
+            const unclampedTop = top;
+            left = clamp(left, 5, state.logicalWidth - boxWidth - 5);
+            top = clamp(top, 5, state.logicalHeight - boxHeight - 5);
+
+            const box = {
+              left,
+              top,
+              right: left + boxWidth,
+              bottom: top + boxHeight
+            };
+
+            let score = Math.abs(unclampedLeft - left) * 35
+              + Math.abs(unclampedTop - top) * 35
+              + Math.hypot(placement.dx, placement.dy);
+
+            usedBoxes.forEach(existing => {
+              if (boxesOverlap(box, existing, 7)) score += 10000;
+            });
+
+            forbidden.forEach(existing => {
+              if (boxesOverlap(box, existing, 5)) score += 6000;
+            });
+
+            if (!best || score < best.score) {
+              best = { score, anchor, box };
+            }
+          });
+        });
+
+        if (!best) return;
+
+        const box = best.box;
+        const anchor = best.anchor;
+        const endX = clamp(anchor.x, box.left, box.right);
+        const endY = clamp(anchor.y, box.top, box.bottom);
+
+        ctx.beginPath();
+        ctx.moveTo(anchor.x, anchor.y);
+        ctx.lineTo(endX, endY);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.25;
+        ctx.setLineDash([]);
+        ctx.stroke();
+
+        ctx.fillStyle = css('--surface');
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.25;
+        roundRect(box.left, box.top, boxWidth, boxHeight, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(box.left + 8, box.top + boxHeight / 2);
+        ctx.lineTo(box.left + 20, box.top + boxHeight / 2);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+
+        ctx.font = 'italic 550 ' + fontSize + 'px ' + css('--font-reading');
+        ctx.fillStyle = css('--ink');
+        ctx.textAlign = 'left';
+        ctx.fillText(
+          text,
+          box.left + padLeft,
+          box.top + boxHeight / 2 + 0.3
+        );
+
+        usedBoxes.push(box);
+      }
+
+      function roundRect(x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + width, y, x + width, y + height, r);
+        ctx.arcTo(x + width, y + height, x, y + height, r);
+        ctx.arcTo(x, y + height, x, y, r);
+        ctx.arcTo(x, y, x + width, y, r);
+        ctx.closePath();
+      }
+
+      function drawSurface(data) {
+        const project = projector(data);
+        const warm = css('--warm');
+        const cool = css('--cool');
+        const accent = css('--accent');
+        const good = css('--good');
+        const grid = css('--grid');
+        const base = css('--surface-3');
+        const tint = state.scenario === 'gap'
+          ? warm
+          : state.scenario === 'saddle'
+            ? cool
+            : accent;
+
+        ctx.clearRect(0, 0, state.logicalWidth, state.logicalHeight);
+        ctx.fillStyle = css('--surface-2');
+        ctx.fillRect(0, 0, state.logicalWidth, state.logicalHeight);
+
+        const tiles = [];
+        for (let i = 0; i < N - 1; i += 1) {
+          for (let j = 0; j < N - 1; j += 1) {
+            const p00 = project(values[i], values[j], data.z[i][j]);
+            const p10 = project(values[i + 1], values[j], data.z[i + 1][j]);
+            const p11 = project(values[i + 1], values[j + 1], data.z[i + 1][j + 1]);
+            const p01 = project(values[i], values[j + 1], data.z[i][j + 1]);
+            const average = (
+              data.z[i][j]
+              + data.z[i + 1][j]
+              + data.z[i + 1][j + 1]
+              + data.z[i][j + 1]
+            ) / 4;
+            const t = (average - data.zMin) / Math.max(1e-8, data.zMax - data.zMin);
+
+            tiles.push({
+              depth: (p00.depth + p10.depth + p11.depth + p01.depth) / 4,
+              points: [p00, p10, p11, p01],
+              fill: mix(base, tint, 0.11 + 0.53 * t)
+            });
+          }
+        }
+
+        tiles.sort((a, b) => a.depth - b.depth);
+
+        const baseCorners = [
+          project(-1, -1, data.zMin),
+          project(1, -1, data.zMin),
+          project(1, 1, data.zMin),
+          project(-1, 1, data.zMin)
+        ];
+
+        ctx.beginPath();
+        ctx.moveTo(baseCorners[0].x, baseCorners[0].y);
+        for (let i = 1; i < baseCorners.length; i += 1) {
+          ctx.lineTo(baseCorners[i].x, baseCorners[i].y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = mix(css('--surface'), base, 0.6);
+        ctx.fill();
+        ctx.strokeStyle = css('--border');
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        [0, 14, 28].forEach(index => {
+          path(
+            [project(values[index], -1, data.zMin), project(values[index], 1, data.zMin)],
+            grid,
+            1,
+            [3, 5]
+          );
+          path(
+            [project(-1, values[index], data.zMin), project(1, values[index], data.zMin)],
+            grid,
+            1,
+            [3, 5]
+          );
+        });
+
+        tiles.forEach(tile => {
+          ctx.beginPath();
+          ctx.moveTo(tile.points[0].x, tile.points[0].y);
+          for (let i = 1; i < tile.points.length; i += 1) {
+            ctx.lineTo(tile.points[i].x, tile.points[i].y);
+          }
+          ctx.closePath();
+          ctx.fillStyle = tile.fill;
+          ctx.fill();
+        });
+
+        for (let i = 0; i < N; i += 4) {
+          const row = [];
+          const column = [];
+          for (let j = 0; j < N; j += 1) {
+            row.push(project(values[i], values[j], data.z[i][j]));
+            column.push(project(values[j], values[i], data.z[j][i]));
+          }
+          path(row, mix(grid, css('--ink'), 0.11), 0.72);
+          path(column, mix(grid, css('--ink'), 0.11), 0.72);
+        }
+
+        const origin = project(-1, -1, data.zMin);
+        const xEnd = project(1.14, -1, data.zMin);
+        const yEnd = project(-1, 1.14, data.zMin);
+        const zEnd = project(
+          -1,
+          -1,
+          data.zMax + 0.17 * Math.max(0.6, data.zMax - data.zMin)
+        );
+
+        path([origin, xEnd], css('--border'), 1.1);
+        path([origin, yEnd], css('--border'), 1.1);
+        path([origin, zEnd], css('--border'), 1.1);
+        drawLabel(xEnd, 'x', 6, 0, 'left', { math: true, fontSize: 13 });
+        drawLabel(yEnd, 'y', -6, 0, 'right', { math: true, fontSize: 13 });
+        drawLabel(zEnd, 'F(x,y)', -2, -10, 'right', { math: true, fontSize: 13 });
+
+        const slice = [];
+        for (let i = 0; i < N; i += 1) {
+          slice.push(project(values[i], values[state.yIndex], data.slice[i]));
+        }
+        path(slice, accent, 2.8);
+        const sliceMinimum = project(
+          values[data.sliceMinIndex],
+          values[state.yIndex],
+          data.sliceMin
+        );
+        dot(sliceMinimum, accent, 5.2);
+
+        const warmRidge = [];
+        for (let i = 0; i < N; i += 1) {
+          warmRidge.push(project(values[i], values[data.rowArg[i]], data.rowSup[i]));
+        }
+        path(warmRidge, warm, 3.1);
+        const warmMinimum = project(
+          values[data.leftIndex],
+          values[data.rowArg[data.leftIndex]],
+          data.left
+        );
+        dot(warmMinimum, state.scenario === 'gap' ? warm : good, 6);
+
+        const coolRidge = [];
+        for (let j = 0; j < N; j += 1) {
+          coolRidge.push(project(values[data.colArg[j]], values[j], data.colInf[j]));
+        }
+        path(coolRidge, cool, 3.1);
+        const coolMaximum = project(
+          values[data.colArg[data.rightIndex]],
+          values[data.rightIndex],
+          data.right
+        );
+        dot(coolMaximum, state.scenario === 'gap' ? cool : good, 6);
+
+        const curveLabelBoxes = [];
+        drawCurveLabel(
+          warmRidge,
+          'φ(x) = supᵧ F(x,y)',
+          warm,
+          curveLabelBoxes,
+          [
+            Math.floor(N * 0.78),
+            Math.floor(N * 0.62),
+            Math.floor(N * 0.35),
+            Math.floor(N * 0.16)
+          ]
+        );
+        drawCurveLabel(
+          coolRidge,
+          'ψ(y) = infₓ F(x,y)',
+          cool,
+          curveLabelBoxes,
+          [
+            Math.floor(N * 0.22),
+            Math.floor(N * 0.38),
+            Math.floor(N * 0.66),
+            Math.floor(N * 0.84)
+          ]
+        );
+        drawCurveLabel(
+          slice,
+          'F(x,y₀),  y₀ = ' + formatCoordinate(values[state.yIndex]),
+          accent,
+          curveLabelBoxes,
+          [
+            Math.floor(N * 0.84),
+            Math.floor(N * 0.68),
+            Math.floor(N * 0.42),
+            Math.floor(N * 0.18)
+          ]
+        );
+
+        path(
+          [sliceMinimum, project(values[data.sliceMinIndex], values[state.yIndex], data.zMin)],
+          mix(accent, css('--surface'), 0.38),
+          1.1,
+          [4, 4]
+        );
+
+        if (data.saddle) {
+          const saddle = project(data.saddle.x, data.saddle.y, data.saddle.z);
+          dot(saddle, good, 7);
+          drawLabel(saddle, 'saddle point', 0, -17, 'center', { math: false });
+
+          const xCross = [];
+          const yCross = [];
+          for (let i = 0; i < N; i += 1) {
+            xCross.push(project(values[i], data.saddle.y, F(values[i], data.saddle.y)));
+            yCross.push(project(data.saddle.x, values[i], F(data.saddle.x, values[i])));
+          }
+          path(xCross, mix(good, warm, 0.28), 2.5, [8, 4]);
+          path(yCross, mix(good, cool, 0.28), 2.5, [8, 4]);
+        }
+      }
+
+      function updateScene(data) {
+        yOutput.textContent = 'y₀ = ' + formatCoordinate(values[state.yIndex]);
+        saddleMechanism.classList.toggle('active', state.scenario === 'saddle');
+        cqMechanism.classList.toggle('active', state.scenario === 'convex');
+
+        if (state.scenario === 'gap') {
+          sceneNote.innerHTML = 'The violet slice can touch the cool valley, but the warm ridge remains elsewhere. No point is simultaneously a row maximum and a column minimum.';
+        } else if (state.scenario === 'saddle') {
+          sceneNote.innerHTML = 'The green point is a minimum along the dashed primal slice and a maximum along the dashed dual slice. Both optimisation orders are forced through the same point.';
+        } else {
+          sceneNote.innerHTML = 'The surface is convex in the primal direction and concave in the multiplier direction. The lower diagram shows what the constraint qualification adds: a supporting hyperplane that actually touches.';
+        }
+      }
+
+      function render() {
+        resizeCanvas();
+        const data = computeData();
+        drawSurface(data);
+        updateScene(data);
+        resizeHost();
+      }
+
+      function setScenario(name) {
+        state.scenario = name;
+        scenarioButtons.forEach(button => {
+          button.setAttribute('aria-pressed', String(button.dataset.scenario === name));
+        });
+
+        if (name === 'gap') {
+          state.yaw = -0.72;
+          state.pitch = 0.63;
+        } else if (name === 'saddle') {
+          state.yaw = -0.62;
+          state.pitch = 0.7;
+        } else {
+          state.yaw = -0.58;
+          state.pitch = 0.67;
+        }
+        state.zoom = 1;
+        render();
+      }
+
+      function pointer(event) {
+        if (event.touches && event.touches.length > 0) {
+          return { x: event.touches[0].clientX, y: event.touches[0].clientY };
+        }
+        return { x: event.clientX, y: event.clientY };
+      }
+
+      function beginDrag(event) {
+        const p = pointer(event);
+        state.dragging = true;
+        state.lastX = p.x;
+        state.lastY = p.y;
+        canvas.classList.add('dragging');
+      }
+
+      function drag(event) {
+        if (!state.dragging) return;
+        const p = pointer(event);
+        const dx = p.x - state.lastX;
+        const dy = p.y - state.lastY;
+        state.lastX = p.x;
+        state.lastY = p.y;
+        state.yaw += dx * 0.011;
+        state.pitch = clamp(state.pitch + dy * 0.009, -1.32, 1.32);
+        render();
+        event.preventDefault();
+      }
+
+      function finishDrag() {
+        state.dragging = false;
+        canvas.classList.remove('dragging');
+      }
+
+      function syncTheme() {
+        let theme = '';
+        try {
+          if (window.parent !== window) {
+            theme = window.parent.document.documentElement.dataset.theme || '';
+          }
+        } catch (error) {
+          theme = '';
+        }
+
+        if (!theme) {
+          theme = window.matchMedia
+            && window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'dark'
+            : 'light';
+        }
+        root.dataset.theme = theme;
+      }
+
+      let lastHeight = 0;
+      function resizeHost() {
+        requestAnimationFrame(function () {
+          const height = Math.ceil(viz.getBoundingClientRect().height + 4);
+          if (Math.abs(height - lastHeight) < 2) return;
+          lastHeight = height;
+          try {
+            if (window.frameElement) {
+              window.frameElement.style.height = height + 'px';
+            }
+          } catch (error) {}
+          try {
+            window.parent.postMessage({
+              type: 'article-visualization-resize',
+              height: height
+            }, '*');
+          } catch (error) {}
+        });
+      }
+
+      scenarioButtons.forEach(button => {
+        button.addEventListener('click', function () {
+          setScenario(button.dataset.scenario);
+        });
+      });
+
+      ySlider.addEventListener('input', function () {
+        state.yIndex = Number(ySlider.value);
+        render();
+      });
+
+      resetView.addEventListener('click', function () {
+        state.yaw = -0.72;
+        state.pitch = 0.63;
+        state.zoom = 1;
+        render();
+      });
+
+      underView.addEventListener('click', function () {
+        state.yaw = -0.62;
+        state.pitch = -0.68;
+        state.zoom = 0.96;
+        render();
+      });
+
+      topView.addEventListener('click', function () {
+        state.yaw = -0.62;
+        state.pitch = 1.27;
+        state.zoom = 0.9;
+        render();
+      });
+
+      canvas.addEventListener('mousedown', beginDrag);
+      window.addEventListener('mousemove', drag);
+      window.addEventListener('mouseup', finishDrag);
+      canvas.addEventListener('touchstart', beginDrag, { passive: true });
+      canvas.addEventListener('touchmove', drag, { passive: false });
+      canvas.addEventListener('touchend', finishDrag);
+      canvas.addEventListener('wheel', function (event) {
+        state.zoom = clamp(
+          state.zoom * (event.deltaY > 0 ? 0.94 : 1.06),
+          0.72,
+          1.42
+        );
+        render();
+        event.preventDefault();
+      }, { passive: false });
+
+      syncTheme();
+      render();
+
+      try {
+        if (window.parent === window) throw new Error('standalone');
+        const parentRoot = window.parent.document.documentElement;
+        new MutationObserver(function () {
+          syncTheme();
+          render();
+        }).observe(parentRoot, {
+          attributes: true,
+          attributeFilter: ['data-theme']
+        });
+      } catch (error) {
+        if (window.matchMedia) {
+          const query = window.matchMedia('(prefers-color-scheme: dark)');
+          const handler = function () {
+            syncTheme();
+            render();
+          };
+          if (query.addEventListener) query.addEventListener('change', handler);
+          else if (query.addListener) query.addListener(handler);
+        }
+      }
+
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(function () {
+          render();
+        }).observe(stage);
+      } else {
+        window.addEventListener('resize', render);
+      }
+
+      document.addEventListener('viz:math-ready', resizeHost);
+      window.addEventListener('load', resizeHost);
+    }());
+  </script>
+</body>
+</html>

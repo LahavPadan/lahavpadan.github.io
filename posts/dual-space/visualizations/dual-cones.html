@@ -1,0 +1,2199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dual cones: the general test and three examples</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap"
+>
+
+<script>
+  (function () {
+    function setTheme(theme) {
+      if (theme === 'dark' || theme === 'light') {
+        document.documentElement.dataset.theme = theme;
+      }
+    }
+
+    try {
+      var parentRoot = window.parent.document.documentElement;
+      var parentBody = window.parent.document.body;
+      var parentTheme = [
+        parentRoot.dataset.theme || '',
+        parentRoot.className || '',
+        parentBody && parentBody.dataset ? parentBody.dataset.theme || '' : '',
+        parentBody ? parentBody.className || '' : ''
+      ].join(' ').toLowerCase();
+
+      setTheme(parentTheme.indexOf('dark') >= 0 ? 'dark' : 'light');
+    } catch (_error) {
+      setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    }
+
+    window.addEventListener('message', function (event) {
+      if (event && event.data && event.data.theme) setTheme(event.data.theme);
+    });
+  }());
+</script>
+
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['\\[', '\\]']]
+    },
+    svg: { fontCache: 'global' },
+    options: {
+      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    startup: {
+      pageReady: function () {
+        return MathJax.startup.defaultPageReady().then(function () {
+          document.documentElement.dataset.mathReady = 'true';
+          document.dispatchEvent(new CustomEvent('viz:math-ready'));
+        });
+      }
+    }
+  };
+</script>
+<script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #fbfbf8;
+    --surface: #ffffff;
+    --surface-muted: #f4f5f1;
+    --ink: #1c2420;
+    --muted: #667169;
+    --border: #d6ddd7;
+    --border-strong: #a6b2a9;
+    --accent: #0d7659;
+    --accent-soft: #dcefe7;
+    --accent-ink: #075c45;
+    --accent-border: #8fc5b1;
+    --danger: #b64b4b;
+    --danger-soft: #f7e5e3;
+    --danger-border: #dca7a2;
+    --shadow: 0 12px 30px rgba(25, 42, 34, 0.07);
+
+    --post-accent: var(--accent);
+    --post-accent-soft: var(--accent-soft);
+    --post-accent-ink: var(--accent-ink);
+    --post-accent-border: var(--accent-border);
+
+    --font-display: "Lora", Georgia, "Times New Roman", serif;
+    --font-reading: "Lora", Georgia, "Times New Roman", serif;
+    --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  :root[data-theme="dark"],
+  :root.dark {
+    color-scheme: dark;
+    --page: #101511;
+    --surface: #171e19;
+    --surface-muted: #1d2720;
+    --ink: #e9efeb;
+    --muted: #a7b5aa;
+    --border: #344138;
+    --border-strong: #617168;
+    --accent: #7cdaad;
+    --accent-soft: #1a3c2f;
+    --accent-border: #3f8067;
+    --accent-ink: #9ee7c4;
+    --danger: #ef9992;
+    --danger-soft: #3a2321;
+    --danger-border: #8c5550;
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+  html,
+  body {
+    min-width: 320px;
+    margin: 0;
+    overflow-x: hidden;
+    background: transparent;
+    color: var(--ink);
+  }
+
+  body {
+    padding: clamp(8px, 2vw, 20px);
+    font-family: var(--font-reading);
+    font-size: 16px;
+    line-height: 1.58;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button, input { font: inherit; }
+  button { cursor: pointer; }
+  [hidden] { display: none !important; }
+
+  .dual-viz {
+    width: min(1060px, 100%);
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: none;
+  }
+
+  .dual-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    gap: 24px;
+    align-items: end;
+    padding: clamp(20px, 3.4vw, 34px);
+    border-bottom: 1px solid var(--border);
+    background:
+      radial-gradient(circle at 95% 0%, color-mix(in srgb, var(--post-accent-soft) 72%, transparent), transparent 34%),
+      var(--surface);
+  }
+
+  .eyebrow {
+    margin: 0 0 7px;
+    color: var(--post-accent-ink);
+    font: 750 0.68rem/1 var(--font-ui);
+    letter-spacing: 0.095em;
+    text-transform: uppercase;
+  }
+
+  h1, h2, h3, p { margin-top: 0; }
+
+  h1 {
+    max-width: 720px;
+    margin-bottom: 9px;
+    font-family: var(--font-display);
+    font-size: clamp(1.48rem, 3.2vw, 2.22rem);
+    font-weight: 550;
+    letter-spacing: -0.035em;
+    line-height: 1.16;
+  }
+
+  .intro {
+    max-width: 720px;
+    margin-bottom: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.62;
+  }
+
+  .definition {
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--post-accent-border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--post-accent-soft) 58%, var(--surface));
+  }
+
+  .definition-label {
+    margin: 0 0 5px;
+    color: var(--muted);
+    font: 750 0.65rem/1.3 var(--font-ui);
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+  }
+
+  .math,
+  .math-line,
+  .matrix,
+  .matrix * {
+    font-family: var(--font-reading);
+  }
+
+  .definition .math-line {
+    overflow-wrap: anywhere;
+    font-size: clamp(1rem, 2vw, 1.23rem);
+    line-height: 1.45;
+  }
+
+  .definition .math-line + .math-line {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: clamp(0.84rem, 1.5vw, 0.94rem);
+  }
+
+  .universal {
+    padding: clamp(12px, 2.2vw, 20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-heading { margin-bottom: 9px; }
+  .section-heading h2 {
+    margin-bottom: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.04rem, 2vw, 1.24rem);
+    line-height: 1.3;
+  }
+
+  .mechanism {
+    width: min(100%, 960px);
+    margin-inline: auto;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .mechanism-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 292px) 18px minmax(0, 292px) 18px minmax(0, 292px);
+    gap: 6px;
+    align-items: stretch;
+    padding: 8px;
+  }
+
+  .mechanism-card {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-muted);
+  }
+
+  .mechanism-card-head {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    min-height: 42px;
+    padding: 7px 9px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .mechanism-step {
+    display: grid;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid var(--post-accent-border);
+    border-radius: 50%;
+    color: var(--post-accent-ink);
+    background: var(--post-accent-soft);
+    font: 750 0.56rem/1 var(--font-ui);
+  }
+
+  .mechanism-card h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.28;
+  }
+
+  .mechanism-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    flex: 0 0 auto;
+  }
+
+  .mechanism-equation {
+    display: grid;
+    min-height: 58px;
+    align-content: center;
+    gap: 2px;
+    padding: 7px 9px 8px;
+    border-top: 1px solid var(--border);
+    color: var(--ink);
+    background: var(--surface);
+    font-family: var(--font-reading);
+    font-size: 0.79rem;
+    line-height: 1.42;
+    text-align: center;
+  }
+
+  .mechanism-equation-math {
+    display: flex;
+    min-width: 0;
+    min-height: 1.35em;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink);
+    font-size: clamp(0.84rem, 1.15vw, 0.94rem);
+    line-height: 1.2;
+  }
+
+  .mechanism-equation-math.accent {
+    color: var(--post-accent-ink);
+    font-weight: 650;
+  }
+
+  .mechanism-equation-note {
+    display: flex;
+    min-height: 1.45em;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font: 0.63rem/1.35 var(--font-ui);
+  }
+
+  mjx-container { color: inherit; }
+  mjx-container[jax="SVG"] { line-height: 1; }
+
+  .definition mjx-container,
+  .mechanism-equation mjx-container,
+  .mechanism-proof mjx-container,
+  .intro mjx-container {
+    margin: 0 0.03em !important;
+  }
+
+  .mechanism-arrow {
+    display: grid;
+    place-items: center;
+    color: var(--post-accent-ink);
+    font: 750 1rem/1 var(--font-ui);
+  }
+
+  .mechanism-proofline {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .mechanism-proof {
+    min-width: 0;
+    padding: 8px 10px 9px;
+    color: var(--muted);
+    font: 0.67rem/1.42 var(--font-ui);
+    text-align: center;
+  }
+
+  .mechanism-proof + .mechanism-proof {
+    border-left: 1px solid var(--border);
+  }
+
+  .mechanism-proof .proof-math {
+    display: block;
+    margin-top: 4px;
+    color: var(--post-accent-ink);
+    font-family: var(--font-reading);
+    font-size: 0.76rem;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+
+  .examples-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 12px clamp(15px, 3vw, 28px);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-muted);
+  }
+
+  .examples-head p {
+    margin: 0;
+    color: var(--muted);
+    font: 0.72rem/1.45 var(--font-ui);
+  }
+
+  .tabs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    font-family: var(--font-ui);
+  }
+
+  .tab {
+    min-height: 34px;
+    padding: 7px 10px;
+    border: 0;
+    border-radius: 7px;
+    color: var(--muted);
+    background: transparent;
+    font: 700 0.72rem/1.2 var(--font-ui);
+    transition: color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+  }
+
+  .tab:hover { color: var(--ink); }
+  .tab:focus-visible { outline: 2px solid var(--post-accent); outline-offset: 2px; }
+  .tab[aria-selected="true"] {
+    color: var(--ink);
+    background: var(--surface-muted);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--ink) 7%, transparent);
+  }
+
+  .example-panel {
+    padding: clamp(15px, 3vw, 28px);
+  }
+
+  .example-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.72fr);
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .diagram,
+  .explanation {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .diagram { overflow: hidden; }
+
+  .diagram-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: baseline;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .diagram-title h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .diagram-title p {
+    margin: 0;
+    color: var(--muted);
+    font: 0.66rem/1.35 var(--font-mono);
+    text-align: right;
+  }
+
+  .svg-wrap {
+    min-width: 0;
+    padding: 7px 8px 3px;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface-muted) 65%, transparent), transparent 42%),
+      var(--surface);
+  }
+
+  .mechanism-svg,
+  #coordinates-svg,
+  #ray-svg,
+  #psd-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .compact-strip {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 13px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-muted);
+    font-family: var(--font-ui);
+  }
+
+  .slider-line {
+    display: grid;
+    grid-template-columns: auto minmax(90px, 1fr) auto;
+    gap: 9px;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .slider-line label,
+  .strip-label {
+    color: var(--muted);
+    font: 700 0.7rem/1.3 var(--font-ui);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    min-width: 0;
+    accent-color: var(--post-accent);
+  }
+
+  .slider-value,
+  .test-value {
+    white-space: nowrap;
+    font: 700 0.7rem/1.3 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .test-value.good { color: var(--post-accent-ink); }
+  .test-value.bad { color: var(--danger); }
+
+  .explanation {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  .status {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 11px;
+    padding: 5px 9px;
+    border: 1px solid var(--post-accent-border);
+    border-radius: 999px;
+    color: var(--post-accent-ink);
+    background: var(--post-accent-soft);
+    font: 750 0.68rem/1.2 var(--font-ui);
+  }
+
+  .status.bad {
+    border-color: var(--danger-border);
+    color: var(--danger);
+    background: var(--danger-soft);
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .explanation h3 {
+    margin-bottom: 8px;
+    font-family: var(--font-display);
+    font-size: 0.98rem;
+  }
+
+  .explanation > p {
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.56;
+  }
+
+  .formula-box {
+    margin-top: auto;
+    padding: 12px 13px;
+    border-left: 4px solid var(--post-accent);
+    border-radius: 0 8px 8px 0;
+    background: var(--surface-muted);
+    font-size: 0.82rem;
+    line-height: 1.56;
+  }
+
+  .formula-box.bad { border-left-color: var(--danger); }
+
+  .psd-panel .example-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .psd-flow {
+    display: grid;
+    grid-template-columns: minmax(0, 0.82fr) 28px minmax(0, 1.26fr) 28px minmax(0, 1fr);
+    gap: 8px;
+    align-items: stretch;
+    padding: 14px;
+  }
+
+  .flow-card {
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-muted);
+  }
+
+  .flow-card h3 {
+    margin: 0 0 7px;
+    font-family: var(--font-display);
+    font-size: 0.91rem;
+  }
+
+  .flow-card p {
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 0.76rem;
+    line-height: 1.43;
+  }
+
+  .flow-arrow {
+    display: grid;
+    place-items: center;
+    color: var(--post-accent-ink);
+    font-family: var(--font-reading);
+    font-size: 1.35rem;
+  }
+
+  .vector-column,
+  .matrix-expression {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 78px;
+    color: var(--ink);
+    font-size: clamp(0.86rem, 1.7vw, 1.02rem);
+  }
+
+  .matrix {
+    position: relative;
+    display: inline-grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 5px 12px;
+    padding: 4px 11px;
+    line-height: 1.18;
+    text-align: center;
+  }
+
+  .matrix::before,
+  .matrix::after {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    content: "";
+  }
+
+  .matrix::before {
+    left: 0;
+    border-top: 1.4px solid currentColor;
+    border-bottom: 1.4px solid currentColor;
+    border-left: 1.4px solid currentColor;
+  }
+
+  .matrix::after {
+    right: 0;
+    border-top: 1.4px solid currentColor;
+    border-right: 1.4px solid currentColor;
+    border-bottom: 1.4px solid currentColor;
+  }
+
+  .matrix.one-column { grid-template-columns: auto; }
+  .overline { text-decoration: overline; }
+  .trace-chain { display: block; padding-top: 12px; text-align: center; }
+  .probe-result.good { color: var(--post-accent-ink); }
+  .probe-result.bad { color: var(--danger); }
+
+  .why-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    padding: 0 14px 14px;
+  }
+
+  .identity-card {
+    min-width: 0;
+    padding: 12px 13px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+  }
+
+  .identity-card .caption {
+    margin-bottom: 5px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.67rem;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+  }
+
+  .identity-card .math-line {
+    font-size: clamp(0.87rem, 1.5vw, 1rem);
+    line-height: 1.55;
+  }
+
+  .identity-card.accent {
+    border-color: var(--post-accent-border);
+    background: color-mix(in srgb, var(--post-accent-soft) 38%, var(--surface));
+  }
+
+  .psd-lower {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+    gap: 14px;
+    padding: 0 14px 14px;
+  }
+
+  .direction-card,
+  .psd-proof {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+  }
+
+  .direction-card { overflow: hidden; }
+
+  .direction-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 9px 14px;
+    padding: 9px 11px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-muted);
+  }
+
+  .direction-head h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+  }
+
+  .mode-switch {
+    display: flex;
+    gap: 6px;
+  }
+
+  .mode-button {
+    padding: 5px 8px;
+    border: 0;
+    border-radius: 7px;
+    color: var(--muted);
+    background: transparent;
+    font: 700 0.66rem/1.2 var(--font-ui);
+  }
+
+  .mode-button[aria-pressed="true"] {
+    color: var(--ink);
+    background: var(--surface);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--ink) 7%, transparent);
+  }
+
+  .psd-canvas {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.85fr) minmax(0, 1.15fr);
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px;
+  }
+
+  .probe-summary {
+    min-width: 0;
+    padding: 8px 5px 8px 2px;
+  }
+
+  .probe-summary .math-line {
+    margin-bottom: 7px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .probe-summary p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  .probe-control {
+    display: grid;
+    grid-template-columns: auto minmax(80px, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    margin-top: 11px;
+  }
+
+  .probe-control label {
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+  }
+
+  .psd-proof {
+    display: flex;
+    flex-direction: column;
+    padding: 13px;
+  }
+
+  .psd-proof h3 {
+    margin-bottom: 8px;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+  }
+
+  .equivalence {
+    display: grid;
+    gap: 8px;
+  }
+
+  .equivalence-step {
+    display: grid;
+    grid-template-columns: 21px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    font-size: 0.81rem;
+    line-height: 1.46;
+  }
+
+  .equivalence-step .mark {
+    display: grid;
+    width: 21px;
+    height: 21px;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--post-accent-ink);
+    background: var(--post-accent-soft);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+  }
+
+  .figcaption {
+    padding: 0 clamp(15px, 3vw, 28px) 18px;
+    color: var(--muted);
+    font: 0.7rem/1.5 var(--font-ui);
+  }
+
+  /* generic svg styling */
+  .axis { stroke: var(--border-strong); stroke-width: 1.35; vector-effect: non-scaling-stroke; }
+  .gridline { stroke: var(--border); stroke-width: 1; opacity: 0.62; vector-effect: non-scaling-stroke; }
+  .origin { fill: var(--ink); }
+  .axis-label { fill: var(--muted); font-family: var(--font-ui); font-size: 11px; font-weight: 650; }
+  .svg-title { fill: var(--ink); font-family: var(--font-display); font-size: 15px; font-weight: 600; }
+  .svg-subtitle { fill: var(--muted); font-family: var(--font-ui); font-size: 10.5px; }
+  .svg-math { fill: var(--ink); font-family: var(--font-reading); font-size: 14px; font-style: italic; }
+  .svg-small { fill: var(--muted); font-family: var(--font-ui); font-size: 10px; }
+  .svg-accent { fill: var(--post-accent-ink); font-family: var(--font-reading); font-size: 12.5px; font-weight: 650; }
+  .svg-danger { fill: var(--danger); font-family: var(--font-reading); font-size: 12.5px; font-weight: 650; }
+  .cone-fill { fill: color-mix(in srgb, var(--post-accent-soft) 78%, transparent); stroke: var(--post-accent-border); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+  .dual-fill { fill: color-mix(in srgb, var(--post-accent) 20%, transparent); stroke: var(--post-accent); stroke-width: 1.55; vector-effect: non-scaling-stroke; }
+  .bad-fill { fill: var(--danger-soft); stroke: var(--danger-border); stroke-width: 1.25; vector-effect: non-scaling-stroke; }
+  .vector { fill: none; stroke: var(--post-accent-ink); stroke-width: 2.7; vector-effect: non-scaling-stroke; }
+  .vector.bad { stroke: var(--danger); }
+  .generator { fill: none; stroke: var(--post-accent); stroke-width: 2.3; vector-effect: non-scaling-stroke; }
+  .generator.bad { stroke: var(--danger); }
+  .boundary { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-dasharray: 6 5; vector-effect: non-scaling-stroke; }
+  .point { fill: var(--surface); stroke: var(--post-accent-ink); stroke-width: 2.1; vector-effect: non-scaling-stroke; }
+  .point.bad { stroke: var(--danger); }
+  .unit-circle { fill: none; stroke: var(--border-strong); stroke-width: 1.25; vector-effect: non-scaling-stroke; }
+  .positive-sector { fill: color-mix(in srgb, var(--post-accent-soft) 78%, transparent); }
+  .negative-sector { fill: color-mix(in srgb, var(--danger-soft) 93%, transparent); }
+
+  .mechanism-axis { stroke: var(--border-strong); stroke-width: 1.15; vector-effect: non-scaling-stroke; }
+  .mechanism-boundary { fill: none; stroke: var(--border-strong); stroke-width: 1.2; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; }
+  .mechanism-vector { fill: none; stroke: var(--post-accent); stroke-width: 2.35; vector-effect: non-scaling-stroke; }
+  .mechanism-vector-muted { fill: none; stroke: var(--border-strong); stroke-width: 1.8; vector-effect: non-scaling-stroke; }
+  .mechanism-halfspace-one { fill: color-mix(in srgb, var(--post-accent) 10%, transparent); }
+  .mechanism-halfspace-two { fill: color-mix(in srgb, var(--post-accent) 13%, transparent); }
+  .mechanism-halfspace-three { fill: color-mix(in srgb, var(--post-accent) 16%, transparent); }
+  .mechanism-intersection { fill: color-mix(in srgb, var(--post-accent) 33%, transparent); stroke: var(--post-accent); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+  .mechanism-hull { fill: color-mix(in srgb, var(--post-accent-soft) 82%, transparent); stroke: var(--post-accent); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+  .mechanism-separator { stroke: var(--danger); stroke-width: 1.65; stroke-dasharray: 6 5; vector-effect: non-scaling-stroke; }
+  .mechanism-witness { fill: var(--danger); stroke: var(--surface); stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .mechanism-dot { fill: var(--post-accent-ink); stroke: var(--surface); stroke-width: 1.7; vector-effect: non-scaling-stroke; }
+  .mechanism-small {
+    fill: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 8.6px;
+    font-weight: 600;
+    letter-spacing: 0.005em;
+  }
+  .mechanism-math-label {
+    fill: var(--muted);
+    font-family: var(--font-reading);
+    font-size: 10.2px;
+    font-weight: 500;
+  }
+  .mechanism-accent-label {
+    fill: var(--post-accent-ink);
+    font-family: var(--font-reading);
+    font-size: 10.6px;
+    font-weight: 600;
+  }
+  .mechanism-danger-label {
+    fill: var(--danger);
+    font-family: var(--font-reading);
+    font-size: 10.2px;
+    font-weight: 600;
+  }
+  .mechanism-label-bg {
+    fill: color-mix(in srgb, var(--surface) 94%, transparent);
+    stroke: color-mix(in srgb, var(--border) 82%, transparent);
+    stroke-width: 0.75;
+    rx: 4;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /*
+   * Boxed annotations use HTML inside SVG foreignObject elements rather than
+   * SVG dominant-baseline. Browser SVG baselines vary with the loaded serif
+   * font and were placing the visible glyphs below the centre of their boxes.
+   * Flex alignment centres the actual text line, including superscripts, in a
+   * stable way at every responsive scale.
+   */
+  .mechanism-label-fo {
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .mechanism-label-content {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 5px 0;
+    overflow: hidden;
+    border: 0.75px solid color-mix(in srgb, var(--border) 82%, transparent);
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    white-space: nowrap;
+    line-height: 1;
+    text-align: center;
+    text-rendering: geometricPrecision;
+  }
+
+  /*
+   * The anchor controls where the box is placed, not how its contents align.
+   * Keeping every annotation centred prevents the left- and right-anchored
+   * boxes from making their labels appear offset inside the box.
+   */
+  .mechanism-label-content.label-start,
+  .mechanism-label-content.label-middle,
+  .mechanism-label-content.label-end {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .mechanism-label-content.mechanism-small {
+    color: var(--muted);
+  }
+
+  .mechanism-label-content.mechanism-math-label {
+    color: var(--muted);
+  }
+
+  .mechanism-label-content.mechanism-accent-label {
+    color: var(--post-accent-ink);
+  }
+
+  .mechanism-label-content.mechanism-danger-label {
+    color: var(--danger);
+  }
+
+  .mechanism-label-content sup {
+    position: relative;
+    top: -0.1em;
+    margin-left: 0.02em;
+    font-size: 0.7em;
+    line-height: 0;
+    vertical-align: super;
+  }
+  .mechanism-leader {
+    fill: none;
+    stroke: var(--border-strong);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+    vector-effect: non-scaling-stroke;
+  }
+  .bridge-line {
+    fill: none;
+    stroke: var(--post-accent-ink);
+    stroke-width: 1.5;
+    stroke-dasharray: 5 5;
+    vector-effect: non-scaling-stroke;
+  }
+  .mechanism-open { fill: var(--surface); stroke: var(--border-strong); stroke-width: 1.8; vector-effect: non-scaling-stroke; }
+  .mechanism-missing { fill: none; stroke: var(--border-strong); stroke-width: 1.45; stroke-dasharray: 4 4; vector-effect: non-scaling-stroke; }
+
+  @media (max-width: 980px) {
+    .example-grid,
+    .psd-lower,
+    .why-row { grid-template-columns: 1fr; }
+    .psd-flow {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .flow-arrow,
+    .mechanism-arrow { transform: rotate(90deg); min-height: 22px; }
+    .mechanism-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .mechanism-svg { min-height: 0; }
+    .mechanism-equation { min-height: 0; }
+    .mechanism-proofline { grid-template-columns: 1fr; }
+    .mechanism-proof + .mechanism-proof {
+      border-left: 0;
+      border-top: 1px solid var(--border);
+    }
+    .psd-canvas {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .compact-strip {
+      grid-template-columns: 1fr;
+      gap: 8px;
+      align-items: stretch;
+    }
+  }
+
+  @media (max-width: 780px) {
+    .dual-header {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+    .definition { width: 100%; }
+    .examples-head {
+      align-items: stretch;
+      flex-direction: column;
+    }
+    .tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .tab { white-space: normal; }
+  }
+
+  @media (max-width: 560px) {
+    body { padding: 0; }
+    .dual-viz {
+      border-right: 0;
+      border-left: 0;
+      border-radius: 0;
+    }
+    .dual-header { padding: 19px 15px; }
+    .example-panel,
+    .universal { padding: 12px; }
+    .examples-head { padding: 10px 12px; }
+    .diagram-title {
+      flex-direction: column;
+      align-items: start;
+      gap: 6px;
+    }
+    .slider-line {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+    .probe-control { grid-template-columns: 1fr; }
+    .tab { min-height: 32px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body>
+<figure class="dual-viz" id="dual-viz">
+  <header class="dual-header">
+    <div>
+      <p class="eyebrow">dual cones · the general mechanism</p>
+      <h1>Every vector in the cone contributes one inequality</h1>
+      <p class="intro">A candidate <span class="math">y</span> belongs to the dual cone only when it pairs nonnegatively with every <span class="math">x ∈ K</span>.</p>
+    </div>
+    <div class="definition" aria-label="Definition of the dual cone as an intersection of halfspaces">
+      <p class="definition-label">one halfspace for each x in K</p>
+      <div class="math-line">\(K^{*}=\displaystyle\bigcap_{x\in K}H_x\)</div>
+      <div class="math-line">\(H_x=\{y:\langle y,x\rangle\geq 0\}\)</div>
+    </div>
+  </header>
+
+  <section class="universal" aria-labelledby="universal-title">
+    <div class="section-heading">
+      <h2 id="universal-title">Why the construction works for every K</h2>
+    </div>
+
+    <article class="mechanism" aria-label="Geometric construction of the dual and double dual cones">
+      <div class="mechanism-grid">
+        <section class="mechanism-card">
+          <div class="mechanism-card-head"><span class="mechanism-step">01</span><h3>Start with any set K</h3></div>
+          <svg class="mechanism-svg" id="mechanism-k-svg" viewBox="0 0 340 200" role="img" aria-labelledby="mechanism-k-title mechanism-k-desc">
+            <title id="mechanism-k-title">An arbitrary set K of vectors</title>
+            <desc id="mechanism-k-desc">The set K contains the shown vectors, while an intermediate direction is marked as possibly absent. Thus K is not assumed to be convex.</desc>
+            <defs>
+              <marker id="mechanism-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--post-accent)"/></marker>
+              <marker id="mechanism-arrow-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--border-strong)"/></marker>
+            </defs>
+            <g id="mechanism-k"></g>
+          </svg>
+          <div class="mechanism-equation">
+            <div class="mechanism-equation-math">\(x_1,x_2,x_3\in K\)</div>
+            <div class="mechanism-equation-note">an intermediate positive combination need not lie in \(K\)</div>
+          </div>
+        </section>
+
+        <div class="mechanism-arrow" aria-hidden="true">→</div>
+
+        <section class="mechanism-card">
+          <div class="mechanism-card-head"><span class="mechanism-step">02</span><h3>Intersect the halfspaces they impose</h3></div>
+          <svg class="mechanism-svg" id="mechanism-dual-svg" viewBox="0 0 340 200" role="img" aria-labelledby="mechanism-dual-title mechanism-dual-desc">
+            <title id="mechanism-dual-title">The dual cone as an intersection of halfspaces</title>
+            <desc id="mechanism-dual-desc">For each shown vector x_i, the boundary line is the set of y for which the pairing with x_i is zero. The common shaded region is the intersection of those halfspaces, namely K star.</desc>
+            <g id="mechanism-dual"></g>
+          </svg>
+          <div class="mechanism-equation">
+            <div class="mechanism-equation-math">\(H_x=\{y:\langle y,x\rangle\geq 0\}\)</div>
+            <div class="mechanism-equation-math accent">\(K^{*}=\displaystyle\bigcap_{x\in K}H_x\)</div>
+          </div>
+        </section>
+
+        <div class="mechanism-arrow" aria-hidden="true">→</div>
+
+        <section class="mechanism-card">
+          <div class="mechanism-card-head"><span class="mechanism-step">03</span><h3>Dualize again: fill in the cone</h3></div>
+          <svg class="mechanism-svg" id="mechanism-double-svg" viewBox="0 0 340 200" role="img" aria-labelledby="mechanism-double-title mechanism-double-desc">
+            <title id="mechanism-double-title">The double dual is the closed convex cone generated by K</title>
+            <desc id="mechanism-double-desc">The double dual fills in the positive combinations between the original rays and includes the boundary. The red dashed line is the supporting line ⟨y,·⟩ = 0 associated with a separating vector y in K star. The outside point p lies on the negative side, so it is excluded from K double star.</desc>
+            <g id="mechanism-double"></g>
+          </svg>
+          <div class="mechanism-equation">
+            <div class="mechanism-equation-math accent">\(K^{**}=\operatorname{cl}(\operatorname{cone}(K))\)</div>
+            <div class="mechanism-equation-note">the smallest closed convex cone containing \(K\)</div>
+          </div>
+        </section>
+      </div>
+
+      <div class="mechanism-proofline">
+        <div class="mechanism-proof">Each inequality already includes its boundary.<span class="proof-math">\(H_x=\{y:\langle y,x\rangle\geq0\}\)</span></div>
+        <div class="mechanism-proof">Intersecting these halfspaces preserves closedness and convexity.<span class="proof-math">\(K^{*}=\displaystyle\bigcap_{x\in K}H_x\)</span></div>
+        <div class="mechanism-proof">Taking the dual again recovers the smallest closed convex cone containing <span class="math">K</span>: it fills in positive combinations, and any outside point is cut off by a separating vector.<span class="proof-math">\(y\in K^{*},\ \langle y,p\rangle<0\ \Longrightarrow\ p\notin K^{**}\)</span></div>
+      </div>
+    </article>
+  </section>
+
+  <div class="examples-head">
+    <p>Three instances of the same universal test</p>
+    <nav class="tabs" role="tablist" aria-label="Dual cone examples">
+      <button class="tab" id="tab-coordinates" role="tab" aria-selected="true" aria-controls="panel-coordinates" data-mode="coordinates">Nonnegative coordinates</button>
+      <button class="tab" id="tab-ray" role="tab" aria-selected="false" aria-controls="panel-ray" data-mode="ray">One direction</button>
+      <button class="tab" id="tab-psd" role="tab" aria-selected="false" aria-controls="panel-psd" data-mode="psd">PSD matrices</button>
+    </nav>
+  </div>
+
+  <section class="example-panel" id="panel-coordinates" role="tabpanel" aria-labelledby="tab-coordinates">
+    <div class="example-grid">
+      <article class="diagram">
+        <div class="diagram-title">
+          <h2>The cone of vectors with nonnegative coordinates is self-dual</h2>
+          <p>K = {x : x₁ ≥ 0, x₂ ≥ 0}</p>
+        </div>
+        <div class="svg-wrap">
+          <svg id="coordinates-svg" viewBox="0 0 760 330" role="img" aria-labelledby="coordinates-title coordinates-desc">
+            <title id="coordinates-title">The cone of vectors with nonnegative coordinates and its dual</title>
+            <desc id="coordinates-desc">The left plane shows vectors in K generated by e1 and e2. The right plane shows a candidate y and the identical dual region.</desc>
+            <defs>
+              <marker id="coord-arrow-good" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--post-accent-ink)"/></marker>
+              <marker id="coord-arrow-accent" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--post-accent)"/></marker>
+              <marker id="coord-arrow-bad" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--danger)"/></marker>
+            </defs>
+            <g id="coordinates-left"></g>
+            <g id="coordinates-right"></g>
+            <g id="coordinates-bridge" aria-hidden="true"></g>
+          </svg>
+        </div>
+        <div class="compact-strip">
+          <div class="slider-line">
+            <label for="coordinates-angle">direction of y</label>
+            <input id="coordinates-angle" type="range" min="-180" max="180" step="1" value="35">
+            <span class="slider-value" id="coordinates-angle-value">35°</span>
+          </div>
+          <span class="test-value good" id="coordinates-test-1">⟨y,e₁⟩ = y₁ ≥ 0</span>
+          <span class="test-value good" id="coordinates-test-2">⟨y,e₂⟩ = y₂ ≥ 0</span>
+        </div>
+      </article>
+
+      <aside class="explanation">
+        <div class="status" id="coordinates-status"><span class="status-dot"></span><span>y ∈ K*</span></div>
+        <h3>Why two tests are enough here</h3>
+        <p>Every vector in K has the form <span class="math">x = αe₁ + βe₂</span> with <span class="math">α,β ≥ 0</span>.</p>
+        <div class="formula-box" id="coordinates-formula">
+          <strong>If y₁,y₂ ≥ 0, then every x passes:</strong><br>
+          ⟨y,x⟩ = αy₁ + βy₂ ≥ 0.<br>
+          If one coordinate is negative, choose the corresponding basis vector.
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="example-panel" id="panel-ray" role="tabpanel" aria-labelledby="tab-ray" hidden>
+    <div class="example-grid">
+      <article class="diagram">
+        <div class="diagram-title">
+          <h2>A cone containing one direction has a halfspace as its dual</h2>
+          <p>K = {αv : α ≥ 0}</p>
+        </div>
+        <div class="svg-wrap">
+          <svg id="ray-svg" viewBox="0 0 760 330" role="img" aria-labelledby="ray-title ray-desc">
+            <title id="ray-title">A ray and its dual halfspace</title>
+            <desc id="ray-desc">The left plane shows all nonnegative multiples of v. The right plane shows the halfspace of y for which the dot product with v is nonnegative.</desc>
+            <defs>
+              <marker id="ray-arrow-good" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--post-accent-ink)"/></marker>
+              <marker id="ray-arrow-accent" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--post-accent)"/></marker>
+              <marker id="ray-arrow-bad" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--danger)"/></marker>
+            </defs>
+            <g id="ray-left"></g>
+            <g id="ray-right"></g>
+            <g id="ray-bridge" aria-hidden="true"></g>
+          </svg>
+        </div>
+        <div class="compact-strip">
+          <div class="slider-line">
+            <label for="ray-angle">direction of y</label>
+            <input id="ray-angle" type="range" min="-180" max="180" step="1" value="70">
+            <span class="slider-value" id="ray-angle-value">70°</span>
+          </div>
+          <span class="test-value good" id="ray-test">⟨y,v⟩ ≥ 0</span>
+          <span class="test-value good" id="ray-side">inside the halfspace</span>
+        </div>
+      </article>
+
+      <aside class="explanation">
+        <div class="status" id="ray-status"><span class="status-dot"></span><span>y ∈ K*</span></div>
+        <h3>Why one scalar decides every x</h3>
+        <p>There is only one independent direction in K. Scaling that direction does not introduce a new sign test.</p>
+        <div class="formula-box" id="ray-formula">
+          <strong>For x = αv with α ≥ 0:</strong><br>
+          ⟨y,x⟩ = α⟨y,v⟩.<br>
+          Therefore every x passes exactly when ⟨y,v⟩ ≥ 0.
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="example-panel psd-panel" id="panel-psd" role="tabpanel" aria-labelledby="tab-psd" hidden>
+    <div class="example-grid">
+      <article class="diagram">
+        <div class="diagram-title">
+          <h2>Rank-one matrices turn the trace pairing into the quadratic-form test</h2>
+          <p>⟨N,M⟩<sub>tr</sub> = tr(NM)</p>
+        </div>
+
+        <div class="psd-flow" aria-label="From a vector z to a rank-one positive semidefinite matrix M, then to the trace test with N">
+          <section class="flow-card">
+            <h3>Choose any vector z</h3>
+            <div class="vector-column math">
+              z =
+              <span class="matrix one-column" aria-label="column vector cosine theta sine theta">
+                <span>cos θ</span><span>sin θ</span>
+              </span>
+            </div>
+            <p>The direction θ is arbitrary; every z gives a valid test.</p>
+          </section>
+
+          <div class="flow-arrow" aria-hidden="true">→</div>
+
+          <section class="flow-card">
+            <h3>Form the outer product M = zz<sup>⊤</sup></h3>
+            <div class="matrix-expression math">
+              M =
+              <span class="matrix" aria-label="rank one matrix z z transpose">
+                <span>cos²θ</span><span>sinθ cosθ</span>
+                <span>sinθ cosθ</span><span>sin²θ</span>
+              </span>
+            </div>
+            <p>The transpose is explicit here: the rank-one matrix really is <span class="math">zz<sup>⊤</sup></span>.</p>
+          </section>
+
+          <div class="flow-arrow" aria-hidden="true">→</div>
+
+          <section class="flow-card">
+            <h3>Pair N with that matrix</h3>
+            <div class="vector-column math trace-chain">
+              ⟨N,M⟩<sub>tr</sub><br>
+              = tr(Nzz<sup>⊤</sup>)<br>
+              = z<sup>⊤</sup>Nz
+            </div>
+            <p><span class="math">N</span> is the candidate for the dual cone; <span class="math">M</span> is one PSD matrix used to test it.</p>
+          </section>
+        </div>
+
+        <div class="why-row">
+          <div class="identity-card">
+            <div class="caption">why M = zz⊤ is always PSD</div>
+            <div class="math-line">u<sup>⊤</sup>Mu = u<sup>⊤</sup>zz<sup>⊤</sup>u = (z<sup>⊤</sup>u)² ≥ 0 &nbsp; for every u</div>
+          </div>
+          <div class="identity-card accent">
+            <div class="caption">why the trace test equals the quadratic test</div>
+            <div class="math-line">tr(Nzz<sup>⊤</sup>) = tr(z<sup>⊤</sup>Nz) = z<sup>⊤</sup>Nz</div>
+          </div>
+        </div>
+
+        <div class="psd-lower">
+          <section class="direction-card">
+            <div class="direction-head">
+              <h3>Test every direction z</h3>
+              <div class="mode-switch" aria-label="Choose the type of candidate matrix N">
+                <button class="mode-button" id="psd-good-button" type="button" aria-pressed="true" data-psd-mode="good">N is PSD</button>
+                <button class="mode-button" id="psd-bad-button" type="button" aria-pressed="false" data-psd-mode="bad">N has a negative direction</button>
+              </div>
+            </div>
+            <div class="psd-canvas">
+              <svg id="psd-svg" viewBox="0 0 330 278" role="img" aria-labelledby="psd-title psd-desc">
+                <title id="psd-title">The sign of z transpose N z over all vector directions</title>
+                <desc id="psd-desc">Each radius represents one unit vector z. Green directions satisfy z transpose N z greater than or equal to zero, while red directions make it negative. A movable vector z selects one rank one matrix M equals z z transpose.</desc>
+                <defs>
+                  <marker id="psd-arrow-good" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--post-accent-ink)"/></marker>
+                  <marker id="psd-arrow-bad" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--danger)"/></marker>
+                </defs>
+                <g id="psd-field"></g>
+              </svg>
+              <div class="probe-summary">
+                <div class="math-line probe-result good" id="psd-expression">z<sup>⊤</sup>Nz ≥ 0</div>
+                <p id="psd-description">For every unit vector z, z<sup>⊤</sup>Nz ≥ 0; therefore tr(Nzz<sup>⊤</sup>) ≥ 0 for every rank-one test matrix.</p>
+                <div class="probe-control">
+                  <label for="psd-probe">direction θ</label>
+                  <input id="psd-probe" type="range" min="0" max="180" step="1" value="62">
+                  <span class="slider-value" id="psd-probe-value">62°</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="psd-proof">
+            <h3>The two implications are the same definition</h3>
+            <div class="equivalence">
+              <div class="equivalence-step"><span class="mark">→</span><div><strong>If N is PSD,</strong> then <span class="math">z<sup>⊤</sup>Nz ≥ 0</span> for every <span class="math">z</span>, hence <span class="math">tr(NM) ≥ 0</span> for every rank-one <span class="math">M = zz<sup>⊤</sup></span>.</div></div>
+              <div class="equivalence-step"><span class="mark">←</span><div><strong>If tr(Nzz<sup>⊤</sup>) ≥ 0 for every z,</strong> then <span class="math">z<sup>⊤</sup>Nz ≥ 0</span> for every <span class="math">z</span>. That is precisely the definition <span class="math">N ⪰ 0</span>.</div></div>
+              <div class="equivalence-step"><span class="mark">∴</span><div><strong>Therefore PSD<sub>n</sub><sup>*</sup> = PSD<sub>n</sub>.</strong> Rank-one matrices are enough because they test every quadratic direction.</div></div>
+            </div>
+          </aside>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <figcaption class="figcaption">Move the candidate direction in the first two examples, or switch the type of <span class="math">N</span> in the matrix example. A red direction is a concrete witness that the universal inequality fails.</figcaption>
+</figure>
+
+<script>
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+  var variableNames = [
+    '--page','--surface','--surface-muted','--ink','--muted','--border','--border-strong',
+    '--accent','--accent-soft','--post-accent','--post-accent-soft','--post-accent-border',
+    '--post-accent-ink','--font-display','--font-reading','--font-ui','--font-mono',
+    '--color-bg','--color-surface','--color-surface-muted','--color-text','--color-text-muted',
+    '--color-border','--color-border-strong'
+  ];
+
+  function syncFromParent() {
+    try {
+      if (window.parent === window) return;
+      var parentRoot = window.parent.document.documentElement;
+      var article = window.parent.document.querySelector('article, main') || parentRoot;
+      var rootStyle = window.parent.getComputedStyle(parentRoot);
+      var articleStyle = window.parent.getComputedStyle(article);
+      var explicit =
+        parentRoot.getAttribute('data-theme') ||
+        (parentRoot.classList.contains('dark') ? 'dark' : '') ||
+        (parentRoot.classList.contains('light') ? 'light' : '');
+
+      if (explicit) root.setAttribute('data-theme', explicit);
+      else root.removeAttribute('data-theme');
+
+      root.classList.toggle('dark', explicit === 'dark');
+      root.classList.toggle('light', explicit === 'light');
+
+      variableNames.forEach(function (name) {
+        var value = articleStyle.getPropertyValue(name).trim() || rootStyle.getPropertyValue(name).trim();
+        if (value) root.style.setProperty(name, value);
+      });
+
+      var aliases = {
+        '--page': '--color-bg',
+        '--surface': '--color-surface',
+        '--surface-muted': '--color-surface-muted',
+        '--ink': '--color-text',
+        '--muted': '--color-text-muted',
+        '--border': '--color-border',
+        '--border-strong': '--color-border-strong',
+        '--accent': '--post-accent',
+        '--accent-soft': '--post-accent-soft'
+      };
+
+      Object.keys(aliases).forEach(function (alias) {
+        if (!root.style.getPropertyValue(alias)) {
+          var value = root.style.getPropertyValue(aliases[alias]);
+          if (value) root.style.setProperty(alias, value);
+        }
+      });
+    } catch (_) {}
+  }
+
+  syncFromParent();
+  window.addEventListener('DOMContentLoaded', syncFromParent, { once: true });
+
+  try {
+    if (window.parent !== window) {
+      new MutationObserver(syncFromParent).observe(window.parent.document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'data-theme', 'data-color-mode']
+      });
+    }
+  } catch (_) {}
+
+  var NS = 'http://www.w3.org/2000/svg';
+  var activeMode = 'coordinates';
+  var psdMode = 'good';
+
+  function svgEl(name, attrs, text) {
+    var node = document.createElementNS(NS, name);
+    Object.keys(attrs || {}).forEach(function (key) {
+      node.setAttribute(key, attrs[key]);
+    });
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  function clear(node) {
+    while (node.firstChild) node.removeChild(node.firstChild);
+  }
+
+  function rad(deg) { return deg * Math.PI / 180; }
+
+  function point(cx, cy, length, angle) {
+    return {
+      x: cx + length * Math.cos(rad(angle)),
+      y: cy - length * Math.sin(rad(angle))
+    };
+  }
+
+  function polygonPoints(points) {
+    return points.map(function (p) { return p.x + ',' + p.y; }).join(' ');
+  }
+
+  function labelBoxGeometry(x, y, width, height, anchor) {
+    var left = anchor === 'middle' ? x - width / 2 : anchor === 'end' ? x - width : x;
+    var top = y - height + 4;
+    return { left: left, top: top };
+  }
+
+  function createHtmlLabel(group, x, y, className, options) {
+    options = options || {};
+    var width = options.width;
+    var height = options.height;
+    var anchor = options.anchor || 'start';
+    var box = labelBoxGeometry(x, y, width, height, anchor);
+
+    var foreignObject = svgEl('foreignObject', {
+      x: box.left,
+      y: box.top,
+      width: width,
+      height: height,
+      class: 'mechanism-label-fo'
+    });
+
+    var content = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+    content.setAttribute('class', 'mechanism-label-content ' + className + ' label-' + anchor);
+    if (options.padX != null) {
+      content.style.paddingLeft = options.padX + 'px';
+      content.style.paddingRight = options.padX + 'px';
+    }
+    if (options.fontSize != null) content.style.fontSize = options.fontSize + 'px';
+
+    foreignObject.appendChild(content);
+    group.appendChild(foreignObject);
+    return content;
+  }
+
+  function addBoxedLabel(group, x, y, text, className, options) {
+    options = options || {};
+    var fontSize = options.fontSize || 10.5;
+    var padX = options.padX == null ? 7 : options.padX;
+    var width = options.width || Math.max(38, text.length * fontSize * 0.56 + padX * 2);
+    var height = options.height || fontSize + 11;
+    var content = createHtmlLabel(group, x, y, className, {
+      width: width,
+      height: height,
+      anchor: options.anchor || 'start',
+      padX: padX,
+      fontSize: options.fontSize
+    });
+    content.textContent = text;
+  }
+
+  function addBoxedMathLabel(group, x, y, fragments, className, options) {
+    options = options || {};
+    var fontSize = options.fontSize || 11.5;
+    var padX = options.padX == null ? 7 : options.padX;
+    var width = options.width || 80;
+    var height = options.height || fontSize + 12;
+    var content = createHtmlLabel(group, x, y, className, {
+      width: width,
+      height: height,
+      anchor: options.anchor || 'start',
+      padX: padX,
+      fontSize: options.fontSize
+    });
+
+    fragments.forEach(function (fragment) {
+      var attrs = fragment.attrs || {};
+      var element;
+      if (attrs['baseline-shift'] === 'super') {
+        element = document.createElementNS('http://www.w3.org/1999/xhtml', 'sup');
+      } else {
+        element = document.createElementNS('http://www.w3.org/1999/xhtml', 'span');
+      }
+      if (attrs['font-style']) element.style.fontStyle = attrs['font-style'];
+      if (attrs['font-size'] && attrs['baseline-shift'] !== 'super') {
+        element.style.fontSize = attrs['font-size'];
+      }
+      element.textContent = fragment.text;
+      content.appendChild(element);
+    });
+  }
+
+  function compactSvg(svg) {
+    return svg.getBoundingClientRect().width > 0 && svg.getBoundingClientRect().width < 610;
+  }
+
+  function vectorLabelAttrs(end, angle) {
+    var c = Math.cos(rad(angle));
+    var s = Math.sin(rad(angle));
+
+    if (Math.abs(c) > 0.86) {
+      return { x: end.x, y: end.y - 16, anchor: 'middle' };
+    }
+    if (s > 0.86) {
+      return { x: end.x - 10, y: end.y + 4, anchor: 'end' };
+    }
+    if (s < -0.86) {
+      return { x: end.x + 10, y: end.y - 3, anchor: 'start' };
+    }
+    return {
+      x: end.x + (c >= 0 ? 10 : -10),
+      y: end.y - 9,
+      anchor: c >= 0 ? 'start' : 'end'
+    };
+  }
+
+  function setStatus(id, good, goodText, badText) {
+    var node = document.getElementById(id);
+    node.classList.toggle('bad', !good);
+    node.querySelector('span:last-child').textContent = good ? goodText : badText;
+  }
+
+  function setTest(id, text, good) {
+    var node = document.getElementById(id);
+    node.textContent = text;
+    node.classList.toggle('good', good);
+    node.classList.toggle('bad', !good);
+  }
+
+  function drawPlane(group, cfg) {
+    var cx = cfg.cx;
+    var cy = cfg.cy;
+    var half = cfg.half;
+    var x0 = cx - half;
+    var x1 = cx + half;
+    var y0 = cy - half;
+    var y1 = cy + half;
+    var titleY = cfg.titleY == null ? 24 : cfg.titleY;
+    var subtitleY = cfg.subtitleY == null ? titleY + 19 : cfg.subtitleY;
+
+    [-0.5, 0.5].forEach(function (k) {
+      group.appendChild(svgEl('line', { x1: cx + k * half, y1: y0, x2: cx + k * half, y2: y1, class: 'gridline' }));
+      group.appendChild(svgEl('line', { x1: x0, y1: cy - k * half, x2: x1, y2: cy - k * half, class: 'gridline' }));
+    });
+
+    group.appendChild(svgEl('line', { x1: x0, y1: cy, x2: x1, y2: cy, class: 'axis' }));
+    group.appendChild(svgEl('line', { x1: cx, y1: y1, x2: cx, y2: y0, class: 'axis' }));
+    group.appendChild(svgEl('circle', { cx: cx, cy: cy, r: 3, class: 'origin' }));
+    group.appendChild(svgEl('text', { x: x1 - 4, y: cy - 8, 'text-anchor': 'end', class: 'axis-label' }, cfg.xLabel));
+    group.appendChild(svgEl('text', { x: cx + 8, y: y0 + 13, class: 'axis-label' }, cfg.yLabel));
+    group.appendChild(svgEl('text', { x: cx, y: titleY, 'text-anchor': 'middle', class: 'svg-title' }, cfg.title));
+    group.appendChild(svgEl('text', { x: cx, y: subtitleY, 'text-anchor': 'middle', class: 'svg-subtitle' }, cfg.subtitle));
+  }
+
+  function halfspacePolygon(cx, cy, half, normalAngle, positive) {
+    var n = { x: Math.cos(rad(normalAngle)), y: -Math.sin(rad(normalAngle)) };
+    var corners = [
+      { x: cx - half, y: cy - half },
+      { x: cx + half, y: cy - half },
+      { x: cx + half, y: cy + half },
+      { x: cx - half, y: cy + half }
+    ];
+
+    function value(p) { return (p.x - cx) * n.x + (p.y - cy) * n.y; }
+
+    var output = [];
+    corners.forEach(function (A, index) {
+      var B = corners[(index + 1) % corners.length];
+      var a = value(A);
+      var b = value(B);
+      var Ain = positive ? a >= 0 : a <= 0;
+      var Bin = positive ? b >= 0 : b <= 0;
+      if (Ain) output.push(A);
+      if (Ain !== Bin) {
+        var t = a / (a - b);
+        output.push({ x: A.x + t * (B.x - A.x), y: A.y + t * (B.y - A.y) });
+      }
+    });
+    return output;
+  }
+
+  function clipPolygonByHalfspace(points, cx, cy, normalAngle, positive) {
+    var n = { x: Math.cos(rad(normalAngle)), y: -Math.sin(rad(normalAngle)) };
+
+    function value(p) { return (p.x - cx) * n.x + (p.y - cy) * n.y; }
+
+    var output = [];
+    points.forEach(function (A, index) {
+      var B = points[(index + 1) % points.length];
+      var a = value(A);
+      var b = value(B);
+      var Ain = positive ? a >= 0 : a <= 0;
+      var Bin = positive ? b >= 0 : b <= 0;
+      if (Ain) output.push(A);
+      if (Ain !== Bin) {
+        var t = a / (a - b);
+        output.push({ x: A.x + t * (B.x - A.x), y: A.y + t * (B.y - A.y) });
+      }
+    });
+    return output;
+  }
+
+  function drawMechanismAxes(group, cx, cy, half) {
+    group.appendChild(svgEl('line', { x1: cx - half, y1: cy, x2: cx + half, y2: cy, class: 'mechanism-axis' }));
+    group.appendChild(svgEl('line', { x1: cx, y1: cy + half, x2: cx, y2: cy - half, class: 'mechanism-axis' }));
+    group.appendChild(svgEl('circle', { cx: cx, cy: cy, r: 2.7, class: 'origin' }));
+  }
+
+  function renderUniversal() {
+    var kGroup = document.getElementById('mechanism-k');
+    var dualGroup = document.getElementById('mechanism-dual');
+    var doubleGroup = document.getElementById('mechanism-double');
+    clear(kGroup);
+    clear(dualGroup);
+    clear(doubleGroup);
+
+    var angles = [12, 52, 98];
+    var labels = ['x₁', 'x₂', 'x₃'];
+    var cx = 170;
+    var cy = 118;
+    var half = 62;
+    var vectorLengths = [61, 66, 54];
+
+    drawMechanismAxes(kGroup, cx, cy, half);
+
+    var missingAngle = 31;
+    var missingEnd = point(cx, cy, 59, missingAngle);
+    kGroup.appendChild(svgEl('line', {
+      x1: cx, y1: cy, x2: missingEnd.x, y2: missingEnd.y,
+      class: 'mechanism-missing'
+    }));
+    kGroup.appendChild(svgEl('circle', { cx: missingEnd.x, cy: missingEnd.y, r: 4.5, class: 'mechanism-open' }));
+    kGroup.appendChild(svgEl('path', {
+      d: 'M ' + (missingEnd.x + 4) + ' ' + (missingEnd.y + 2) + ' C 244 105, 260 141, 270 169',
+      class: 'mechanism-leader'
+    }));
+    addBoxedLabel(kGroup, 333, 194, 'need not belong to K', 'mechanism-small', { anchor: 'end', width: 108, height: 18, fontSize: 8.6, padX: 4 });
+
+    angles.forEach(function (angle, index) {
+      var end = point(cx, cy, vectorLengths[index], angle);
+      kGroup.appendChild(svgEl('line', {
+        x1: cx, y1: cy, x2: end.x, y2: end.y,
+        class: 'mechanism-vector',
+        'marker-end': 'url(#mechanism-arrow)'
+      }));
+      kGroup.appendChild(svgEl('circle', { cx: end.x, cy: end.y, r: 4.1, class: 'mechanism-dot' }));
+
+      var labelOffsets = [
+        { x: 9, y: 15, anchor: 'start' },
+        { x: 10, y: -8, anchor: 'start' },
+        { x: -9, y: -8, anchor: 'end' }
+      ];
+      var offset = labelOffsets[index];
+      kGroup.appendChild(svgEl('text', {
+        x: end.x + offset.x,
+        y: end.y + offset.y,
+        'text-anchor': offset.anchor,
+        class: 'mechanism-accent-label'
+      }, labels[index]));
+    });
+
+    drawMechanismAxes(dualGroup, cx, cy, half);
+
+    var square = [
+      { x: cx - half, y: cy - half },
+      { x: cx + half, y: cy - half },
+      { x: cx + half, y: cy + half },
+      { x: cx - half, y: cy + half }
+    ];
+    var halfspaceClasses = ['mechanism-halfspace-one', 'mechanism-halfspace-two', 'mechanism-halfspace-three'];
+
+    angles.forEach(function (angle, index) {
+      var poly = clipPolygonByHalfspace(square, cx, cy, angle, true);
+      dualGroup.insertBefore(svgEl('polygon', { points: polygonPoints(poly), class: halfspaceClasses[index] }), dualGroup.firstChild);
+      var tangent = angle + 90;
+      var a = point(cx, cy, half * 1.38, tangent);
+      var b = point(cx, cy, half * 1.38, tangent + 180);
+      dualGroup.appendChild(svgEl('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y, class: 'mechanism-boundary' }));
+    });
+
+    var intersection = square.slice();
+    angles.forEach(function (angle) {
+      intersection = clipPolygonByHalfspace(intersection, cx, cy, angle, true);
+    });
+    dualGroup.insertBefore(svgEl('polygon', { points: polygonPoints(intersection), class: 'mechanism-intersection' }), dualGroup.querySelector('line'));
+
+    addBoxedMathLabel(dualGroup, 220, 82, [
+      { text: 'K', attrs: { 'font-style': 'italic' } },
+      { text: '*', attrs: { 'baseline-shift': 'super', 'font-size': '8px' } }
+    ], 'mechanism-accent-label', { width: 31, height: 19, fontSize: 10.6, padX: 4 });
+    addBoxedLabel(dualGroup, 331, 45, '⟨x₁, y⟩ = 0', 'mechanism-math-label', { anchor: 'end', width: 82, height: 19, fontSize: 10.2, padX: 4 });
+    addBoxedLabel(dualGroup, 10, 188, '⟨x₃, y⟩ = 0', 'mechanism-math-label', { width: 82, height: 19, fontSize: 10.2, padX: 4 });
+
+    var q = point(cx, cy, 55, -35);
+    dualGroup.appendChild(svgEl('circle', { cx: q.x, cy: q.y, r: 5, class: 'mechanism-witness' }));
+    dualGroup.appendChild(svgEl('text', { x: q.x + 8, y: q.y + 4, class: 'mechanism-danger-label' }, 'q'));
+    addBoxedLabel(dualGroup, 331, 194, '⟨q, x₃⟩ < 0', 'mechanism-danger-label', { anchor: 'end', width: 84, height: 19, fontSize: 10.2, padX: 4 });
+
+    drawMechanismAxes(doubleGroup, cx, cy, half);
+
+    var minAngle = Math.min.apply(null, angles);
+    var maxAngle = Math.max.apply(null, angles);
+    var hull = [
+      { x: cx, y: cy },
+      point(cx, cy, 86, minAngle),
+      point(cx, cy, 86, maxAngle)
+    ];
+    doubleGroup.insertBefore(svgEl('polygon', { points: polygonPoints(hull), class: 'mechanism-hull' }), doubleGroup.firstChild);
+
+    angles.forEach(function (angle, index) {
+      var end = point(cx, cy, vectorLengths[index] * 0.77, angle);
+      doubleGroup.appendChild(svgEl('line', {
+        x1: cx, y1: cy, x2: end.x, y2: end.y,
+        class: 'mechanism-vector-muted',
+        'marker-end': 'url(#mechanism-arrow-muted)'
+      }));
+      doubleGroup.appendChild(svgEl('circle', { cx: end.x, cy: end.y, r: 3.5, class: 'mechanism-dot' }));
+
+      var labelOffsets2 = [
+        { x: 8, y: 14, anchor: 'start' },
+        { x: 8, y: -8, anchor: 'start' },
+        { x: -8, y: -7, anchor: 'end' }
+      ];
+      var off = labelOffsets2[index];
+      doubleGroup.appendChild(svgEl('text', {
+        x: end.x + off.x,
+        y: end.y + off.y,
+        'text-anchor': off.anchor,
+        class: 'mechanism-small'
+      }, labels[index]));
+    });
+
+    var combinationEnd = point(cx, cy, 63, missingAngle);
+    doubleGroup.appendChild(svgEl('line', {
+      x1: cx, y1: cy, x2: combinationEnd.x, y2: combinationEnd.y,
+      class: 'mechanism-vector',
+      'marker-end': 'url(#mechanism-arrow)'
+    }));
+    addBoxedLabel(doubleGroup, 329, 91, 'αx₁ + βx₂', 'mechanism-accent-label', { anchor: 'end', width: 76, height: 19, fontSize: 10.6, padX: 4 });
+    addBoxedMathLabel(doubleGroup, 333, 29, [
+      { text: 'K', attrs: { 'font-style': 'italic' } },
+      { text: '**', attrs: { 'baseline-shift': 'super', 'font-size': '8px' } },
+      { text: ' = cl(cone(' },
+      { text: 'K', attrs: { 'font-style': 'italic' } },
+      { text: '))' }
+    ], 'mechanism-accent-label', { anchor: 'end', width: 139, height: 22, fontSize: 10.2, padX: 4 });
+
+    var yAngle = 100;
+    var separatorAngle = yAngle + 90;
+    var s1 = point(cx, cy, 96, separatorAngle);
+    var s2 = point(cx, cy, 96, separatorAngle + 180);
+    doubleGroup.appendChild(svgEl('line', { x1: s1.x, y1: s1.y, x2: s2.x, y2: s2.y, class: 'mechanism-separator' }));
+    addBoxedLabel(doubleGroup, 10, 193, '⟨y, ·⟩ = 0', 'mechanism-danger-label', { width: 73, height: 19, fontSize: 10.2, padX: 4 });
+
+    var yEnd = point(cx, cy, 45, yAngle);
+    doubleGroup.appendChild(svgEl('line', {
+      x1: cx, y1: cy, x2: yEnd.x, y2: yEnd.y,
+      class: 'vector',
+      'marker-end': 'url(#mechanism-arrow)'
+    }));
+    addBoxedMathLabel(doubleGroup, 17, 58, [
+      { text: 'y', attrs: { 'font-style': 'italic' } },
+      { text: ' ∈ ' },
+      { text: 'K', attrs: { 'font-style': 'italic' } },
+      { text: '*', attrs: { 'baseline-shift': 'super', 'font-size': '8px' } }
+    ], 'mechanism-accent-label', { width: 53, height: 19, fontSize: 10.2, padX: 4 });
+
+    var p = point(cx, cy, 63, -35);
+    doubleGroup.appendChild(svgEl('circle', { cx: p.x, cy: p.y, r: 5.2, class: 'mechanism-witness' }));
+    doubleGroup.appendChild(svgEl('text', { x: p.x + 8, y: p.y + 4, class: 'mechanism-danger-label' }, 'p'));
+    addBoxedLabel(doubleGroup, 333, 194, '⟨y, p⟩ < 0', 'mechanism-danger-label', { anchor: 'end', width: 74, height: 19, fontSize: 10.2, padX: 4 });
+  }
+
+  function renderCoordinates() {
+    var svg = document.getElementById('coordinates-svg');
+    var left = document.getElementById('coordinates-left');
+    var right = document.getElementById('coordinates-right');
+    var bridge = document.getElementById('coordinates-bridge');
+    clear(left);
+    clear(right);
+    clear(bridge);
+
+    var compact = compactSvg(svg);
+    var angle = Number(document.getElementById('coordinates-angle').value);
+    var y1 = Math.cos(rad(angle));
+    var y2 = Math.sin(rad(angle));
+    var good1 = y1 >= -1e-10;
+    var good2 = y2 >= -1e-10;
+    var good = good1 && good2;
+
+    document.getElementById('coordinates-angle-value').textContent = angle + '°';
+    setTest('coordinates-test-1', '⟨y,e₁⟩ = y₁ ' + (good1 ? '≥ 0' : '< 0'), good1);
+    setTest('coordinates-test-2', '⟨y,e₂⟩ = y₂ ' + (good2 ? '≥ 0' : '< 0'), good2);
+    setStatus('coordinates-status', good, 'y ∈ K*', 'y ∉ K*');
+
+    var L;
+    var R;
+    if (compact) {
+      svg.setAttribute('viewBox', '0 0 380 680');
+      L = { cx: 190, cy: 190, half: 118, titleY: 24, subtitleY: 43 };
+      R = { cx: 190, cy: 535, half: 108, titleY: 380, subtitleY: 399 };
+      bridge.appendChild(svgEl('text', { x: 190, y: 318, 'text-anchor': 'middle', class: 'svg-small' }, 'the same two sign tests'));
+      bridge.appendChild(svgEl('path', { d: 'M190 327 V340', class: 'bridge-line' }));
+      bridge.appendChild(svgEl('text', { x: 190, y: 348, 'text-anchor': 'middle', class: 'svg-math' }, 'y₁, y₂ ≥ 0'));
+    } else {
+      svg.setAttribute('viewBox', '0 0 760 330');
+      L = { cx: 180, cy: 183, half: 116, titleY: 24, subtitleY: 43 };
+      R = { cx: 580, cy: 183, half: 116, titleY: 24, subtitleY: 43 };
+      bridge.appendChild(svgEl('text', { x: 380, y: 145, 'text-anchor': 'middle', class: 'svg-small' }, 'same sign tests'));
+      bridge.appendChild(svgEl('path', { d: 'M366 165 H394', class: 'bridge-line' }));
+      bridge.appendChild(svgEl('text', { x: 380, y: 184, 'text-anchor': 'middle', class: 'svg-math' }, 'y₁, y₂ ≥ 0'));
+    }
+
+    drawPlane(left, {
+      cx: L.cx, cy: L.cy, half: L.half,
+      titleY: L.titleY, subtitleY: L.subtitleY,
+      title: 'vectors x in K',
+      subtitle: 'every x is a nonnegative combination of e₁ and e₂',
+      xLabel: 'x₁', yLabel: 'x₂'
+    });
+
+    left.insertBefore(svgEl('rect', {
+      x: L.cx, y: L.cy - L.half, width: L.half, height: L.half,
+      class: 'cone-fill'
+    }), left.firstChild);
+
+    var e1 = point(L.cx, L.cy, Math.min(88, L.half * 0.76), 0);
+    var e2 = point(L.cx, L.cy, Math.min(88, L.half * 0.76), 90);
+    left.appendChild(svgEl('line', { x1: L.cx, y1: L.cy, x2: e1.x, y2: e1.y, class: 'generator', 'marker-end': 'url(#coord-arrow-accent)' }));
+    left.appendChild(svgEl('line', { x1: L.cx, y1: L.cy, x2: e2.x, y2: e2.y, class: 'generator', 'marker-end': 'url(#coord-arrow-accent)' }));
+    left.appendChild(svgEl('text', { x: e1.x - 5, y: e1.y - 11, 'text-anchor': 'end', class: 'svg-accent' }, 'e₁'));
+    left.appendChild(svgEl('text', { x: e2.x + 8, y: e2.y + 3, class: 'svg-accent' }, 'e₂'));
+
+    right.insertBefore(svgEl('rect', {
+      x: R.cx, y: R.cy - R.half, width: R.half, height: R.half,
+      class: 'dual-fill'
+    }), right.firstChild);
+
+    drawPlane(right, {
+      cx: R.cx, cy: R.cy, half: R.half,
+      titleY: R.titleY, subtitleY: R.subtitleY,
+      title: 'candidate directions y',
+      subtitle: 'the same cone appears on the dual side',
+      xLabel: 'y₁', yLabel: 'y₂'
+    });
+
+    var yp = point(R.cx, R.cy, Math.min(92, R.half * 0.79), angle);
+    right.appendChild(svgEl('line', {
+      x1: R.cx, y1: R.cy, x2: yp.x, y2: yp.y,
+      class: good ? 'vector' : 'vector bad',
+      'marker-end': good ? 'url(#coord-arrow-good)' : 'url(#coord-arrow-bad)'
+    }));
+    right.appendChild(svgEl('circle', { cx: yp.x, cy: yp.y, r: 4.8, class: good ? 'point' : 'point bad' }));
+    var yLabel = vectorLabelAttrs(yp, angle);
+    right.appendChild(svgEl('text', {
+      x: yLabel.x,
+      y: yLabel.y,
+      'text-anchor': yLabel.anchor,
+      class: good ? 'svg-accent' : 'svg-danger'
+    }, 'y'));
+
+    var formula = document.getElementById('coordinates-formula');
+    formula.classList.toggle('bad', !good);
+    if (good) {
+      formula.innerHTML = '<strong>If y₁,y₂ ≥ 0, then every x passes:</strong><br>⟨y,x⟩ = αy₁ + βy₂ ≥ 0.<br>So the dual cone is the same cone again.';
+    } else {
+      var witness = !good1 ? 'e₁' : 'e₂';
+      formula.innerHTML = '<strong>One generator already gives a counterexample.</strong><br>For x = ' + witness + ', the pairing is negative, so y is not in K*.';
+    }
+  }
+
+  function renderRay() {
+    var svg = document.getElementById('ray-svg');
+    var left = document.getElementById('ray-left');
+    var right = document.getElementById('ray-right');
+    var bridge = document.getElementById('ray-bridge');
+    clear(left);
+    clear(right);
+    clear(bridge);
+
+    var compact = compactSvg(svg);
+    var vAngle = 28;
+    var angle = Number(document.getElementById('ray-angle').value);
+    var pairing = Math.cos(rad(angle - vAngle));
+    var good = pairing >= -1e-10;
+
+    document.getElementById('ray-angle-value').textContent = angle + '°';
+    setTest('ray-test', '⟨y,v⟩ ' + (good ? '≥ 0' : '< 0'), good);
+    setTest('ray-side', good ? 'inside the halfspace' : 'outside the halfspace', good);
+    setStatus('ray-status', good, 'y ∈ K*', 'y ∉ K*');
+
+    var L;
+    var R;
+    if (compact) {
+      svg.setAttribute('viewBox', '0 0 380 680');
+      L = { cx: 190, cy: 190, half: 118, titleY: 24, subtitleY: 43 };
+      R = { cx: 190, cy: 535, half: 108, titleY: 380, subtitleY: 399 };
+      bridge.appendChild(svgEl('text', { x: 190, y: 318, 'text-anchor': 'middle', class: 'svg-small' }, 'one inequality'));
+      bridge.appendChild(svgEl('path', { d: 'M190 327 V340', class: 'bridge-line' }));
+      bridge.appendChild(svgEl('text', { x: 190, y: 348, 'text-anchor': 'middle', class: 'svg-math' }, '⟨y,v⟩ ≥ 0'));
+    } else {
+      svg.setAttribute('viewBox', '0 0 760 330');
+      L = { cx: 180, cy: 183, half: 116, titleY: 24, subtitleY: 43 };
+      R = { cx: 580, cy: 183, half: 116, titleY: 24, subtitleY: 43 };
+      bridge.appendChild(svgEl('text', { x: 380, y: 145, 'text-anchor': 'middle', class: 'svg-small' }, 'one inequality'));
+      bridge.appendChild(svgEl('path', { d: 'M366 165 H394', class: 'bridge-line' }));
+      bridge.appendChild(svgEl('text', { x: 380, y: 184, 'text-anchor': 'middle', class: 'svg-math' }, '⟨y,v⟩ ≥ 0'));
+    }
+
+    drawPlane(left, {
+      cx: L.cx, cy: L.cy, half: L.half,
+      titleY: L.titleY, subtitleY: L.subtitleY,
+      title: 'vectors x in K',
+      subtitle: 'one direction and its nonnegative multiples',
+      xLabel: 'x₁', yLabel: 'x₂'
+    });
+
+    var vendGlow = point(L.cx, L.cy, Math.min(109, L.half * 0.92), vAngle);
+    var vend = point(L.cx, L.cy, Math.min(94, L.half * 0.79), vAngle);
+    left.appendChild(svgEl('line', {
+      x1: L.cx, y1: L.cy, x2: vendGlow.x, y2: vendGlow.y,
+      stroke: 'var(--post-accent-soft)', 'stroke-width': '14', 'stroke-linecap': 'round', opacity: '0.9'
+    }));
+    left.appendChild(svgEl('line', {
+      x1: L.cx, y1: L.cy, x2: vend.x, y2: vend.y,
+      class: 'vector', 'marker-end': 'url(#ray-arrow-good)'
+    }));
+    left.appendChild(svgEl('text', { x: vend.x + 8, y: vend.y - 7, class: 'svg-accent' }, 'v'));
+    left.appendChild(svgEl('text', { x: L.cx + 35, y: L.cy - 13, class: 'svg-small' }, 'αv, α ≥ 0'));
+
+    right.appendChild(svgEl('polygon', { points: polygonPoints(halfspacePolygon(R.cx, R.cy, R.half, vAngle, false)), class: 'bad-fill' }));
+    right.appendChild(svgEl('polygon', { points: polygonPoints(halfspacePolygon(R.cx, R.cy, R.half, vAngle, true)), class: 'dual-fill' }));
+
+    drawPlane(right, {
+      cx: R.cx, cy: R.cy, half: R.half,
+      titleY: R.titleY, subtitleY: R.subtitleY,
+      title: 'candidate directions y',
+      subtitle: 'one inequality cuts the plane in half',
+      xLabel: 'y₁', yLabel: 'y₂'
+    });
+
+    var tangent = vAngle + 90;
+    var tangentLength = R.half * 1.32;
+    var t1 = point(R.cx, R.cy, tangentLength, tangent);
+    var t2 = point(R.cx, R.cy, tangentLength, tangent + 180);
+    right.appendChild(svgEl('line', { x1: t1.x, y1: t1.y, x2: t2.x, y2: t2.y, class: 'boundary' }));
+
+    var normal = point(R.cx, R.cy, R.half * 0.59, vAngle);
+    right.appendChild(svgEl('line', {
+      x1: R.cx, y1: R.cy, x2: normal.x, y2: normal.y,
+      class: 'generator', 'marker-end': 'url(#ray-arrow-accent)'
+    }));
+    right.appendChild(svgEl('text', { x: normal.x + 7, y: normal.y - 7, class: 'svg-accent' }, 'v'));
+    right.appendChild(svgEl('text', { x: R.cx + R.half * 0.52, y: R.cy - R.half * 0.82, class: 'svg-accent' }, '⟨y,v⟩ ≥ 0'));
+    right.appendChild(svgEl('text', { x: R.cx - R.half * 0.92, y: R.cy + R.half * 0.72, class: 'svg-danger' }, '⟨y,v⟩ < 0'));
+
+    var yp = point(R.cx, R.cy, Math.min(91, R.half * 0.78), angle);
+    right.appendChild(svgEl('line', {
+      x1: R.cx, y1: R.cy, x2: yp.x, y2: yp.y,
+      class: good ? 'vector' : 'vector bad',
+      'marker-end': good ? 'url(#ray-arrow-good)' : 'url(#ray-arrow-bad)'
+    }));
+    right.appendChild(svgEl('circle', { cx: yp.x, cy: yp.y, r: 4.8, class: good ? 'point' : 'point bad' }));
+    var yLabel = vectorLabelAttrs(yp, angle);
+    right.appendChild(svgEl('text', {
+      x: yLabel.x,
+      y: yLabel.y,
+      'text-anchor': yLabel.anchor,
+      class: good ? 'svg-accent' : 'svg-danger'
+    }, 'y'));
+
+    var formula = document.getElementById('ray-formula');
+    formula.classList.toggle('bad', !good);
+    if (good) {
+      formula.innerHTML = '<strong>For x = αv with α ≥ 0:</strong><br>⟨y,x⟩ = α⟨y,v⟩ ≥ 0.<br>One nonnegative projection therefore handles every x in the ray.';
+    } else {
+      formula.innerHTML = '<strong>The candidate is on the forbidden side.</strong><br>Already x = v gives ⟨y,x⟩ = ⟨y,v⟩ &lt; 0.';
+    }
+  }
+
+  function sectorPath(cx, cy, r, startAngle, endAngle) {
+    var start = point(cx, cy, r, startAngle);
+    var end = point(cx, cy, r, endAngle);
+    var sweep = endAngle - startAngle;
+    var largeArc = Math.abs(sweep) > 180 ? 1 : 0;
+    var sweepFlag = sweep < 0 ? 1 : 0;
+    return [
+      'M', cx, cy,
+      'L', start.x, start.y,
+      'A', r, r, 0, largeArc, sweepFlag, end.x, end.y,
+      'Z'
+    ].join(' ');
+  }
+
+  function qValue(angle, mode) {
+    var axis = 25;
+    var delta = rad(angle - axis);
+    var lambdaPositive = 1;
+    var lambdaOther = mode === 'good' ? 0.28 : -0.62;
+    return lambdaPositive * Math.cos(delta) * Math.cos(delta) + lambdaOther * Math.sin(delta) * Math.sin(delta);
+  }
+
+  function renderPSD() {
+    var group = document.getElementById('psd-field');
+    clear(group);
+
+    var cx = 165;
+    var cy = 139;
+    var r = 88;
+    var probe = Number(document.getElementById('psd-probe').value);
+    var q = qValue(probe, psdMode);
+    var probeGood = q >= -1e-10;
+
+    document.getElementById('psd-probe-value').textContent = probe + '°';
+
+    var samples = 360;
+    for (var i = 0; i < samples; i++) {
+      var a0 = i;
+      var a1 = i + 1.15;
+      var mid = i + 0.5;
+      group.appendChild(svgEl('path', {
+        d: sectorPath(cx, cy, r, a0, a1),
+        class: qValue(mid, psdMode) >= 0 ? 'positive-sector' : 'negative-sector'
+      }));
+    }
+
+    group.appendChild(svgEl('circle', { cx: cx, cy: cy, r: r, class: 'unit-circle' }));
+    group.appendChild(svgEl('line', { x1: cx - r - 6, y1: cy, x2: cx + r + 6, y2: cy, class: 'axis' }));
+    group.appendChild(svgEl('line', { x1: cx, y1: cy + r + 6, x2: cx, y2: cy - r - 6, class: 'axis' }));
+    group.appendChild(svgEl('circle', { cx: cx, cy: cy, r: 3, class: 'origin' }));
+
+    var zp = point(cx, cy, 75, probe);
+    group.appendChild(svgEl('line', {
+      x1: cx, y1: cy, x2: zp.x, y2: zp.y,
+      class: probeGood ? 'vector' : 'vector bad',
+      'marker-end': probeGood ? 'url(#psd-arrow-good)' : 'url(#psd-arrow-bad)'
+    }));
+    group.appendChild(svgEl('circle', { cx: zp.x, cy: zp.y, r: 4.6, class: probeGood ? 'point' : 'point bad' }));
+    group.appendChild(svgEl('text', {
+      x: zp.x + (Math.cos(rad(probe)) >= 0 ? 8 : -8),
+      y: zp.y - 7,
+      'text-anchor': Math.cos(rad(probe)) >= 0 ? 'start' : 'end',
+      class: probeGood ? 'svg-accent' : 'svg-danger'
+    }, 'z'));
+
+    group.appendChild(svgEl('text', {
+      x: cx, y: 20, 'text-anchor': 'middle', class: 'svg-title'
+    }, psdMode === 'good' ? 'green means zᵀNz ≥ 0 for every direction z' : 'red means zᵀNz < 0 for those directions'));
+
+    group.appendChild(svgEl('text', {
+      x: cx, y: 258, 'text-anchor': 'middle', class: 'svg-small'
+    }, 'green: zᵀNz ≥ 0    ·    red: zᵀNz < 0'));
+
+    var expression = document.getElementById('psd-expression');
+    var description = document.getElementById('psd-description');
+
+    if (probeGood) {
+      expression.innerHTML = 'tr(Nzz<sup>⊤</sup>) = z<sup>⊤</sup>Nz ≥ 0';
+      expression.classList.add('good');
+      expression.classList.remove('bad');
+
+      if (psdMode === 'good') {
+        description.innerHTML = 'For every unit vector <span class="math">z</span>, <span class="math">z<sup>⊤</sup>Nz ≥ 0</span>; therefore <span class="math">tr(Nzz<sup>⊤</sup>) ≥ 0</span> for every rank-one test matrix.';
+      } else {
+        description.innerHTML = 'This particular <span class="math">z</span> gives a nonnegative value, but the red directions give <span class="math">z<sup>⊤</sup>Nz &lt; 0</span> and show that <span class="math">N</span> is not PSD.';
+      }
+    } else {
+      expression.innerHTML = 'tr(Nzz<sup>⊤</sup>) = z<sup>⊤</sup>Nz < 0';
+      expression.classList.add('bad');
+      expression.classList.remove('good');
+      description.innerHTML = 'For this direction, <span class="math">M = zz<sup>⊤</sup></span> is PSD but <span class="math">tr(NM) &lt; 0</span>. Hence <span class="math">N</span> is not in the dual PSD cone.';
+    }
+  }
+
+  function render() {
+    if (activeMode === 'coordinates') renderCoordinates();
+    if (activeMode === 'ray') renderRay();
+    if (activeMode === 'psd') renderPSD();
+    requestHeight();
+  }
+
+  document.querySelectorAll('.tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      activeMode = tab.dataset.mode;
+      document.querySelectorAll('.tab').forEach(function (other) {
+        var selected = other === tab;
+        other.setAttribute('aria-selected', selected ? 'true' : 'false');
+        document.getElementById('panel-' + other.dataset.mode).hidden = !selected;
+      });
+      render();
+    });
+  });
+
+  document.getElementById('coordinates-angle').addEventListener('input', renderCoordinates);
+  document.getElementById('ray-angle').addEventListener('input', renderRay);
+  document.getElementById('psd-probe').addEventListener('input', renderPSD);
+
+  document.querySelectorAll('.mode-button').forEach(function (button) {
+    button.addEventListener('click', function () {
+      psdMode = button.dataset.psdMode;
+      document.querySelectorAll('.mode-button').forEach(function (other) {
+        other.setAttribute('aria-pressed', other === button ? 'true' : 'false');
+      });
+      renderPSD();
+    });
+  });
+
+  function requestHeight() {
+    window.requestAnimationFrame(function () {
+      var height = Math.ceil(document.getElementById('dual-viz').getBoundingClientRect().height + 24);
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'article-visualization:resize', height: height }, '*');
+        window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, '*');
+        window.parent.postMessage({ height: height }, '*');
+      }
+    });
+  }
+
+  window.addEventListener('resize', function () { render(); requestHeight(); });
+  if (window.ResizeObserver) {
+    new ResizeObserver(requestHeight).observe(document.getElementById('dual-viz'));
+  }
+
+  renderUniversal();
+  renderCoordinates();
+  renderRay();
+  renderPSD();
+  requestHeight();
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () {
+      renderUniversal();
+      renderCoordinates();
+      renderRay();
+      renderPSD();
+      requestHeight();
+    });
+  }
+  window.setTimeout(requestHeight, 80);
+  window.setTimeout(requestHeight, 260);
+  document.addEventListener('viz:math-ready', requestHeight);
+}());
+</script>
+</body>
+</html>

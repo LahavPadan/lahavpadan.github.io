@@ -1,0 +1,1281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fenchel–Young equality and supporting lines</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap"
+  >
+
+  <script>
+    (function () {
+      function setTheme(theme) {
+        if (theme === 'dark' || theme === 'light') {
+          document.documentElement.dataset.theme = theme;
+        }
+      }
+
+      try {
+        var parentRoot = window.parent.document.documentElement;
+        var parentBody = window.parent.document.body;
+        var parentTheme = [
+          parentRoot.dataset.theme || '',
+          parentRoot.className || '',
+          parentBody && parentBody.dataset ? parentBody.dataset.theme || '' : '',
+          parentBody ? parentBody.className || '' : ''
+        ].join(' ').toLowerCase();
+
+        setTheme(parentTheme.indexOf('dark') >= 0 ? 'dark' : 'light');
+      } catch (_error) {
+        setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      }
+
+      window.addEventListener('message', function (event) {
+        if (event && event.data && event.data.theme) setTheme(event.data.theme);
+      });
+    }());
+  </script>
+
+  <!-- Same delimiters and SVG MathJax output used by the site layout. -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      },
+      startup: {
+        pageReady: function () {
+          return MathJax.startup.defaultPageReady().then(function () {
+            document.documentElement.dataset.mathReady = 'true';
+            document.dispatchEvent(new CustomEvent('viz:math-ready'));
+          });
+        }
+      }
+    };
+  </script>
+  <script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #fbfbf8;
+      --surface: #ffffff;
+      --surface-muted: #f4f5f1;
+      --ink: #1c2420;
+      --muted: #667169;
+      --border: #d6ddd7;
+      --border-strong: #a6b2a9;
+      --accent: #0d7659;
+      --accent-soft: #dcefe7;
+      --accent-border: #9acbb7;
+      --accent-ink: #075b44;
+      --gap: #6754bf;
+      --gap-soft: color-mix(in srgb, var(--gap) 10%, var(--surface));
+      --grid: color-mix(in srgb, var(--border) 73%, transparent);
+      --font-display: "Lora", Georgia, "Times New Roman", serif;
+      --font-reading: "Lora", Georgia, "Times New Roman", serif;
+      --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --page: #101511;
+      --surface: #171e19;
+      --surface-muted: #1d2720;
+      --ink: #e9efeb;
+      --muted: #a7b5aa;
+      --border: #344138;
+      --border-strong: #617168;
+      --accent: #7cdaad;
+      --accent-soft: #1a3c2f;
+      --accent-border: #3f8067;
+      --accent-ink: #9ee7c4;
+      --gap: #b6a9ff;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    html,
+    body {
+      min-width: 320px;
+      margin: 0;
+      overflow-x: hidden;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    body {
+      padding: clamp(8px, 2vw, 20px);
+      font-family: var(--font-reading);
+      font-size: 16px;
+      line-height: 1.58;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input { font: inherit; }
+
+    button { cursor: pointer; }
+
+    .viz {
+      width: min(1060px, 100%);
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+    }
+
+    .header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      padding: clamp(20px, 3.4vw, 34px);
+      border-bottom: 1px solid var(--border);
+      background:
+        radial-gradient(circle at 95% 0%, color-mix(in srgb, var(--accent-soft) 72%, transparent), transparent 34%),
+        var(--surface);
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--accent-ink);
+      font: 750 0.68rem/1 var(--font-ui);
+      letter-spacing: 0.095em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(1.48rem, 3.2vw, 2.22rem);
+      font-weight: 550;
+      letter-spacing: -0.035em;
+      line-height: 1.16;
+    }
+
+    .intro {
+      max-width: 760px;
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.62;
+    }
+
+    .mode-switch {
+      display: inline-grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 4px;
+      min-width: 300px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-muted);
+      font-family: var(--font-ui);
+    }
+
+    .mode-switch button {
+      min-height: 37px;
+      padding: 7px 11px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 750;
+    }
+
+    .mode-switch button[aria-pressed="true"] {
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--ink) 7%, transparent);
+    }
+
+    .construction {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 126px minmax(0, 1fr);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .construction-card {
+      min-width: 0;
+      padding: 15px clamp(16px, 2.7vw, 26px) 16px;
+    }
+
+    .construction-label {
+      display: block;
+      color: var(--muted);
+      font: 750 0.65rem/1.3 var(--font-ui);
+      letter-spacing: 0.075em;
+      text-transform: uppercase;
+    }
+
+    .equation {
+      min-height: 2.65rem;
+      margin: 4px 0 3px;
+      font-size: clamp(1.02rem, 2vw, 1.24rem);
+      line-height: 1.25;
+    }
+
+    .construction-note {
+      display: block;
+      color: var(--muted);
+      font: 0.74rem/1.48 var(--font-ui);
+    }
+
+    .construction-bridge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      border-right: 1px solid var(--border);
+      border-left: 1px solid var(--border);
+      background: var(--surface-muted);
+      color: var(--accent-ink);
+      font: 750 0.69rem/1.42 var(--font-ui);
+      text-align: center;
+    }
+
+    .stage { padding: clamp(15px, 3vw, 28px); }
+
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto;
+      gap: 10px;
+      margin-bottom: 13px;
+      font-family: var(--font-ui);
+    }
+
+    .control {
+      min-width: 0;
+      padding: 9px 12px 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+
+    .control-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .control label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 750;
+    }
+
+    .control output {
+      color: var(--accent-ink);
+      font: 750 0.72rem/1 var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      display: block;
+      width: 100%;
+      height: 20px;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    .action {
+      min-width: 142px;
+      padding: 0 14px;
+      border: 1px solid var(--accent-border);
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      font: 750 0.72rem/1.35 var(--font-ui);
+    }
+
+    .corner-presets {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 5px;
+      margin-top: 5px;
+    }
+
+    .corner-presets button {
+      min-height: 26px;
+      padding: 3px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-muted);
+      color: var(--muted);
+      font: 650 0.62rem/1 var(--font-mono);
+    }
+
+    figure { margin: 0; }
+
+    .plot-shell {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 12px 12px 0 0;
+      background: var(--surface-muted);
+    }
+
+    /* Scope the responsive SVG rule to the graph only.
+       MathJax also renders formulas as SVG; a global `svg` selector would
+       stretch every equation to the full card width. */
+    #plot {
+      display: block;
+      width: 100%;
+      height: auto;
+      touch-action: none;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px 17px;
+      padding: 10px 13px;
+      border: 1px solid var(--border);
+      border-top: 0;
+      border-radius: 0 0 12px 12px;
+      color: var(--muted);
+      font: 650 0.69rem/1.35 var(--font-ui);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      display: inline-block;
+      width: 24px;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--ink);
+    }
+
+    .swatch.raw {
+      height: 2px;
+      background: repeating-linear-gradient(90deg, var(--muted) 0 7px, transparent 7px 12px);
+    }
+
+    .swatch.support { background: var(--accent); }
+
+    .swatch.gap {
+      height: 2px;
+      background: repeating-linear-gradient(90deg, var(--gap) 0 5px, transparent 5px 9px);
+    }
+
+    .swatch.family {
+      height: 11px;
+      border: 1px solid var(--accent-border);
+      border-radius: 2px;
+      background: var(--accent-soft);
+    }
+
+    .result {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 13px;
+      align-items: center;
+      margin-top: 13px;
+      padding: 13px 15px;
+      border-left: 4px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      background: var(--accent-soft);
+    }
+
+    .result[data-kind="outside"] {
+      border-left-color: var(--gap);
+      background: var(--gap-soft);
+    }
+
+    .result-label {
+      color: var(--accent-ink);
+      font: 750 0.67rem/1.25 var(--font-ui);
+      letter-spacing: 0.065em;
+      text-transform: uppercase;
+    }
+
+    .result[data-kind="outside"] .result-label,
+    .result[data-kind="outside"] .result-status { color: var(--gap); }
+
+    .result-equation {
+      min-width: 0;
+      font-size: clamp(0.92rem, 1.8vw, 1.08rem);
+      line-height: 1.48;
+    }
+
+    .result-status {
+      max-width: 225px;
+      color: var(--accent-ink);
+      font: 700 0.69rem/1.42 var(--font-ui);
+      text-align: right;
+    }
+
+    mjx-container { color: inherit; }
+    mjx-container[jax="SVG"] { line-height: 1; }
+
+    .equation mjx-container[display="true"] {
+      margin: 0.05rem 0 0.15rem !important;
+      text-align: left !important;
+    }
+
+    .mode-switch mjx-container,
+    .intro mjx-container,
+    .construction-label mjx-container,
+    .construction-note mjx-container,
+    .control mjx-container,
+    .legend mjx-container,
+    .result mjx-container {
+      margin: 0 0.03em !important;
+    }
+
+    @media (max-width: 780px) {
+      .header {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+
+      .mode-switch {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .construction { grid-template-columns: 1fr; }
+
+      .construction-bridge {
+        min-height: 38px;
+        border: 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .controls { grid-template-columns: 1fr 1fr; }
+
+      .action {
+        min-height: 40px;
+        grid-column: 1 / -1;
+      }
+
+      .result {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .result-status {
+        max-width: none;
+        text-align: left;
+      }
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 0; }
+
+      .viz {
+        border-right: 0;
+        border-left: 0;
+        border-radius: 0;
+      }
+
+      .header { padding: 19px 15px; }
+      .stage { padding: 12px; }
+      .controls { grid-template-columns: 1fr; }
+      .action { grid-column: auto; }
+      .legend { gap: 7px 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="viz" aria-labelledby="viz-title">
+    <header class="header">
+      <div>
+        <p class="eyebrow">Fenchel–Young equality</p>
+        <h1 id="viz-title">The conjugate is the downward shift that creates the supporting line</h1>
+        <p class="intro" id="intro">
+          Fix a slope \(y\). Start with the line \(t\mapsto yt\). The conjugate gives exactly the amount that must be subtracted from that line so it lies below \(f\) and touches it.
+        </p>
+      </div>
+
+      <div class="mode-switch" role="group" aria-label="Choose a convex function">
+        <button id="smooth-mode" type="button" aria-pressed="true">smooth · \(f(t)=\tfrac12t^2\)</button>
+        <button id="corner-mode" type="button" aria-pressed="false">corner · \(f(t)=|t|\)</button>
+      </div>
+    </header>
+
+    <section id="smooth-construction" class="construction" aria-label="How the conjugate produces a supporting line">
+      <div class="construction-card">
+        <span class="construction-label">measure the largest excess of \(yt\) above \(f\)</span>
+        <div class="equation">
+          \[
+            f^{*}(y)=\sup_{u\in\mathbb{R}}\bigl(yu-f(u)\bigr)
+          \]
+        </div>
+        <span class="construction-note">
+          At the maximizing point \(t^{*}\), this is the vertical distance from \(f(t^{*})\) up to \(yt^{*}\).
+        </span>
+      </div>
+
+      <div class="construction-bridge">
+        subtract this same number from the whole line
+      </div>
+
+      <div class="construction-card">
+        <span class="construction-label">the shifted line is the highest one that stays below \(f\)</span>
+        <div class="equation">
+          \[
+            \ell_y(t)=yt-f^{*}(y)\leq f(t)
+          \]
+        </div>
+        <span class="construction-note">
+          The shift makes \(\ell_y(t^{*})=f(t^{*})\); raising the line any further would make it cross the graph.
+        </span>
+      </div>
+    </section>
+
+    <section id="corner-construction" class="construction" aria-label="Supporting slopes at a corner" hidden>
+      <div class="construction-card">
+        <span class="construction-label">conjugate of the absolute-value function</span>
+        <div class="equation">
+          \[
+            f^{*}(y)=
+            \begin{cases}
+              0, & |y|\leq 1,\\
+              +\infty, & |y|>1.
+            \end{cases}
+          \]
+        </div>
+        <span class="construction-note">
+          For every \(y\in[-1,1]\), the line \(yt\) already passes through the corner and stays below \(|t|\).
+        </span>
+      </div>
+
+      <div class="construction-bridge">
+        finite exactly for the slopes that support the corner
+      </div>
+
+      <div class="construction-card">
+        <span class="construction-label">the derivative is replaced by an interval</span>
+        <div class="equation">
+          \[
+            \partial f(0)=[-1,1]
+          \]
+        </div>
+        <span class="construction-note">
+          Every slope in this interval gives equality in Fenchel–Young at \(x=0\).
+        </span>
+      </div>
+    </section>
+
+    <section class="stage">
+      <div class="controls">
+        <div class="control" id="x-control">
+          <div class="control-head">
+            <label for="x-slider">chosen point \(x\)</label>
+            <output id="x-value" for="x-slider">−1.10</output>
+          </div>
+          <input id="x-slider" type="range" min="-1.5" max="1.5" step="0.05" value="-1.10">
+        </div>
+
+        <div class="control">
+          <div class="control-head">
+            <label for="y-slider">chosen slope \(y\)</label>
+            <output id="y-value" for="y-slider">0.55</output>
+          </div>
+          <input id="y-slider" type="range" min="-1.5" max="1.5" step="0.05" value="0.55">
+          <div class="corner-presets" id="corner-presets" hidden>
+            <button type="button" data-y="-1">−1</button>
+            <button type="button" data-y="-0.5">−0.5</button>
+            <button type="button" data-y="0">0</button>
+            <button type="button" data-y="1">1</button>
+          </div>
+        </div>
+
+        <button class="action" id="equality-button" type="button">Set \(y=f'(x)\)</button>
+      </div>
+
+      <figure>
+        <div class="plot-shell">
+          <svg id="plot" viewBox="0 0 920 510" role="img" aria-labelledby="plot-title plot-description" preserveAspectRatio="xMidYMid meet">
+            <title id="plot-title">The conjugate shift and the Fenchel–Young gap</title>
+            <desc id="plot-description">The convex function, the unshifted line yt, the supporting line yt minus f star of y, the conjugate shift at the touching point, and the remaining gap at x.</desc>
+
+            <defs>
+              <clipPath id="plot-clip">
+                <rect id="plot-clip-rect" x="70" y="26" width="808" height="414" rx="7"></rect>
+              </clipPath>
+
+              <marker id="accent-start" markerWidth="7" markerHeight="7" refX="2.2" refY="3.5" orient="auto">
+                <path d="M7 0 L0 3.5 L7 7" fill="var(--accent)"></path>
+              </marker>
+              <marker id="accent-end" markerWidth="7" markerHeight="7" refX="4.8" refY="3.5" orient="auto">
+                <path d="M0 0 L7 3.5 L0 7" fill="var(--accent)"></path>
+              </marker>
+              <marker id="gap-start" markerWidth="7" markerHeight="7" refX="2.2" refY="3.5" orient="auto">
+                <path d="M7 0 L0 3.5 L7 7" fill="var(--gap)"></path>
+              </marker>
+              <marker id="gap-end" markerWidth="7" markerHeight="7" refX="4.8" refY="3.5" orient="auto">
+                <path d="M0 0 L7 3.5 L0 7" fill="var(--gap)"></path>
+              </marker>
+            </defs>
+
+            <rect id="plot-background" x="70" y="26" width="808" height="414" rx="7" fill="var(--surface)"></rect>
+            <g id="grid-layer" clip-path="url(#plot-clip)"></g>
+            <g id="family-layer" clip-path="url(#plot-clip)"></g>
+
+            <g id="shape-layer" clip-path="url(#plot-clip)">
+              <path id="raw-line" fill="none" stroke="var(--muted)" stroke-width="2.1" stroke-dasharray="8 7"></path>
+              <path id="function-path" fill="none" stroke="var(--ink)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path id="support-line" fill="none" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"></path>
+
+              <line id="touch-guide" stroke="var(--border-strong)" stroke-width="1.1" stroke-dasharray="4 6"></line>
+              <line id="x-guide" stroke="var(--border-strong)" stroke-width="1.1" stroke-dasharray="4 6"></line>
+
+              <line id="shift-arrow" stroke="var(--accent)" stroke-width="2.35" marker-start="url(#accent-start)" marker-end="url(#accent-end)"></line>
+              <line id="gap-arrow" stroke="var(--gap)" stroke-width="2.35" stroke-dasharray="4 4" marker-start="url(#gap-start)" marker-end="url(#gap-end)"></line>
+
+              <circle id="raw-point" r="4.4" fill="var(--surface)" stroke="var(--muted)" stroke-width="2"></circle>
+              <circle id="touch-point" r="6.1" fill="var(--accent)" stroke="var(--surface)" stroke-width="2.7"></circle>
+              <circle id="x-point" r="6.1" fill="var(--gap)" stroke="var(--surface)" stroke-width="2.7"></circle>
+              <circle id="support-at-x" r="4.3" fill="var(--surface)" stroke="var(--gap)" stroke-width="2.2"></circle>
+            </g>
+
+            <g id="axis-layer"></g>
+            <g id="annotation-layer" aria-hidden="true"></g>
+          </svg>
+        </div>
+
+        <div class="legend">
+          <span class="legend-item"><span class="swatch"></span><span>convex function \(f\)</span></span>
+          <span class="legend-item" id="raw-legend"><span class="swatch raw"></span><span>unshifted line \(yt\)</span></span>
+          <span class="legend-item"><span class="swatch support"></span><span id="support-legend">supporting line \(\ell_y(t)=yt-f^{*}(y)\)</span></span>
+          <span class="legend-item" id="gap-legend"><span class="swatch gap"></span><span>Fenchel–Young gap at \(x\)</span></span>
+          <span class="legend-item" id="family-legend" hidden><span class="swatch family"></span><span>all slopes in \(\partial f(0)\)</span></span>
+        </div>
+      </figure>
+
+      <div class="result" id="result" data-kind="outside">
+        <span class="result-label" id="result-label">At the chosen x</span>
+        <div class="result-equation" id="result-equation"></div>
+        <div class="result-status" id="result-status"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var state = { mode: 'smooth', x: -1.10, y: 0.55 };
+      var compactPlot = null;
+      var plotBox = { left: 70, top: 26, width: 808, height: 414 };
+      var domain = { xMin: -2.35, xMax: 2.35, yMin: -3.6, yMax: 3.2 };
+
+      var smoothMode = document.getElementById('smooth-mode');
+      var cornerMode = document.getElementById('corner-mode');
+      var smoothConstruction = document.getElementById('smooth-construction');
+      var cornerConstruction = document.getElementById('corner-construction');
+      var intro = document.getElementById('intro');
+      var vizTitle = document.getElementById('viz-title');
+
+      var xControl = document.getElementById('x-control');
+      var xSlider = document.getElementById('x-slider');
+      var ySlider = document.getElementById('y-slider');
+      var xValue = document.getElementById('x-value');
+      var yValue = document.getElementById('y-value');
+      var equalityButton = document.getElementById('equality-button');
+      var cornerPresets = document.getElementById('corner-presets');
+
+      var plot = document.getElementById('plot');
+      var plotClipRect = document.getElementById('plot-clip-rect');
+      var plotBackground = document.getElementById('plot-background');
+      var gridLayer = document.getElementById('grid-layer');
+      var axisLayer = document.getElementById('axis-layer');
+      var familyLayer = document.getElementById('family-layer');
+      var annotationLayer = document.getElementById('annotation-layer');
+
+      var rawLine = document.getElementById('raw-line');
+      var functionPath = document.getElementById('function-path');
+      var supportLine = document.getElementById('support-line');
+      var touchGuide = document.getElementById('touch-guide');
+      var xGuide = document.getElementById('x-guide');
+      var shiftArrow = document.getElementById('shift-arrow');
+      var gapArrow = document.getElementById('gap-arrow');
+      var rawPoint = document.getElementById('raw-point');
+      var touchPoint = document.getElementById('touch-point');
+      var xPoint = document.getElementById('x-point');
+      var supportAtX = document.getElementById('support-at-x');
+
+      var plotTitle = document.getElementById('plot-title');
+      var plotDescription = document.getElementById('plot-description');
+      var rawLegend = document.getElementById('raw-legend');
+      var supportLegend = document.getElementById('support-legend');
+      var gapLegend = document.getElementById('gap-legend');
+      var familyLegend = document.getElementById('family-legend');
+
+      var result = document.getElementById('result');
+      var resultLabel = document.getElementById('result-label');
+      var resultEquation = document.getElementById('result-equation');
+      var resultStatus = document.getElementById('result-status');
+
+      function fmt(value, digits) {
+        var text = Number(value).toFixed(digits == null ? 2 : digits);
+        if (text === '-0.00' || text === '-0.000') text = text.slice(1);
+        return text.replace('-', '−');
+      }
+
+      function texNumber(value, digits) {
+        var text = Number(value).toFixed(digits == null ? 2 : digits);
+        if (text === '-0.00' || text === '-0.000') text = text.slice(1);
+        return text;
+      }
+
+      var mathQueue = Promise.resolve();
+
+      function typesetMath(nodes) {
+        if (!window.MathJax || !window.MathJax.typesetPromise) return;
+
+        mathQueue = mathQueue.then(function () {
+          if (window.MathJax.typesetClear) window.MathJax.typesetClear(nodes);
+          return window.MathJax.typesetPromise(nodes);
+        }).then(requestResize).catch(function () {});
+      }
+
+      function configurePlot() {
+        var nextCompact = window.innerWidth <= 560;
+        if (nextCompact === compactPlot) return;
+        compactPlot = nextCompact;
+
+        if (compactPlot) {
+          plotBox = { left: 44, top: 22, width: 392, height: 334 };
+          plot.setAttribute('viewBox', '0 0 460 420');
+        } else {
+          plotBox = { left: 70, top: 26, width: 808, height: 414 };
+          plot.setAttribute('viewBox', '0 0 920 510');
+        }
+
+        [plotClipRect, plotBackground].forEach(function (node) {
+          node.setAttribute('x', plotBox.left);
+          node.setAttribute('y', plotBox.top);
+          node.setAttribute('width', plotBox.width);
+          node.setAttribute('height', plotBox.height);
+        });
+      }
+
+      function sx(x) {
+        return plotBox.left + (x - domain.xMin) / (domain.xMax - domain.xMin) * plotBox.width;
+      }
+
+      function sy(y) {
+        return plotBox.top + plotBox.height - (y - domain.yMin) / (domain.yMax - domain.yMin) * plotBox.height;
+      }
+
+      function svgNode(name, attrs, text) {
+        var node = document.createElementNS('http://www.w3.org/2000/svg', name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        if (text != null) node.textContent = text;
+        return node;
+      }
+
+      function clear(node) {
+        while (node.firstChild) node.removeChild(node.firstChild);
+      }
+
+      function pathFor(fn, steps) {
+        var pathData = '';
+        for (var index = 0; index <= steps; index += 1) {
+          var x = domain.xMin + (domain.xMax - domain.xMin) * index / steps;
+          pathData += (index ? ' L ' : 'M ') + sx(x).toFixed(2) + ' ' + sy(fn(x)).toFixed(2);
+        }
+        return pathData;
+      }
+
+      function setLine(node, x1, y1, x2, y2) {
+        node.setAttribute('x1', sx(x1));
+        node.setAttribute('y1', sy(y1));
+        node.setAttribute('x2', sx(x2));
+        node.setAttribute('y2', sy(y2));
+      }
+
+      function setCircle(node, x, y) {
+        node.setAttribute('cx', sx(x));
+        node.setAttribute('cy', sy(y));
+      }
+
+      function addLabel(x, y, text, options) {
+        options = options || {};
+        var label = svgNode('text', {
+          x: x,
+          y: y,
+          fill: options.fill || 'var(--ink)',
+          'text-anchor': options.anchor || 'start',
+          'font-family': options.sans ? 'Inter, sans-serif' : 'Lora, Georgia, serif',
+          'font-size': options.size || 13,
+          'font-style': options.italic === false ? 'normal' : 'italic',
+          'font-weight': options.weight || 600,
+          'paint-order': 'stroke',
+          stroke: 'var(--surface)',
+          'stroke-width': options.halo || 5,
+          'stroke-linejoin': 'round'
+        }, text);
+        annotationLayer.appendChild(label);
+        return label;
+      }
+
+      function buildAxes() {
+        clear(gridLayer);
+        clear(axisLayer);
+
+        var xTicks = [-2, -1, 0, 1, 2];
+        var yTicks = state.mode === 'smooth' ? [-3, -2, -1, 0, 1, 2, 3] : [-2, -1, 0, 1, 2];
+
+        xTicks.forEach(function (value) {
+          var pixelX = sx(value);
+          gridLayer.appendChild(svgNode('line', {
+            x1: pixelX,
+            x2: pixelX,
+            y1: plotBox.top,
+            y2: plotBox.top + plotBox.height,
+            stroke: value === 0 ? 'var(--border-strong)' : 'var(--grid)',
+            'stroke-width': value === 0 ? 1.3 : 1
+          }));
+          axisLayer.appendChild(svgNode('text', {
+            x: pixelX,
+            y: plotBox.top + plotBox.height + 23,
+            fill: 'var(--muted)',
+            'text-anchor': 'middle',
+            'font-family': 'Roboto Mono, monospace',
+            'font-size': 10.5
+          }, String(value).replace('-', '−')));
+        });
+
+        yTicks.forEach(function (value) {
+          var pixelY = sy(value);
+          gridLayer.appendChild(svgNode('line', {
+            x1: plotBox.left,
+            x2: plotBox.left + plotBox.width,
+            y1: pixelY,
+            y2: pixelY,
+            stroke: value === 0 ? 'var(--border-strong)' : 'var(--grid)',
+            'stroke-width': value === 0 ? 1.3 : 1
+          }));
+          axisLayer.appendChild(svgNode('text', {
+            x: plotBox.left - 10,
+            y: pixelY + 3.5,
+            fill: 'var(--muted)',
+            'text-anchor': 'end',
+            'font-family': 'Roboto Mono, monospace',
+            'font-size': 10.5
+          }, String(value).replace('-', '−')));
+        });
+
+        axisLayer.appendChild(svgNode('text', {
+          x: plotBox.left + plotBox.width,
+          y: plotBox.top + plotBox.height + 42,
+          fill: 'var(--ink)',
+          'text-anchor': 'end',
+          'font-family': 'Lora, Georgia, serif',
+          'font-size': 14,
+          'font-style': 'italic'
+        }, 't'));
+      }
+
+      function setVerticalArrow(node, graphX, graphY1, graphY2, offset) {
+        var pixelX = sx(graphX) + offset;
+        node.setAttribute('x1', pixelX);
+        node.setAttribute('x2', pixelX);
+        node.setAttribute('y1', sy(graphY1));
+        node.setAttribute('y2', sy(graphY2));
+      }
+
+      function updateSmooth() {
+        domain.yMin = -3.6;
+        domain.yMax = 3.2;
+        buildAxes();
+        clear(annotationLayer);
+        clear(familyLayer);
+
+        var x = state.x;
+        var y = state.y;
+        var f = function (t) { return 0.5 * t * t; };
+        var fStar = 0.5 * y * y;
+        var raw = function (t) { return y * t; };
+        var support = function (t) { return y * t - fStar; };
+        var touch = y;
+        var gap = f(x) - support(x);
+        var equal = Math.abs(x - touch) < 1e-9;
+        var shiftPixels = Math.abs(sy(raw(touch)) - sy(f(touch)));
+        var gapPixels = Math.abs(sy(support(x)) - sy(f(x)));
+        var tinyShift = shiftPixels < 13;
+        var tinyGap = gapPixels < 13;
+
+        functionPath.setAttribute('d', pathFor(f, 180));
+        rawLine.setAttribute('d', pathFor(raw, 2));
+        supportLine.setAttribute('d', pathFor(support, 2));
+        supportLine.setAttribute('stroke', 'var(--accent)');
+        supportLine.removeAttribute('stroke-dasharray');
+        rawLine.style.display = Math.abs(y) < 1e-9 ? 'none' : '';
+
+        setLine(touchGuide, touch, domain.yMin, touch, f(touch));
+        setLine(xGuide, x, domain.yMin, x, f(x));
+        touchGuide.style.display = '';
+        xGuide.style.display = equal ? 'none' : '';
+
+        setCircle(rawPoint, touch, raw(touch));
+        setCircle(touchPoint, touch, f(touch));
+        setCircle(xPoint, x, f(x));
+        setCircle(supportAtX, x, support(x));
+        rawPoint.style.display = Math.abs(y) < 1e-9 ? 'none' : '';
+        touchPoint.style.display = '';
+        xPoint.style.display = equal ? 'none' : '';
+        supportAtX.style.display = equal ? 'none' : '';
+
+        var shiftSide = x > touch ? -1 : 1;
+        var shiftOffset = 12 * shiftSide;
+        setVerticalArrow(shiftArrow, touch, f(touch), raw(touch), shiftOffset);
+        shiftArrow.style.display = tinyShift ? 'none' : '';
+
+        var gapSide = x >= touch ? 1 : -1;
+        var gapOffset = 12 * gapSide;
+        setVerticalArrow(gapArrow, x, support(x), f(x), gapOffset);
+        gapArrow.style.display = equal || tinyGap ? 'none' : '';
+
+        var functionLabelT = y >= 0 ? -1.92 : 1.92;
+        addLabel(sx(functionLabelT), sy(f(functionLabelT)) - 12, 'f(t)=½t²', {
+          fill: 'var(--ink)',
+          size: 14
+        });
+
+        var rawLabelT = y >= 0 ? 1.75 : -1.75;
+        if (Math.abs(y) >= 1e-9) {
+          addLabel(sx(rawLabelT), sy(raw(rawLabelT)) - 10, 'yt', {
+            fill: 'var(--muted)',
+            size: 13,
+            anchor: y >= 0 ? 'start' : 'end'
+          });
+        }
+
+        var supportLabelT = y >= 0 ? -1.82 : 1.82;
+        addLabel(sx(supportLabelT), sy(support(supportLabelT)) + (y >= 0 ? 18 : -10), 'ℓᵧ(t)=yt−f*(y)', {
+          fill: 'var(--accent-ink)',
+          size: 13,
+          anchor: y >= 0 ? 'start' : 'end'
+        });
+
+        if (!tinyShift) {
+          var shiftMid = (sy(raw(touch)) + sy(f(touch))) / 2;
+          addLabel(sx(touch) + shiftOffset + 8 * shiftSide, shiftMid + 4, 'f*(y)', {
+            fill: 'var(--accent-ink)',
+            size: 11.5,
+            anchor: shiftSide > 0 ? 'start' : 'end',
+            sans: true,
+            italic: false,
+            weight: 750
+          });
+        }
+
+        if (equal) {
+          addLabel(sx(touch) + (touch > 1 ? -10 : 10), sy(f(touch)) - 14, 'x=t*=y', {
+            fill: 'var(--accent-ink)',
+            size: 11.5,
+            anchor: touch > 1 ? 'end' : 'start',
+            sans: true,
+            italic: false,
+            weight: 750
+          });
+        } else {
+          addLabel(sx(touch) + (touch > 0.95 ? -10 : 10), sy(f(touch)) - 14, 't*=y', {
+            fill: 'var(--accent-ink)',
+            size: 11.5,
+            anchor: touch > 0.95 ? 'end' : 'start',
+            sans: true,
+            italic: false,
+            weight: 750
+          });
+
+          addLabel(sx(x) + (x > touch ? 10 : -10), sy(f(x)) - 12, 'x', {
+            fill: 'var(--gap)',
+            size: 12,
+            anchor: x > touch ? 'start' : 'end',
+            sans: true,
+            weight: 750
+          });
+
+          if (!tinyGap) {
+            var gapMid = (sy(f(x)) + sy(support(x))) / 2;
+            addLabel(sx(x) + gapOffset + 8 * gapSide, gapMid + 4, 'f(x)−ℓᵧ(x)', {
+              fill: 'var(--gap)',
+              size: 11.5,
+              anchor: gapSide > 0 ? 'start' : 'end',
+              sans: true,
+              italic: false,
+              weight: 750
+            });
+          }
+        }
+
+        xValue.value = fmt(x, 2);
+        yValue.value = fmt(y, 2);
+        rawLegend.hidden = false;
+        gapLegend.hidden = false;
+        familyLegend.hidden = true;
+        supportLegend.innerHTML = 'supporting line \\(\\ell_y(t)=yt-f^{*}(y)\\)';
+
+        result.dataset.kind = equal ? 'inside' : 'outside';
+        resultLabel.textContent = 'At the chosen x';
+        resultEquation.innerHTML = '\\( f(x)+f^{*}(y)-yx=f(x)-\\ell_y(x)=\\tfrac12(x-y)^2=\\mathbf{' + texNumber(gap, 3) + '} \\)';
+        resultStatus.innerHTML = equal
+          ? 'Equality holds because the chosen point is the touch point.'
+          : 'The line touches at \\(t^{*}=y\\), not at the chosen \\(x\\).';
+
+        typesetMath([supportLegend, resultEquation, resultStatus]);
+      }
+
+      function updateCorner() {
+        domain.yMin = -2.1;
+        domain.yMax = 2.9;
+        buildAxes();
+        clear(annotationLayer);
+        clear(familyLayer);
+
+        var y = state.y;
+        var valid = Math.abs(y) <= 1 + 1e-9;
+        var f = function (t) { return Math.abs(t); };
+        var selected = function (t) { return y * t; };
+        var slopes = [-1, -0.67, -0.33, 0, 0.33, 0.67, 1];
+
+        slopes.forEach(function (slope) {
+          familyLayer.appendChild(svgNode('path', {
+            d: pathFor(function (t) { return slope * t; }, 2),
+            fill: 'none',
+            stroke: 'color-mix(in srgb, var(--accent) 35%, var(--border-strong))',
+            'stroke-width': 1.35,
+            'stroke-linecap': 'round'
+          }));
+        });
+
+        functionPath.setAttribute('d', pathFor(f, 180));
+        rawLine.style.display = 'none';
+        supportLine.setAttribute('d', pathFor(selected, 2));
+        supportLine.setAttribute('stroke', valid ? 'var(--accent)' : 'var(--gap)');
+        if (valid) supportLine.removeAttribute('stroke-dasharray');
+        else supportLine.setAttribute('stroke-dasharray', '8 7');
+
+        touchGuide.style.display = 'none';
+        xGuide.style.display = 'none';
+        shiftArrow.style.display = 'none';
+        gapArrow.style.display = 'none';
+        rawPoint.style.display = 'none';
+        xPoint.style.display = 'none';
+        supportAtX.style.display = 'none';
+        setCircle(touchPoint, 0, 0);
+        touchPoint.style.display = '';
+
+        addLabel(sx(1.72), sy(f(1.72)) - 11, 'f(t)=|t|', {
+          fill: 'var(--ink)',
+          size: 14
+        });
+
+        addLabel(sx(-2.13), plotBox.top + 23, 'supporting slopes  ∂f(0)=[−1,1]', {
+          fill: 'var(--accent-ink)',
+          size: 11.5,
+          sans: true,
+          italic: false,
+          weight: 750
+        });
+
+        var labelMagnitude = valid ? 1.72 : 1.12;
+        var labelT = y >= 0 ? -labelMagnitude : labelMagnitude;
+        addLabel(sx(labelT), sy(selected(labelT)) + (y >= 0 ? -10 : 18), valid ? 'selected  ℓᵧ(t)=yt' : 'selected  yt', {
+          fill: valid ? 'var(--accent-ink)' : 'var(--gap)',
+          size: 13,
+          anchor: y >= 0 ? 'start' : 'end'
+        });
+
+        addLabel(sx(0) + 10, sy(0) - 13, 'corner at x=0', {
+          fill: 'var(--accent-ink)',
+          size: 11.5,
+          sans: true,
+          italic: false,
+          weight: 750
+        });
+
+        if (!valid) {
+          var sideT = y > 1 ? 1.42 : -1.42;
+          var curveY = f(sideT);
+          var lineY = selected(sideT);
+          var offset = y > 1 ? 12 : -12;
+          setVerticalArrow(gapArrow, sideT, curveY, lineY, offset);
+          gapArrow.style.display = '';
+          addLabel(sx(sideT) + offset + (y > 1 ? 8 : -8), (sy(curveY) + sy(lineY)) / 2 + 4, 'line rises above f', {
+            fill: 'var(--gap)',
+            size: 11,
+            anchor: y > 1 ? 'start' : 'end',
+            sans: true,
+            italic: false,
+            weight: 750
+          });
+        }
+
+        yValue.value = fmt(y, 2);
+        rawLegend.hidden = true;
+        gapLegend.hidden = true;
+        familyLegend.hidden = false;
+        supportLegend.textContent = valid ? 'selected supporting line' : 'selected non-supporting line';
+
+        result.dataset.kind = valid ? 'inside' : 'outside';
+        resultLabel.textContent = 'At the corner x=0';
+        resultEquation.innerHTML = valid
+          ? '\\( y\\in\\partial f(0)=[-1,1],\\qquad f(0)+f^{*}(y)=0=y\\cdot0. \\)'
+          : '\\( |y|>1,\\qquad f^{*}(y)=+\\infty. \\) No finite downward shift gives a global supporting line.';
+        resultStatus.textContent = valid
+          ? 'Fenchel–Young is an equality at the corner.'
+          : 'The chosen slope is outside the subdifferential.';
+
+        typesetMath([resultEquation]);
+      }
+
+      function update() {
+        configurePlot();
+        var smooth = state.mode === 'smooth';
+
+        smoothMode.setAttribute('aria-pressed', smooth ? 'true' : 'false');
+        cornerMode.setAttribute('aria-pressed', smooth ? 'false' : 'true');
+        smoothConstruction.hidden = !smooth;
+        cornerConstruction.hidden = smooth;
+        xControl.hidden = !smooth;
+        equalityButton.hidden = !smooth;
+        cornerPresets.hidden = smooth;
+
+        if (smooth) {
+          vizTitle.textContent = 'The conjugate is the downward shift that creates the supporting line';
+          intro.innerHTML = 'Fix a slope \\(y\\). Start with the line \\(t\\mapsto yt\\). The conjugate gives exactly the amount that must be subtracted from that line so it lies below \\(f\\) and touches it.';
+          ySlider.min = '-1.5';
+          ySlider.max = '1.5';
+          ySlider.step = '0.05';
+          xSlider.value = String(state.x);
+          ySlider.value = String(state.y);
+          plotTitle.textContent = 'The conjugate shift and the Fenchel–Young gap';
+          plotDescription.textContent = 'The convex function, the unshifted line yt, the supporting line yt minus f star of y, the conjugate shift at the touching point, and the remaining gap at x.';
+          updateSmooth();
+          typesetMath([intro, smoothConstruction]);
+        } else {
+          state.x = 0;
+          if (state.y < -1.5 || state.y > 1.5) state.y = 0;
+          vizTitle.textContent = 'At a corner, an interval of slopes supports the same point';
+          intro.innerHTML = 'For \\(f(t)=|t|\\), every slope \\(y\\in[-1,1]\\) gives a line through the corner that stays below the graph. That interval is the subdifferential.';
+          ySlider.min = '-1.5';
+          ySlider.max = '1.5';
+          ySlider.step = '0.05';
+          ySlider.value = String(state.y);
+          plotTitle.textContent = 'The interval of supporting slopes at the corner';
+          plotDescription.textContent = 'The graph of absolute value, the family of supporting lines with slopes from minus one to one, and one selected candidate slope.';
+          updateCorner();
+          typesetMath([intro, cornerConstruction]);
+        }
+
+        requestResize();
+      }
+
+      function setMode(mode) {
+        if (state.mode === mode) return;
+        state.mode = mode;
+        if (mode === 'smooth') {
+          state.x = -1.10;
+          state.y = 0.55;
+        } else {
+          state.x = 0;
+          state.y = 0;
+        }
+        update();
+      }
+
+      smoothMode.addEventListener('click', function () { setMode('smooth'); });
+      cornerMode.addEventListener('click', function () { setMode('corner'); });
+
+      xSlider.addEventListener('input', function () {
+        state.x = Number(xSlider.value);
+        updateSmooth();
+        requestResize();
+      });
+
+      ySlider.addEventListener('input', function () {
+        state.y = Number(ySlider.value);
+        if (state.mode === 'smooth') updateSmooth();
+        else updateCorner();
+        requestResize();
+      });
+
+      equalityButton.addEventListener('click', function () {
+        state.y = state.x;
+        ySlider.value = String(state.y);
+        updateSmooth();
+        requestResize();
+      });
+
+      Array.prototype.forEach.call(document.querySelectorAll('[data-y]'), function (button) {
+        button.addEventListener('click', function () {
+          state.y = Number(button.getAttribute('data-y'));
+          ySlider.value = String(state.y);
+          updateCorner();
+          requestResize();
+        });
+      });
+
+      function requestResize() {
+        window.requestAnimationFrame(function () {
+          var height = Math.ceil(Math.max(
+            document.documentElement.scrollHeight,
+            document.body.scrollHeight,
+            document.documentElement.offsetHeight,
+            document.body.offsetHeight
+          ));
+
+          try {
+            window.parent.postMessage({ height: height }, window.location.origin);
+          } catch (_error) {
+            window.parent.postMessage({ height: height }, '*');
+          }
+        });
+      }
+
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(requestResize).observe(document.body);
+      }
+
+      document.addEventListener('viz:math-ready', requestResize);
+      window.addEventListener('load', requestResize);
+      window.addEventListener('resize', function () {
+        compactPlot = null;
+        update();
+      });
+
+      update();
+    }());
+  </script>
+</body>
+</html>

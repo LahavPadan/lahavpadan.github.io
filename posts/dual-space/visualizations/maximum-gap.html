@@ -1,0 +1,2474 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Convex conjugate geometry</title>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
+      },
+      chtml: { scale: 0.94 },
+      options: {
+        skipHtmlTags: [
+          'script',
+          'noscript',
+          'style',
+          'textarea',
+          'pre',
+          'code'
+        ]
+      }
+    };
+  </script>
+  <script
+    defer
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
+  ></script>
+
+  <style>
+    :root {
+      color-scheme: light;
+
+      --page: #fbfbf8;
+      --surface: #ffffff;
+      --surface-2: #f4f5f1;
+      --ink: #1c2420;
+      --muted: #667169;
+      --border: #d6ddd7;
+      --border-strong: #a6b2a9;
+
+      --accent: #0d7659;
+      --accent-soft: #dcefe7;
+      --accent-ink: #075b45;
+
+      --purple: #6b58c9;
+      --purple-soft: #eeeafe;
+
+      --orange: #c77514;
+      --orange-soft: #fbecd9;
+
+      --red: #b84a4a;
+      --red-soft: #f8e2e2;
+
+      --grid:
+        color-mix(
+          in srgb,
+          var(--border) 72%,
+          transparent
+        );
+
+      --shadow:
+        0 14px 34px
+        color-mix(
+          in srgb,
+          var(--ink) 7%,
+          transparent
+        );
+
+      --radius: 16px;
+
+      --sans:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      --serif:
+        Georgia,
+        "Times New Roman",
+        serif;
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+
+      --page: #111613;
+      --surface: #171d19;
+      --surface-2: #202722;
+      --ink: #edf2ee;
+      --muted: #a9b5ad;
+      --border: #344039;
+      --border-strong: #5b6a61;
+
+      --accent: #58c49d;
+      --accent-soft: #19382d;
+      --accent-ink: #8ee0c0;
+
+      --purple: #aa9aff;
+      --purple-soft: #292443;
+
+      --orange: #e5a14a;
+      --orange-soft: #3b2c18;
+
+      --red: #e17a7a;
+      --red-soft: #3e2222;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+
+        --page: #111613;
+        --surface: #171d19;
+        --surface-2: #202722;
+        --ink: #edf2ee;
+        --muted: #a9b5ad;
+        --border: #344039;
+        --border-strong: #5b6a61;
+
+        --accent: #58c49d;
+        --accent-soft: #19382d;
+        --accent-ink: #8ee0c0;
+
+        --purple: #aa9aff;
+        --purple-soft: #292443;
+
+        --orange: #e5a14a;
+        --orange-soft: #3b2c18;
+
+        --red: #e17a7a;
+        --red-soft: #3e2222;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-width: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: var(--sans);
+    }
+
+    body {
+      padding: clamp(8px, 1.8vw, 20px);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .viz {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      overflow: hidden;
+
+      border: 1px solid var(--border);
+      border-radius: 20px;
+
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: end;
+
+      padding: 18px 20px 15px;
+
+      border-bottom: 1px solid var(--border);
+
+      background:
+        linear-gradient(
+          135deg,
+          color-mix(
+            in srgb,
+            var(--accent-soft) 58%,
+            transparent
+          ),
+          transparent 58%
+        ),
+        var(--surface);
+    }
+
+    .kicker {
+      margin: 0 0 5px;
+
+      color: var(--accent-ink);
+
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+
+      font-family: var(--serif);
+      font-size: clamp(1.35rem, 2.8vw, 2rem);
+      font-weight: 650;
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+    }
+
+    .top-note {
+      max-width: 370px;
+      margin: 0;
+
+      color: var(--muted);
+
+      font-size: 0.84rem;
+      line-height: 1.45;
+      text-align: right;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns:
+        auto
+        minmax(250px, 1fr)
+        auto;
+
+      gap: 14px;
+      align-items: center;
+
+      padding: 10px 14px;
+
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+
+    .mode {
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+
+      padding: 3px;
+
+      border: 1px solid var(--border);
+      border-radius: 10px;
+
+      background: var(--surface);
+    }
+
+    .mode button {
+      min-height: 32px;
+
+      border: 0;
+      border-radius: 7px;
+
+      background: transparent;
+      color: var(--muted);
+
+      padding: 5px 10px;
+
+      cursor: pointer;
+    }
+
+    .mode button[aria-pressed="true"] {
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      font-weight: 750;
+    }
+
+    .slope-control {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .slope-control label,
+    .var-note {
+      color: var(--muted);
+
+      font-size: 0.76rem;
+      font-weight: 760;
+
+      white-space: nowrap;
+    }
+
+    .slope-control label strong,
+    .var-note strong {
+      color: var(--ink);
+      font-weight: 780;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--purple);
+      cursor: pointer;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns:
+        minmax(0, 1.62fr)
+        minmax(285px, 0.78fr);
+
+      gap: 14px;
+      padding: 14px;
+    }
+
+    .plot-card,
+    .logic {
+      min-width: 0;
+
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+
+      background: var(--surface);
+    }
+
+    .plot-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+
+      padding: 12px 13px 9px;
+    }
+
+    .plot-head h2,
+    .logic h2 {
+      margin: 0;
+
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      line-height: 1.25;
+    }
+
+    .example {
+      color: var(--muted);
+
+      font-size: 0.78rem;
+      text-align: right;
+    }
+
+    .plot-wrap {
+      position: relative;
+
+      width: calc(100% - 20px);
+      min-height: 420px;
+
+      margin: 0 10px 10px;
+      overflow: hidden;
+
+      border: 1px solid var(--border);
+      border-radius: 12px;
+
+      background: var(--surface-2);
+    }
+
+    svg {
+      display: block;
+
+      width: 100%;
+      height: 100%;
+      min-height: 420px;
+    }
+
+    .grid {
+      stroke: var(--grid);
+      stroke-width: 1;
+    }
+
+    .axis {
+      stroke: var(--border-strong);
+      stroke-width: 1.25;
+    }
+
+    .tick {
+      fill: var(--muted);
+      font: 11px var(--sans);
+    }
+
+    .axis-label {
+      fill: var(--ink);
+      font: 600 13px var(--sans);
+    }
+
+    .curve-f {
+      fill: none;
+      stroke: var(--ink);
+      stroke-width: 3.1;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .curve-linear {
+      fill: none;
+      stroke: var(--purple);
+      stroke-width: 2.7;
+      stroke-linecap: round;
+    }
+
+    .curve-support {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .curve-higher {
+      fill: none;
+      stroke: var(--red);
+      stroke-width: 2;
+      stroke-dasharray: 7 6;
+      stroke-linecap: round;
+    }
+
+    .curve-candidate {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2.4;
+      stroke-dasharray: 8 6;
+      stroke-linecap: round;
+    }
+
+    .gap-fill {
+      fill:
+        color-mix(
+          in srgb,
+          var(--orange) 18%,
+          transparent
+        );
+    }
+
+    .violation {
+      fill:
+        color-mix(
+          in srgb,
+          var(--red) 17%,
+          transparent
+        );
+    }
+
+    .measure {
+      stroke: var(--orange);
+      stroke-width: 2;
+      stroke-dasharray: 5 4;
+    }
+
+    .measure.main {
+      stroke-dasharray: none;
+    }
+
+    .point-gap {
+      fill: var(--surface);
+      stroke: var(--orange);
+      stroke-width: 2.7;
+    }
+
+    .point-touch {
+      fill: var(--surface);
+      stroke: var(--accent);
+      stroke-width: 3;
+    }
+
+    .curve-label,
+    .graph-note {
+      position: absolute;
+      z-index: 3;
+
+      pointer-events: none;
+
+      border: 1px solid var(--border);
+
+      background:
+        color-mix(
+          in srgb,
+          var(--surface) 94%,
+          transparent
+        );
+
+      box-shadow:
+        0 2px 8px
+        color-mix(
+          in srgb,
+          var(--ink) 6%,
+          transparent
+        );
+    }
+
+    .curve-label {
+      border-radius: 7px;
+      padding: 3px 7px;
+
+      font-size: 0.78rem;
+      line-height: 1.2;
+
+      white-space: nowrap;
+
+      transform: translate(-50%, -50%);
+    }
+
+    .curve-label.f {
+      color: var(--ink);
+    }
+
+    .curve-label.linear {
+      color: var(--purple);
+    }
+
+    .curve-label.support {
+      color: var(--accent-ink);
+    }
+
+    .curve-label.higher {
+      color: var(--red);
+    }
+
+    .graph-note {
+      max-width: 190px;
+
+      border-radius: 9px;
+      padding: 7px 9px;
+
+      color: var(--muted);
+
+      font-size: 0.72rem;
+      line-height: 1.35;
+
+      transform: translate(-50%, -50%);
+    }
+
+    .graph-note strong {
+      display: block;
+      margin-bottom: 2px;
+
+      color: var(--ink);
+
+      font-size: 0.74rem;
+    }
+
+    .graph-note.gap {
+      border-color:
+        color-mix(
+          in srgb,
+          var(--orange) 32%,
+          var(--border)
+        );
+
+      background:
+        color-mix(
+          in srgb,
+          var(--orange-soft) 86%,
+          var(--surface)
+        );
+    }
+
+    .graph-note.shift {
+      border-color:
+        color-mix(
+          in srgb,
+          var(--accent) 32%,
+          var(--border)
+        );
+
+      background:
+        color-mix(
+          in srgb,
+          var(--accent-soft) 86%,
+          var(--surface)
+        );
+    }
+
+    .graph-note.fail {
+      border-color:
+        color-mix(
+          in srgb,
+          var(--red) 32%,
+          var(--border)
+        );
+
+      background:
+        color-mix(
+          in srgb,
+          var(--red-soft) 86%,
+          var(--surface)
+        );
+    }
+
+    .logic {
+      display: grid;
+      align-content: start;
+      padding: 13px;
+    }
+
+    .logic-head {
+      display: grid;
+      gap: 4px;
+
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logic-head p {
+      margin: 0;
+
+      color: var(--muted);
+
+      font-size: 0.8rem;
+      line-height: 1.42;
+    }
+
+    .steps {
+      display: grid;
+      margin-top: 3px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
+      gap: 9px;
+
+      padding: 10px 0;
+
+      border-bottom: 1px solid var(--border);
+    }
+
+    .step:last-child {
+      border-bottom: 0;
+    }
+
+    .n {
+      display: grid;
+      place-items: center;
+
+      width: 24px;
+      height: 24px;
+
+      border: 1px solid var(--border-strong);
+      border-radius: 50%;
+
+      color: var(--muted);
+
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .step-body {
+      min-width: 0;
+    }
+
+    .step-title {
+      margin: 0 0 4px;
+
+      color: var(--ink);
+
+      font-size: 0.78rem;
+      font-weight: 790;
+    }
+
+    .formula {
+      margin: 0;
+
+      color: var(--ink);
+
+      font-size: 0.86rem;
+      line-height: 1.42;
+
+      overflow-wrap: anywhere;
+    }
+
+    .meaning {
+      margin: 4px 0 0;
+
+      color: var(--muted);
+
+      font-size: 0.76rem;
+      line-height: 1.42;
+    }
+
+    .status {
+      margin-top: 5px;
+      padding: 9px 10px;
+
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+
+      background: var(--surface-2);
+      color: var(--muted);
+
+      font-size: 0.77rem;
+      line-height: 1.42;
+    }
+
+    .status strong {
+      color: var(--ink);
+    }
+
+    .status.infinite {
+      border-left-color: var(--red);
+    }
+
+    .equivalence {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 10px;
+
+      margin: 0 14px 14px;
+      padding: 9px 11px;
+
+      border: 1px solid var(--border);
+      border-radius: 11px;
+
+      background: var(--surface-2);
+      color: var(--muted);
+
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    .equivalence .arrow {
+      color: var(--accent-ink);
+      font-weight: 850;
+    }
+
+    mjx-container {
+      margin: 0 !important;
+    }
+
+    @media (max-width: 850px) {
+      .top {
+        grid-template-columns: 1fr;
+      }
+
+      .top-note {
+        max-width: none;
+        text-align: left;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .var-note {
+        justify-self: start;
+      }
+
+      .main {
+        grid-template-columns: 1fr;
+      }
+
+      .plot-wrap,
+      svg {
+        min-height: 390px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 6px;
+      }
+
+      .viz {
+        border-radius: 15px;
+      }
+
+      .top {
+        padding: 15px;
+      }
+
+      .toolbar {
+        padding: 9px;
+        gap: 9px;
+      }
+
+      .mode {
+        width: 100%;
+      }
+
+      .main {
+        padding: 9px;
+      }
+
+      .plot-head {
+        display: grid;
+      }
+
+      .example {
+        text-align: left;
+      }
+
+      .plot-wrap,
+      svg {
+        min-height: 350px;
+      }
+
+      .curve-label {
+        font-size: 0.72rem;
+      }
+
+      .graph-note {
+        max-width: 150px;
+        font-size: 0.68rem;
+      }
+
+      .equivalence {
+        margin: 0 9px 9px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="viz" aria-labelledby="viz-title">
+    <header class="top">
+      <div>
+        <p class="kicker">
+          Convex conjugate · geometric picture
+        </p>
+
+        <h1 id="viz-title">
+          The maximum gap is exactly the required vertical shift
+        </h1>
+      </div>
+
+      <p class="top-note">
+        Keep \(y\) fixed. Move through \(x\) along the horizontal
+        axis. The supremum is taken over those values of \(x\).
+      </p>
+    </header>
+
+    <section
+      class="toolbar"
+      aria-label="Visualization controls"
+    >
+      <div
+        class="mode"
+        role="group"
+        aria-label="Function example"
+      >
+        <button
+          type="button"
+          data-mode="quadratic"
+          aria-pressed="true"
+        >
+          \(f(x)=\tfrac12x^2\)
+        </button>
+
+        <button
+          type="button"
+          data-mode="absolute"
+          aria-pressed="false"
+        >
+          \(f(x)=|x|\)
+        </button>
+      </div>
+
+      <div class="slope-control">
+        <label for="slope">
+          <strong>fixed:</strong> \(y\)
+        </label>
+
+        <input
+          id="slope"
+          type="range"
+          min="-1.8"
+          max="1.8"
+          step="0.04"
+          value="1.08"
+          aria-label="Fixed slope y"
+        >
+      </div>
+
+      <div class="var-note">
+        <strong>varied:</strong>
+        \(x\) across the graph
+      </div>
+    </section>
+
+    <section class="main">
+      <article class="plot-card">
+        <div class="plot-head">
+          <h2>One plot, both readings</h2>
+
+          <div
+            id="example-text"
+            class="example"
+          >
+            \(x^*=y,\quad f^*(y)=\tfrac12y^2\)
+          </div>
+        </div>
+
+        <div
+          id="plot-wrap"
+          class="plot-wrap"
+        >
+          <svg
+            id="plot"
+            viewBox="0 0 760 450"
+            role="img"
+            aria-labelledby="svg-title svg-desc"
+          >
+            <title id="svg-title">
+              Convex conjugate as a maximum gap and a vertical shift
+            </title>
+
+            <desc id="svg-desc">
+              The graph of f, the linear expression inner product y x
+              with y fixed, the maximum vertical gap over x, the line
+              shifted downward by f star of y, and a slightly higher
+              line that fails to remain below f.
+            </desc>
+
+            <defs>
+              <clipPath id="clip">
+                <rect
+                  x="66"
+                  y="24"
+                  width="669"
+                  height="388"
+                  rx="8"
+                ></rect>
+              </clipPath>
+
+              <marker
+                id="arrow-orange"
+                markerWidth="8"
+                markerHeight="8"
+                refX="4"
+                refY="4"
+                orient="auto-start-reverse"
+              >
+                <path
+                  d="M0,0 L8,4 L0,8 Z"
+                  fill="var(--orange)"
+                ></path>
+              </marker>
+            </defs>
+
+            <g id="grid"></g>
+            <g id="axes"></g>
+
+            <g clip-path="url(#clip)">
+              <path
+                id="gap-fill"
+                class="gap-fill"
+              ></path>
+
+              <path
+                id="violation"
+                class="violation"
+              ></path>
+
+              <path
+                id="function"
+                class="curve-f"
+              ></path>
+
+              <path
+                id="linear"
+                class="curve-linear"
+              ></path>
+
+              <path
+                id="support"
+                class="curve-support"
+              ></path>
+
+              <path
+                id="higher"
+                class="curve-higher"
+              ></path>
+
+              <path
+                id="candidate"
+                class="curve-candidate"
+              ></path>
+
+              <line
+                id="gap-measure"
+                class="measure main"
+                marker-start="url(#arrow-orange)"
+                marker-end="url(#arrow-orange)"
+              ></line>
+
+              <line
+                id="shift-measure"
+                class="measure"
+                marker-start="url(#arrow-orange)"
+                marker-end="url(#arrow-orange)"
+              ></line>
+
+              <circle
+                id="gap-top"
+                class="point-gap"
+                r="4.8"
+              ></circle>
+
+              <circle
+                id="gap-bottom"
+                class="point-gap"
+                r="4.8"
+              ></circle>
+
+              <circle
+                id="touch"
+                class="point-touch"
+                r="5.3"
+              ></circle>
+            </g>
+          </svg>
+
+          <div
+            id="label-f"
+            class="curve-label f"
+          >
+            \(f(x)=\tfrac12x^2\)
+          </div>
+
+          <div
+            id="label-linear"
+            class="curve-label linear"
+          >
+            \(\langle y,x\rangle\)
+          </div>
+
+          <div
+            id="label-support"
+            class="curve-label support"
+          >
+            \(\langle y,x\rangle-f^*(y)\)
+          </div>
+
+          <div
+            id="label-higher"
+            class="curve-label higher"
+          >
+            \(\langle y,x\rangle-f^*(y)+\varepsilon\)
+          </div>
+
+          <div
+            id="note-gap"
+            class="graph-note gap"
+          >
+            <strong>
+              supremum over \(x\)
+            </strong>
+
+            largest value of
+            \(\langle y,x\rangle-f(x)\)
+          </div>
+
+          <div
+            id="note-shift"
+            class="graph-note shift"
+          >
+            <strong>
+              same vertical distance
+            </strong>
+
+            subtract \(f^*(y)\) from the line at every \(x\)
+          </div>
+
+          <div
+            id="note-fail"
+            class="graph-note fail"
+          >
+            <strong>
+              why the intercept is highest
+            </strong>
+
+            any upward change creates a point above \(f\)
+          </div>
+        </div>
+      </article>
+
+      <aside class="logic">
+        <div class="logic-head">
+          <h2>What the construction says</h2>
+
+          <p>
+            \(y\) is fixed throughout. Only \(x\) is traversed.
+          </p>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <span class="n">1</span>
+
+            <div class="step-body">
+              <p class="step-title">
+                At each \(x\), measure the excess
+              </p>
+
+              <p class="formula">
+                \[
+                g_y(x)=\langle y,x\rangle-f(x).
+                \]
+              </p>
+
+              <p class="meaning">
+                This varies because \(x\) varies; \(y\) does not.
+              </p>
+            </div>
+          </div>
+
+          <div class="step">
+            <span class="n">2</span>
+
+            <div class="step-body">
+              <p class="step-title">
+                Keep the largest excess
+              </p>
+
+              <p class="formula">
+                \[
+                f^*(y)=\sup_x g_y(x).
+                \]
+              </p>
+
+              <p class="meaning">
+                No point of the purple line exceeds \(f\) by more
+                than this amount.
+              </p>
+            </div>
+          </div>
+
+          <div class="step">
+            <span class="n">3</span>
+
+            <div class="step-body">
+              <p class="step-title">
+                Subtract that amount everywhere
+              </p>
+
+              <p class="formula">
+                \[
+                \langle y,x\rangle-f^*(y)
+                \le f(x)
+                \qquad\text{for every }x.
+                \]
+              </p>
+
+              <p class="meaning">
+                The green line therefore lies below \(f\) over the
+                entire graph.
+              </p>
+            </div>
+          </div>
+
+          <div class="step">
+            <span class="n">4</span>
+
+            <div class="step-body">
+              <p class="step-title">
+                Why this is the largest intercept
+              </p>
+
+              <p class="formula">
+                \[
+                c=-f^*(y).
+                \]
+              </p>
+
+              <p class="meaning">
+                If \(c\) were any larger, the red line would exceed
+                \(f\) where the supremum is attained.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="status"
+          class="status"
+        >
+          <strong>Finite case.</strong>
+          The supremum gives one finite downward shift, so a highest
+          finite intercept exists.
+        </div>
+      </aside>
+    </section>
+
+    <div class="equivalence">
+      <span>
+        \[
+        f^*(y)
+        =
+        \sup_x
+        \bigl(
+          \langle y,x\rangle-f(x)
+        \bigr)
+        \]
+      </span>
+
+      <span class="arrow">
+        \(\Longleftrightarrow\)
+      </span>
+
+      <span>
+        \[
+        -f^*(y)
+        =
+        \sup
+        \left\{
+          c:
+          \langle y,x\rangle+c
+          \le f(x)
+          \ \text{for every }x
+        \right\}
+        \]
+      </span>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var NS = 'http://www.w3.org/2000/svg';
+
+      var slope =
+        document.getElementById('slope');
+
+      var buttons =
+        Array.prototype.slice.call(
+          document.querySelectorAll('[data-mode]')
+        );
+
+      var state = {
+        mode: 'quadratic',
+        y: Number(slope.value)
+      };
+
+      var functionPath =
+        document.getElementById('function');
+
+      var linearPath =
+        document.getElementById('linear');
+
+      var supportPath =
+        document.getElementById('support');
+
+      var higherPath =
+        document.getElementById('higher');
+
+      var candidatePath =
+        document.getElementById('candidate');
+
+      var gapFill =
+        document.getElementById('gap-fill');
+
+      var violation =
+        document.getElementById('violation');
+
+      var gapMeasure =
+        document.getElementById('gap-measure');
+
+      var shiftMeasure =
+        document.getElementById('shift-measure');
+
+      var gapTop =
+        document.getElementById('gap-top');
+
+      var gapBottom =
+        document.getElementById('gap-bottom');
+
+      var touch =
+        document.getElementById('touch');
+
+      var status =
+        document.getElementById('status');
+
+      var exampleText =
+        document.getElementById('example-text');
+
+      var labelF =
+        document.getElementById('label-f');
+
+      var labelLinear =
+        document.getElementById('label-linear');
+
+      var labelSupport =
+        document.getElementById('label-support');
+
+      var labelHigher =
+        document.getElementById('label-higher');
+
+      var noteGap =
+        document.getElementById('note-gap');
+
+      var noteShift =
+        document.getElementById('note-shift');
+
+      var noteFail =
+        document.getElementById('note-fail');
+
+      var b = {
+        left: 66,
+        right: 735,
+        top: 24,
+        bottom: 412,
+        xMin: -3.2,
+        xMax: 3.2,
+        yMin: -2.4,
+        yMax: 5.2
+      };
+
+      function sx(x) {
+        return (
+          b.left +
+          (x - b.xMin) /
+          (b.xMax - b.xMin) *
+          (b.right - b.left)
+        );
+      }
+
+      function sy(y) {
+        return (
+          b.bottom -
+          (y - b.yMin) /
+          (b.yMax - b.yMin) *
+          (b.bottom - b.top)
+        );
+      }
+
+      function add(tag, attrs, parent) {
+        var el =
+          document.createElementNS(NS, tag);
+
+        Object.keys(attrs).forEach(function (key) {
+          el.setAttribute(key, attrs[key]);
+        });
+
+        parent.appendChild(el);
+        return el;
+      }
+
+      function path(fn, steps) {
+        var d = '';
+
+        for (var i = 0; i <= steps; i += 1) {
+          var x =
+            b.xMin +
+            (b.xMax - b.xMin) *
+            i /
+            steps;
+
+          d +=
+            (i ? 'L' : 'M') +
+            sx(x).toFixed(2) +
+            ' ' +
+            sy(fn(x)).toFixed(2) +
+            ' ';
+        }
+
+        return d.trim();
+      }
+
+      function line(fn) {
+        return (
+          'M ' +
+          sx(b.xMin) +
+          ' ' +
+          sy(fn(b.xMin)) +
+          ' L ' +
+          sx(b.xMax) +
+          ' ' +
+          sy(fn(b.xMax))
+        );
+      }
+
+      function buildAxes() {
+        var grid =
+          document.getElementById('grid');
+
+        var axes =
+          document.getElementById('axes');
+
+        grid.textContent = '';
+        axes.textContent = '';
+
+        [-3, -2, -1, 0, 1, 2, 3]
+          .forEach(function (x) {
+            add(
+              'line',
+              {
+                x1: sx(x),
+                y1: b.top,
+                x2: sx(x),
+                y2: b.bottom,
+                class: 'grid'
+              },
+              grid
+            );
+
+            if (x !== 0) {
+              var tx =
+                add(
+                  'text',
+                  {
+                    x: sx(x),
+                    y: b.bottom + 20,
+                    'text-anchor': 'middle',
+                    class: 'tick'
+                  },
+                  axes
+                );
+
+              tx.textContent =
+                String(x).replace('-', '−');
+            }
+          });
+
+        [-2, 0, 2, 4]
+          .forEach(function (y) {
+            add(
+              'line',
+              {
+                x1: b.left,
+                y1: sy(y),
+                x2: b.right,
+                y2: sy(y),
+                class: 'grid'
+              },
+              grid
+            );
+
+            if (y !== 0) {
+              var ty =
+                add(
+                  'text',
+                  {
+                    x: b.left - 11,
+                    y: sy(y) + 4,
+                    'text-anchor': 'end',
+                    class: 'tick'
+                  },
+                  axes
+                );
+
+              ty.textContent =
+                String(y).replace('-', '−');
+            }
+          });
+
+        add(
+          'line',
+          {
+            x1: b.left,
+            y1: sy(0),
+            x2: b.right,
+            y2: sy(0),
+            class: 'axis'
+          },
+          axes
+        );
+
+        add(
+          'line',
+          {
+            x1: sx(0),
+            y1: b.top,
+            x2: sx(0),
+            y2: b.bottom,
+            class: 'axis'
+          },
+          axes
+        );
+
+        var xLabel =
+          add(
+            'text',
+            {
+              x: b.right - 3,
+              y: sy(0) - 10,
+              'text-anchor': 'end',
+              class: 'axis-label'
+            },
+            axes
+          );
+
+        xLabel.textContent = 'x (varied)';
+
+        var yLabel =
+          add(
+            'text',
+            {
+              x: sx(0) + 10,
+              y: b.top + 17,
+              class: 'axis-label'
+            },
+            axes
+          );
+
+        yLabel.textContent = 'value';
+      }
+
+      function setPoint(
+        element,
+        x,
+        y,
+        show
+      ) {
+        element.setAttribute('cx', sx(x));
+        element.setAttribute('cy', sy(y));
+
+        element.style.display =
+          show === false
+            ? 'none'
+            : '';
+      }
+
+      function setLine(
+        element,
+        x,
+        y1,
+        y2,
+        show
+      ) {
+        element.setAttribute('x1', sx(x));
+        element.setAttribute('x2', sx(x));
+        element.setAttribute('y1', sy(y1));
+        element.setAttribute('y2', sy(y2));
+
+        element.style.display =
+          show === false
+            ? 'none'
+            : '';
+      }
+
+      function place(
+        element,
+        x,
+        y,
+        dx,
+        dy
+      ) {
+        element.style.left =
+          (
+            sx(x) /
+            760 *
+            100
+          ) +
+          '%';
+
+        element.style.top =
+          (
+            sy(y) /
+            450 *
+            100
+          ) +
+          '%';
+
+        element.style.marginLeft =
+          (dx || 0) +
+          'px';
+
+        element.style.marginTop =
+          (dy || 0) +
+          'px';
+
+        element.style.display = '';
+      }
+
+      function hide(element) {
+        element.style.display = 'none';
+      }
+
+      function setMath(element, tex) {
+        element.innerHTML =
+          '\\(' +
+          tex +
+          '\\)';
+
+        if (
+          window.MathJax &&
+          window.MathJax.typesetPromise
+        ) {
+          window.MathJax.typesetClear([element]);
+          window.MathJax.typesetPromise([element]);
+        }
+      }
+
+      function renderQuadratic(y) {
+        var f =
+          function (x) {
+            return 0.5 * x * x;
+          };
+
+        var linear =
+          function (x) {
+            return y * x;
+          };
+
+        var fStar =
+          0.5 * y * y;
+
+        var support =
+          function (x) {
+            return y * x - fStar;
+          };
+
+        var eps = 0.28;
+
+        var higher =
+          function (x) {
+            return (
+              y * x -
+              fStar +
+              eps
+            );
+          };
+
+        var xStar = y;
+
+        var shiftX =
+          y >= 0
+            ? -1.75
+            : 1.75;
+
+        functionPath.setAttribute(
+          'd',
+          path(f, 180)
+        );
+
+        linearPath.setAttribute(
+          'd',
+          line(linear)
+        );
+
+        supportPath.setAttribute(
+          'd',
+          line(support)
+        );
+
+        higherPath.setAttribute(
+          'd',
+          line(higher)
+        );
+
+        candidatePath.setAttribute(
+          'd',
+          ''
+        );
+
+        supportPath.style.display = '';
+        higherPath.style.display = '';
+        candidatePath.style.display = 'none';
+
+        var w = 0.10;
+
+        gapFill.setAttribute(
+          'd',
+          [
+            'M',
+            sx(xStar - w),
+            sy(f(xStar - w)),
+
+            'L',
+            sx(xStar - w),
+            sy(linear(xStar - w)),
+
+            'L',
+            sx(xStar + w),
+            sy(linear(xStar + w)),
+
+            'L',
+            sx(xStar + w),
+            sy(f(xStar + w)),
+
+            'Z'
+          ].join(' ')
+        );
+
+        var r =
+          Math.sqrt(2 * eps);
+
+        violation.setAttribute(
+          'd',
+          [
+            'M',
+            sx(xStar - r),
+            sy(f(xStar - r)),
+
+            'L',
+            sx(xStar - r),
+            sy(higher(xStar - r)),
+
+            'L',
+            sx(xStar),
+            sy(higher(xStar)),
+
+            'L',
+            sx(xStar + r),
+            sy(higher(xStar + r)),
+
+            'L',
+            sx(xStar + r),
+            sy(f(xStar + r)),
+
+            'L',
+            sx(xStar),
+            sy(f(xStar)),
+
+            'Z'
+          ].join(' ')
+        );
+
+        setLine(
+          gapMeasure,
+          xStar,
+          f(xStar),
+          linear(xStar),
+          true
+        );
+
+        setLine(
+          shiftMeasure,
+          shiftX,
+          linear(shiftX),
+          support(shiftX),
+          true
+        );
+
+        setPoint(
+          gapTop,
+          xStar,
+          linear(xStar),
+          true
+        );
+
+        setPoint(
+          gapBottom,
+          xStar,
+          f(xStar),
+          true
+        );
+
+        setPoint(
+          touch,
+          xStar,
+          f(xStar),
+          true
+        );
+
+        setMath(
+          labelF,
+          'f(x)=\\tfrac12x^2'
+        );
+
+        setMath(
+          labelLinear,
+          '\\langle y,x\\rangle'
+        );
+
+        setMath(
+          labelSupport,
+          '\\langle y,x\\rangle-f^*(y)'
+        );
+
+        setMath(
+          labelHigher,
+          '\\langle y,x\\rangle-f^*(y)+\\varepsilon'
+        );
+
+        place(
+          labelF,
+          -2.2,
+          f(-2.2),
+          0,
+          -20
+        );
+
+        place(
+          labelLinear,
+          y >= 0 ? 2.15 : -2.15,
+          linear(
+            y >= 0
+              ? 2.15
+              : -2.15
+          ),
+          0,
+          -18
+        );
+
+        place(
+          labelSupport,
+          y >= 0 ? 1.25 : -1.25,
+          support(
+            y >= 0
+              ? 1.25
+              : -1.25
+          ),
+          0,
+          21
+        );
+
+        place(
+          labelHigher,
+          xStar,
+          higher(xStar),
+          0,
+          -24
+        );
+
+        place(
+          noteGap,
+          xStar,
+          (
+            f(xStar) +
+            linear(xStar)
+          ) / 2,
+          y >= 0 ? -112 : 112,
+          -4
+        );
+
+        place(
+          noteShift,
+          shiftX,
+          (
+            linear(shiftX) +
+            support(shiftX)
+          ) / 2,
+          y >= 0 ? 108 : -108,
+          0
+        );
+
+        place(
+          noteFail,
+          xStar +
+          (
+            y >= 0
+              ? 0.65
+              : -0.65
+          ),
+          f(xStar) + 0.08,
+          y >= 0 ? 72 : -72,
+          48
+        );
+
+        noteGap.innerHTML =
+          '<strong>' +
+          'supremum over \\(x\\)' +
+          '</strong>' +
+          'largest value of ' +
+          '\\(\\langle y,x\\rangle-f(x)\\)';
+
+        noteShift.innerHTML =
+          '<strong>' +
+          'same vertical distance' +
+          '</strong>' +
+          'subtract \\(f^*(y)\\) ' +
+          'at every \\(x\\)';
+
+        noteFail.innerHTML =
+          '<strong>' +
+          'any larger intercept fails' +
+          '</strong>' +
+          'the red line rises above \\(f\\)';
+
+        if (
+          window.MathJax &&
+          window.MathJax.typesetPromise
+        ) {
+          window.MathJax.typesetPromise(
+            [
+              noteGap,
+              noteShift,
+              noteFail
+            ]
+          );
+        }
+
+        exampleText.innerHTML =
+          '\\(' +
+          'x^*=y,' +
+          '\\quad ' +
+          'f^*(y)=\\tfrac12y^2' +
+          '\\)';
+
+        status.className = 'status';
+
+        status.innerHTML =
+          '<strong>Finite case.</strong> ' +
+          'The supremum is the exact finite shift ' +
+          'needed to place the green line below ' +
+          '\\(f\\).';
+
+        if (
+          window.MathJax &&
+          window.MathJax.typesetPromise
+        ) {
+          window.MathJax.typesetPromise(
+            [
+              exampleText,
+              status
+            ]
+          );
+        }
+      }
+
+      function renderAbsolute(y) {
+        var f =
+          function (x) {
+            return Math.abs(x);
+          };
+
+        var linear =
+          function (x) {
+            return y * x;
+          };
+
+        var finite =
+          Math.abs(y) <=
+          1 +
+          1e-9;
+
+        functionPath.setAttribute(
+          'd',
+          path(f, 100)
+        );
+
+        linearPath.setAttribute(
+          'd',
+          line(linear)
+        );
+
+        gapFill.setAttribute(
+          'd',
+          ''
+        );
+
+        violation.setAttribute(
+          'd',
+          ''
+        );
+
+        setPoint(
+          gapTop,
+          0,
+          0,
+          false
+        );
+
+        setPoint(
+          gapBottom,
+          0,
+          0,
+          false
+        );
+
+        setLine(
+          gapMeasure,
+          0,
+          0,
+          0,
+          false
+        );
+
+        setMath(
+          labelF,
+          'f(x)=|x|'
+        );
+
+        setMath(
+          labelLinear,
+          '\\langle y,x\\rangle'
+        );
+
+        place(
+          labelF,
+          -2.15,
+          f(-2.15),
+          0,
+          -18
+        );
+
+        place(
+          labelLinear,
+          y >= 0 ? 2.15 : -2.15,
+          linear(
+            y >= 0
+              ? 2.15
+              : -2.15
+          ),
+          0,
+          -18
+        );
+
+        if (finite) {
+          supportPath.setAttribute(
+            'd',
+            line(linear)
+          );
+
+          higherPath.setAttribute(
+            'd',
+            line(
+              function (x) {
+                return y * x + 0.28;
+              }
+            )
+          );
+
+          candidatePath.style.display = 'none';
+          supportPath.style.display = '';
+          higherPath.style.display = '';
+
+          setPoint(
+            touch,
+            0,
+            0,
+            true
+          );
+
+          setLine(
+            shiftMeasure,
+            -1.65,
+            linear(-1.65),
+            linear(-1.65),
+            false
+          );
+
+          setMath(
+            labelSupport,
+            '\\langle y,x\\rangle'
+          );
+
+          setMath(
+            labelHigher,
+            '\\langle y,x\\rangle+\\varepsilon'
+          );
+
+          place(
+            labelSupport,
+            y >= 0 ? 1.15 : -1.15,
+            linear(
+              y >= 0
+                ? 1.15
+                : -1.15
+            ),
+            0,
+            21
+          );
+
+          place(
+            labelHigher,
+            0,
+            0.28,
+            0,
+            -25
+          );
+
+          hide(noteShift);
+
+          place(
+            noteGap,
+            0.65,
+            0.72,
+            y >= 0 ? 60 : -60,
+            -10
+          );
+
+          place(
+            noteFail,
+            0,
+            0,
+            90,
+            65
+          );
+
+          noteGap.innerHTML =
+            '<strong>' +
+            'supremum over \\(x\\)' +
+            '</strong>' +
+            'no positive excess, so ' +
+            '\\(f^*(y)=0\\)';
+
+          noteFail.innerHTML =
+            '<strong>' +
+            'any positive intercept fails' +
+            '</strong>' +
+            'raising the line violates the inequality ' +
+            'near \\(x=0\\)';
+
+          if (
+            window.MathJax &&
+            window.MathJax.typesetPromise
+          ) {
+            window.MathJax.typesetPromise(
+              [
+                noteGap,
+                noteFail
+              ]
+            );
+          }
+
+          exampleText.innerHTML =
+            '\\(' +
+            '|y|\\le1:' +
+            '\\quad ' +
+            'f^*(y)=0' +
+            '\\)';
+
+          status.className = 'status';
+
+          status.innerHTML =
+            '<strong>Zero-shift case.</strong> ' +
+            'The fixed \\(y\\) already satisfies ' +
+            '\\(\\langle y,x\\rangle\\le |x|\\) ' +
+            'for every \\(x\\).';
+        } else {
+          var d =
+            Math.max(
+              0.08,
+              (Math.abs(y) - 1) * 1.4
+            );
+
+          var candidate =
+            function (x) {
+              return y * x - d;
+            };
+
+          supportPath.style.display = 'none';
+          higherPath.style.display = 'none';
+          candidatePath.style.display = '';
+
+          candidatePath.setAttribute(
+            'd',
+            line(candidate)
+          );
+
+          setPoint(
+            touch,
+            0,
+            0,
+            false
+          );
+
+          setLine(
+            shiftMeasure,
+            -1.65,
+            linear(-1.65),
+            candidate(-1.65),
+            true
+          );
+
+          var dir =
+            y >= 0
+              ? 1
+              : -1;
+
+          var edge =
+            dir * 3.0;
+
+          var start =
+            dir *
+            Math.max(
+              0.2,
+              d /
+              (Math.abs(y) - 1)
+            );
+
+          start =
+            Math.max(
+              b.xMin,
+              Math.min(
+                b.xMax,
+                start
+              )
+            );
+
+          violation.setAttribute(
+            'd',
+            [
+              'M',
+              sx(start),
+              sy(f(start)),
+
+              'L',
+              sx(start),
+              sy(candidate(start)),
+
+              'L',
+              sx(edge),
+              sy(candidate(edge)),
+
+              'L',
+              sx(edge),
+              sy(f(edge)),
+
+              'Z'
+            ].join(' ')
+          );
+
+          setMath(
+            labelSupport,
+            '\\langle y,x\\rangle-d' +
+            '\\quad(d<\\infty)'
+          );
+
+          place(
+            labelSupport,
+            dir * 1.45,
+            candidate(dir * 1.45),
+            0,
+            22
+          );
+
+          hide(labelHigher);
+          hide(noteGap);
+
+          place(
+            noteShift,
+            -dir * 1.65,
+            (
+              linear(-dir * 1.65) +
+              candidate(-dir * 1.65)
+            ) / 2,
+            dir > 0 ? 95 : -95,
+            0
+          );
+
+          place(
+            noteFail,
+            dir * 2.35,
+            (
+              f(dir * 2.35) +
+              candidate(dir * 2.35)
+            ) / 2,
+            dir > 0 ? -70 : 70,
+            0
+          );
+
+          noteShift.innerHTML =
+            '<strong>' +
+            'choose any finite shift \\(d\\)' +
+            '</strong>' +
+            'the line moves down but keeps the same slope';
+
+          noteFail.innerHTML =
+            '<strong>' +
+            'the violation remains' +
+            '</strong>' +
+            'far enough out, ' +
+            '\\(\\langle y,x\\rangle-d>|x|\\)';
+
+          if (
+            window.MathJax &&
+            window.MathJax.typesetPromise
+          ) {
+            window.MathJax.typesetPromise(
+              [
+                noteShift,
+                noteFail
+              ]
+            );
+          }
+
+          exampleText.innerHTML =
+            '\\(' +
+            '|y|>1:' +
+            '\\quad ' +
+            'f^*(y)=+\\infty' +
+            '\\)';
+
+          status.className =
+            'status infinite';
+
+          status.innerHTML =
+            '<strong>Infinite case.</strong> ' +
+            'No finite \\(d\\) makes ' +
+            '\\(\\langle y,x\\rangle-d\\le |x|\\) ' +
+            'for every \\(x\\); hence the highest ' +
+            'intercept is \\(-\\infty\\).';
+        }
+
+        if (
+          window.MathJax &&
+          window.MathJax.typesetPromise
+        ) {
+          window.MathJax.typesetPromise(
+            [
+              exampleText,
+              status
+            ]
+          );
+        }
+      }
+
+      function render() {
+        state.y =
+          Number(slope.value);
+
+        if (state.mode === 'quadratic') {
+          renderQuadratic(state.y);
+        } else {
+          renderAbsolute(state.y);
+        }
+
+        reportHeight();
+      }
+
+      function setMode(mode) {
+        state.mode = mode;
+
+        buttons.forEach(function (button) {
+          button.setAttribute(
+            'aria-pressed',
+            button.dataset.mode === mode
+              ? 'true'
+              : 'false'
+          );
+        });
+
+        render();
+      }
+
+      function reportHeight() {
+        requestAnimationFrame(function () {
+          var height =
+            Math.ceil(
+              Math.max(
+                document.body.scrollHeight,
+                document.documentElement.scrollHeight
+              )
+            );
+
+          if (window.parent !== window) {
+            window.parent.postMessage(
+              {
+                type: 'lahav-visualization-height',
+                height: height
+              },
+              '*'
+            );
+          }
+        });
+      }
+
+      function syncTheme() {
+        try {
+          var root =
+            window.parent.document.documentElement;
+
+          var read =
+            function () {
+              var declared =
+                root.getAttribute('data-theme') ||
+                root.getAttribute('data-color-theme');
+
+              var darkClass =
+                root.classList.contains('dark') ||
+                window.parent.document.body
+                  .classList.contains('dark');
+
+              document.documentElement
+                .setAttribute(
+                  'data-theme',
+                  declared ||
+                  (
+                    darkClass
+                      ? 'dark'
+                      : 'light'
+                  )
+                );
+            };
+
+          read();
+
+          new MutationObserver(read)
+            .observe(
+              root,
+              {
+                attributes: true,
+                attributeFilter: [
+                  'class',
+                  'data-theme',
+                  'data-color-theme'
+                ]
+              }
+            );
+        } catch (error) {
+          /*
+            prefers-color-scheme remains
+            as the fallback.
+          */
+        }
+      }
+
+      window.addEventListener(
+        'message',
+        function (event) {
+          var data =
+            event.data || {};
+
+          var theme =
+            data.theme ||
+            data.value;
+
+          if (
+            (
+              data.type === 'theme-change' ||
+              data.type === 'lahav-theme'
+            ) &&
+            (
+              theme === 'light' ||
+              theme === 'dark'
+            )
+          ) {
+            document.documentElement
+              .setAttribute(
+                'data-theme',
+                theme
+              );
+          }
+        }
+      );
+
+      buildAxes();
+      syncTheme();
+
+      slope.addEventListener(
+        'input',
+        render
+      );
+
+      buttons.forEach(function (button) {
+        button.addEventListener(
+          'click',
+          function () {
+            setMode(
+              button.dataset.mode
+            );
+          }
+        );
+      });
+
+      window.addEventListener(
+        'load',
+        function () {
+          render();
+          reportHeight();
+        }
+      );
+
+      window.addEventListener(
+        'resize',
+        reportHeight
+      );
+
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(reportHeight)
+          .observe(
+            document.querySelector('.viz')
+          );
+      }
+
+      render();
+    }());
+  </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 ## § 0. Introduction {#sec-0}
 
-> **Visual-source note.** Every figure is stored locally in this post's `assets/` directory. Screenshots copied from source repositories are preserved directly; figures whose original hosts do not provide a stable downloadable asset are rendered locally from the cited source material so the post has no external image dependency.
+> **Visual-source note.** Every image embedded below is an actual screenshot published by the linked external source. Each screenshot is placed beside the command, registry location, filesystem path, or GUI concept that it illustrates; the original page is linked directly beneath it.
 
 <style>
 .etw-image-pair {
@@ -72,9 +72,9 @@ A Provider is code that has called `EtwEventRegister` (user mode) or `EtwRegiste
 - **Registry:** `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WINEVT\Publishers\{PROVIDER_GUID}`. Values include `MessageFileName` (message DLL) and `ResourceFileName` (resource DLL) — the physical files where the schema and format strings actually live.
 - **Memory:** `ETW_GUID_ENTRY` (non-paged pool) for the Provider itself; `ETW_REG_ENTRY` (non-paged pool) per emitter registration.
 
-![`logman query providers` output listing ETW provider names and GUIDs](assets/logman-providers.png)
+![`logman query providers` output listing ETW provider names and GUIDs](assets/01-logman-providers-trail-of-bits.png)
 
-*Source reference: [Trail of Bits — ETW internals for security research and forensics](https://blog.trailofbits.com/2023/11/22/etw-internals-for-security-research-and-forensics/); locally packaged provider-enumeration screenshot from the Ret2desync source repository.*
+*Source screenshot: [Trail of Bits — ETW internals for security research and forensics](https://blog.trailofbits.com/2023/11/22/etw-internals-for-security-research-and-forensics/).*
 
 
 ### Kernel vs user-mode Providers
@@ -116,7 +116,7 @@ A Session subscribes to one or more Providers, buffers their events per CPU, and
   - Session output `.etl`: `LogFileName` in the Session properties. AutoLogger's default is `%systemroot%\System32\LogFiles\WMI\<SessionName>.etl`, but the Controller can point it anywhere — Defender writes under `%ProgramData%\Microsoft\Windows Defender\`, for example.
   - Real-time shadow: `%systemroot%\System32\LogFiles\WMI\RtBackup\EtwRT<SessionName>.etl` for any Session opened in `EVENT_TRACE_REAL_TIME_MODE`.
 
-![`logman query -ets` output listing active ETW trace sessions](assets/logman-sessions.png)
+![`logman query -ets` output listing active ETW trace sessions](assets/02-logman-sessions-ret2desync.png)
 
 *Source screenshot: [Ret2desync — Using MSBuild to bypass PowerShell Constrained Language Mode, AMSI and Script Block Logging](https://ret2desync.github.io/using-msbuild-bypass-powershell-clm-amsi-scriptlogging/).*
 
@@ -150,9 +150,9 @@ Prominent examples:
 
 There is a system-wide cap on user-defined Sessions at `HKLM\System\CurrentControlSet\Control\WMI\EtwMaxLoggers`. In-process Sessions (below) do not count against it.
 
-![An ETW trace session and its registered providers shown in Performance Monitor](assets/session-providers.png)
+![An ETW trace session and its registered providers shown in Performance Monitor](assets/03-jpcert-performance-monitor.png)
 
-*Source reference: [JPCERT/CC — ETW Forensics: Why use Event Tracing for Windows over EventLog?](https://blogs.jpcert.or.jp/en/2024/11/etw_forensics.html); locally packaged named-session provider listing from the Ret2desync source repository.*
+*Source screenshot: [JPCERT/CC — ETW Forensics: Why use Event Tracing for Windows over EventLog?](https://blogs.jpcert.or.jp/en/2024/11/etw_forensics.html).*
 
 
 <div class="guided-fold-start" data-label="AutoLogger structure in detail"></div>
@@ -227,7 +227,7 @@ Prominent examples:
 - **EDR agents** — real-time Consumers of behavioural Providers, including ETW-TI. The subscribing process must satisfy the Provider's PPL requirement (see [§ 5](#sec-5)).
 - **In-process Consumer** — a same-process helper reading its own emissions (the CLR case above).
 
-![Windows Performance Analyzer timeline view of events from an ETL trace](assets/wpa-etl-timeline.png)
+![Windows Performance Analyzer timeline view of events from an ETL trace](assets/04-wpa-etl-timeline-microsoft-learn.png)
 
 *Source screenshot: [Microsoft Learn — Viewing a USB Event Trace in Xperf](https://learn.microsoft.com/en-us/windows-hardware/drivers/usbcon/viewing-a-usb-event-trace-in-xperf).*
 
@@ -312,7 +312,7 @@ A Channel is a Provider-defined partition of its event stream, used by the Windo
 - **Registry:** `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WINEVT\Channels\<ChannelName>`.
 - **On disk:** `%systemroot%\System32\winevt\Logs\<ChannelName>.evtx`.
 
-![`wevtutil el` output enumerating installed event-log channels](assets/wevtutil-enum-logs.png)
+![`wevtutil el` output enumerating installed event-log channels](assets/05-carnet-wevtutil-el.png)
 
 *Source screenshot: [CARNet sys.portal — Windows 7: brisanje logova](https://sysportal.carnet.hr/node/1359).*
 
@@ -326,13 +326,13 @@ The four default channels are:
 
 The default-off state of Analytic/Debug matters defensively: valuable security-relevant events (parts of `Microsoft-Windows-WMI-Activity/Trace`, several PowerShell channels) live in these channels and require explicit enablement. Providers may declare custom channels beyond the four defaults; the same registry key holds them.
 
-![`wevtutil gl` output showing whether a channel is enabled, its type, path, and size settings](assets/wevtutil-get-log.png)
+![`wevtutil gl` output showing whether a channel is enabled, its type, path, and size settings](assets/06-carnet-wevtutil-gl.png)
 
 *Source screenshot: [CARNet sys.portal — Windows 7: brisanje logova](https://sysportal.carnet.hr/node/1359).*
 
-![EventLogChannelsView showing channel names, enabled state, backing files, sizes, and event counts](assets/event-log-channels.png)
+![EventLogChannelsView showing channel names, enabled state, backing files, sizes, and event counts](assets/07-nirsoft-eventlogchannelsview.png)
 
-*Source reference: [NirSoft — EventLogChannelsView](https://www.nirsoft.net/utils/event_log_channels_view.html); channel inventory rendered locally from the fields documented by the utility.*
+*Source screenshot: [NirSoft — EventLogChannelsView](https://www.nirsoft.net/utils/event_log_channels_view.html).*
 
 
 ---
@@ -353,13 +353,13 @@ Working with manifests:
 - `wevtutil gp <ProviderName>` — dump a Provider's effective manifest (the way to inspect an event schema on a live system).
 - `wevtutil im <MANIFEST_PATH>` — install a manifest.
 
-![`wevtutil ep` output enumerating event publishers](assets/wevtutil-enum-publishers.png)
+![`wevtutil ep` output enumerating event publishers](assets/08-carnet-wevtutil-ep.png)
 
 *Source screenshot: [CARNet sys.portal — Windows 7: brisanje logova](https://sysportal.carnet.hr/node/1359).*
 
-![EventLogSourcesView showing event sources and the DLL or EXE files that contain their message strings](assets/event-log-sources.png)
+![EventLogSourcesView showing event sources and the DLL or EXE files that contain their message strings](assets/09-nirsoft-eventlogsourcesview.png)
 
-*Source reference: [NirSoft — EventLogSourcesView](https://www.nirsoft.net/utils/event_log_sources_view.html); publisher-resource inventory rendered locally from the documented fields.*
+*Source screenshot: [NirSoft — EventLogSourcesView](https://www.nirsoft.net/utils/event_log_sources_view.html).*
 
 
 The event format is now in place. The remaining operational question is how ETW sustains this path under load.
@@ -399,12 +399,12 @@ Mitigations:
 
 <div class="etw-image-pair">
   <figure>
-    <img src="assets/wpa-provider-interval.png"
+    <img src="assets/21-wpa-provider-interval-microsoft-learn.png"
          alt="A selected ETW interval in Windows Performance Analyzer with provider identifiers visible"
          loading="lazy">
   </figure>
   <figure>
-    <img src="assets/wpa-event-summary.png"
+    <img src="assets/22-wpa-event-summary-microsoft-learn.png"
          alt="The event-summary table used to inspect events from an ETL trace"
          loading="lazy">
   </figure>
@@ -439,7 +439,7 @@ This explains why:
 - `.etl` and `.evtx` files exist side-by-side (different formats for different consumers).
 - The evtx-tampering attacks below target the `.evtx` layer, which is downstream of ETW itself.
 
-![Event Viewer showing the channel tree, event list, and selected event details](assets/event-viewer-channel.png)
+![Event Viewer showing the channel tree, event list, and selected event details](assets/10-netadmin-event-viewer.png)
 
 
 ---
@@ -524,7 +524,6 @@ The **Windows Event Log Service** is the WinLog consumer that receives events fr
 - From the command line: `sc queryex eventlog`.
 - The service runs inside `svchost.exe`, which hosts `wevtsvc.dll`.
 
-
 ##### Methods
 
 **Set the startup type to Disabled.** Once the service is no longer running, events stop flowing into Windows Event Log channels.
@@ -597,9 +596,9 @@ Events routed through a WinLog channel are stored in `.evtx` files. After a **40
 
 ***Terminology note:*** ETW Sessions write raw `.etl` traces. WinLog, acting as an ETW Consumer, serializes channel-backed events into `.evtx`. Modifying `.evtx` changes what Event Viewer and WinLog APIs see; modifying `.etl` changes what ETW consumers such as `xperf` and WPA see. The discussion below concerns `.evtx`.
 
-![The `C:\Windows\System32\winevt\Logs` directory containing the principal EVTX files](assets/winevt-logs-folder.png)
+![The `C:\Windows\System32\winevt\Logs` directory containing the principal EVTX files](assets/11-forensic-artifact-winevt-logs.png)
 
-*Source reference: [Forensic Artifact — Windows Event Logs](https://www.forensic-artifact.com/windows-forensics/windowseventlogs); the `winevt\Logs` directory is rendered locally so it remains available offline.*
+*Source screenshot: [Forensic Artifact — Windows Event Logs](https://www.forensic-artifact.com/windows-forensics/windowseventlogs).*
 
 Several structural properties must remain consistent after a record is changed or hidden:
 
@@ -610,13 +609,13 @@ Several structural properties must remain consistent after a record is changed o
 
 <div class="etw-image-pair">
   <figure class="etw-online-figure">
-    <img src="assets/evtx-file-structure.png"
+    <img src="assets/12-medium-evtx-file-header.webp"
          alt="Original diagram from the Medium article showing the EVTX file header, chunks, and records"
          loading="lazy">
     <figcaption>High-level <code>.evtx</code> hierarchy: file header, chunks, and records.</figcaption>
   </figure>
   <figure class="etw-online-figure">
-    <img src="assets/evtx-chunk-header.png"
+    <img src="assets/13-medium-evtx-chunk-header.webp"
          alt="Original chunk-header layout diagram from the Medium article"
          loading="lazy">
     <figcaption>The fields exposed by the chunk header, including its two checksum fields.</figcaption>
@@ -625,13 +624,13 @@ Several structural properties must remain consistent after a record is changed o
 
 <div class="etw-image-pair">
   <figure class="etw-online-figure">
-    <img src="assets/evtx-event-record.png"
+    <img src="assets/14-medium-evtx-event-record.webp"
          alt="Original event-record layout diagram from the Medium article"
          loading="lazy">
     <figcaption>An individual Event Record and the data stored before its BinXML content.</figcaption>
   </figure>
   <figure class="etw-online-figure">
-    <img src="assets/evtx-checksum-recalculation.png"
+    <img src="assets/15-medium-evtx-record-deletion.webp"
          alt="Original hex-editor checksum figure from the Medium article"
          loading="lazy">
     <figcaption>The selected chunk-header bytes and recalculated CRC32 shown in the article.</figcaption>
@@ -641,7 +640,7 @@ Several structural properties must remain consistent after a record is changed o
 <p class="etw-figure-caption"><em>Original figures extracted from the article’s own image elements; no webpage crop is used. Source: <a href="https://svch0st.medium.com/event-log-tampering-part-2-manipulating-individual-event-logs-3de37f7e3a85">svch0st — Event Log Tampering Part 2: Manipulating Individual Event Logs</a>.</em></p>
 
 <figure class="etw-online-figure">
-  <img src="assets/evtx-structure-figure-1.png"
+  <img src="assets/16-dfrws-figure-1-xml-event-log-structure.jpg"
        alt="Page containing Figure 1, Structure of an XML event log file"
        loading="lazy">
 </figure>
@@ -689,9 +688,9 @@ or Event Viewer → right-click the channel → **Clear Log**.
 
 Clearing is itself observable. Event IDs 1102 and 104 are the principal log-clear signals, depending on the channel involved.
 
-![Event Viewer exposing the command to disable an event-log channel](assets/event-viewer-disable-channel.png)
+![Event Viewer exposing the command to disable an event-log channel](assets/17-velociraptor-disable-log.png)
 
-*Source reference: [Velociraptor — Disabled Event Log files](https://docs.velociraptor.app/blog/2021/2021-01-29-disabled-event-log-files-a3529a08adbe/); the demonstrated UI or registry state is rendered locally for this repository package.*
+*Source screenshot: [Velociraptor — Disabled Event Log files](https://docs.velociraptor.app/blog/2021/2021-01-29-disabled-event-log-files-a3529a08adbe/).*
 
 #### Change Logger Session registry settings
 
@@ -707,13 +706,13 @@ Logger Session definitions can appear under:
 1. `HKLM\SYSTEM\CurrentControlSet\Services\EventLog\<LOGGER_NAME>`
 2. `HKLM\SYSTEM\CurrentControlSet\Control\WMI\Autologger\<LOGGER_NAME>`
 
-![Process Monitor showing the `WINEVT\Channels\...\Enabled` registry value changed when a channel is disabled](assets/procmon-channel-enabled.png)
+![Process Monitor showing the `WINEVT\Channels\...\Enabled` registry value changed when a channel is disabled](assets/18-velociraptor-channel-enabled-registry.png)
 
-*Source reference: [Velociraptor — Disabled Event Log files](https://docs.velociraptor.app/blog/2021/2021-01-29-disabled-event-log-files-a3529a08adbe/); the demonstrated UI or registry state is rendered locally for this repository package.*
+*Source screenshot: [Velociraptor — Disabled Event Log files](https://docs.velociraptor.app/blog/2021/2021-01-29-disabled-event-log-files-a3529a08adbe/).*
 
-![A provider-level registry setting whose `Enabled` value can suppress the provider while the channel still appears enabled](assets/provider-enabled-registry.png)
+![A provider-level registry setting whose `Enabled` value can suppress the provider while the channel still appears enabled](assets/19-velociraptor-provider-enabled-registry.png)
 
-*Source reference: [Velociraptor — Disabled Event Log files](https://docs.velociraptor.app/blog/2021/2021-01-29-disabled-event-log-files-a3529a08adbe/); the demonstrated UI or registry state is rendered locally for this repository package.*
+*Source screenshot: [Velociraptor — Disabled Event Log files](https://docs.velociraptor.app/blog/2021/2021-01-29-disabled-event-log-files-a3529a08adbe/).*
 
 ### 5. Replacing a writable Provider message DLL
 
@@ -723,9 +722,9 @@ A manifest-based Provider can register `MessageFileName` and `ResourceFileName` 
 HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WINEVT\Publishers\{PROVIDER_GUID}
 ```
 
-![Resolving a provider GUID through the `WINEVT\Publishers` registry area](assets/publisher-guid-registry.png)
+![Resolving a provider GUID through the `WINEVT\Publishers` registry area](assets/20-velociraptor-publisher-guid-registry.png)
 
-*Source reference: [Velociraptor — Disabled Event Log files](https://docs.velociraptor.app/blog/2021/2021-01-29-disabled-event-log-files-a3529a08adbe/); the demonstrated UI or registry state is rendered locally for this repository package.*
+*Source screenshot: [Velociraptor — Disabled Event Log files](https://docs.velociraptor.app/blog/2021/2021-01-29-disabled-event-log-files-a3529a08adbe/).*
 
 The **Message DLL** contains the resources used by `FormatMessage` to render an event's human-readable description. If an unprivileged user can replace that DLL, but the Event Log Service loads it under a stronger principal, the writable file becomes a privilege boundary violation.
 

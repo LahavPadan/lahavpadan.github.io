@@ -1,13 +1,13 @@
 # Elliptic Curves
 
-> **Reference.** [Adi Mittal's "Introductory Quantum Elliptic Curve Cryptography" on Delta Thoughts](https://xperimex.com/blog/quantum-elliptic-curves/) was useful when I first started working through this material.
+> **Acknowledgment.** A major early push for this article came from [Adi Mittal's "Introductory Quantum Elliptic Curve Cryptography" on Delta Thoughts](https://xperimex.com/blog/quantum-elliptic-curves/). It gave me a giant leap forward when I was first getting oriented in the subject, and I am grateful for the clear starting point it provided.
 {: .elliptic-acknowledgment}
 
 ---
 
 ## § 0. Finite fields: characteristic, order, and the Frobenius exponent
 
-Elliptic curves in cryptography live over finite fields. The Frobenius map, on which most later arguments turn, is a specific power of a specific prime; this section fixes which.
+Elliptic curves in cryptography live over finite fields. This section fixes the conventions before the rest of the document uses them.
 
 ### The characteristic must be prime
 
