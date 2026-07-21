@@ -6,6 +6,11 @@
   <meta name="color-scheme" content="light dark">
   <title>Area of one tied ROC segment</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&display=swap">
+
   <style>
     :root {
       --page: var(--viz-page, #f7f5f1);
@@ -20,7 +25,7 @@
       --accent-soft: var(--viz-accent-soft, #f0e7f8);
       --shadow: 0 18px 44px rgba(42, 30, 50, .08);
 
-      --serif: Georgia, "Times New Roman", serif;
+      --serif: "Lora", Georgia, "Times New Roman", serif;
       --sans: Inter, ui-sans-serif, system-ui, -apple-system,
         BlinkMacSystemFont, "Segoe UI", sans-serif;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco,
@@ -108,12 +113,13 @@
     }
 
     h1 {
+      max-width: 760px;
       margin: 0;
       font-family: var(--serif);
-      font-size: clamp(1.22rem, 3vw, 1.68rem);
-      font-weight: 600;
-      letter-spacing: -.025em;
-      line-height: 1.12;
+      font-size: clamp(1.48rem, 3.2vw, 2.22rem);
+      font-weight: 550;
+      letter-spacing: -0.035em;
+      line-height: 1.16;
     }
 
     .lede {
@@ -592,13 +598,13 @@
       </h1>
 
       <p class="lede" id="areaDescription">
-        Move the threshold across the shared score
-        <span class="math">s</span> from lower scores toward
-        higher scores. As the threshold rises, the tied samples
-        leave the predicted-positive set together. If the tie
+        Toggle the threshold across the shared score
+        <span class="math">s</span>. When the threshold drops past
+        <span class="math">s</span> from above, the tied samples all
+        join the predicted-positive set together. If the tie
         contains <span class="math">a</span> positives and
-        <span class="math">b</span> negatives, TPR decreases by
-        <span class="math">a/|P|</span> and FPR decreases by
+        <span class="math">b</span> negatives, TPR grows by
+        <span class="math">a/|P|</span> and FPR grows by
         <span class="math">b/|N|</span>.
       </p>
     </header>
@@ -610,8 +616,8 @@
         type="button"
         aria-pressed="true"
       >
-        <span class="state-label">threshold below s</span>
-        <span class="state-copy">ties included</span>
+        <span class="state-label">t below s</span>
+        <span class="state-copy">tied samples predicted positive</span>
       </button>
 
       <input
@@ -621,7 +627,7 @@
         max="1"
         step="1"
         value="0"
-        aria-label="Raise the threshold from below the tied score to above it"
+        aria-label="Move the threshold from below the tied score to above it"
       >
 
       <button
@@ -630,8 +636,8 @@
         type="button"
         aria-pressed="false"
       >
-        <span class="state-label">threshold above s</span>
-        <span class="state-copy">ties excluded</span>
+        <span class="state-label">t above s</span>
+        <span class="state-copy">tied samples predicted negative</span>
       </button>
     </div>
 
@@ -683,7 +689,7 @@
           </div>
 
           <div class="panel-state" id="scoreState">
-            ties included
+            t below s
           </div>
         </div>
 
@@ -712,7 +718,7 @@
           </div>
 
           <div class="panel-state" id="areaState">
-            upper endpoint selected
+            at (F<sub>k+1</sub>, T<sub>k+1</sub>)
           </div>
         </div>
 
@@ -757,7 +763,7 @@
     <div class="metrics">
       <div class="metric">
         <div class="metric-label">
-          FPR decrease when the ties leave
+          ΔFPR when the tie group enters
         </div>
 
         <div class="metric-value">
@@ -771,7 +777,7 @@
 
       <div class="metric">
         <div class="metric-label">
-          TPR decrease when the ties leave
+          ΔTPR when the tie group enters
         </div>
 
         <div class="metric-value">
@@ -796,14 +802,8 @@
     </div>
 
     <figcaption>
-      <strong>Why ties receive half credit.</strong>
-      Here <span class="math">a</span> counts tied positives and
-      <span class="math">b</span> counts tied negatives. The
-      rectangle is the area already present at height
-      <span class="math">T<sub>k</sub></span>; the triangle
-      contributes half of
-      <span class="math">ΔFPR · ΔTPR</span>, which is exactly the
-      half-credit term for tied positive–negative pairs.
+      <strong>Rectangle from the tied negative, triangle from the tied positives.</strong>
+      Read the segment as a superposition. A crossed negative moves the walk right by <span class="math">1/|N|</span> — on its own it would leave a rectangle of area <span class="math">1/|N| · T<sub>k</sub></span>. A crossed positive moves it up by <span class="math">1/|P|</span> — on its own it adds no area (zero width). The two happen at the same score here, so the walk steps diagonally and the region under the segment is the sum: the rectangle underneath, plus a triangle of area <span class="math">½ · ΔFPR · ΔTPR</span> resting on it.
     </figcaption>
   </figure>
 
@@ -907,13 +907,11 @@
         /*
          * Scores increase from left to right.
          *
-         * The threshold starts below s, to the left of the
-         * tied samples, so all tied samples are predicted
-         * positive.
+         * progress = 0: threshold sits to the left of s, so t < s
+         * and all tied samples are predicted positive.
          *
-         * Raising the threshold moves it to the right of s,
-         * removing the complete tie group from the
-         * predicted-positive set.
+         * progress = 1: threshold sits to the right of s, so t > s
+         * and all tied samples are predicted negative.
          */
         const thresholdX =
           lerp(146, 326, progress);
@@ -966,12 +964,12 @@
         );
 
         const tieX = [194, 236, 278];
-        const kinds = ["P", "P", "N"];
+        const kinds = ["N", "P", "P"];
 
         /*
-         * Included samples are fully visible.
-         * As the threshold rises above s, the tie group fades
-         * because it is no longer predicted positive.
+         * At progress = 0 the tied samples are predicted positive
+         * and shown at full strength; at progress = 1 they are
+         * predicted negative and fade.
          */
         const opacity =
           1 - .70 * progress;
@@ -1157,19 +1155,35 @@
 
           node("text", {
             x: (X(F0) + X(F1)) / 2,
-            y: Y(T0) + 28,
-            "font-size": 12,
+            y: Y(T0) + 20,
+            "font-size": 11,
             "text-anchor": "middle",
             class: "svg-accent"
-          }, "rectangle"),
+          }, "rectangle from tied N"),
 
           node("text", {
-            x: X(F1) - 45,
-            y: (Y(T0) + Y(T1)) / 2,
-            "font-size": 12,
+            x: (X(F0) + X(F1)) / 2,
+            y: Y(T0) + 35,
+            "font-size": 10,
+            "text-anchor": "middle",
+            class: "svg-muted"
+          }, "1/|N| · Tₖ"),
+
+          node("text", {
+            x: X(F1) - 62,
+            y: (Y(T0) + Y(T1)) / 2 - 5,
+            "font-size": 11,
             "text-anchor": "middle",
             class: "svg-accent"
-          }, "triangle"),
+          }, "triangle from tied P"),
+
+          node("text", {
+            x: X(F1) - 62,
+            y: (Y(T0) + Y(T1)) / 2 + 10,
+            "font-size": 10,
+            "text-anchor": "middle",
+            class: "svg-muted"
+          }, "½ · ΔFPR · ΔTPR"),
 
           node("text", {
             x: (left + right) / 2,
@@ -1191,11 +1205,13 @@
         );
 
         /*
-         * The low threshold includes the tied samples, so the
-         * marker starts at the upper-right endpoint.
+         * Progress 0 = "t below s": all tied samples are in the
+         * predicted-positive set, so the ROC point is at the
+         * upper-right endpoint (F_{k+1}, T_{k+1}).
          *
-         * Raising the threshold removes a positives and b
-         * negatives, moving the ROC point down and left.
+         * Progress 1 = "t above s": tied samples are not (yet)
+         * in the predicted-positive set, so the ROC point sits
+         * at the lower-left endpoint (F_k, T_k).
          */
         const markerX =
           lerp(X(F1), X(F0), progress);
@@ -1235,16 +1251,22 @@
           }),
 
           node("text", {
-            x: markerX + (after ? -9 : 9),
-            y: markerY - 10,
+            x: X(F0) - 8,
+            y: Y(T0) + 4,
             "font-size": 11,
-            "text-anchor":
-              after ? "end" : "start",
+            "text-anchor": "end",
+            "font-weight": after ? 700 : 400,
             class: "svg-accent"
-          }, after
-            ? "(Fₖ, Tₖ)"
-            : "(Fₖ₊₁, Tₖ₊₁)"
-          ),
+          }, "(Fₖ, Tₖ)"),
+
+          node("text", {
+            x: X(F1) + 8,
+            y: Y(T1) + 4,
+            "font-size": 11,
+            "text-anchor": "start",
+            "font-weight": after ? 400 : 700,
+            class: "svg-accent"
+          }, "(Fₖ₊₁, Tₖ₊₁)"),
 
           node("line", {
             x1: X(F0),
@@ -1261,7 +1283,7 @@
             "font-size": 11,
             "text-anchor": "middle",
             class: "svg-accent"
-          }, "FPR decreases by b/|N|")
+          }, "ΔFPR = b/|N|")
         );
       }
 
@@ -1281,13 +1303,13 @@
 
         scoreState.textContent =
           after
-            ? "ties excluded"
-            : "ties included";
+            ? "t above s"
+            : "t below s";
 
         areaState.textContent =
           after
-            ? "lower endpoint selected"
-            : "upper endpoint selected";
+            ? "at (F\u2096, T\u2096)"
+            : "at (F\u2096\u208A\u2081, T\u2096\u208A\u2081)";
 
         figure.dataset.thresholdState =
           after ? "above" : "below";

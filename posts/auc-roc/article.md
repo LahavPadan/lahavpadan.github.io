@@ -35,8 +35,10 @@ Between two consecutive observed scores $S(x_{(i)}) < S(x_{(i+1)})$, no sample c
 
 Sort the samples in decreasing order of score, $S(x_{(1)}) \geq S(x_{(2)}) \geq \dots \geq S(x_{(N)})$. Setting $t = S(x_{(k)})$ predicts the top $k$ scored samples as positive. Grow $k$ from $0$ to $N$ one sample at a time:
 
-- If $x_{(k)}$ is a true positive, TPR ticks up by $1/|P|$ — we step *up*, FPR unchanged.
-- If $x_{(k)}$ is a true negative, FPR ticks up by $1/|N|$ — we step *right*, TPR unchanged.
+- If $x_{(k)}$ has true label **positive**, TPR ticks up by $1/|P|$ — we step *up*, FPR unchanged.
+- If $x_{(k)}$ has true label **negative**, FPR ticks up by $1/|N|$ — we step *right*, TPR unchanged.
+
+There are only two kinds of breakpoint because a sample has only two possible true labels. The four confusion-matrix cells (TP, FP, TN, FN) are not four kinds of breakpoint: they classify samples *at a fixed threshold*. As $t$ drops past $S(x_{(k)})$, the sample $x_{(k)}$ moves from one cell to another — a positive sample moves from FN to TP, a negative from TN to FP — but this is the same one sample causing the same one step, just described in confusion-matrix language instead of true-label language.
 
 So we can draw the ROC curve by walking down the sorted list: step up for each positive, step right for each negative. Every quantitative property of the ROC curve can be read off this walk.
 
@@ -59,22 +61,34 @@ That other property of a scoring classifier — whether the scores themselves ar
 
 *Comparing a perfect classifier, the article's classifier, and the random-classifier baseline. Visualization from [MLU-Explain: ROC & AUC](https://mlu-explain.github.io/roc-auc/).*
 
-## AUC as area
+## AUC as area — which area?
 
-Number the sorted breakpoints $k = 0, 1, \dots, N$ where breakpoint $k$ means the top-$k$ scored samples are called positive, and let $(F_k, T_k) = (\text{FPR}_k, \text{TPR}_k)$. Between adjacent breakpoints the curve is a straight segment. The area beneath a segment from $(F_k, T_k)$ to $(F_{k+1}, T_{k+1})$ is a trapezoid of width $F_{k+1} - F_k$ and average height $(T_k + T_{k+1})/2$:
+The ROC curve is a picture of the classifier at every threshold, but a picture isn't a summary. If we want a single number that stands for "how good is this classifier at ranking," we can compute an integral. The natural one is the **area under the ROC curve** — the area of the region between the curve and the horizontal axis, inside the unit square. Two properties make this the right integral to look at.
+
+- **Its endpoints are meaningful.** The random-order baseline (the diagonal) has area exactly $1/2$; the perfect classifier has area exactly $1$; a classifier with informative-but-inverted scores has area exactly $0$. Every ROC curve has area in $[0, 1]$, and the value of that number carries information — not just its rank.
+- **It's invariant to what the ROC curve is already invariant to.** Since the curve depends only on the score *ordering*, so does its area. So does the class balance $|P|/|N|$, for the same reason that the FPR and TPR normalisations do.
+
+To compute the area, it is enough to look at the curve one segment at a time. Number the sorted breakpoints $k = 0, 1, \dots, N$ where breakpoint $k$ means the top-$k$ scored samples are called positive, and let $(F_k, T_k) = (\text{FPR}_k, \text{TPR}_k)$.
+
+Between adjacent breakpoints the curve is a straight segment. What shape it is depends on which kinds of sample sat at the same score:
+
+- If breakpoint $k+1$ adds only **negatives**, the walk moves purely right: $F_{k+1} > F_k$, $T_{k+1} = T_k$, and the region under this segment is a **rectangle** of width $F_{k+1} - F_k$ and height $T_k$.
+- If it adds only **positives**, the walk moves purely up: $F_{k+1} = F_k$, $T_{k+1} > T_k$, and the region under this vertical segment has width $0$ — it contributes nothing to the area.
+- If it adds **both** positives and negatives at the same score (a tie between the two classes), the walk moves diagonally, and the region under this segment is a **trapezoid** of width $F_{k+1} - F_k$ and heights $T_k$ (left) and $T_{k+1}$ (right).
+
+All three cases fit the trapezoidal formula: a rectangle is a trapezoid with equal heights, and a vertical segment is a trapezoid with zero width. Summing over segments:
 
 $$\text{AUC} = \sum_{k=0}^{N-1} \frac{T_k + T_{k+1}}{2} \cdot (F_{k+1} - F_k)$$
+
+So area accumulates from **rightward motion**, and only rightward motion — that is, only when a negative sample is crossed. Upward motion is what a positive contributes; on its own it adds no area. The tied-both case gives a trapezoid that we can split into the rectangle a lone negative would have contributed, plus an extra triangle sitting on top of it from the positive that came along at the same score. That extra triangle is where "tied pairs count as half" comes from, and the next visualisation is where we look at it closely.
 
 
 <!-- combined-visualizations:auc-area:v1 -->
 {% include visualization.html src="auc-area.html" title="How one ROC segment contributes rectangle and triangle area" %}
 
-
-When scores are all distinct, each step changes exactly one of $F$ or $T$, and the trapezoid becomes a rectangle. Ties produce diagonal steps and honest trapezoids; we return to what that means below.
-
 ## AUC as a probability
 
-The area calculation is mechanical. A more useful description of AUC:
+The area computation is mechanical. A more useful description of the same number:
 
 > AUC is the probability that a randomly chosen positive scores higher than a randomly chosen negative.
 
@@ -82,37 +96,39 @@ If we draw $x_+$ uniformly from $P$ and $x_-$ uniformly from $N$, independently,
 
 $$\text{AUC} = \Pr[S(x_+) > S(x_-)] + \tfrac{1}{2} \Pr[S(x_+) = S(x_-)]$$
 
-with ties contributing half. To see why this equals the area, we go back to the sorted walk.
+with ties contributing half. To see why this equals the area, go back to the walk and the segment-by-segment area formula from the previous section.
 
 <!-- combined-visualizations:auc-ranking:v1 -->
 {% include visualization.html src="auc-ranking.html" title="AUC as positive-versus-negative ranking probability" %}
 
+**The distinct-score case.** When no two samples share a score, every segment is either a rectangle (a negative is being crossed) or a vertical (a positive is being crossed). Vertical segments contribute no area. Each *rectangle* has width $1/|N|$ and height $T_k$, the fraction of positives already crossed at the moment we cross this negative. Let $T(x_-)$ denote that height for the specific negative $x_-$ whose crossing produced the rectangle:
 
-Area accumulates under the curve only when we take a rightward step: a rightward step at height $T$ adds a rectangle of area $(1/|N|) \cdot T$. Upward steps add nothing (zero width).
+$$T(x_-) = \frac{\#\{x_+ \in P : S(x_+) > S(x_-)\}}{|P|}.$$
 
-At the moment we process a negative sample $x_-$, the height $T$ is the fraction of positives already processed — the positives with score strictly greater than $S(x_-)$:
+Summing the rectangle areas — one rectangle per negative — and unfolding $T(x_-)$,
 
-$$T = \frac{\#\{x_+ \in P : S(x_+) > S(x_-)\}}{|P|}$$
+$$\text{AUC} = \sum_{x_- \in N} \frac{1}{|N|} \cdot T(x_-) = \frac{1}{|P|\,|N|} \sum_{x_- \in N} \#\{x_+ \in P : S(x_+) > S(x_-)\}.$$
 
-Summing the rectangle areas over all negatives,
+The right-hand side counts, over all $|P|\,|N|$ pairs $(x_+, x_-) \in P \times N$, the ones in which the positive outranks the negative. Dividing by the total number of pairs gives the probability that a random positive outranks a random negative — the tie-free version of the formula.
 
-$$\text{AUC} = \sum_{x_- \in N} \frac{1}{|N|} \cdot T = \frac{1}{|P| \cdot |N|} \sum_{x_- \in N} \#\{x_+ \in P : S(x_+) > S(x_-)\}$$
+**Ties.** Now suppose $x_+$ and $x_-$ share a score. The walk crosses both at the same moment; the corresponding segment is a diagonal, and the area under it is a trapezoid rather than a rectangle. That trapezoid decomposes into two pieces:
 
-The double sum counts pairs $(x_+, x_-) \in P \times N$ in which the positive outranks the negative. Dividing by $|P| \cdot |N|$ — the total number of such pairs — gives the fraction, which is the probability we wanted.
+- the rectangle we would have had if only $x_-$ had crossed at this moment (width $1/|N|$, height $T_k$), and
+- a small triangle sitting on top of it (width $1/|N|$, height $1/|P|$, area $1/(2\,|P|\,|N|)$).
 
-**Ties.** When a positive and a negative share a score, the walk takes a diagonal step from $(F, T)$ to $(F + 1/|N|, T + 1/|P|)$. The trapezoidal rule says this step adds area $(1/|N|) \cdot T + 1/(2 |P| |N|)$. The first piece is the rectangle we would have added had the negative come first (positive outranks — full credit); the second is a small triangle of area $1/(2 |P| |N|)$, which is the tie half-credit for that pair. Summing recovers the tie term in the probability formula exactly.
+The rectangle behaves the same as before: over all pairs involving $x_-$, the rectangle records $\{x_+ : S(x_+) > S(x_-)\}$. The triangle is new: it counts, per tied pair, half of one pair. Summing rectangles over all negatives and adding triangles over all tied positive–negative pairs,
+
+$$\text{AUC} = \frac{1}{|P|\,|N|} \sum_{x_+, x_-}\Bigl[\mathbb{I}\{S(x_+) > S(x_-)\} + \tfrac{1}{2}\, \mathbb{I}\{S(x_+) = S(x_-)\}\Bigr].$$
+
+The area formula and the pair-counting formula compute the same number. This gives an estimator we can compute directly, without ever building the ROC curve — count ordered $(x_+, x_-)$ pairs, add $1$ for concordant, $1/2$ for tied, divide by $|P|\,|N|$.
 
 ## What follows from the probability form
 
 **AUC inherits the rank-only invariance.** The ROC curve depends only on the ordering of samples by score, so its area does too. In particular, AUC says nothing about calibration.
 
-**AUC ignores class prevalence.** $\Pr[S(x_+) > S(x_-)]$ depends on the class-conditional score distributions, not on the mixing proportion $|P|/(|P|+|N|)$. Resampling to change the class balance leaves AUC alone in expectation, provided samples within each class come from the same conditional distribution. This is the population-level version of the imbalance invariance we saw in the FPR/TPR normalization.
+**AUC ignores class balance.** Look at the probability again: it is a probability over one positive and one negative drawn from their own classes, and no other quantities enter. If we duplicate all the negatives (or drop half of them at random, without touching how they score), $\Pr[S(x_+) > S(x_-)]$ doesn't change — the marginals of $x_+$ and $x_-$ are unchanged. AUC is the population-level version of the same class-balance invariance we saw in FPR and TPR: doubling the negatives doubled both numerator and denominator of FPR, and here it duplicates every negative's contribution to the probability by the same factor, without changing the probability.
 
-**A direct combinatorial estimator.** Just count concordant pairs:
-
-$$\widehat{\text{AUC}} = \frac{1}{|P| \cdot |N|} \sum_{x_+ \in P} \sum_{x_- \in N} \left[\mathbb{I}\{S(x_+) > S(x_-)\} + \tfrac{1}{2} \mathbb{I}\{S(x_+) = S(x_-)\}\right]$$
-
-The area under the ROC curve and the fraction of correctly-ordered positive-negative pairs are two ways of computing the same number.
+The two ways to compute the same number — area under the ROC curve, and the fraction of correctly-ordered positive–negative pairs — are equivalent by the segment-by-segment argument in the previous section. The pair-counting formula is often the more convenient one to work with: it gives a direct estimator and it makes the connection to Kendall's tau below transparent.
 
 ## Kendall's tau
 
@@ -130,10 +146,10 @@ $$\tau = \frac{n_c - n_d}{n_c + n_d}$$
 
 $\tau = +1$ is perfect agreement, $\tau = -1$ is perfect disagreement, $\tau = 0$ is no association beyond chance.
 
-**Concordance as classification.** Consider all *ordered* pairs $(i, j)$ with $i \neq j$. Give each ordered pair a label from $Y$: call it "positive" if $Y_j > Y_i$, "negative" if $Y_j < Y_i$. Give it a score from $X$: $S_{ij} = X_j - X_i$. Now we have a classification problem — predict from $\text{sign}(X_j - X_i)$ whether $Y_j > Y_i$.
+**Concordance as classification.** Consider all *ordered* pairs $(i, j)$ with $i \neq j$. Split them into two classes by the sign of $Y_j - Y_i$: call the pair "positive" if $Y_j > Y_i$, "negative" if $Y_j < Y_i$. Now we have a two-class problem. As a classifier of these pairs, use the difference $X_j - X_i$ itself — a real-valued score, in the same role that $S(x)$ played in the scoring-classifier setup — and predict "positive" iff $X_j - X_i > 0$. Then:
 
-- A concordant unordered pair produces one ordered pair with $Y_j > Y_i, S_{ij} > 0$ (a positive with a high score), and its reverse — one with $Y_j < Y_i, S_{ij} < 0$ (a negative with a low score). Both are ranked correctly.
-- A discordant unordered pair produces one ordered pair with $Y_j > Y_i, S_{ij} < 0$ (a positive with a low score), and its reverse — a negative with a high score. Both are misranked.
+- A **concordant** unordered pair $\{i, j\}$ produces two ordered pairs, and both are correctly classified: one has $Y_j > Y_i$ and $X_j > X_i$ (a positive with a high score), the other has $Y_j < Y_i$ and $X_j < X_i$ (a negative with a low score).
+- A **discordant** unordered pair produces one ordered pair with $Y_j > Y_i$ and $X_j < X_i$ (a positive with a low score) and its reverse (a negative with a high score). Both are misranked.
 
 AUC in this classification problem is the probability that a random "positive" ordered pair outscores a random "negative" one. That fraction is
 

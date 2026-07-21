@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>AUC as ranking probability</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&display=swap">
+
   <style>
     :root {
       --page: var(--viz-page, #f7f5f1);
@@ -18,7 +24,7 @@
       --accent-ink: var(--viz-accent-ink, #5b3188);
       --accent-soft: var(--viz-accent-soft, #f0e7f8);
       --shadow: 0 18px 44px rgba(42, 30, 50, .08);
-      --serif: Georgia, "Times New Roman", serif;
+      --serif: "Lora", Georgia, "Times New Roman", serif;
       --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       --math: "Cambria Math", "STIX Two Math", "Times New Roman", serif;
@@ -362,15 +368,15 @@
     <header class="viz-head">
       <div>
         <p class="eyebrow">AUC as a ranking probability</p>
-        <h1 id="rankingTitle">The score sweep and the ROC walk are the same ordering</h1>
-        <p class="lede" id="rankingDescription">Raise the threshold from lower scores to higher scores. Crossing a positive moves the ROC point down; crossing a negative moves it left and identifies its strip of area at the current height.</p>
+        <h1 id="rankingTitle">Count the positives above each negative</h1>
+        <p class="lede" id="rankingDescription">Pick a negative <span class="math">x<sub>−</sub></span>. Every positive with a higher score contributes one concordant pair. The fraction <span class="math">T(x<sub>−</sub>) = #{x<sub>+</sub> : S(x<sub>+</sub>) &gt; S(x<sub>−</sub>)} / |P|</span> is exactly the height of the rectangle that <span class="math">x<sub>−</sub></span> contributes to the ROC area. Summing over all negatives gives <span class="math">AUC</span>.</p>
       </div>
     </header>
 
     <div class="control-strip">
-      <div class="control-readout">processed <span class="control-value" id="processedValue">4 / 9</span></div>
-      <input class="sweep" id="sweep" type="range" min="0" max="9" step="0.01" value="4" aria-label="Raise the threshold from lower scores to higher scores">
-      <div class="control-readout">threshold <span class="control-value" id="thresholdValue">after score 0.53</span></div>
+      <div class="control-readout">selected <span class="control-value" id="selectedValue">x<sub>7</sub> · negative</span></div>
+      <div class="control-readout" style="text-align:center; grid-column: 2;">click any negative on the left panel</div>
+      <button type="button" class="reset-button" id="resetButton" aria-label="Cycle to the next negative">next negative →</button>
     </div>
 
     <div class="mobile-tabs" role="tablist" aria-label="Choose the coordinate view">
@@ -383,12 +389,12 @@
         <div class="panel-head">
           <div>
             <div class="panel-kicker">score ordering</div>
-            <h2 class="panel-title" id="rankPanelTitle">Click a sample or move the threshold</h2>
+            <h2 class="panel-title" id="rankPanelTitle">Positives with a higher score than the selected negative</h2>
           </div>
-          <div class="panel-state" id="rankState">lower score → higher score</div>
+          <div class="panel-state" id="rankState">click a negative</div>
         </div>
         <div class="plot-wrap">
-          <svg id="rankPlot" viewBox="0 0 600 245" role="img" aria-label="Samples sorted from low score to high score with an interactive threshold"></svg>
+          <svg id="rankPlot" viewBox="0 0 600 245" role="img" aria-label="Samples on a score axis; positives above the selected negative are highlighted"></svg>
         </div>
       </section>
 
@@ -396,440 +402,404 @@
         <div class="panel-head">
           <div>
             <div class="panel-kicker">ROC geometry</div>
-            <h2 class="panel-title" id="rocPanelTitle">The same threshold crossing in rate coordinates</h2>
+            <h2 class="panel-title" id="rocPanelTitle">This negative's rectangle strip</h2>
           </div>
-          <div class="panel-state" id="rocState">negative → left</div>
+          <div class="panel-state" id="rocState">width 1/|N|, height T(x<sub>−</sub>)</div>
         </div>
         <div class="plot-wrap">
-          <svg id="rocPlot" viewBox="0 0 480 245" role="img" aria-label="Interactive ROC staircase with the current segment highlighted"></svg>
+          <svg id="rocPlot" viewBox="0 0 480 245" role="img" aria-label="ROC staircase with the selected negative's rectangle highlighted"></svg>
         </div>
       </section>
     </div>
 
     <div class="metrics" aria-live="polite">
       <div class="metric">
-        <div class="metric-label">current step</div>
-        <div class="metric-value" id="stepMetric"><strong>negative</strong>: ΔFPR = −1/|N|</div>
+        <div class="metric-label">selected negative</div>
+        <div class="metric-value" id="stepMetric"><span class="math">x<sub>7</sub></span> with <span class="math">S(x<sub>−</sub>) = 0.78</span></div>
       </div>
       <div class="metric">
-        <div class="metric-label">height before the step</div>
-        <div class="metric-value" id="heightMetric"><span class="math">T(x<sub>−</sub>) = #{x<sub>+</sub> ∈ P : S(x<sub>+</sub>) &gt; S(x<sub>−</sub>)}/|P| = 4/5</span></div>
+        <div class="metric-label">positives that outrank it</div>
+        <div class="metric-value" id="heightMetric"><span class="math">T(x<sub>−</sub>) = 2 / 5</span></div>
       </div>
       <div class="metric">
-        <div class="metric-label">area strip at this step</div>
-        <div class="metric-value" id="areaMetric"><span class="math">T(x<sub>−</sub>)/|N|</span> = 1/5</div>
+        <div class="metric-label">this negative's contribution</div>
+        <div class="metric-value" id="areaMetric"><span class="math">T(x<sub>−</sub>) / |N| = 2 / 20</span></div>
       </div>
     </div>
 
-    <figcaption><strong>The traversal direction does not change the area.</strong> Raising the threshold walks along the same ROC staircase from <span class="math">(1,1)</span> back to <span class="math">(0,0)</span>. For a negative <span class="math">x<sub>−</sub></span>, the leftward step still spans the strip of height <span class="math">T(x<sub>−</sub>)</span>, the fraction of positives ranked above it. Summing those strips gives <span class="math">AUC = (1/|N|) Σ<sub>x−</sub> T(x<sub>−</sub>)</span>.</figcaption>
+    <figcaption><strong>Every ordered pair, one negative at a time.</strong> The rectangle contributed by <span class="math">x<sub>−</sub></span> counts exactly the concordant pairs <span class="math">(x<sub>+</sub>, x<sub>−</sub>)</span> in which <span class="math">x<sub>+</sub></span> outranks this specific <span class="math">x<sub>−</sub></span>. Summing over the four negatives here gives <span class="math">(5 + 5 + 4 + 2) / (5 · 4) = 16 / 20 = 0.8</span> — the AUC.</figcaption>
   </figure>
 
   <script>
     (() => {
       'use strict';
 
-      // Samples are stored in ascending score order so the interaction follows
-      // the score axis from left to right. Raising the threshold removes each
-      // crossed sample from the predicted-positive set and therefore traverses
-      // the ordinary ROC staircase from (1,1) back to (0,0).
       const samples = [
-        { kind: 'N', score: 0.18 },
-        { kind: 'N', score: 0.30 },
-        { kind: 'P', score: 0.42 },
-        { kind: 'N', score: 0.53 },
-        { kind: 'P', score: 0.62 },
-        { kind: 'P', score: 0.70 },
-        { kind: 'N', score: 0.78 },
-        { kind: 'P', score: 0.89 },
-        { kind: 'P', score: 0.96 }
+        { kind: 'N', score: 0.18, label: 'x\u2081' },
+        { kind: 'N', score: 0.30, label: 'x\u2082' },
+        { kind: 'P', score: 0.42, label: 'x\u2083' },
+        { kind: 'N', score: 0.53, label: 'x\u2084' },
+        { kind: 'P', score: 0.62, label: 'x\u2085' },
+        { kind: 'P', score: 0.70, label: 'x\u2086' },
+        { kind: 'N', score: 0.78, label: 'x\u2087' },
+        { kind: 'P', score: 0.89, label: 'x\u2088' },
+        { kind: 'P', score: 0.96, label: 'x\u2089' }
       ];
 
-      const totalP = samples.filter(d => d.kind === 'P').length;
+      const totalP = samples.filter(s => s.kind === 'P').length;
       const totalN = samples.length - totalP;
-      const defaultStep = 4;
+      const NS = 'http://www.w3.org/2000/svg';
+
+      const negativeIndices = samples
+        .map((s, i) => (s.kind === 'N' ? i : -1))
+        .filter(i => i >= 0);
+
+      // Order negatives by DECREASING score. The k-th such negative (0-indexed)
+      // owns the ROC rectangle strip x in [k/|N|, (k+1)/|N|].
+      const negativeOrder = negativeIndices
+        .slice()
+        .sort((a, b) => samples[b].score - samples[a].score);
+      const negativeRank = new Map();
+      negativeOrder.forEach((idx, rank) => negativeRank.set(idx, rank));
+
+      // T(x_-) for each negative index.
+      const heightAt = new Map();
+      negativeIndices.forEach(idx => {
+        const s = samples[idx].score;
+        const above = samples.filter(x => x.kind === 'P' && x.score > s).length;
+        heightAt.set(idx, above / totalP);
+      });
+
+      // The ROC staircase, sorted by decreasing score.
+      const rocPoints = [{ fpr: 0, tpr: 0 }];
+      const rocOwners = []; // owner sample index for the segment ending at rocPoints[i+1]
+      const scoreSorted = samples
+        .map((s, i) => ({ ...s, idx: i }))
+        .sort((a, b) => b.score - a.score);
+      let tp = 0;
+      let fp = 0;
+      scoreSorted.forEach(sample => {
+        if (sample.kind === 'P') tp += 1;
+        else fp += 1;
+        rocPoints.push({ fpr: fp / totalN, tpr: tp / totalP });
+        rocOwners.push(sample.idx);
+      });
+
       const figure = document.getElementById('rankingFigure');
-      const sweep = document.getElementById('sweep');
-      const processedValue = document.getElementById('processedValue');
-      const thresholdValue = document.getElementById('thresholdValue');
-      const rankState = document.getElementById('rankState');
-      const rocState = document.getElementById('rocState');
-      const stepMetric = document.getElementById('stepMetric');
-      const heightMetric = document.getElementById('heightMetric');
-      const areaMetric = document.getElementById('areaMetric');
       const rankPlot = document.getElementById('rankPlot');
       const rocPlot = document.getElementById('rocPlot');
       const workspace = document.getElementById('workspace');
       const rankTab = document.getElementById('rankTab');
       const rocTab = document.getElementById('rocTab');
-      const NS = 'http://www.w3.org/2000/svg';
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const selectedValue = document.getElementById('selectedValue');
+      const rankState = document.getElementById('rankState');
+      const rocState = document.getElementById('rocState');
+      const stepMetric = document.getElementById('stepMetric');
+      const heightMetric = document.getElementById('heightMetric');
+      const areaMetric = document.getElementById('areaMetric');
+      const resetButton = document.getElementById('resetButton');
 
-      let displayedK = defaultStep;
-      let targetK = defaultStep;
-      let animationFrame = 0;
-      let dragging = false;
+      // Default selection: x_7 (the tightest example, T = 2/5).
+      let selectedIndex = 6;
 
       function node(name, attrs = {}, text = '') {
         const el = document.createElementNS(NS, name);
-        Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, String(value)));
+        Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, String(v)));
         if (text) el.textContent = text;
         return el;
       }
 
       function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
-      function clamp(value, low, high) { return Math.min(high, Math.max(low, value)); }
-      function lerp(a, b, t) { return a + (b - a) * t; }
-      function easeInOutCubic(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
 
-      function reverseRocPoints() {
-        let p = totalP;
-        let n = totalN;
-        const result = [{ fpr: 1, tpr: 1 }];
-        samples.forEach(sample => {
-          if (sample.kind === 'P') p -= 1;
-          else n -= 1;
-          result.push({ fpr: n / totalN, tpr: p / totalP });
-        });
-        return result;
-      }
+      // ---- Score-ordering panel ----
 
-      const points = reverseRocPoints();
-
-      function thresholdPosition(k, x0, x1, step) {
-        const positions = [x0 - step * .55];
-        for (let i = 1; i < samples.length; i += 1) positions.push(x0 + (i - .5) * step);
-        positions.push(x1 + step * .55);
-        const bounded = clamp(k, 0, samples.length);
-        const low = Math.floor(bounded);
-        const high = Math.ceil(bounded);
-        return lerp(positions[low], positions[high], bounded - low);
-      }
-
-      // The active step is always the sample immediately to the right of the
-      // threshold. At an integer state k, that is sample k (the next crossing),
-      // not sample k - 1 (the crossing that just finished). This keeps the
-      // semantic state continuous when an animation begins at k.
-      function activeStepAt(k) {
-        const bounded = clamp(k, 0, samples.length);
-        if (bounded >= samples.length) {
-          return { current: null, index: -1, fraction: 1, before: points[points.length - 1] };
-        }
-        const index = Math.floor(bounded);
-        return {
-          current: samples[index],
-          index,
-          fraction: bounded - index,
-          before: points[index]
-        };
-      }
-
-      function renderRanking(k) {
+      function renderRank() {
         clear(rankPlot);
-        const x0 = 48;
-        const x1 = 552;
-        const y = 116;
-        const step = (x1 - x0) / (samples.length - 1);
-        const thresholdX = thresholdPosition(k, x0, x1, step);
-        const stepInfo = activeStepAt(k);
-        const activeIndex = stepInfo.current ? stepInfo.index : null;
 
+        // Coordinate system inside the viewBox 600x245.
+        const left = 48, right = 552, axisY = 168;
+        const sampleY = 108;
+
+        // Draw axis.
         rankPlot.append(
-          node('line', { x1: x0 - 22, y1: y, x2: x1 + 22, y2: y, class: 'axis' }),
-          node('line', { x1: thresholdX, y1: 45, x2: thresholdX, y2: 190, class: 'guide' }),
-          node('text', { x: x0 - 22, y: 31, 'font-size': 12, class: 'svg-accent' }, 'lower score'),
-          node('text', { x: x1 + 22, y: 31, 'font-size': 12, 'text-anchor': 'end', class: 'svg-accent' }, 'higher score'),
-          node('text', { x: x0, y: 207, 'font-size': 11, class: 'svg-muted' }, 'score < threshold'),
-          node('text', { x: x1, y: 207, 'font-size': 11, 'text-anchor': 'end', class: 'svg-muted' }, 'score ≥ threshold')
+          node('line', { x1: left, y1: axisY, x2: right, y2: axisY, class: 'axis' }),
+          node('text', { x: left, y: axisY + 22, 'font-size': 11, class: 'svg-muted' }, 'lower score'),
+          node('text', { x: right, y: axisY + 22, 'font-size': 11, 'text-anchor': 'end', class: 'svg-muted' }, 'higher score')
         );
 
-        samples.forEach((sample, index) => {
-          const x = x0 + index * step;
-          const crossed = clamp(k - index, 0, 1);
-          const crossingPulse = 4 * crossed * (1 - crossed);
-          const opacity = 1 - .67 * crossed;
-          const scale = 1 + .14 * crossingPulse;
-          const isActive = index === activeIndex;
-          const g = node('g', {
-            class: `sample sample--${sample.kind.toLowerCase()} ${isActive ? 'sample--current' : ''}`,
-            tabindex: '0',
-            role: 'button',
-            'aria-label': `Score ${sample.score.toFixed(2)}: ${sample.kind === 'P' ? 'positive' : 'negative'} sample; raise threshold past this score`,
-            'data-index': index,
-            style: `opacity:${opacity.toFixed(3)};transform:scale(${scale.toFixed(3)})`
-          });
-          g.append(
-            node('circle', { cx: x, cy: y, r: 17 }),
-            node('text', { x, y: y + 4, 'text-anchor': 'middle', class: 'sample-label' }, sample.kind),
-            node('text', { x, y: y + 35, 'text-anchor': 'middle', 'font-size': 10, class: 'svg-muted' }, sample.score.toFixed(2))
+        const selected = samples[selectedIndex];
+        const selectedScore = selected.score;
+
+        // Sample X-positions: proportional to their score (min score at left, max at right).
+        const minScore = samples[0].score;
+        const maxScore = samples[samples.length - 1].score;
+        const xFor = score => left + ((score - minScore) / (maxScore - minScore)) * (right - left);
+
+        // Bracket over the "positives above the selected negative".
+        const abovePositives = samples
+          .map((s, i) => ({ ...s, i }))
+          .filter(s => s.kind === 'P' && s.score > selectedScore);
+
+        if (abovePositives.length > 0) {
+          const bx1 = xFor(abovePositives[0].score);
+          const bx2 = xFor(abovePositives[abovePositives.length - 1].score);
+          const by = sampleY - 44;
+          rankPlot.append(
+            node('path', {
+              d: `M ${bx1} ${by + 8} L ${bx1} ${by} L ${bx2} ${by} L ${bx2} ${by + 8}`,
+              fill: 'none',
+              stroke: 'var(--accent)',
+              'stroke-width': 1.6,
+              'stroke-linecap': 'round'
+            }),
+            node('text', {
+              x: (bx1 + bx2) / 2,
+              y: by - 6,
+              'font-size': 12,
+              'text-anchor': 'middle',
+              'font-weight': 700,
+              class: 'svg-accent'
+            }, `${abovePositives.length} positives above`)
           );
-          rankPlot.append(g);
-        });
+        }
 
-        const completed = Math.floor(clamp(k + 1e-7, 0, samples.length));
-        const processedP = samples.slice(0, completed).filter(d => d.kind === 'P').length;
-        const processedN = completed - processedP;
-        const remaining = samples.length - completed;
+        // Vertical guide line at the selected negative's score.
+        const sx = xFor(selectedScore);
         rankPlot.append(
-          node('text', { x: x0, y: 232, 'font-size': 11, class: 'svg-muted' }, `crossed: ${processedP} positive, ${processedN} negative`),
-          node('text', { x: x1, y: 232, 'font-size': 11, 'text-anchor': 'end', class: 'svg-muted' }, `${remaining} remain above threshold`)
+          node('line', {
+            x1: sx, y1: sampleY - 22,
+            x2: sx, y2: axisY,
+            class: 'guide'
+          }),
+          node('text', {
+            x: sx, y: axisY + 40,
+            'font-size': 11, 'text-anchor': 'middle',
+            class: 'svg-accent'
+          }, `S(x\u208B) = ${selectedScore.toFixed(2)}`)
         );
+
+        // Draw samples.
+        samples.forEach((sample, i) => {
+          const isSelected = i === selectedIndex;
+          const isAbovePositive = sample.kind === 'P' && sample.score > selectedScore;
+          const isBelowPositive = sample.kind === 'P' && sample.score <= selectedScore;
+          const cx = xFor(sample.score);
+
+          const group = node('g', {
+            class: `sample sample--${sample.kind.toLowerCase()}${isBelowPositive ? ' sample--future' : ''}`,
+            'data-index': i,
+            tabindex: sample.kind === 'N' ? 0 : -1,
+            role: sample.kind === 'N' ? 'button' : 'presentation',
+            'aria-pressed': sample.kind === 'N' ? String(isSelected) : undefined,
+            'aria-label': sample.kind === 'N' ? `Negative ${sample.label} with score ${sample.score.toFixed(2)}` : undefined
+          });
+
+          if (isSelected) group.setAttribute('class', group.getAttribute('class') + ' sample--current');
+
+          const r = isSelected ? 16 : 14;
+          group.append(node('circle', { cx, cy: sampleY, r }));
+          group.append(node('text', {
+            x: cx, y: sampleY + 4,
+            'text-anchor': 'middle',
+            class: 'sample-label'
+          }, sample.kind));
+
+          // Sample label below (x_i and score).
+          group.append(node('text', {
+            x: cx, y: sampleY + 44,
+            'text-anchor': 'middle',
+            'font-size': 11,
+            class: 'svg-muted'
+          }, sample.label));
+          group.append(node('text', {
+            x: cx, y: sampleY + 58,
+            'text-anchor': 'middle',
+            'font-size': 10,
+            class: 'svg-muted'
+          }, sample.score.toFixed(2)));
+
+          if (isAbovePositive) {
+            group.setAttribute('opacity', '1');
+          }
+          if (isBelowPositive) {
+            group.setAttribute('opacity', '0.28');
+          }
+
+          if (sample.kind === 'N') {
+            group.addEventListener('click', () => select(i));
+            group.addEventListener('keydown', ev => {
+              if (ev.key === 'Enter' || ev.key === ' ') {
+                ev.preventDefault();
+                select(i);
+              }
+            });
+          }
+          rankPlot.appendChild(group);
+        });
       }
 
-      function renderRoc(k) {
-        clear(rocPlot);
-        const left = 54;
-        const right = 446;
-        const top = 24;
-        const bottom = 207;
-        const X = value => left + value * (right - left);
-        const Y = value => bottom - value * (bottom - top);
+      // ---- ROC panel ----
 
-        [0, .25, .5, .75, 1].forEach(value => {
+      function renderRoc() {
+        clear(rocPlot);
+
+        const left = 56, right = 448, top = 20, bottom = 200;
+        const width = right - left, height = bottom - top;
+        const X = fpr => left + fpr * width;
+        const Y = tpr => bottom - tpr * height;
+
+        // Grid lines.
+        [0, .25, .5, .75, 1].forEach(v => {
           rocPlot.append(
-            node('line', { x1: X(value), y1: top, x2: X(value), y2: bottom, class: 'grid' }),
-            node('line', { x1: left, y1: Y(value), x2: right, y2: Y(value), class: 'grid' })
+            node('line', { x1: X(v), y1: top, x2: X(v), y2: bottom, class: 'grid' }),
+            node('line', { x1: left, y1: Y(v), x2: right, y2: Y(v), class: 'grid' }),
+            node('text', {
+              x: X(v), y: bottom + 14,
+              'font-size': 10, 'text-anchor': 'middle', class: 'svg-muted'
+            }, v.toString()),
+            node('text', {
+              x: left - 6, y: Y(v) + 3,
+              'font-size': 10, 'text-anchor': 'end', class: 'svg-muted'
+            }, v.toString())
           );
         });
+
+        // Axes.
         rocPlot.append(
           node('line', { x1: left, y1: bottom, x2: right, y2: bottom, class: 'axis' }),
           node('line', { x1: left, y1: bottom, x2: left, y2: top, class: 'axis' }),
-          node('text', { x: (left + right) / 2, y: 237, 'font-size': 12, 'text-anchor': 'middle', class: 'svg-muted' }, 'false-positive rate'),
-          node('text', { x: 15, y: (top + bottom) / 2, 'font-size': 12, 'text-anchor': 'middle', class: 'svg-muted', transform: `rotate(-90 15 ${(top + bottom) / 2})` }, 'true-positive rate')
+          node('text', {
+            x: (left + right) / 2, y: bottom + 32,
+            'font-size': 11, 'text-anchor': 'middle', class: 'svg-muted'
+          }, 'FPR'),
+          node('text', {
+            x: 16, y: (top + bottom) / 2,
+            'font-size': 11, 'text-anchor': 'middle', class: 'svg-muted',
+            transform: `rotate(-90 16 ${(top + bottom) / 2})`
+          }, 'TPR')
         );
 
-        const pathData = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${X(point.fpr)} ${Y(point.tpr)}`).join(' ');
-        rocPlot.append(node('path', { d: pathData, class: 'roc-path' }));
-
-        const stepInfo = activeStepAt(k);
-        if (!stepInfo.current) {
-          const endPoint = points[points.length - 1];
-          rocPlot.append(node('circle', { cx: X(endPoint.fpr), cy: Y(endPoint.tpr), r: 6.5, fill: 'var(--accent)', stroke: 'var(--panel)', 'stroke-width': 3 }));
-          return;
-        }
-
-        const current = stepInfo.current;
-        const start = points[stepInfo.index];
-        const end = points[stepInfo.index + 1];
-        const endpoint = {
-          fpr: lerp(start.fpr, end.fpr, stepInfo.fraction),
-          tpr: lerp(start.tpr, end.tpr, stepInfo.fraction)
-        };
-
-        if (current.kind === 'N') {
+        // Faint rectangles for every negative (light context).
+        negativeIndices.forEach(negIdx => {
+          const rank = negativeRank.get(negIdx);
+          const h = heightAt.get(negIdx);
+          if (h <= 0) return;
+          const x1 = X(rank / totalN);
+          const x2 = X((rank + 1) / totalN);
+          const y1 = Y(h);
+          const y2 = Y(0);
           rocPlot.append(node('rect', {
-            x: X(endpoint.fpr),
-            y: Y(start.tpr),
-            width: Math.max(0, X(start.fpr) - X(endpoint.fpr)),
-            height: bottom - Y(start.tpr),
+            x: x1, y: y1, width: x2 - x1, height: y2 - y1,
+            fill: 'var(--accent-soft)',
+            stroke: 'var(--accent)',
+            'stroke-width': .7,
+            opacity: negIdx === selectedIndex ? 0 : 0.45
+          }));
+        });
+
+        // Selected negative's rectangle — highlighted.
+        const selRank = negativeRank.get(selectedIndex);
+        const selH = heightAt.get(selectedIndex) || 0;
+        if (selRank !== undefined) {
+          const x1 = X(selRank / totalN);
+          const x2 = X((selRank + 1) / totalN);
+          const y1 = Y(selH);
+          const y2 = Y(0);
+          rocPlot.append(node('rect', {
+            x: x1, y: y1, width: x2 - x1, height: y2 - y1,
             class: 'area-strip'
           }));
-        }
 
-        rocPlot.append(
-          node('line', {
-            x1: X(start.fpr), y1: Y(start.tpr),
-            x2: X(endpoint.fpr), y2: Y(endpoint.tpr),
-            class: 'active-segment'
-          }),
-          node('circle', {
-            cx: X(endpoint.fpr), cy: Y(endpoint.tpr), r: 6.5,
-            fill: 'var(--accent)', stroke: 'var(--panel)', 'stroke-width': 3
-          })
-        );
-
-        if (stepInfo.fraction > .12) {
+          // T(x_-) height annotation on the left edge of the rectangle.
+          rocPlot.append(node('line', {
+            x1: x1 - 6, y1: Y(selH),
+            x2: x1 - 6, y2: Y(0),
+            stroke: 'var(--accent)', 'stroke-width': 1.2
+          }));
           rocPlot.append(node('text', {
-            x: current.kind === 'N' ? (X(start.fpr) + X(endpoint.fpr)) / 2 : X(endpoint.fpr) + 10,
-            y: current.kind === 'N' ? Y(start.tpr) - 10 : (Y(start.tpr) + Y(endpoint.tpr)) / 2,
-            'font-size': 11,
-            'text-anchor': current.kind === 'N' ? 'middle' : 'start',
+            x: x1 - 10, y: (Y(selH) + Y(0)) / 2 + 3,
+            'font-size': 11, 'text-anchor': 'end',
             class: 'svg-accent'
-          }, current.kind === 'N' ? 'left by 1/|N|' : 'down by 1/|P|'));
-        }
-      }
+          }, `T(x\u208B) = ${formatFraction(selH * totalP, totalP)}`));
 
-      function formatFraction(numerator, denominator) {
-        if (numerator === 0) return '0';
-        if (numerator === denominator) return '1';
-        const gcd = (a, b) => b === 0 ? Math.abs(a) : gcd(b, a % b);
-        const divisor = gcd(numerator, denominator);
-        return `${numerator / divisor}/${denominator / divisor}`;
-      }
-
-
-      function updateText(k, settled = false) {
-        const bounded = clamp(k, 0, samples.length);
-        const low = Math.floor(bounded + 1e-7);
-        const high = Math.min(samples.length, Math.ceil(bounded - 1e-7));
-        const info = activeStepAt(bounded);
-
-        if (!settled && high > low) processedValue.textContent = `${low} → ${high} / ${samples.length}`;
-        else processedValue.textContent = `${Math.round(bounded)} / ${samples.length}`;
-
-        if (bounded <= 0) {
-          thresholdValue.textContent = 'below every score';
-        } else if (bounded >= samples.length) {
-          thresholdValue.textContent = 'above every score';
-        } else if (!settled && info.current) {
-          thresholdValue.textContent = `crossing ${info.current.score.toFixed(2)}`;
-        } else {
-          thresholdValue.textContent = `after score ${samples[Math.round(bounded) - 1].score.toFixed(2)}`;
+          // Width annotation on the bottom edge.
+          rocPlot.append(node('text', {
+            x: (x1 + x2) / 2, y: Y(0) + 12,
+            'font-size': 10, 'text-anchor': 'middle',
+            class: 'svg-accent'
+          }, `1/|N|`));
         }
 
-        if (!info.current) {
-          rankState.textContent = 'all scores crossed';
-          rocState.textContent = 'finish at (0, 0)';
-          stepMetric.innerHTML = '<strong>complete</strong>: no sample remains above threshold';
-          heightMetric.innerHTML = '<span class="math">TPR = 0</span>';
-          areaMetric.innerHTML = '<span class="math">0</span>';
-          return;
+        // ROC staircase path.
+        let d = `M ${X(rocPoints[0].fpr)} ${Y(rocPoints[0].tpr)}`;
+        for (let i = 1; i < rocPoints.length; i += 1) {
+          d += ` L ${X(rocPoints[i].fpr)} ${Y(rocPoints[i].tpr)}`;
         }
+        rocPlot.append(node('path', { d, class: 'roc-path' }));
 
-        const positivesAbove = Math.round(info.before.tpr * totalP);
-        rankState.textContent = `${info.current.kind === 'P' ? 'positive' : 'negative'} at score ${info.current.score.toFixed(2)}`;
-        rocState.textContent = info.current.kind === 'P' ? 'positive → down' : 'negative → left';
-
-        if (info.current.kind === 'P') {
-          stepMetric.innerHTML = '<strong>positive</strong>: ΔTPR = −1/|P|';
-          heightMetric.innerHTML = `<span class="math">TPR</span> falls from ${formatFraction(positivesAbove, totalP)}`;
-          areaMetric.innerHTML = '<span class="math">0</span> — a vertical step has zero width';
-        } else {
-          const areaNumerator = positivesAbove;
-          const areaDenominator = totalP * totalN;
-          stepMetric.innerHTML = '<strong>negative</strong>: ΔFPR = −1/|N|';
-          heightMetric.innerHTML = `<span class="math">T(x<sub>−</sub>) = #{x<sub>+</sub> ∈ P : S(x<sub>+</sub>) &gt; S(x<sub>−</sub>)}/|P| = ${formatFraction(positivesAbove, totalP)}</span>`;
-          areaMetric.innerHTML = `<span class="math">T(x<sub>−</sub>)/|N| = (${formatFraction(positivesAbove, totalP)})(1/${totalN}) = ${formatFraction(areaNumerator, areaDenominator)}</span>`;
-        }
+        // Diagonal baseline.
+        rocPlot.append(node('line', {
+          x1: X(0), y1: Y(0),
+          x2: X(1), y2: Y(1),
+          stroke: 'var(--line-strong)',
+          'stroke-width': 1,
+          'stroke-dasharray': '4 6',
+          opacity: 0.6
+        }));
       }
 
-      function renderVisuals(k, settled = false) {
-        renderRanking(k);
-        renderRoc(k);
-        updateText(k, settled);
-        figure.dataset.step = String(k);
+      function formatFraction(num, den) {
+        // Simple integer fraction like "2/5" (samples chosen so heights are always /|P|).
+        return `${Math.round(num)}/${den}`;
       }
 
-      function animateTo(nextK, immediate = false) {
-        nextK = clamp(Number(nextK), 0, samples.length);
-        targetK = nextK;
-        if (animationFrame) cancelAnimationFrame(animationFrame);
+      function updateReadouts() {
+        const negNumber = selectedIndex + 1;
+        selectedValue.innerHTML = `x<sub>${negNumber}</sub> \u00b7 negative`;
+        rankState.textContent = `S(x\u208B) = ${samples[selectedIndex].score.toFixed(2)}`;
 
-        const startK = displayedK;
-        const delta = nextK - startK;
-        if (immediate || reducedMotion.matches || Math.abs(delta) < 1e-6) {
-          displayedK = nextK;
-          sweep.value = String(nextK);
-          renderVisuals(displayedK, true);
-          reportHeight();
-          return;
-        }
+        const h = heightAt.get(selectedIndex) || 0;
+        const heightNum = Math.round(h * totalP);
+        const areaNum = heightNum;
 
-        // An adjacent state deliberately takes long enough to make the threshold,
-        // sample crossing, ROC endpoint, and area strip visibly move together.
-        const duration = Math.min(1400, 680 + Math.max(0, Math.abs(delta) - 1) * 120);
-        let startTime = 0;
-
-        function frame(time) {
-          if (!startTime) startTime = time;
-          const progress = clamp((time - startTime) / duration, 0, 1);
-          displayedK = lerp(startK, nextK, easeInOutCubic(progress));
-          sweep.value = String(displayedK);
-          renderVisuals(displayedK, false);
-
-          if (progress < 1) {
-            animationFrame = requestAnimationFrame(frame);
-          } else {
-            animationFrame = 0;
-            displayedK = nextK;
-            sweep.value = String(nextK);
-            renderVisuals(displayedK, true);
-            reportHeight();
-          }
-        }
-
-        animationFrame = requestAnimationFrame(frame);
+        rocState.innerHTML = `width 1/|N| = 1/${totalN}, height T = ${heightNum}/${totalP}`;
+        stepMetric.innerHTML = `<span class="math">x<sub>${negNumber}</sub></span> with <span class="math">S(x<sub>\u2212</sub>) = ${samples[selectedIndex].score.toFixed(2)}</span>`;
+        heightMetric.innerHTML = `<span class="math">T(x<sub>\u2212</sub>) = ${heightNum} / ${totalP}</span>`;
+        areaMetric.innerHTML = `<span class="math">T(x<sub>\u2212</sub>) / |N| = ${areaNum} / ${totalP * totalN}</span>`;
       }
 
-      let heightFrame = 0;
-      function reportHeight() {
-        if (heightFrame) cancelAnimationFrame(heightFrame);
-        heightFrame = requestAnimationFrame(() => {
-          heightFrame = requestAnimationFrame(() => {
-            heightFrame = 0;
-            const rect = figure.getBoundingClientRect();
-            const height = Math.ceil(rect.bottom + window.scrollY + 2);
-            try {
-              if (window.frameElement) {
-                window.frameElement.style.minHeight = '0px';
-                window.frameElement.style.height = `${height}px`;
-              }
-            } catch (_) {}
-            if (window.parent !== window) window.parent.postMessage({ type: 'article-visualization-resize', height }, '*');
-          });
-        });
+      function select(i) {
+        if (samples[i].kind !== 'N') return;
+        selectedIndex = i;
+        renderRank();
+        renderRoc();
+        updateReadouts();
       }
 
-      function syncParentTheme() {
-        try {
-          const parentTheme = window.parent.document.documentElement.dataset.theme;
-          if (parentTheme) document.documentElement.dataset.theme = parentTheme;
-        } catch (_) {}
-      }
-
-      function setMobilePanel(panel) {
-        workspace.dataset.mobilePanel = panel;
-        const rankActive = panel === 'rank';
-        rankTab.classList.toggle('is-active', rankActive);
-        rocTab.classList.toggle('is-active', !rankActive);
-        rankTab.setAttribute('aria-selected', String(rankActive));
-        rocTab.setAttribute('aria-selected', String(!rankActive));
-        reportHeight();
-      }
-
-      function activateSample(event) {
-        const sample = event.target.closest('[data-index]');
-        if (!sample) return;
-        animateTo(Number(sample.dataset.index) + 1);
-      }
-
-      rankPlot.addEventListener('click', activateSample);
-      rankPlot.addEventListener('keydown', event => {
-        if (event.key !== 'Enter' && event.key !== ' ') return;
-        if (!event.target.closest('[data-index]')) return;
-        event.preventDefault();
-        activateSample(event);
-      });
-      rankTab.addEventListener('click', () => setMobilePanel('rank'));
-      rocTab.addEventListener('click', () => setMobilePanel('roc'));
-
-      sweep.addEventListener('pointerdown', () => {
-        dragging = true;
-        if (animationFrame) cancelAnimationFrame(animationFrame);
-      });
-      sweep.addEventListener('input', () => {
-        if (!dragging) return;
-        displayedK = clamp(Number(sweep.value), 0, samples.length);
-        targetK = displayedK;
-        renderVisuals(displayedK, Number.isInteger(displayedK));
-      });
-      sweep.addEventListener('change', () => {
-        dragging = false;
-        animateTo(Math.round(Number(sweep.value)));
-      });
-      sweep.addEventListener('keydown', event => {
-        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-        event.preventDefault();
-        if (event.key === 'Home') animateTo(0);
-        else if (event.key === 'End') animateTo(samples.length);
-        else animateTo(clamp(Math.round(displayedK) + (event.key === 'ArrowRight' ? 1 : -1), 0, samples.length));
+      resetButton.addEventListener('click', () => {
+        const currentRankPos = negativeIndices.indexOf(selectedIndex);
+        const next = negativeIndices[(currentRankPos + 1) % negativeIndices.length];
+        select(next);
       });
 
-      window.addEventListener('resize', reportHeight, { passive: true });
-      window.addEventListener('load', reportHeight, { once: true });
-      if ('ResizeObserver' in window) new ResizeObserver(reportHeight).observe(figure);
+      rankTab.addEventListener('click', () => {
+        workspace.dataset.mobilePanel = 'rank';
+        rankTab.classList.add('is-active');
+        rankTab.setAttribute('aria-selected', 'true');
+        rocTab.classList.remove('is-active');
+        rocTab.setAttribute('aria-selected', 'false');
+      });
+      rocTab.addEventListener('click', () => {
+        workspace.dataset.mobilePanel = 'roc';
+        rocTab.classList.add('is-active');
+        rocTab.setAttribute('aria-selected', 'true');
+        rankTab.classList.remove('is-active');
+        rankTab.setAttribute('aria-selected', 'false');
+      });
 
-      syncParentTheme();
-      animateTo(defaultStep, true);
+      renderRank();
+      renderRoc();
+      updateReadouts();
     })();
   </script>
 </body>

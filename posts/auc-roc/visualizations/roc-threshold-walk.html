@@ -4,6 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Build the ROC curve from the score ordering</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&display=swap">
+
   <style>
     :root {
       color-scheme: light;
@@ -48,7 +54,7 @@
 
     body {
       padding: 8px 0 12px;
-      font-family: Georgia, "Times New Roman", serif;
+      font-family: "Lora", Georgia, "Times New Roman", serif;
       font-size: 16px;
       line-height: 1.55;
       -webkit-font-smoothing: antialiased;
@@ -109,14 +115,15 @@
 
     h1,
     h2 {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-family: "Lora", Georgia, "Times New Roman", serif;
+      font-weight: 550;
       letter-spacing: -0.035em;
       line-height: 1.16;
     }
 
     h1 {
       max-width: 760px;
-      font-size: clamp(1.35rem, 3.1vw, 2.05rem);
+      font-size: clamp(1.48rem, 3.2vw, 2.22rem);
     }
 
     .viz-head > p:last-child {
@@ -549,7 +556,7 @@
       <p class="eyebrow">threshold sweep · one sample per step</p>
       <h1 id="roc-walk-title">Build the ROC curve from the score ordering</h1>
       <p>
-        The two panels show the same threshold state. Raising the threshold moves it from left to right through increasing scores; each sample left behind is removed from the predicted-positive set and produces exactly one downward or leftward ROC step.
+        The two panels show the same threshold state. Lowering the threshold moves it from right to left through decreasing scores; each sample the threshold drops past joins the predicted-positive set and produces exactly one upward or rightward ROC step.
       </p>
     </header>
 
@@ -575,16 +582,16 @@
       <article class="panel" aria-labelledby="score-title">
         <header class="panel-head">
           <span class="panel-kicker">1 · score ordering</span>
-          <h2 id="score-title">Raise t; the next sample leaves</h2>
+          <h2 id="score-title">Lower t; the next sample enters</h2>
           <p>
-            Scores increase from left to right. The threshold begins below every score and moves right, so the predicted-positive set remains the region to its right while low-scored samples leave it one at a time.
+            Scores increase from left to right. The threshold begins above every score and moves left. The predicted-positive set is everything to the right of the threshold, and it grows one sample at a time.
           </p>
         </header>
 
         <div class="graphic score-graphic">
           <svg id="score-svg" viewBox="0 0 560 276" role="img" aria-labelledby="score-svg-title score-svg-desc">
-            <title id="score-svg-title">Increasing threshold moving left to right through samples ordered by classifier score</title>
-            <desc id="score-svg-desc">Scores increase to the right. As the threshold moves right, low-scored samples leave the predicted-positive set one at a time.</desc>
+            <title id="score-svg-title">Threshold moving right to left through samples ordered by classifier score</title>
+            <desc id="score-svg-desc">Scores increase to the right. As the threshold moves left, high-scored samples enter the predicted-positive set one at a time.</desc>
             <defs>
               <marker id="score-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line-strong)"></path>
@@ -601,19 +608,19 @@
             <text x="52" y="205" font-size="11" class="svg-muted">lower score</text>
             <text x="520" y="205" text-anchor="end" font-size="11" class="svg-muted">higher score</text>
 
-            <line x1="76" y1="42" x2="500" y2="42" class="strong-line-stroke" stroke-width="1" marker-end="url(#score-arrow)"></line>
-            <text x="288" y="28" text-anchor="middle" font-size="11" class="svg-muted">threshold sweep as t increases</text>
+            <line x1="76" y1="42" x2="500" y2="42" class="strong-line-stroke" stroke-width="1" marker-start="url(#score-arrow)"></line>
+            <text x="288" y="28" text-anchor="middle" font-size="11" class="svg-muted">threshold sweep as t decreases</text>
 
             <g id="score-samples"></g>
 
             <g id="threshold-group">
               <line id="threshold-line" x1="536" y1="58" x2="536" y2="188" class="positive-stroke" stroke-width="2"></line>
               <path id="threshold-cap" d="M 529 58 L 543 58 L 536 68 Z" class="positive-fill"></path>
-              <rect id="threshold-pill" x="514" y="213" width="44" height="28" rx="14" class="surface-fill" stroke="var(--positive)" stroke-width="1.3"></rect>
-              <text id="threshold-text" x="536" y="232" text-anchor="middle" font-size="12" font-weight="700" fill="var(--positive-strong)">t</text>
+              <rect id="threshold-pill" x="494" y="213" width="84" height="28" rx="14" class="surface-fill" stroke="var(--positive)" stroke-width="1.3"></rect>
+              <text id="threshold-text" x="536" y="232" text-anchor="middle" font-size="12" font-weight="700" fill="var(--positive-strong)">t &gt; max S</text>
             </g>
 
-            <text x="52" y="256" font-size="10.5" class="svg-muted">leftmost sample leaves first</text>
+            <text x="500" y="256" text-anchor="end" font-size="10.5" class="svg-muted">rightmost sample enters first</text>
           </svg>
         </div>
 
@@ -628,14 +635,14 @@
           <span class="panel-kicker">2 · ROC space</span>
           <h2 id="roc-title">The same sample becomes one step</h2>
           <p>
-            Removing a positive changes only TPR, so the walk moves down. Removing a negative changes only FPR, so the walk moves left.
+            Adding a positive changes only TPR, so the walk moves up. Adding a negative changes only FPR, so the walk moves right.
           </p>
         </header>
 
         <div class="graphic">
           <svg id="roc-svg" viewBox="0 0 560 420" role="img" aria-labelledby="roc-svg-title roc-svg-desc">
             <title id="roc-svg-title">ROC staircase traced one ordered sample at a time</title>
-            <desc id="roc-svg-desc">Removing positive samples creates downward steps of one over the number of positives. Removing negative samples creates leftward steps of one over the number of negatives.</desc>
+            <desc id="roc-svg-desc">Adding positive samples creates upward steps of one over the number of positives. Adding negative samples creates rightward steps of one over the number of negatives.</desc>
             <defs>
               <marker id="roc-positive-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--positive)"></path>
@@ -662,7 +669,7 @@
 
             <g id="active-step-label" visibility="hidden">
               <rect id="active-step-label-bg" x="0" y="0" width="92" height="28" rx="14" class="surface-fill" stroke="var(--positive)" stroke-width="1.2"></rect>
-              <text id="active-step-label-text" x="46" y="19" text-anchor="middle" font-size="10.5" font-weight="700">−1 / |P|</text>
+              <text id="active-step-label-text" x="46" y="19" text-anchor="middle" font-size="10.5" font-weight="700">+1 / |P|</text>
             </g>
 
             <circle id="roc-marker-halo" cx="78" cy="342" r="10" fill="var(--positive-soft)" opacity="0.9"></circle>
@@ -671,8 +678,8 @@
         </div>
 
         <div class="legend" aria-label="ROC step legend">
-          <span class="legend-item positive">downward step = remove positive</span>
-          <span class="legend-item negative">leftward step = remove negative</span>
+          <span class="legend-item positive">upward step = positive enters</span>
+          <span class="legend-item negative">rightward step = negative enters</span>
         </div>
       </article>
     </section>
@@ -686,19 +693,19 @@
     <section class="readout" aria-label="Current threshold state">
       <div class="metric">
         <span class="metric-label">threshold state</span>
-        <span class="metric-value" id="state-value">k = 0</span>
-        <span class="metric-note" id="state-note">Every sample is predicted positive.</span>
+        <span class="metric-value" id="state-value">t > max S</span>
+        <span class="metric-note" id="state-note">No sample is predicted positive.</span>
       </div>
 
       <div class="metric">
         <span class="metric-label">class counts</span>
-        <span class="metric-value" id="count-value">TP = 5, FP = 5</span>
+        <span class="metric-value" id="count-value">TP = 0, FP = 0</span>
         <span class="metric-note">|P| = 5 and |N| = 5 in this ordering.</span>
       </div>
 
       <div class="metric">
         <span class="metric-label">ROC point</span>
-        <span class="metric-value" id="point-value">(F₀, T₀) = (1, 1)</span>
+        <span class="metric-value" id="point-value">(F₀, T₀) = (0, 0)</span>
         <span class="metric-note" id="point-note">F₀ = FP / |N|, T₀ = TP / |P|</span>
       </div>
     </section>
@@ -706,9 +713,9 @@
     <section class="step-explanation" aria-live="polite" aria-atomic="true">
       <div class="class-badge" id="class-badge">t</div>
       <div class="step-copy">
-        <strong id="step-title">Threshold below every score</strong>
-        <p id="step-description">Start at (F₀, T₀) = (1, 1). Press next to raise the threshold past the lowest-scored sample.</p>
-        <div class="step-formula" id="step-formula">predicted positive set = all samples</div>
+        <strong id="step-title">Threshold above every score</strong>
+        <p id="step-description">Start at (F₀, T₀) = (0, 0). Press next to lower the threshold past the highest-scored sample.</p>
+        <div class="step-formula" id="step-formula">predicted positive set = ∅</div>
       </div>
     </section>
 
@@ -777,24 +784,29 @@
       const scoreAxis = { left: 72, right: 500, y: 146 };
       const scoreSpacing = (scoreAxis.right - scoreAxis.left) / (samples.length - 1);
       const sampleX = samples.map((_, index) => scoreAxis.left + index * scoreSpacing);
-      const thresholdX = [scoreAxis.left - 30];
-
+      // Threshold at step k sits between rank (k+1) [not yet in] and rank k [just entered].
+      // Rank k is at sample index (samples.length - k), rank (k+1) at (samples.length - k - 1).
+      const thresholdX = [scoreAxis.right + 36];  // step 0: threshold above all scores
       for (let k = 1; k < samples.length; k += 1) {
-        thresholdX.push((sampleX[k - 1] + sampleX[k]) / 2);
+        const rightIdx = samples.length - k;      // rank k, just included
+        const leftIdx = rightIdx - 1;             // rank k+1, not yet
+        thresholdX.push((sampleX[leftIdx] + sampleX[rightIdx]) / 2);
       }
-      thresholdX.push(scoreAxis.right + 36);
+      thresholdX.push(scoreAxis.left - 30);       // step N: threshold below all scores
 
       const rocPlot = { left: 78, right: 510, top: 42, bottom: 342 };
       const rocX = fpr => rocPlot.left + fpr * (rocPlot.right - rocPlot.left);
       const rocY = tpr => rocPlot.bottom - tpr * (rocPlot.bottom - rocPlot.top);
 
-      const states = [{ tp: P, fp: N, fpr: 1, tpr: 1 }];
-      samples.forEach(sample => {
+      const states = [{ tp: 0, fp: 0, fpr: 0, tpr: 0 }];
+      // Process samples in reverse index order (highest score first, rank 1 first).
+      // At step k, the top-k highest-scored samples have joined the predicted-positive set.
+      for (let i = samples.length - 1; i >= 0; i -= 1) {
         const previous = states[states.length - 1];
-        const tp = previous.tp - (sample.positive ? 1 : 0);
-        const fp = previous.fp - (sample.positive ? 0 : 1);
+        const tp = previous.tp + (samples[i].positive ? 1 : 0);
+        const fp = previous.fp + (samples[i].positive ? 0 : 1);
         states.push({ tp, fp, fpr: fp / N, tpr: tp / P });
-      });
+      }
 
       let step = 0;
       let visualPosition = 0;
@@ -979,29 +991,32 @@
         elements.thresholdCap.setAttribute('d', `M ${x - 7} 58 L ${x + 7} 58 L ${x} 68 Z`);
         elements.thresholdPill.setAttribute('x', x - 22);
         elements.thresholdText.setAttribute('x', x);
-        elements.thresholdText.textContent = full === samples.length ? 't > max S' : full === 0 ? 't < min S' : 't';
+        elements.thresholdText.textContent = full === samples.length ? 't < min S' : full === 0 ? 't > max S' : 't';
 
         const pillWidth = full === samples.length || full === 0 ? 84 : 44;
         elements.thresholdPill.setAttribute('width', pillWidth);
         elements.thresholdPill.setAttribute('x', x - pillWidth / 2);
 
         const groups = elements.scoreSamples.querySelectorAll('[data-sample-index]');
+        // The threshold has passed the top-`bounded` highest-scored samples (indices >= N-bounded).
+        // The one being crossed right now (if any) is at index (N-1-full).
+        const activeIndex = samples.length - 1 - full;
         groups.forEach((group, index) => {
-          const removed = index < bounded - 0.001;
-          const active = index === full && fraction > 0.001 && full < samples.length;
+          const included = index >= samples.length - bounded - 0.001;
+          const active = index === activeIndex && fraction > 0.001 && full < samples.length;
           const circle = group.querySelector('[data-role="circle"]');
           const halo = group.querySelector('[data-role="halo"]');
           const sign = group.querySelector('[data-role="sign"]');
           const label = group.querySelector('[data-role="label"]');
           const rank = group.querySelector('[data-role="rank"]');
 
-          group.setAttribute('opacity', removed && !active ? '0.42' : '1');
+          group.setAttribute('opacity', included || active ? '1' : '0.42');
           halo.setAttribute('opacity', active ? String(0.32 + 0.48 * fraction) : '0');
           halo.setAttribute('r', active ? String(19 + 5 * fraction) : '19');
-          circle.setAttribute('fill', removed ? 'var(--surface)' : (samples[index].positive ? 'var(--positive-soft)' : 'var(--negative-soft)'));
-          circle.setAttribute('stroke-width', active ? '3' : removed ? '1.7' : '2.4');
+          circle.setAttribute('fill', included ? (samples[index].positive ? 'var(--positive-soft)' : 'var(--negative-soft)') : 'var(--surface)');
+          circle.setAttribute('stroke-width', active ? '3' : included ? '2.4' : '1.7');
           sign.setAttribute('font-size', active ? '17' : '15');
-          label.setAttribute('font-weight', active || !removed ? '700' : '400');
+          label.setAttribute('font-weight', active || included ? '700' : '400');
           rank.setAttribute('font-weight', active ? '700' : '400');
         });
       }
@@ -1042,11 +1057,11 @@
         if (sample.positive) {
           x = x1 < rocPlot.right - 110 ? x1 + 14 : x1 - 108;
           y = (y1 + y2) / 2 - 14;
-          elements.activeStepLabelText.textContent = '−1 / |P|';
+          elements.activeStepLabelText.textContent = '+1 / |P|';
         } else {
           x = (x1 + x2) / 2 - 47;
           y = y1 > rocPlot.top + 45 ? y1 - 38 : y1 + 10;
-          elements.activeStepLabelText.textContent = '−1 / |N|';
+          elements.activeStepLabelText.textContent = '+1 / |N|';
         }
 
         x = Math.max(84, Math.min(rocPlot.right - width, x));
@@ -1066,9 +1081,12 @@
 
         const current = stateAt(position);
         const full = current.full;
+        // Segment i (from state i to state i+1) is drawn by the (i+1)-th highest-scored sample,
+        // whose index in the visual score-ordered array is (samples.length - 1 - i).
+        const segmentSample = i => samples[samples.length - 1 - i];
 
         for (let i = 0; i < full; i += 1) {
-          drawRocSegment(elements.rocComplete, states[i], states[i + 1], samples[i]);
+          drawRocSegment(elements.rocComplete, states[i], states[i + 1], segmentSample(i));
         }
 
         if (current.fraction > 0 && full < samples.length) {
@@ -1076,7 +1094,7 @@
             elements.rocActive,
             states[full],
             { fpr: current.fpr, tpr: current.tpr },
-            samples[full],
+            segmentSample(full),
             { active: true }
           );
         }
@@ -1087,12 +1105,12 @@
             elements.rocFuture,
             { fpr: current.fpr, tpr: current.tpr },
             states[full + 1],
-            samples[full],
+            segmentSample(full),
             { future: true }
           );
         }
         for (let i = futureStart; i < samples.length; i += 1) {
-          drawRocSegment(elements.rocFuture, states[i], states[i + 1], samples[i], { future: true });
+          drawRocSegment(elements.rocFuture, states[i], states[i + 1], segmentSample(i), { future: true });
         }
 
         for (let i = 0; i <= full; i += 1) {
@@ -1102,7 +1120,7 @@
             cy: rocY(state.tpr),
             r: i === full && current.fraction === 0 ? 4.2 : 2.7,
             fill: 'var(--surface)',
-            stroke: i === 0 ? 'var(--line-strong)' : samples[i - 1].positive ? 'var(--positive)' : 'var(--negative-color)',
+            stroke: i === 0 ? 'var(--line-strong)' : segmentSample(i - 1).positive ? 'var(--positive)' : 'var(--negative-color)',
             'stroke-width': i === full && current.fraction === 0 ? 2 : 1.4
           });
           elements.rocPoints.appendChild(point);
@@ -1113,14 +1131,14 @@
         elements.rocMarkerHalo.setAttribute('cx', current.x);
         elements.rocMarkerHalo.setAttribute('cy', current.y);
 
-        const activeSample = current.fraction > 0 && full < samples.length ? samples[full] : full > 0 ? samples[full - 1] : null;
+        const activeSample = current.fraction > 0 && full < samples.length ? segmentSample(full) : full > 0 ? segmentSample(full - 1) : null;
         const markerColor = activeSample ? (activeSample.positive ? 'var(--positive)' : 'var(--negative-color)') : 'var(--positive)';
         const markerSoft = activeSample ? (activeSample.positive ? 'var(--positive-soft)' : 'var(--negative-soft)') : 'var(--positive-soft)';
         elements.rocMarker.setAttribute('stroke', markerColor);
         elements.rocMarkerHalo.setAttribute('fill', markerSoft);
         elements.rocMarkerHalo.setAttribute('r', current.fraction > 0 ? String(9 + 4 * current.fraction) : '10');
 
-        updateActiveStepLabel(states[full], current, full < samples.length ? samples[full] : null, current.fraction);
+        updateActiveStepLabel(states[full], current, full < samples.length ? segmentSample(full) : null, current.fraction);
       }
 
       function updateReadout(targetStep) {
@@ -1133,12 +1151,18 @@
         elements.next.disabled = targetStep === samples.length;
         elements.reset.disabled = targetStep === 0 && !playing;
 
-        elements.stateValue.textContent = `k = ${targetStep}`;
+        if (targetStep === 0) {
+          elements.stateValue.textContent = 't > max S';
+        } else if (targetStep === samples.length) {
+          elements.stateValue.textContent = 't < min S';
+        } else {
+          elements.stateValue.textContent = `t just below rank ${targetStep}`;
+        }
         elements.stateNote.textContent = targetStep === 0
-          ? 'Every sample is predicted positive.'
+          ? 'No sample is predicted positive.'
           : targetStep === samples.length
-            ? 'No sample is predicted positive.'
-            : `The threshold has passed the ${targetStep} lowest-scored sample${targetStep === 1 ? '' : 's'}; the ${samples.length - targetStep} highest-scored sample${samples.length - targetStep === 1 ? '' : 's'} remain predicted positive.`;
+            ? 'Every sample is predicted positive.'
+            : `The threshold has just dropped past the ${targetStep} highest-scored sample${targetStep === 1 ? '' : 's'}; they now sit in the predicted-positive set.`;
 
         elements.countValue.textContent = `TP = ${state.tp}, FP = ${state.fp}`;
         elements.pointValue.textContent = `(F${sub}, T${sub}) = (${formatRate(state.fpr)}, ${formatRate(state.tpr)})`;
@@ -1149,29 +1173,30 @@
 
         if (targetStep === 0) {
           elements.classBadge.textContent = 't';
-          elements.stepTitle.textContent = 'Threshold below every score';
-          elements.stepDescription.textContent = 'Start at (F₀, T₀) = (1, 1). Press next to raise the threshold past the lowest-scored sample.';
-          elements.stepFormula.textContent = 'predicted positive set = all samples';
-          elements.screenReaderStatus.textContent = 'Threshold state zero. Every sample is predicted positive. ROC point one, one.';
+          elements.stepTitle.textContent = 'Threshold above every score';
+          elements.stepDescription.textContent = 'Start at (F₀, T₀) = (0, 0). Press next to lower the threshold past the highest-scored sample.';
+          elements.stepFormula.textContent = 'predicted positive set = ∅';
+          elements.screenReaderStatus.textContent = 'Threshold state zero. No sample is predicted positive. ROC point zero, zero.';
           return;
         }
 
-        const sample = samples[targetStep - 1];
+        // At step k, the sample just crossed is the k-th highest-scored (rank k), at index N-k.
+        const sample = samples[samples.length - targetStep];
         const previousSub = subscriptNumber(targetStep - 1);
         elements.classBadge.textContent = sample.positive ? '+' : '−';
         elements.classBadge.classList.toggle('negative', !sample.positive);
         elements.stepFormula.classList.toggle('negative', !sample.positive);
 
         if (sample.positive) {
-          elements.stepTitle.textContent = `${sample.label} is actually positive: step down`;
-          elements.stepDescription.textContent = `This positive sample leaves the predicted-positive set. TP decreases by one while FP is unchanged, so TPR falls by 1 / |P| and FPR stays fixed.`;
-          elements.stepFormula.textContent = `F${sub} = F${previousSub},    T${sub} = T${previousSub} − 1 / |P|`;
-          elements.screenReaderStatus.textContent = `Threshold passed ${targetStep} of ${samples.length} samples. ${sample.label} is positive. The ROC curve steps down to false positive rate ${formatRate(state.fpr)} and true positive rate ${formatRate(state.tpr)}.`;
+          elements.stepTitle.textContent = `${sample.label} has label positive: step up`;
+          elements.stepDescription.textContent = `The threshold just dropped past this positive sample. It joins the predicted-positive set: TP grows by one while FP is unchanged, so TPR rises by 1 / |P| and FPR stays fixed.`;
+          elements.stepFormula.textContent = `F${sub} = F${previousSub},    T${sub} = T${previousSub} + 1 / |P|`;
+          elements.screenReaderStatus.textContent = `Threshold passed ${targetStep} of ${samples.length} samples. ${sample.label} is positive. The ROC curve steps up to false positive rate ${formatRate(state.fpr)} and true positive rate ${formatRate(state.tpr)}.`;
         } else {
-          elements.stepTitle.textContent = `${sample.label} is actually negative: step left`;
-          elements.stepDescription.textContent = `This negative sample leaves the predicted-positive set. FP decreases by one while TP is unchanged, so FPR falls by 1 / |N| and TPR stays fixed.`;
-          elements.stepFormula.textContent = `F${sub} = F${previousSub} − 1 / |N|,    T${sub} = T${previousSub}`;
-          elements.screenReaderStatus.textContent = `Threshold passed ${targetStep} of ${samples.length} samples. ${sample.label} is negative. The ROC curve steps left to false positive rate ${formatRate(state.fpr)} and true positive rate ${formatRate(state.tpr)}.`;
+          elements.stepTitle.textContent = `${sample.label} has label negative: step right`;
+          elements.stepDescription.textContent = `The threshold just dropped past this negative sample. It joins the predicted-positive set: FP grows by one while TP is unchanged, so FPR rises by 1 / |N| and TPR stays fixed.`;
+          elements.stepFormula.textContent = `F${sub} = F${previousSub} + 1 / |N|,    T${sub} = T${previousSub}`;
+          elements.screenReaderStatus.textContent = `Threshold passed ${targetStep} of ${samples.length} samples. ${sample.label} is negative. The ROC curve steps right to false positive rate ${formatRate(state.fpr)} and true positive rate ${formatRate(state.tpr)}.`;
         }
       }
 
