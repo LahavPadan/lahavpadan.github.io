@@ -38,53 +38,97 @@ When you index a signal by "time samples $0, 1, \ldots, N-1$", the group is $\ma
 
 ## § 2. Representations and Schur's lemma
 
-The space $V$ of functions $G \to \mathbb{C}$ from § 1 already carries an action of $G$ on itself: each $h \in G$ acts on $V$ by translating the argument, $(T_h f)(g) := f(h^{-1} g)$, and this respects group multiplication, $T_a T_b = T_{ab}$. So $T: G \to \operatorname{GL}(V)$ is a homomorphism from the abstract group into the concrete matrices on $V$ — this is the **regular representation**, our concrete model.
+The space $V$ of functions $G \to \mathbb{C}$ from § 1 already carries an action of $G$ on itself: each $h \in G$ acts on $V$ by translating the argument, $(T_h f)(g) := f(h^{-1} g)$, and this respects group multiplication, $T_a T_b = T_{ab}$. So $T: G \to \operatorname{GL}(V)$ is a homomorphism from the abstract group into the concrete matrices on $V$. This is the **regular representation**.
 
-Generalizing, a **representation** of $G$ on any complex vector space $W$ is a map
+### What a representation is
 
-$$M: G \to \operatorname{GL}(W), \qquad M(a) M(b) = M(ab),$$
+An abstract group $G$ comes with a multiplication rule and nothing else — no numbers, no basis, no way to compute with its elements directly. To make it computable we look for a mirror inside linear algebra: assign to each $g \in G$ a matrix $M(g)$ so that the group law becomes matrix multiplication. Concretely, a **representation** of $G$ is a map
 
-where $\operatorname{GL}(W)$ is the group of invertible linear maps $W \to W$. Each group element becomes a matrix $M(g)$, and group multiplication becomes matrix multiplication. The regular representation on $V$ is one example; we allow $W$ to be arbitrary because the goal is to decompose *every* representation — $V$ included — into indecomposable pieces called **irreducibles**, and those pieces live in smaller spaces of their own that don't inherit a preferred model from $G$.
+$$M: G \to \operatorname{GL}(W), \qquad M(a)\, M(b) = M(ab),$$
 
-A subspace $W' \subseteq W$ is **invariant** if $M(g) W' \subseteq W'$ for every $g$. A representation is **irreducible** if the only invariant subspaces are $\{0\}$ and $W$ itself.
+where $\operatorname{GL}(W)$ is the group of invertible linear maps $W \to W$. Every $g$ gets its own matrix, and composing group elements corresponds to multiplying matrices. Invertibility is not an extra requirement: applying $M$ to $g \cdot g^{-1} = e$ gives $M(g)\, M(g^{-1}) = M(e) = I$, forcing $M(g^{-1})$ to be the inverse of $M(g)$. This is the sense in which a matrix "represents" a group element — not that any single matrix captures $g$, but that the whole family $\{M(g)\}_{g \in G}$ mirrors the multiplication table of $G$ inside the world of matrix multiplication.
 
-Every representation of a finite group decomposes as a direct sum of irreducibles. The argument uses an averaging trick. Start with any Hermitian inner product $\langle \cdot, \cdot \rangle_0$ on $W$, and define a new one by averaging over the group:
+The space $W$ is the arena on which those matrices act — a vector space of some dimension, and there is no canonical choice of what dimension it should be. Different $W$'s give different representations of the same $G$. The scalar field of $W$ is $\mathbb{C}$, not because $G$ has anything to do with complex numbers ($G$ is an abstract group, no more), but because we need every characteristic polynomial to have a root: over $\mathbb{R}$ a $90^\circ$ rotation of the plane already has no eigenvalues, and the decomposition story we are about to build breaks down.
+
+The regular representation on $V$ from § 1 is the concrete example of this setup. There $W = V$ is the complex-valued function space on $G$, and $M(h) = T_h$ is the $|G| \times |G|$ permutation matrix that shifts the argument by $h$; group multiplication in $G$ turns into matrix multiplication because shift-by-$a$ followed by shift-by-$b$ equals shift-by-$ab$. The field is $\mathbb{C}$ here because function values into $\mathbb{C}$ are what § 1 needed for its inner product — not because $G$ was ever complex.
+
+> [!info] Why $W$ is arbitrary
+>
+> The goal is to decompose *every* representation — $V$ included — into indecomposable pieces called **irreducibles**. Each irreducible piece is itself a representation on some subspace, and we need vocabulary that works for those pieces without a preferred function-space model on top.
+
+A subspace $W' \subseteq W$ is **$G$-invariant** if $M(g)\, W' \subseteq W'$ for every $g \in G$; the group action keeps $W'$ inside itself.
+
+> A representation is **irreducible** if the only $G$-invariant subspaces are $\{0\}$ and $W$ itself.
+
+### Decomposition into irreducibles
+
+**Theorem.** *Every representation of a finite group decomposes as a direct sum of irreducibles.*
+
+The plan is to peel off one $G$-invariant subspace at a time using its orthogonal complement in a well-chosen inner product; each peel-off is legitimate because that complement is again $G$-invariant. Two supporting facts do the work. The word "$G$-invariant" gets attached to three different kinds of object along the way — subspaces, inner products, and later operators — all sharing the meaning "compatible with the $G$-action": the subspace stays inside itself, the inner product is preserved, the operator commutes. An inner product $\langle \cdot, \cdot \rangle$ is called $G$-invariant when $\langle M(h) v, M(h) w \rangle = \langle v, w \rangle$ for every $h \in G$, which is the same condition as every $M(h)$ being *unitary* with respect to $\langle \cdot, \cdot \rangle$: preserving the inner product is what "unitary" means. Two names, one condition.
+
+<div class="guided-fold-start" data-label="A $G$-invariant inner product exists on $W$" data-tone="proof"></div>
+
+Start with any Hermitian inner product $\langle \cdot, \cdot \rangle_0$ on $W$ and average it over the group:
 
 $$\langle v, w \rangle := \frac{1}{|G|} \sum_{g \in G} \langle M(g) v, M(g) w \rangle_0.$$
 
-This averaged inner product is $G$-invariant, meaning $\langle M(h) v, M(h) w \rangle = \langle v, w \rangle$ for every $h \in G$:
+Check $G$-invariance directly by plugging $M(h) v$ and $M(h) w$ into the definition:
 
-$$\langle M(h) v, M(h) w \rangle = \frac{1}{|G|} \sum_{g \in G} \langle M(g) M(h) v,\ M(g) M(h) w \rangle_0 = \frac{1}{|G|} \sum_{g \in G} \langle M(gh) v,\ M(gh) w \rangle_0,$$
+- **Substitute.**
+$$\langle M(h) v, M(h) w \rangle = \frac{1}{|G|} \sum_{g \in G} \langle M(g) M(h) v,\ M(g) M(h) w \rangle_0.$$
 
-using the representation property $M(g) M(h) = M(gh)$. As $g$ ranges over all of $G$ so does $gh$, so we can rename the summation index and recover the original sum $\langle v, w \rangle$. This is exactly the statement that every $M(h)$ is *unitary* with respect to $\langle \cdot, \cdot \rangle$.
+- **Combine matrices** using the representation property $M(g) M(h) = M(gh)$:
+$$= \frac{1}{|G|} \sum_{g \in G} \langle M(gh) v,\ M(gh) w \rangle_0.$$
 
-If $W' \subseteq W$ is an invariant subspace, its orthogonal complement $W'^{\perp}$ under $\langle \cdot, \cdot \rangle$ is also invariant. To see this, take any $v \in W'^{\perp}$ and $w' \in W'$; we want $M(g) v \in W'^{\perp}$, i.e., $\langle M(g) v, w' \rangle = 0$. Unitarity moves $M(g)$ to the other slot:
+- **Reindex.** As $g$ ranges over $G$, so does $gh$ (right-multiplication by $h$ is a bijection, with inverse right-multiplication by $h^{-1}$); rename the summation index to $g' = gh$:
+$$= \frac{1}{|G|} \sum_{g' \in G} \langle M(g') v, M(g') w \rangle_0 = \langle v, w \rangle.$$
 
+So $\langle M(h) v, M(h) w \rangle = \langle v, w \rangle$ for every $h$: the averaged inner product is $G$-invariant, i.e. every $M(h)$ is unitary with respect to it.
+
+<div class="guided-fold-end"></div>
+
+<div class="guided-fold-start" data-label="The orthogonal complement of a $G$-invariant subspace is $G$-invariant" data-tone="proof"></div>
+
+Let $W' \subseteq W$ be $G$-invariant. Fix any $v \in W'^{\perp}$, any $w' \in W'$, and any $g \in G$; the goal is $M(g) v \in W'^{\perp}$, i.e. $\langle M(g) v, w' \rangle = 0$.
+
+- **Move $M(g)$ to the other slot** using the unitarity established above:
 $$\langle M(g) v, w' \rangle = \langle v, M(g)^{-1} w' \rangle.$$
 
-Now $M(g)^{-1} = M(g^{-1})$ (from the representation property), and invariance of $W'$ under the entire representation includes $g^{-1}$: $M(g^{-1}) W' \subseteq W'$, so $M(g)^{-1} w' \in W'$. Since $v \in W'^{\perp}$, the pairing on the right is zero.
+- **Identify the inverse** via the representation property applied to $g \cdot g^{-1} = e$: $M(g)^{-1} = M(g^{-1})$.
 
-So invariant subspaces come in orthogonally complementary pairs, and we can peel off irreducible pieces one at a time. Classifying the irreducibles therefore suffices to understand all representations.
+- **Use $G$-invariance of $W'$** — assumed for the *whole* group, $g^{-1}$ included — so $M(g^{-1}) w' \in W'$.
+
+- **Conclude by orthogonality.** Since $v \in W'^{\perp}$ pairs to zero against anything in $W'$, the right-hand side vanishes: $\langle v, M(g^{-1}) w' \rangle = 0$.
+
+Therefore $M(g) v \in W'^{\perp}$, and $W'^{\perp}$ is $G$-invariant.
+
+<div class="guided-fold-end"></div>
+
+So $G$-invariant subspaces come in orthogonally complementary pairs, and we can peel off irreducible pieces one at a time. Classifying the irreducibles therefore suffices to understand all representations.
 
 ### Why abelian groups only have 1-dimensional irreducibles
 
 For abelian $G$, every irreducible representation is 1-dimensional. This is the content of **Schur's lemma**, but the argument is short enough to do by hand.
 
-**Proof by contradiction.** Suppose $M$ is an irreducible representation of abelian $G$ on some $W$ with $\dim W > 1$. We derive a contradiction in four steps.
+<div class="guided-fold-start" data-label="Proof by contradiction" data-tone="proof"></div>
+
+Suppose $M$ is an irreducible representation of abelian $G$ on some $W$ with $\dim W > 1$. We derive a contradiction in four steps.
 
 - **Every $M(a)$ has an eigenvector.** Fix any $a \in G$. The characteristic polynomial $\det(\lambda I - M(a))$ has degree $\dim W \geq 1$; over $\mathbb{C}$, the fundamental theorem of algebra says it has at least one root. Call it $\lambda$; the corresponding eigenspace $W_\lambda := \{w \in W : M(a) w = \lambda w\}$ is nonzero.
 
-- **The eigenspace $W_\lambda$ is invariant under the entire representation.** Because $G$ is abelian, $M(a) M(b) = M(b) M(a)$ for every $b$. So for any $w \in W_\lambda$ and any $b \in G$,
+- **The eigenspace $W_\lambda$ is $G$-invariant.** Because $G$ is abelian, $M(a) M(b) = M(b) M(a)$ for every $b$. So for any $w \in W_\lambda$ and any $b \in G$,
 $$M(a) [M(b) w] = M(b) [M(a) w] = M(b) [\lambda w] = \lambda \cdot [M(b) w].$$
 Hence $M(b) w \in W_\lambda$: applying any group element to a $\lambda$-eigenvector of $M(a)$ produces another $\lambda$-eigenvector.
 
-- **Irreducibility forces $W_\lambda = W$.** By assumption the only invariant subspaces are $\{0\}$ and $W$; $W_\lambda$ contains an eigenvector so it isn't $\{0\}$; therefore $W_\lambda = W$. This says every vector in $W$ is a $\lambda$-eigenvector of $M(a)$, which is exactly the statement $M(a) = \lambda \cdot I$ as an operator on all of $W$.
+- **Irreducibility forces $W_\lambda = W$.** By assumption the only $G$-invariant subspaces are $\{0\}$ and $W$; $W_\lambda$ contains an eigenvector so it isn't $\{0\}$; therefore $W_\lambda = W$. This says every vector in $W$ is a $\lambda$-eigenvector of $M(a)$, which is exactly the statement $M(a) = \lambda \cdot I$ as an operator on all of $W$.
 
 - **Every $M(a)$ is a scalar matrix.** The previous three steps used only that $a$ was some fixed element; repeating with any other group element gives $M(a) = \lambda_a \cdot I$ for a scalar $\lambda_a$ depending on $a$. So every matrix in the representation is a scalar multiple of the identity.
 
-**Contradiction.** A scalar matrix fixes every 1-dimensional subspace: if $L = \operatorname{span}(w)$ for any nonzero $w$, then $M(a) w = \lambda_a w \in L$. So *every* 1-dimensional subspace of $W$ is invariant. Since we assumed $\dim W > 1$, we can pick such an $L$ that is neither $\{0\}$ nor all of $W$ — contradicting irreducibility. Therefore $\dim W = 1$. $\square$
+**Contradiction.** A scalar matrix fixes every 1-dimensional subspace: if $L = \operatorname{span}(w)$ for any nonzero $w$, then $M(a) w = \lambda_a w \in L$. So *every* 1-dimensional subspace of $W$ is $G$-invariant. Since we assumed $\dim W > 1$, we can pick such an $L$ that is neither $\{0\}$ nor all of $W$ — contradicting irreducibility. Therefore $\dim W = 1$. $\square$
 
-For abelian $G$, then, every irreducible representation is a scalar-valued homomorphism $G \to \mathbb{C}^*$, and finding all irreducibles is the same problem as simultaneously diagonalizing every $G$-invariant matrix.
+<div class="guided-fold-end"></div>
+
+Unpacking what this gives us for abelian $G$. Each irreducible acts on a 1-dimensional $W$, which we may identify with $\mathbb{C}$ itself; a $1 \times 1$ invertible matrix is a nonzero complex number, so $\operatorname{GL}(W) = \mathbb{C}^*$, and the representation collapses to a homomorphism $\chi: G \to \mathbb{C}^*$ — a scalar attached to each group element, respecting multiplication. For any larger representation of abelian $G$, decomposing it into irreducibles means finding a basis in which every $M(g)$ becomes diagonal *simultaneously*: each basis vector then spans a 1-dimensional $G$-invariant line on which $M(g)$ acts by the scalar $\chi(g)$ for one of these homomorphisms $\chi$. Because $G$ is abelian, the $M(g)$ all commute pairwise, so such a common eigenbasis is guaranteed to exist. Finding all irreducibles of $G$ and simultaneously diagonalizing the family $\{M(g)\}_{g \in G}$ are thus two names for the same task, which § 3 carries out explicitly.
 
 ### What breaks in the non-abelian case
 
