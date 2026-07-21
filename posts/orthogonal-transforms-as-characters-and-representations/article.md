@@ -4,9 +4,9 @@
 
 ## § 0. Motivation and roadmap
 
-The Fourier transform, the Walsh–Hadamard transform, and the classical orthogonal-polynomial expansions (Legendre, Chebyshev, Bessel) look like unrelated tools invented by different traditions for different problems. This document treats them as manifestations of a single construction: on each domain — the integers modulo $N$, binary strings under XOR, points on a sphere, points on a disc — there is a natural notion of "symmetry", and each transform is built by finding the functions whose behaviour under that symmetry is simplest.
+The Fourier transform, the Walsh–Hadamard transform, and the classical orthogonal-polynomial expansions (Legendre, Chebyshev, Bessel) look like unrelated tools invented by different traditions for different problems. This document treats them as manifestations of a single construction: on each domain — the integers modulo $N$, binary strings under XOR, points on a sphere, points on a disc — there is a natural translation action, and each transform is the basis of *eigenfunctions* of that translation.
 
-Concretely, "simplest behaviour" means: applying a symmetry operation multiplies the function by a scalar rather than reshaping it. For $\mathbb{Z}_N$ (time-shifts modulo $N$), the functions that transform this way under shifting are the complex exponentials $e^{2\pi i k n / N}$, and the transform into their basis is the Discrete Fourier Transform. For $(\mathbb{Z}_2)^n$ (bitwise XOR of binary strings), they are the $\pm 1$-valued Walsh functions. For rotations of a sphere, they are the Legendre polynomials. For rigid motions of a disc, they are the Bessel functions. In every case, "picks up a scalar under the symmetry" forces orthogonality, and any operator that also respects the symmetry becomes diagonal in the resulting basis. The specific transform is then just the change of coordinates from the standard basis into that eigenbasis.
+For $\mathbb{Z}_N$ (time-shifts modulo $N$), the eigenfunctions of shift are the complex exponentials $e^{2\pi i k n / N}$, and the transform into their basis is the Discrete Fourier Transform. For $(\mathbb{Z}_2)^n$ (bitwise XOR of binary strings), they are the $\pm 1$-valued Walsh functions. For rotations of a sphere, they are the Legendre polynomials. For rigid motions of a disc, they are the Bessel functions. Because translation is unitary on the natural inner product, eigenfunctions with distinct eigenvalues are automatically orthogonal, and any operator that commutes with translation is diagonal in this basis. The specific transform is then just the change of coordinates from the standard basis into that eigenbasis.
 
 The construction splits into two branches that we develop in order.
 
@@ -26,23 +26,25 @@ Let $G$ be a finite group with $|G|$ elements. The set of functions $f: G \to \m
 
 $$f = \begin{bmatrix} f(g_1) \\ f(g_2) \\ \vdots \\ f(g_{|G|}) \end{bmatrix} \in \mathbb{C}^{|G|}.$$
 
-This is not a metaphor. Any linear operation on $f$ — filtering, convolution, changing to a new basis — is a matrix acting on this column vector. We equip $V$ with the standard Hermitian inner product
+Any linear operation on $f$ — filtering, convolution, changing to a new basis — is a matrix acting on this column vector. We equip $V$ with the standard Hermitian inner product
 
 $$\langle f, h \rangle = \sum_{g \in G} f(g) \overline{h(g)}.$$
 
 The choice of $G$ dictates what "shifting" means. If $G = \mathbb{Z}_N$ (integers modulo $N$ under addition), shifting is the ordinary time-shift $f(n) \mapsto f(n - k)$. If $G = (\mathbb{Z}_2)^n$ (binary vectors under bitwise XOR), shifting is XOR of the argument by a fixed vector: $f(v) \mapsto f(v \oplus u)$. These are two examples of one construction — the translation operator — that we formalize in § 5.
 
-Everything downstream depends on this dictionary. When you index a signal by "time samples $0, 1, \ldots, N-1$", the group is $\mathbb{Z}_N$. When you index a signal by "the $2^n$ possible states of $n$ binary variables", the group is $(\mathbb{Z}_2)^n$. When you index a signal by "the $12$ semitones of an octave", the group is $\mathbb{Z}_{12}$. Different indexing sets give different groups give different natural transforms.
+When you index a signal by "time samples $0, 1, \ldots, N-1$", the group is $\mathbb{Z}_N$. When you index a signal by "the $2^n$ possible states of $n$ binary variables", the group is $(\mathbb{Z}_2)^n$. When you index a signal by "the $12$ semitones of an octave", the group is $\mathbb{Z}_{12}$. Different indexing sets → different groups → different natural transforms.
 
 ---
 
 ## § 2. Representations and Schur's lemma
 
-We want to study $G$ not abstractly but through concrete linear-algebra operations. A **representation** of $G$ on a vector space $W$ is a map
+The space $V$ of functions $G \to \mathbb{C}$ from § 1 already carries an action of $G$ on itself: each $h \in G$ acts on $V$ by translating the argument, $(T_h f)(g) := f(h^{-1} g)$, and this respects group multiplication, $T_a T_b = T_{ab}$. So $T: G \to \operatorname{GL}(V)$ is a homomorphism from the abstract group into the concrete matrices on $V$ — this is the **regular representation**, our concrete model.
+
+Generalizing, a **representation** of $G$ on any complex vector space $W$ is a map
 
 $$M: G \to \operatorname{GL}(W), \qquad M(a) M(b) = M(ab),$$
 
-where $\operatorname{GL}(W)$ is the group of invertible linear maps $W \to W$. In other words, each group element $g$ becomes a matrix $M(g)$, and the group multiplication becomes matrix multiplication.
+where $\operatorname{GL}(W)$ is the group of invertible linear maps $W \to W$. Each group element becomes a matrix $M(g)$, and group multiplication becomes matrix multiplication. The regular representation on $V$ is one example; we allow $W$ to be arbitrary because the goal is to decompose *every* representation — $V$ included — into indecomposable pieces called **irreducibles**, and those pieces live in smaller spaces of their own that don't inherit a preferred model from $G$.
 
 A subspace $W' \subseteq W$ is **invariant** if $M(g) W' \subseteq W'$ for every $g$. A representation is **irreducible** if the only invariant subspaces are $\{0\}$ and $W$ itself.
 
@@ -50,27 +52,39 @@ Every representation of a finite group decomposes as a direct sum of irreducible
 
 $$\langle v, w \rangle := \frac{1}{|G|} \sum_{g \in G} \langle M(g) v, M(g) w \rangle_0.$$
 
-This averaged inner product is $G$-invariant: $\langle M(h) v, M(h) w \rangle = \frac{1}{|G|} \sum_g \langle M(gh) v, M(gh) w \rangle_0$, and as $g$ ranges over $G$ so does $gh$, so the sum is unchanged. Under this inner product every $M(g)$ is unitary (it preserves the inner product by definition). If $W'$ is an invariant subspace, then its orthogonal complement $W'^{\perp}$ under $\langle \cdot, \cdot \rangle$ is also invariant, because unitary maps preserve orthogonality: $\langle M(g) v, w' \rangle = \langle v, M(g)^{-1} w' \rangle = 0$ for $v \in W'^{\perp}$ and $w' \in W'$ (using that $M(g)^{-1} w' \in W'$). So invariant subspaces come in orthogonally complementary pairs, and we can peel off irreducible pieces one at a time. Classifying the irreducibles therefore suffices to understand all representations.
+This averaged inner product is $G$-invariant, meaning $\langle M(h) v, M(h) w \rangle = \langle v, w \rangle$ for every $h \in G$:
+
+$$\langle M(h) v, M(h) w \rangle = \frac{1}{|G|} \sum_{g \in G} \langle M(g) M(h) v,\ M(g) M(h) w \rangle_0 = \frac{1}{|G|} \sum_{g \in G} \langle M(gh) v,\ M(gh) w \rangle_0,$$
+
+using the representation property $M(g) M(h) = M(gh)$. As $g$ ranges over all of $G$ so does $gh$, so we can rename the summation index and recover the original sum $\langle v, w \rangle$. This is exactly the statement that every $M(h)$ is *unitary* with respect to $\langle \cdot, \cdot \rangle$.
+
+If $W' \subseteq W$ is an invariant subspace, its orthogonal complement $W'^{\perp}$ under $\langle \cdot, \cdot \rangle$ is also invariant. To see this, take any $v \in W'^{\perp}$ and $w' \in W'$; we want $M(g) v \in W'^{\perp}$, i.e., $\langle M(g) v, w' \rangle = 0$. Unitarity moves $M(g)$ to the other slot:
+
+$$\langle M(g) v, w' \rangle = \langle v, M(g)^{-1} w' \rangle.$$
+
+Now $M(g)^{-1} = M(g^{-1})$ (from the representation property), and invariance of $W'$ under the entire representation includes $g^{-1}$: $M(g^{-1}) W' \subseteq W'$, so $M(g)^{-1} w' \in W'$. Since $v \in W'^{\perp}$, the pairing on the right is zero.
+
+So invariant subspaces come in orthogonally complementary pairs, and we can peel off irreducible pieces one at a time. Classifying the irreducibles therefore suffices to understand all representations.
 
 ### Why abelian groups only have 1-dimensional irreducibles
 
-For abelian $G$, every irreducible representation is 1-dimensional. Here is the argument (this is the content of **Schur's lemma**, but the argument itself is short enough to do by hand).
+For abelian $G$, every irreducible representation is 1-dimensional. This is the content of **Schur's lemma**, but the argument is short enough to do by hand.
 
-Let $M$ be an irreducible representation of an abelian $G$ on $W$. Pick any $a \in G$. Because $G$ is abelian, $M(a) M(b) = M(b) M(a)$ for every $b$: the matrix $M(a)$ commutes with the *entire* image of the representation.
+**Proof by contradiction.** Suppose $M$ is an irreducible representation of abelian $G$ on some $W$ with $\dim W > 1$. We derive a contradiction in four steps.
 
-Over $\mathbb{C}$, every linear operator on a finite-dimensional space has at least one eigenvalue $\lambda$. Let $W_\lambda \subseteq W$ be the corresponding eigenspace. For any $w \in W_\lambda$ and any $b \in G$:
+- **Every $M(a)$ has an eigenvector.** Fix any $a \in G$. The characteristic polynomial $\det(\lambda I - M(a))$ has degree $\dim W \geq 1$; over $\mathbb{C}$, the fundamental theorem of algebra says it has at least one root. Call it $\lambda$; the corresponding eigenspace $W_\lambda := \{w \in W : M(a) w = \lambda w\}$ is nonzero.
 
-$$M(a) [M(b) w] = M(b) [M(a) w] = M(b) [\lambda w] = \lambda [M(b) w].$$
+- **The eigenspace $W_\lambda$ is invariant under the entire representation.** Because $G$ is abelian, $M(a) M(b) = M(b) M(a)$ for every $b$. So for any $w \in W_\lambda$ and any $b \in G$,
+$$M(a) [M(b) w] = M(b) [M(a) w] = M(b) [\lambda w] = \lambda \cdot [M(b) w].$$
+Hence $M(b) w \in W_\lambda$: applying any group element to a $\lambda$-eigenvector of $M(a)$ produces another $\lambda$-eigenvector.
 
-So $M(b) w$ is again in $W_\lambda$: the eigenspace $W_\lambda$ is invariant under the entire representation. Because the representation is irreducible, $W_\lambda$ must be either $\{0\}$ or all of $W$. It cannot be $\{0\}$ (it contains an eigenvector), so $W_\lambda = W$: the operator $M(a)$ acts as $\lambda \cdot I$ on the whole space.
+- **Irreducibility forces $W_\lambda = W$.** By assumption the only invariant subspaces are $\{0\}$ and $W$; $W_\lambda$ contains an eigenvector so it isn't $\{0\}$; therefore $W_\lambda = W$. This says every vector in $W$ is a $\lambda$-eigenvector of $M(a)$, which is exactly the statement $M(a) = \lambda \cdot I$ as an operator on all of $W$.
 
-This argument holds for every $a \in G$: pick any group element, and the same reasoning shows $M(a) = \lambda_a \cdot I$ for some scalar $\lambda_a$ that depends on which $a$ we started with. So every matrix in the entire representation is a scalar matrix.
+- **Every $M(a)$ is a scalar matrix.** The previous three steps used only that $a$ was some fixed element; repeating with any other group element gives $M(a) = \lambda_a \cdot I$ for a scalar $\lambda_a$ depending on $a$. So every matrix in the representation is a scalar multiple of the identity.
 
-Now the punchline. A scalar matrix leaves every 1-dimensional subspace of $W$ fixed: if $L = \operatorname{span}(w)$ for any nonzero vector $w$, then $M(a) w = \lambda_a w$, which still lies in $L$. So *every* 1-dimensional subspace of $W$ is invariant under the whole representation.
+**Contradiction.** A scalar matrix fixes every 1-dimensional subspace: if $L = \operatorname{span}(w)$ for any nonzero $w$, then $M(a) w = \lambda_a w \in L$. So *every* 1-dimensional subspace of $W$ is invariant. Since we assumed $\dim W > 1$, we can pick such an $L$ that is neither $\{0\}$ nor all of $W$ — contradicting irreducibility. Therefore $\dim W = 1$. $\square$
 
-But irreducibility is the statement that the only invariant subspaces are $\{0\}$ and $W$ itself. If $W$ had dimension greater than $1$, we could pick any nonzero vector $w \in W$ and form the 1-dimensional subspace $\operatorname{span}(w)$, which by the previous paragraph is invariant, and which is neither $\{0\}$ nor all of $W$ — contradicting irreducibility. So $\dim W = 1$.
-
-The conclusion: for abelian $G$, every irreducible representation is a scalar-valued function $\chi: G \to \mathbb{C}^*$, and finding all irreducibles is the same problem as simultaneously diagonalizing every $G$-invariant matrix. The single objects we have to classify are the scalar homomorphisms $G \to \mathbb{C}^*$.
+For abelian $G$, then, every irreducible representation is a scalar-valued homomorphism $G \to \mathbb{C}^*$, and finding all irreducibles is the same problem as simultaneously diagonalizing every $G$-invariant matrix.
 
 ### What breaks in the non-abelian case
 
@@ -80,11 +94,11 @@ For non-abelian $G$, the matrices $M(g)$ do not all commute, so they cannot in g
 
 ## § 3. Characters, roots of unity, and the dual group
 
-A 1-dimensional representation of $G$ is a homomorphism
+A 1-dimensional representation has $W = \mathbb{C}$, so $\operatorname{GL}(W) = \mathbb{C}^*$ and the representation is a homomorphism into the multiplicative group of nonzero complex numbers. In this specialization we drop the letter $M$ (which we used for general representations) and denote it $\chi$:
 
-$$\chi: G \to \mathbb{C}^*, \qquad \chi(a b) = \chi(a) \chi(b),$$
+$$\chi: G \to \mathbb{C}^*, \qquad \chi(a b) = \chi(a) \chi(b).$$
 
-into the multiplicative group of nonzero complex numbers. These are called **characters** of $G$. By § 2, when $G$ is abelian, the characters are exactly the irreducible representations.
+These are called **characters** of $G$. By § 2, when $G$ is abelian, the characters are exactly the irreducible representations.
 
 ### Characters take values on the unit circle
 
@@ -100,7 +114,7 @@ $$(\chi_1 \chi_2)(g) := \chi_1(g) \chi_2(g), \qquad (\chi_1 \chi_2)(ab) = \chi_1
 
 The set of all characters of $G$ therefore forms a group under pointwise multiplication, with identity element the **trivial character** $\chi_e(g) = 1$ for all $g$, and with $\chi^{-1}(g) = \overline{\chi(g)}$. This group is called the **dual group** of $G$ and denoted $\widehat{G}$.
 
-For finite abelian $G$, $\widehat{G}$ is isomorphic to $G$ (non-canonically). For instance:
+For finite abelian $G$, $\widehat{G}$ is isomorphic to $G$. For instance:
 
 - $\widehat{\mathbb{Z}_N} \cong \mathbb{Z}_N$: a character of $\mathbb{Z}_N$ is determined by where it sends the generator $1$, which must be an $N$-th root of unity, and there are $N$ of those. Concretely, the characters are $\chi_k(n) = e^{2\pi i k n / N}$ for $k = 0, 1, \ldots, N-1$.
 - $\widehat{(\mathbb{Z}_2)^n} \cong (\mathbb{Z}_2)^n$: a character is determined by its values on the $n$ generators (one for each coordinate), each of which must be $\pm 1$ (a square root of unity, since each generator has order $2$). This gives $2^n$ characters, one per choice vector $u \in (\mathbb{Z}_2)^n$; we work them out explicitly in § 11.
