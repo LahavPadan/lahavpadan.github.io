@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase and group velocity</title>
+<script>
+(() => {
+  try {
+    const root = window.parent.document.documentElement;
+    const body = window.parent.document.body;
+    const raw = `${root.dataset.theme || ""} ${root.className || ""} ${body?.dataset?.theme || ""} ${body?.className || ""}`.toLowerCase();
+    document.documentElement.dataset.theme = raw.includes("dark") ? "dark" : raw.includes("light") ? "light" : "";
+  } catch (_) {}
+})();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --surface: var(--viz-surface, #ffffff);
+  --surface-muted: var(--viz-surface-muted, #f5f6f2);
+  --ink: var(--viz-ink, #1b2420);
+  --muted: var(--viz-muted, #68736c);
+  --border: var(--viz-border, #d6ddd7);
+  --border-strong: var(--viz-border-strong, #a7b3aa);
+  --accent: var(--viz-accent, #0d7659);
+  --accent-ink: var(--viz-accent-ink, #095f48);
+  --accent-soft: var(--viz-accent-soft, #dcefe7);
+  --accent-border: var(--viz-accent-border, #91c7b6);
+  --phase: #315fae;
+  --phase-soft: rgba(49, 95, 174, .10);
+  --group: #9b631b;
+  --group-soft: rgba(155, 99, 27, .10);
+  --component-a: #7656a9;
+  --component-b: #7f8551;
+  --shadow: rgba(20, 31, 25, .06);
+  --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --serif: "STIX Two Text", Georgia, "Times New Roman", serif;
+  --math: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: var(--viz-surface, #171e19);
+  --surface-muted: var(--viz-surface-muted, #1d2720);
+  --ink: var(--viz-ink, #e9efeb);
+  --muted: var(--viz-muted, #a7b5aa);
+  --border: var(--viz-border, #344138);
+  --border-strong: var(--viz-border-strong, #617168);
+  --accent: var(--viz-accent, #63d2aa);
+  --accent-ink: var(--viz-accent-ink, #8ee7c6);
+  --accent-soft: var(--viz-accent-soft, #16362c);
+  --accent-border: var(--viz-accent-border, #3c7964);
+  --phase: #8bb2ff;
+  --phase-soft: rgba(139, 178, 255, .11);
+  --group: #e0a666;
+  --group-soft: rgba(224, 166, 102, .11);
+  --component-a: #ccb0f2;
+  --component-b: #bcc884;
+  --shadow: rgba(0, 0, 0, .18);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-width: 0; overflow-x: hidden; background: transparent; color: var(--ink); }
+body { padding: clamp(7px, 1.8vw, 18px); font-family: var(--sans); text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; }
+.viz { width: min(1120px, 100%); margin: 0 auto; overflow: hidden; border: 1px solid var(--border); background: var(--surface); box-shadow: 0 18px 48px var(--shadow); }
+.topbar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(310px, .48fr); gap: 20px; align-items: center; padding: clamp(15px, 2.4vw, 23px); border-bottom: 1px solid var(--border); }
+.heading-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 9px 17px; }
+.eyebrow { margin: 0; color: var(--accent-ink); font: 760 .68rem/1 var(--sans); letter-spacing: .10em; text-transform: uppercase; }
+h1 { margin: 0; font-size: clamp(1.22rem, 2.5vw, 1.82rem); font-weight: 560; line-height: 1.14; letter-spacing: -.025em; }
+.definition { margin: 7px 0 0; color: var(--muted); font-family: var(--serif); font-size: clamp(.9rem, 1.45vw, 1.01rem); line-height: 1.42; }
+.definition mjx-container { margin: 0 !important; }
+.controls { display: grid; gap: 8px; min-width: 0; }
+.control-line { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 9px; align-items: center; min-width: 0; }
+.control-name { color: var(--muted); font-size: .68rem; font-weight: 780; letter-spacing: .075em; text-transform: uppercase; }
+.segmented { display: flex; min-width: 0; border: 1px solid var(--border-strong); background: var(--surface); }
+.segmented button { flex: 1 1 0; min-width: 0; min-height: 31px; padding: 5px 8px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: .73rem; font-weight: 730; line-height: 1.15; }
+.segmented button + button { border-left: 1px solid var(--border); }
+.segmented button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-ink); }
+.segmented button:focus-visible, .play:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.time-control { display: grid; grid-template-columns: 34px minmax(0, 1fr) 48px; gap: 8px; align-items: center; min-width: 0; }
+.play { width: 34px; height: 31px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--accent-ink); cursor: pointer; font-size: .82rem; }
+.time-control input { width: 100%; min-width: 0; margin: 0; accent-color: var(--accent); }
+.time-value { color: var(--accent-ink); font-family: var(--math); font-size: .78rem; text-align: right; white-space: nowrap; }
+.figure { margin: 0; padding: clamp(10px, 2vw, 20px); }
+.plots { display: grid; grid-template-columns: minmax(0, 1.72fr) minmax(280px, .78fr); border: 1px solid var(--border); background: var(--surface-muted); }
+.panel { min-width: 0; }
+.panel + .panel { border-left: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 52%, var(--surface-muted)); }
+.panel-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5px 12px; align-items: baseline; min-height: 42px; padding: 10px 12px 9px; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 80%, transparent); }
+.panel-title { color: var(--muted); font-size: .66rem; font-weight: 790; letter-spacing: .08em; text-transform: uppercase; }
+.panel-formula { color: var(--ink); font-family: var(--math); font-size: clamp(.72rem, 1.2vw, .9rem); white-space: nowrap; }
+.panel-formula mjx-container { margin: 0 !important; }
+
+.plot-frame { position: relative; min-width: 0; }
+.math-label {
+  position: absolute;
+  z-index: 4;
+  padding: 3px 6px;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: 0 2px 8px var(--shadow);
+  color: var(--ink);
+  font-size: clamp(.70rem, 1.12vw, .84rem);
+  line-height: 1.12;
+  white-space: nowrap;
+  pointer-events: none;
+  display: none;
+}
+.math-label mjx-container { margin: 0 !important; }
+.math-label.phase { color: var(--phase); }
+.math-label.group { color: var(--group); }
+.math-label.component-a { color: var(--component-a); border-color: color-mix(in srgb, var(--component-a) 40%, var(--border)); background: color-mix(in srgb, var(--surface) 96%, transparent); opacity: 1; }
+.math-label.component-b { color: var(--component-b); border-color: color-mix(in srgb, var(--component-b) 40%, var(--border)); background: color-mix(in srgb, var(--surface) 96%, transparent); opacity: 1; }
+.math-label.accent { color: var(--accent-ink); }
+.math-label.muted { color: var(--muted); }
+.math-label.compact { font-size: clamp(.66rem, 1.04vw, .78rem); }
+.bridge-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--border);
+  border-top: 0;
+  background: var(--surface);
+}
+.bridge-item {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 9px;
+  color: var(--muted);
+  font-size: clamp(.67rem, 1.06vw, .78rem);
+  line-height: 1.26;
+  text-align: center;
+}
+.bridge-item + .bridge-item { border-left: 1px solid var(--border); }
+.bridge-item mjx-container { margin: 0 !important; }
+.swatch { flex: 0 0 auto; display: inline-block; width: 20px; height: 0; border-top: 3px solid var(--accent); }
+.swatch.phase { border-top-color: var(--phase); }
+.swatch.group { border-top-color: var(--group); border-top-style: dashed; }
+.swatch.component-a { border-top-color: var(--component-a); opacity: .8; }
+.swatch.component-b { border-top-color: var(--component-b); opacity: .8; }
+.dot-swatch { flex: 0 0 auto; width: 9px; height: 9px; border-radius: 50%; background: var(--group); box-shadow: 0 0 0 2px color-mix(in srgb, var(--surface) 60%, transparent); }
+.dot-swatch.component-a { background: var(--component-a); }
+.dot-swatch.component-b { background: var(--component-b); }
+.dot-swatch.accent { background: var(--accent); }
+
+svg { display: block; width: 100%; height: auto; overflow: visible; }
+.plot-bg { fill: var(--surface-muted); }
+.grid-line { stroke: var(--border); stroke-width: 1; }
+.axis-line { stroke: var(--border-strong); stroke-width: 1.25; }
+.axis-text, .tick-text { fill: var(--muted); }
+.tick-text { font-family: var(--sans); font-size: 11px; }
+.axis-text { font-family: var(--math); font-size: 15px; font-style: italic; font-weight: 430; letter-spacing: 0; }
+.component-a { fill: none; stroke: var(--component-a); stroke-width: 1.45; opacity: .7; }
+.component-b { fill: none; stroke: var(--component-b); stroke-width: 1.35; opacity: .62; }
+.wave-line { fill: none; stroke: var(--phase); stroke-width: 2.7; stroke-linecap: round; stroke-linejoin: round; }
+.envelope-fill { fill: var(--group-soft); }
+.envelope-line { fill: none; stroke: var(--group); stroke-width: 2.15; stroke-dasharray: 7 6; stroke-linecap: round; }
+.phase-track { stroke: var(--phase); stroke-width: 1.8; stroke-dasharray: 5 5; }
+.group-track { stroke: var(--group); stroke-width: 1.8; stroke-dasharray: 5 5; }
+.track-dot.phase { fill: var(--surface); stroke: var(--phase); stroke-width: 2.2; }
+.track-dot.group { fill: var(--surface); stroke: var(--group); stroke-width: 2.2; }
+.relative-arrow { stroke: var(--accent-ink); stroke-width: 1.6; }
+.curve { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+.phase-ray { stroke: var(--phase); stroke-width: 2.3; }
+.group-secant { stroke: var(--group); stroke-width: 2.4; }
+.group-tangent { stroke: var(--group); stroke-width: 1.5; stroke-dasharray: 6 5; opacity: .7; }
+.point-main { fill: var(--surface); stroke: var(--accent); stroke-width: 2.2; }
+.point-side { fill: var(--group); }
+#minusPoint { fill: var(--component-b); }
+#plusPoint { fill: var(--component-a); }
+.svg-label { font-family: var(--sans); font-size: 12px; font-weight: 720; paint-order: stroke; stroke: var(--surface-muted); stroke-width: 4px; stroke-linejoin: round; }
+.svg-label.phase { fill: var(--phase); }
+.svg-label.group { fill: var(--group); }
+.svg-label.accent { fill: var(--accent-ink); }
+.svg-label.muted { fill: var(--muted); font-weight: 620; }
+.math-svg { font-family: var(--math); font-size: 14px; font-style: italic; paint-order: stroke; stroke: var(--surface-muted); stroke-width: 4px; stroke-linejoin: round; }
+.equation-strip { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(260px, .72fr); border: 1px solid var(--border); border-top: 0; background: var(--surface); }
+.identity { min-width: 0; display: grid; gap: 6px; padding: 10px 14px; border-right: 1px solid var(--border); font-size: clamp(.72rem, 1.15vw, .9rem); line-height: 1.38; overflow: hidden; }
+.identity-equation { min-width: 0; }
+.identity-equation mjx-container { margin: 0 !important; max-width: 100%; }
+.factor-key { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; color: var(--muted); font-size: .66rem; }
+.factor-key span { display: inline-flex; align-items: center; gap: 6px; }
+.factor-key i { display: inline-block; width: 18px; height: 0; border-top: 2px solid currentColor; }
+.factor-key .phase-factor { color: var(--phase); }
+.factor-key .group-factor { color: var(--group); }
+.velocity-readout { display: grid; grid-template-columns: 1fr 1fr; min-width: 0; }
+.velocity { min-width: 0; padding: 10px 11px; }
+.velocity + .velocity { border-left: 1px solid var(--border); }
+.velocity-name { display: block; margin-bottom: 3px; color: var(--muted); font-size: .62rem; font-weight: 790; letter-spacing: .075em; text-transform: uppercase; }
+.velocity.phase .velocity-name, .velocity.phase .velocity-value { color: var(--phase); }
+.velocity.group .velocity-name, .velocity.group .velocity-value { color: var(--group); }
+.velocity-value { display: block; font-family: var(--math); font-size: clamp(.83rem, 1.25vw, 1rem); white-space: nowrap; }
+.velocity-note { display: block; margin-top: 2px; color: var(--muted); font-size: .65rem; line-height: 1.25; }
+.conclusion { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 7px 12px; padding: 9px 12px; border: 1px solid var(--border); border-top: 0; color: var(--muted); font-size: clamp(.69rem, 1.1vw, .8rem); text-align: center; }
+.conclusion strong { color: var(--accent-ink); font-weight: 770; }
+.conclusion sub { font-size: .72em; line-height: 0; vertical-align: -.18em; }
+.conclusion mjx-container { margin: 0 !important; }
+@media (max-width: 820px) {
+  .bridge-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .topbar { grid-template-columns: 1fr; }
+  .plots { grid-template-columns: 1fr; }
+  .panel + .panel { border-left: 0; border-top: 1px solid var(--border); }
+  .equation-strip { grid-template-columns: 1fr; }
+  .identity { border-right: 0; border-bottom: 1px solid var(--border); }
+}
+@media (max-width: 540px) {
+  .math-label { font-size: .62rem; padding: 2px 4px; }
+  .bridge-strip { grid-template-columns: 1fr; }
+  .bridge-item + .bridge-item { border-left: 0; border-top: 1px solid var(--border); }
+  body { padding: 5px; }
+  .topbar { padding: 13px; }
+  .control-line { grid-template-columns: 80px minmax(0, 1fr); }
+  .control-name { font-size: .59rem; }
+  .segmented button { padding-inline: 5px; font-size: .65rem; }
+  .figure { padding: 7px; }
+  .identity { padding-inline: 8px; font-size: .66rem; }
+  .factor-key { font-size: .6rem; gap: 5px 12px; }
+  .velocity-readout { grid-template-columns: 1fr; }
+  .velocity + .velocity { border-left: 0; border-top: 1px solid var(--border); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<main class="viz">
+  <header class="topbar">
+    <div>
+      <div class="heading-row">
+        <p class="eyebrow">phase and group velocity</p>
+        <h1>One carrier phase and one moving envelope</h1>
+      </div>
+      <p class="definition">
+        A single sinusoid has only a moving phase. Adding two nearby components produces a slow factor whose maxima move independently of the fast oscillation.
+      </p>
+    </div>
+
+    <div class="controls" aria-label="Visualization controls">
+      <div class="control-line">
+        <span class="control-name">signal</span>
+        <div class="segmented" role="group" aria-label="Signal composition">
+          <button type="button" data-signal="single" aria-pressed="false">one frequency</button>
+          <button type="button" data-signal="pair" aria-pressed="true">two close frequencies</button>
+        </div>
+      </div>
+      <div class="control-line">
+        <span class="control-name">medium</span>
+        <div class="segmented" role="group" aria-label="Medium dispersion">
+          <button type="button" data-medium="linear" aria-pressed="false">nondispersive</button>
+          <button type="button" data-medium="water" aria-pressed="true">deep-water form</button>
+        </div>
+      </div>
+      <div class="control-line">
+        <span class="control-name">time</span>
+        <div class="time-control">
+          <button class="play" id="play" type="button" aria-label="Play animation">▶</button>
+          <input id="time" type="range" min="0" max="20" step="0.01" value="7.2" aria-label="Time">
+          <output id="timeValue" class="time-value">7.2</output>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <figure class="figure">
+    <div class="plots">
+      <section class="panel" aria-label="Wave in real space">
+        <div class="panel-head">
+          <span class="panel-title">real space</span>
+          <span id="waveFormula" class="panel-formula">\(2\cos(k_0z-\omega_0t)\cos(\delta k\,z-\delta\omega\,t)\)</span>
+        </div>
+        <div class="plot-frame" id="waveFrame">
+          <svg id="wavePlot" viewBox="0 0 760 430" role="img" aria-labelledby="waveTitle waveDesc" preserveAspectRatio="xMidYMid meet">
+            <title id="waveTitle">Carrier phase moving through a beat envelope</title>
+            <desc id="waveDesc">The fast carrier phase moves at phase velocity while the slowly varying envelope maximum moves at group velocity.</desc>
+            <defs>
+              <clipPath id="waveClip"><rect x="49" y="32" width="668" height="330"></rect></clipPath>
+              <marker id="arrowStart" viewBox="0 0 10 10" refX="1.2" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M10 0L0 5L10 10Z" fill="var(--accent-ink)"></path></marker>
+              <marker id="arrowEnd" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="var(--accent-ink)"></path></marker>
+            </defs>
+            <rect class="plot-bg" x="49" y="32" width="668" height="330"></rect>
+            <g id="waveGrid"></g>
+            <g clip-path="url(#waveClip)">
+              <path id="envelopeFill" class="envelope-fill"></path>
+              <path id="componentA" class="component-a"></path>
+              <path id="componentB" class="component-b"></path>
+              <path id="upperEnvelope" class="envelope-line"></path>
+              <path id="lowerEnvelope" class="envelope-line"></path>
+              <path id="waveLine" class="wave-line"></path>
+              <line id="phaseTrack" class="phase-track"></line>
+              <line id="groupTrack" class="group-track"></line>
+              <circle id="phaseDot" class="track-dot phase" r="5.4"></circle>
+              <circle id="groupDot" class="track-dot group" r="5.4"></circle>
+              <line id="relativeArrow" class="relative-arrow" marker-start="url(#arrowStart)" marker-end="url(#arrowEnd)"></line>
+            </g>
+            <g id="waveTicks"></g>
+            <text class="axis-text" x="706" y="397" text-anchor="end">position z</text>
+            <text class="axis-text" x="61" y="51">amplitude</text>
+            <text id="phaseLabel" class="svg-label phase"></text>
+            <text id="groupLabel" class="svg-label group"></text>
+            <text id="relativeLabel" class="svg-label accent" text-anchor="middle"></text>
+          </svg>
+          <div id="waveCompALabel" class="math-label component-a compact">\(u_+(z,t)=\cos[(k_0+\delta k)z-(\omega_0+\delta\omega)t]\)</div>
+          <div id="waveCompBLabel" class="math-label component-b compact">\(u_-(z,t)=\cos[(k_0-\delta k)z-(\omega_0-\delta\omega)t]\)</div>
+          <div id="waveSumLabel" class="math-label phase compact">\(u_+(z,t)+u_-(z,t)\)</div>
+          <div id="waveEnvelopeLabel" class="math-label group compact">\(\pm 2\lvert\cos(\delta k z-\delta\omega t)\rvert\)</div>
+          <div id="waveSingleLabel" class="math-label phase compact">\(\cos(k_0z-\omega_0t)\)</div>
+          <div id="singleNoteBox" class="math-label muted compact">one eternal sinusoid: no envelope can be tracked</div>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Dispersion geometry">
+        <div class="panel-head">
+          <span class="panel-title">dispersion plane</span>
+          <span id="dispersionFormula" class="panel-formula">\(\omega(k)=\sqrt{gk}\)</span>
+        </div>
+        <div class="plot-frame" id="dispFrame">
+          <svg id="dispersionPlot" viewBox="0 0 360 430" role="img" aria-labelledby="dispTitle dispDesc" preserveAspectRatio="xMidYMid meet">
+            <title id="dispTitle">Phase and group velocity as two slopes</title>
+            <desc id="dispDesc">The phase velocity is the slope from the origin to the carrier point. The group velocity is the limiting slope between two nearby frequency components.</desc>
+            <defs><clipPath id="dispClip"><rect x="45" y="32" width="286" height="330"></rect></clipPath></defs>
+            <rect class="plot-bg" x="45" y="32" width="286" height="330"></rect>
+            <g id="dispGrid"></g>
+            <g clip-path="url(#dispClip)">
+              <path id="dispCurve" class="curve"></path>
+              <line id="phaseRay" class="phase-ray"></line>
+              <line id="groupSecant" class="group-secant"></line>
+              <line id="groupTangent" class="group-tangent"></line>
+              <circle id="mainPoint" class="point-main" r="5.5"></circle>
+              <circle id="minusPoint" class="point-side" r="4.2"></circle>
+              <circle id="plusPoint" class="point-side" r="4.2"></circle>
+            </g>
+            <g id="dispTicks"></g>
+            <text class="axis-text" x="321" y="397" text-anchor="end">wavenumber \(k\)</text>
+            <text class="axis-text" x="57" y="51">frequency \(\omega\)</text>
+            <text id="phaseSlopeText" class="svg-label phase"></text>
+            <text id="groupSlopeText" class="svg-label group"></text>
+            <text id="selectedPointText" class="svg-label accent"></text>
+          </svg>
+          <div id="dispPhaseLabel" class="math-label phase compact">\(v_p=\omega_0/k_0\)</div>
+          <div id="dispGroupLabel" class="math-label group compact">\(\delta\omega/\delta k \to d\omega/dk\)</div>
+          <div id="dispCarrierLabel" class="math-label accent compact">carrier point \((k_0,\omega_0)\)</div>
+          <div id="dispMinusLabel" class="math-label component-b compact">wave \(u_-\): \((k_0-\delta k,\,\omega_0-\delta\omega)\)</div>
+          <div id="dispPlusLabel" class="math-label component-a compact">wave \(u_+\): \((k_0+\delta k,\,\omega_0+\delta\omega)\)</div>
+          <div id="dispSingleNote" class="math-label muted compact">with one frequency there are no nearby comparison points</div>
+        </div>
+      </section>
+    </div>
+    <div class="bridge-strip" aria-label="Visual key">
+      <div class="bridge-item"><i class="swatch component-a"></i><span>purple curve: \(u_+(z,t)=\cos[(k_0+\delta k)z-(\omega_0+\delta\omega)t]\)</span></div>
+      <div class="bridge-item"><i class="swatch component-b"></i><span>teal curve: \(u_-(z,t)=\cos[(k_0-\delta k)z-(\omega_0-\delta\omega)t]\)</span></div>
+      <div class="bridge-item"><i class="swatch phase"></i><span>blue curve: the sum \(u_++u_-\)</span></div>
+      <div class="bridge-item"><i class="swatch group"></i><span>dashed brown curves: the envelope \(\pm 2\lvert\cos(\delta kz-\delta\omega t)
+vert\)</span></div>
+    </div>
+    <div class="bridge-strip" aria-label="Connection between the two panels">
+      <div class="bridge-item"><span class="dot-swatch accent"></span><span>the selected point is the central pair \((k_0,\omega_0)\)</span></div>
+      <div class="bridge-item"><span class="dot-swatch component-b"></span><span>left dot: the wave \(u_-\) with \((k_0-\delta k,\,\omega_0-\delta\omega)\)</span></div>
+      <div class="bridge-item"><span class="dot-swatch component-a"></span><span>right dot: the wave \(u_+\) with \((k_0+\delta k,\,\omega_0+\delta\omega)\)</span></div>
+      <div class="bridge-item"><span>the secant through the two side points gives \(\delta\omega/\delta k\), and in the limit gives \(d\omega/dk\)</span></div>
+    </div></div>
+
+    <div class="equation-strip">
+      <div id="identity" class="identity">
+        <div class="identity-equation">
+          \[
+          \begin{aligned}
+          &\cos[(k_0+\delta k)z-(\omega_0+\delta\omega)t]\\
+          &+\cos[(k_0-\delta k)z-(\omega_0-\delta\omega)t]\\
+          &=2\cos(k_0z-\omega_0t)\cos(\delta k\,z-\delta\omega\,t).
+          \end{aligned}
+          \]
+        </div>
+        <div class="factor-key"><span class="phase-factor"><i></i>fast carrier</span><span class="group-factor"><i></i>slow modulation</span></div>
+      </div>
+      <div class="velocity-readout">
+        <div class="velocity phase">
+          <span class="velocity-name">phase velocity</span>
+          <span id="phaseValue" class="velocity-value">\(v_p=\omega_0/k_0\)</span>
+          <span class="velocity-note">fixed carrier phase</span>
+        </div>
+        <div class="velocity group">
+          <span class="velocity-name">group velocity</span>
+          <span id="groupValue" class="velocity-value">\(v_g\approx\delta\omega/\delta k\)</span>
+          <span id="groupNote" class="velocity-note">envelope maximum</span>
+        </div>
+      </div>
+    </div>
+    <div id="conclusion" class="conclusion"></div>
+  </figure>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  const state = { signal: "pair", medium: "water", playing: false, time: 7.2 };
+  const timeInput = document.getElementById("time");
+  const timeValue = document.getElementById("timeValue");
+  const playButton = document.getElementById("play");
+  const wave = {
+    svg: document.getElementById("wavePlot"),
+    box: { x0: 49, x1: 717, y0: 32, y1: 362 },
+    xMin: -12, xMax: 12, yMin: -2.45, yMax: 2.45
+  };
+  const disp = {
+    svg: document.getElementById("dispersionPlot"),
+    box: { x0: 45, x1: 331, y0: 32, y1: 362 },
+    kMin: 0, kMax: 11, wMin: 0, wMax: 5.6
+  };
+  const k0 = 7;
+  const dk = .24;
+
+  const sx = z => wave.box.x0 + (z - wave.xMin) / (wave.xMax - wave.xMin) * (wave.box.x1 - wave.box.x0);
+  const sy = a => wave.box.y1 - (a - wave.yMin) / (wave.yMax - wave.yMin) * (wave.box.y1 - wave.box.y0);
+  const sk = k => disp.box.x0 + (k - disp.kMin) / (disp.kMax - disp.kMin) * (disp.box.x1 - disp.box.x0);
+  const sw = omega => disp.box.y1 - (omega - disp.wMin) / (disp.wMax - disp.wMin) * (disp.box.y1 - disp.box.y0);
+  const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
+
+  function relation(k) {
+    if (state.medium === "linear") return .58 * k;
+    return 1.55 * Math.sqrt(Math.max(k, 0));
+  }
+
+  function derivative(k) {
+    if (state.medium === "linear") return .58;
+    return 1.55 / (2 * Math.sqrt(k));
+  }
+
+  function parameters() {
+    const km = k0 - dk;
+    const kp = k0 + dk;
+    const wm = relation(km);
+    const wp = relation(kp);
+    const w0 = (wp + wm) / 2;
+    const dw = (wp - wm) / 2;
+    return {
+      km, kp, wm, wp, w0, dw,
+      vp: w0 / k0,
+      vgSecant: dw / dk,
+      vgTangent: derivative(k0)
+    };
+  }
+
+  function pathFromSamples(count, xValue, yValue, xMap, yMap) {
+    let d = "";
+    for (let i = 0; i <= count; i += 1) {
+      const u = i / count;
+      d += `${i ? "L" : "M"}${xMap(xValue(u)).toFixed(2)} ${yMap(yValue(u)).toFixed(2)}`;
+    }
+    return d;
+  }
+
+  function createSvg(name, attributes = {}) {
+    const element = document.createElementNS(NS, name);
+    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+    return element;
+  }
+
+  function renderWaveGrid() {
+    const grid = document.getElementById("waveGrid");
+    const ticks = document.getElementById("waveTicks");
+    grid.replaceChildren();
+    ticks.replaceChildren();
+    [-10, -5, 0, 5, 10].forEach(z => {
+      grid.appendChild(createSvg("line", {
+        class: z === 0 ? "axis-line" : "grid-line",
+        x1: sx(z), y1: wave.box.y0, x2: sx(z), y2: wave.box.y1
+      }));
+      const label = createSvg("text", { class: "tick-text", x: sx(z), y: wave.box.y1 + 18, "text-anchor": "middle" });
+      label.textContent = z;
+      ticks.appendChild(label);
+    });
+    [-2, -1, 0, 1, 2].forEach(a => {
+      grid.appendChild(createSvg("line", {
+        class: a === 0 ? "axis-line" : "grid-line",
+        x1: wave.box.x0, y1: sy(a), x2: wave.box.x1, y2: sy(a)
+      }));
+      if (a !== 0) {
+        const label = createSvg("text", { class: "tick-text", x: wave.box.x0 - 9, y: sy(a) + 4, "text-anchor": "end" });
+        label.textContent = a;
+        ticks.appendChild(label);
+      }
+    });
+  }
+
+  function renderDispersionGrid() {
+    const grid = document.getElementById("dispGrid");
+    const ticks = document.getElementById("dispTicks");
+    grid.replaceChildren();
+    ticks.replaceChildren();
+    [0, 2, 4, 6, 8, 10].forEach(k => {
+      grid.appendChild(createSvg("line", {
+        class: k === 0 ? "axis-line" : "grid-line",
+        x1: sk(k), y1: disp.box.y0, x2: sk(k), y2: disp.box.y1
+      }));
+      if (k !== 0) {
+        const label = createSvg("text", { class: "tick-text", x: sk(k), y: disp.box.y1 + 18, "text-anchor": "middle" });
+        label.textContent = k;
+        ticks.appendChild(label);
+      }
+    });
+    [0, 1, 2, 3, 4, 5].forEach(omega => {
+      grid.appendChild(createSvg("line", {
+        class: omega === 0 ? "axis-line" : "grid-line",
+        x1: disp.box.x0, y1: sw(omega), x2: disp.box.x1, y2: sw(omega)
+      }));
+      if (omega !== 0) {
+        const label = createSvg("text", { class: "tick-text", x: disp.box.x0 - 8, y: sw(omega) + 4, "text-anchor": "end" });
+        label.textContent = omega;
+        ticks.appendChild(label);
+      }
+    });
+  }
+
+  function setLine(id, x1, y1, x2, y2) {
+    const element = document.getElementById(id);
+    element.setAttribute("x1", x1);
+    element.setAttribute("y1", y1);
+    element.setAttribute("x2", x2);
+    element.setAttribute("y2", y2);
+  }
+
+  function setCircle(id, x, y) {
+    const element = document.getElementById(id);
+    element.setAttribute("cx", x);
+    element.setAttribute("cy", y);
+  }
+
+  function setVisible(id, visible) {
+    document.getElementById(id).style.display = visible ? "" : "none";
+  }
+
+  function placeOverlay(frameId, id, x, y) {
+    const frame = document.getElementById(frameId).getBoundingClientRect();
+    const element = document.getElementById(id);
+    element.style.left = `${clamp(x * frame.width / Number(document.getElementById(frameId === "waveFrame" ? "wavePlot" : "dispersionPlot").viewBox.baseVal.width), 10, frame.width - 10)}px`;
+    element.style.top = `${clamp(y * frame.height / Number(document.getElementById(frameId === "waveFrame" ? "wavePlot" : "dispersionPlot").viewBox.baseVal.height), 10, frame.height - 10)}px`;
+    element.style.transform = "translate(0, 0)";
+  }
+
+  function renderWave() {
+    const p = parameters();
+    const t = state.time;
+    const pair = state.signal === "pair";
+    const samples = 900;
+
+    const phaseLabel = document.getElementById("phaseLabel");
+    const groupLabel = document.getElementById("groupLabel");
+
+    if (pair) {
+      const modulation = z => Math.cos(dk * z - p.dw * t);
+      const componentA = z => Math.cos(p.kp * z - p.wp * t);
+      const componentB = z => Math.cos(p.km * z - p.wm * t);
+      const sum = z => componentA(z) + componentB(z);
+      const envelope = z => 2 * Math.abs(modulation(z));
+
+      document.getElementById("waveLine").setAttribute("d", pathFromSamples(samples, u => wave.xMin + u * (wave.xMax - wave.xMin), u => sum(wave.xMin + u * (wave.xMax - wave.xMin)), sx, sy));
+      document.getElementById("componentA").setAttribute("d", pathFromSamples(samples, u => wave.xMin + u * (wave.xMax - wave.xMin), u => componentA(wave.xMin + u * (wave.xMax - wave.xMin)), sx, sy));
+      document.getElementById("componentB").setAttribute("d", pathFromSamples(samples, u => wave.xMin + u * (wave.xMax - wave.xMin), u => componentB(wave.xMin + u * (wave.xMax - wave.xMin)), sx, sy));
+      const upper = pathFromSamples(samples, u => wave.xMin + u * (wave.xMax - wave.xMin), u => envelope(wave.xMin + u * (wave.xMax - wave.xMin)), sx, sy);
+      const lowerFill = pathFromSamples(samples, u => wave.xMax - u * (wave.xMax - wave.xMin), u => -envelope(wave.xMax - u * (wave.xMax - wave.xMin)), sx, sy);
+      document.getElementById("upperEnvelope").setAttribute("d", upper);
+      document.getElementById("lowerEnvelope").setAttribute("d", pathFromSamples(samples, u => wave.xMin + u * (wave.xMax - wave.xMin), u => -envelope(wave.xMin + u * (wave.xMax - wave.xMin)), sx, sy));
+      document.getElementById("envelopeFill").setAttribute("d", `${upper}${lowerFill}Z`);
+
+      const zPhase = p.vp * t;
+      const zGroup = p.vgSecant * t;
+      const phaseY = sum(zPhase);
+      const groupY = sum(zGroup);
+      setLine("phaseTrack", sx(zPhase), wave.box.y0, sx(zPhase), wave.box.y1);
+      setLine("groupTrack", sx(zGroup), wave.box.y0, sx(zGroup), wave.box.y1);
+      setCircle("phaseDot", sx(zPhase), sy(phaseY));
+      setCircle("groupDot", sx(zGroup), sy(groupY));
+
+      const close = Math.abs(sx(zPhase) - sx(zGroup)) < 82;
+      phaseLabel.textContent = "fixed carrier phase  z = vₚt";
+      groupLabel.textContent = "envelope maximum  z = v_g t";
+      phaseLabel.setAttribute("x", clamp(sx(zPhase) + (close ? -14 : 8), wave.box.x0 + 18, wave.box.x1 - 180));
+      phaseLabel.setAttribute("y", close ? 58 : 50);
+      phaseLabel.setAttribute("text-anchor", close ? "end" : "start");
+      groupLabel.setAttribute("x", clamp(sx(zGroup) + (close ? 14 : 8), wave.box.x0 + 18, wave.box.x1 - 180));
+      groupLabel.setAttribute("y", close ? 82 : 74);
+      groupLabel.setAttribute("text-anchor", "start");
+      setVisible("groupLabel", true);
+
+      const arrowY = sy(-2.08);
+      if (Math.abs(zPhase - zGroup) > .25) {
+        setVisible("relativeArrow", true);
+        setVisible("relativeLabel", true);
+        setLine("relativeArrow", sx(zGroup), arrowY, sx(zPhase), arrowY);
+        const relative = document.getElementById("relativeLabel");
+        relative.textContent = "(vₚ − v_g)t";
+        relative.setAttribute("x", (sx(zGroup) + sx(zPhase)) / 2);
+        relative.setAttribute("y", arrowY - 8);
+      } else {
+        setVisible("relativeArrow", false);
+        setVisible("relativeLabel", false);
+      }
+
+      ["componentA", "componentB", "upperEnvelope", "lowerEnvelope", "envelopeFill", "groupTrack", "groupDot"].forEach(id => setVisible(id, true));
+
+    } else {
+      const pure = z => Math.cos(k0 * z - relation(k0) * t);
+      document.getElementById("waveLine").setAttribute("d", pathFromSamples(samples, u => wave.xMin + u * (wave.xMax - wave.xMin), u => pure(wave.xMin + u * (wave.xMax - wave.xMin)), sx, sy));
+      const vp = relation(k0) / k0;
+      const zPhase = vp * t;
+      setLine("phaseTrack", sx(zPhase), wave.box.y0, sx(zPhase), wave.box.y1);
+      setCircle("phaseDot", sx(zPhase), sy(pure(zPhase)));
+      phaseLabel.textContent = "same phase  k₀z − ω₀t = 0";
+      phaseLabel.setAttribute("x", clamp(sx(zPhase) + 8, wave.box.x0 + 15, wave.box.x1 - 155));
+      phaseLabel.setAttribute("y", 52);
+      phaseLabel.setAttribute("text-anchor", "start");
+      setVisible("groupLabel", false);
+      ["componentA", "componentB", "upperEnvelope", "lowerEnvelope", "envelopeFill", "groupTrack", "groupDot", "relativeArrow", "relativeLabel"].forEach(id => setVisible(id, false));
+    }
+  }
+
+  function renderDispersion() {
+    const p = parameters();
+    document.getElementById("dispCurve").setAttribute("d", pathFromSamples(320, u => .04 + u * (disp.kMax - .04), u => relation(.04 + u * (disp.kMax - .04)), sk, sw));
+
+    const centerOmega = relation(k0);
+    setLine("phaseRay", sk(0), sw(0), sk(k0), sw(centerOmega));
+    setCircle("mainPoint", sk(k0), sw(centerOmega));
+    const phaseSlopeText = document.getElementById("phaseSlopeText");
+    phaseSlopeText.textContent = "ray from (0,0): slope = vₚ";
+    phaseSlopeText.setAttribute("x", 86);
+    phaseSlopeText.setAttribute("y", state.medium === "linear" ? 242 : 270);
+    const selectedPointText = document.getElementById("selectedPointText");
+    selectedPointText.textContent = "selected point  (k₀, ω₀)";
+    selectedPointText.setAttribute("x", clamp(sk(k0) + 10, 80, 235));
+    selectedPointText.setAttribute("y", clamp(sw(centerOmega) - 10, 62, 340));
+
+    const pair = state.signal === "pair";
+    if (pair) {
+      const secantSpan = 1.42;
+      setLine(
+        "groupSecant",
+        sk(k0 - secantSpan),
+        sw(centerOmega - p.vgSecant * secantSpan),
+        sk(k0 + secantSpan),
+        sw(centerOmega + p.vgSecant * secantSpan)
+      );
+      const tangentSpan = 2.05;
+      setLine(
+        "groupTangent",
+        sk(k0 - tangentSpan),
+        sw(centerOmega - p.vgTangent * tangentSpan),
+        sk(k0 + tangentSpan),
+        sw(centerOmega + p.vgTangent * tangentSpan)
+      );
+      setCircle("minusPoint", sk(p.km), sw(p.wm));
+      setCircle("plusPoint", sk(p.kp), sw(p.wp));
+      ["groupSecant", "groupTangent", "minusPoint", "plusPoint"].forEach(id => setVisible(id, true));
+      const groupSlopeText = document.getElementById("groupSlopeText");
+      groupSlopeText.textContent = "secant through the two side points: slope = δω/δk";
+      groupSlopeText.setAttribute("x", 66);
+      groupSlopeText.setAttribute("y", state.medium === "linear" ? 150 : 164);
+    } else {
+      ["groupSecant", "groupTangent", "minusPoint", "plusPoint"].forEach(id => setVisible(id, false));
+      const groupSlopeText = document.getElementById("groupSlopeText");
+      groupSlopeText.textContent = "one frequency alone gives no secant slope";
+      groupSlopeText.setAttribute("x", 66);
+      groupSlopeText.setAttribute("y", 334);
+    }
+  }
+
+  function updateText() {
+    const p = parameters();
+    const pair = state.signal === "pair";
+    document.getElementById("timeValue").textContent = state.time.toFixed(1);
+    document.getElementById("waveFormula").innerHTML = pair
+      ? "\\(2\\cos(k_0z-\\omega_0t)\\cos(\\delta k\\,z-\\delta\\omega\\,t)\\)"
+      : "\\(\\cos(k_0z-\\omega_0t)\\)";
+    document.getElementById("dispersionFormula").innerHTML = state.medium === "linear"
+      ? "\\(\\omega(k)=ck\\)"
+      : "\\(\\omega(k)=\\sqrt{gk}\\)";
+
+    const identity = document.getElementById("identity");
+    if (pair) {
+      identity.innerHTML = `
+        <div class="identity-equation">
+          \\[
+          \\begin{aligned}
+          &\\cos[(k_0+\\delta k)z-(\\omega_0+\\delta\\omega)t]\\\\
+          &+\\cos[(k_0-\\delta k)z-(\\omega_0-\\delta\\omega)t]\\\\
+          &=2\\cos(k_0z-\\omega_0t)\\cos(\\delta k\\,z-\\delta\\omega\\,t).
+          \\end{aligned}
+          \\]
+        </div>
+        <div class="factor-key"><span class="phase-factor"><i></i>fast carrier</span><span class="group-factor"><i></i>slow modulation</span></div>`;
+      document.getElementById("phaseValue").innerHTML = `\\(v_p=\\omega_0/k_0=${p.vp.toFixed(2)}\\)`;
+      document.getElementById("groupValue").innerHTML = `\\(v_g\\approx\\delta\\omega/\\delta k=${p.vgSecant.toFixed(2)}\\)`;
+      document.getElementById("groupNote").textContent = "envelope maximum; limit gives dω/dk";
+    } else {
+      identity.innerHTML = `<div class="identity-equation">\\[\\cos(k_0z-\\omega_0t),\\qquad k_0z-\\omega_0t=\\text{constant}.\\]</div>`;
+      document.getElementById("phaseValue").innerHTML = `\\(v_p=\\omega_0/k_0=${(relation(k0) / k0).toFixed(2)}\\)`;
+      document.getElementById("groupValue").innerHTML = "not defined";
+      document.getElementById("groupNote").textContent = "one component supplies no envelope";
+    }
+
+    const conclusion = document.getElementById("conclusion");
+    if (!pair) {
+      conclusion.innerHTML = `<strong>Single frequency:</strong> only the carrier phase moves; group velocity enters only after nearby frequencies are combined.`;
+    } else if (state.medium === "linear") {
+      conclusion.innerHTML = `<strong>Nondispersive:</strong> v<sub>p</sub> = v<sub>g</sub> = c. The carrier and the envelope translate together.`;
+    } else {
+      conclusion.innerHTML = `<strong>Dispersive:</strong> v<sub>p</sub> ≠ v<sub>g</sub>. For ω = √(gk), v<sub>g</sub> = v<sub>p</sub>/2, so carrier phases pass through the envelope.`;
+    }
+
+    typeset([document.getElementById("waveFormula"), document.getElementById("dispersionFormula"), identity, document.getElementById("phaseValue"), document.getElementById("groupValue"), conclusion, ...document.querySelectorAll(".bridge-strip"), document.getElementById("phaseSlopeText"), document.getElementById("groupSlopeText"), document.getElementById("selectedPointText")]);
+  }
+
+  function render() {
+    renderWave();
+    renderDispersion();
+    updateText();
+    reportHeight();
+  }
+
+  function typeset(elements) {
+    if (!window.MathJax?.typesetPromise) return;
+    window.MathJax.typesetClear?.(elements);
+    window.MathJax.typesetPromise(elements).then(reportHeight).catch(() => {});
+  }
+
+  document.querySelectorAll("[data-signal]").forEach(button => {
+    button.addEventListener("click", () => {
+      state.signal = button.dataset.signal;
+      document.querySelectorAll("[data-signal]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+      render();
+    });
+  });
+
+  document.querySelectorAll("[data-medium]").forEach(button => {
+    button.addEventListener("click", () => {
+      state.medium = button.dataset.medium;
+      document.querySelectorAll("[data-medium]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+      render();
+    });
+  });
+
+  timeInput.addEventListener("input", () => {
+    state.time = Number(timeInput.value);
+    render();
+  });
+
+  playButton.addEventListener("click", () => {
+    state.playing = !state.playing;
+    playButton.textContent = state.playing ? "❚❚" : "▶";
+    playButton.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+  });
+
+  let previous = performance.now();
+  function animate(now) {
+    const dt = Math.min(.05, (now - previous) / 1000);
+    previous = now;
+    if (state.playing) {
+      state.time += 1.35 * dt;
+      if (state.time > Number(timeInput.max)) state.time = 0;
+      timeInput.value = state.time;
+      render();
+    }
+    requestAnimationFrame(animate);
+  }
+
+  let lastReportedHeight = 0;
+  function reportHeight() {
+    if (window.parent === window) return;
+    const target = document.querySelector(".viz") || document.body;
+    const rect = target.getBoundingClientRect();
+    const height = Math.max(1, Math.ceil(rect.bottom + window.scrollY));
+    if (Math.abs(height - lastReportedHeight) < 2) return;
+    lastReportedHeight = height;
+    try {
+      const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+      window.parent.postMessage({ type: "article-visualization-height", height }, targetOrigin);
+    } catch (_) {}
+  }
+
+  function loadMathJax() {
+    window.MathJax = {
+      tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+      chtml: { scale: 1 },
+      startup: {
+        typeset: false,
+        ready() {
+          MathJax.startup.defaultReady();
+          MathJax.startup.promise
+            .then(() => MathJax.typesetPromise([document.body]))
+            .then(() => { render(); reportHeight(); })
+            .catch(() => {});
+        }
+      }
+    };
+    let source = "";
+    try {
+      source = [...window.parent.document.scripts].map(script => script.src).find(value => value && /mathjax/i.test(value)) || "";
+    } catch (_) {}
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = source || "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
+    document.head.appendChild(script);
+  }
+
+  renderWaveGrid();
+  renderDispersionGrid();
+  render();
+  loadMathJax();
+  requestAnimationFrame(animate);
+
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(reportHeight);
+    observer.observe(document.querySelector(".viz") || document.body);
+  }
+  window.addEventListener("load", reportHeight);
+  window.addEventListener("resize", reportHeight);
+})();
+</script>
+</body>
+</html>
