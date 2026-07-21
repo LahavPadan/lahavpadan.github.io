@@ -16,7 +16,7 @@ module LahavBlog
     START = /^(\s*)>\s*\[!([A-Za-z0-9_-]+)\]\s*(.*)$/.freeze
     NESTED_START = /\A\[![A-Za-z0-9_-]+\]/.freeze
 
-    def self.transform(content)
+    def self.transform(content, math:)
       return content if content.nil? || !content.include?('[!')
 
       lines = content.lines(chomp: true)
@@ -34,7 +34,7 @@ module LahavBlog
 
         indent = match[1]
         body, index = collect_body(lines, index + 1, indent)
-        emit(output, indent, match[2], match[3].strip, body)
+        emit(output, indent, match[2], match[3].strip, body, math: math)
       end
 
       result = output.join("\n")
@@ -71,9 +71,13 @@ module LahavBlog
     end
     private_class_method :collect_body
 
-    def self.emit(output, indent, kind, title, body)
+    def self.emit(output, indent, kind, title, body, math:)
       css_kind = kind.downcase.gsub(/[^a-z0-9_-]/, '-')
       label = kind.tr('_-', ' ').split.map(&:capitalize).join(' ')
+      # The title becomes text inside a callout-title <div>, which Kramdown
+      # treats as raw HTML block content and never scans for math. On math
+      # pages, hand any `$…$` off to MathJax directly.
+      title = MathSyntax.rewrite_to_mathjax_inline(title) if math
       heading = CGI.escapeHTML(title)
       heading = " #{heading}" unless heading.empty?
 
@@ -115,14 +119,25 @@ module LahavBlog
     DISPLAY_LINE = '$$'
 
     # Leftmost-match alternation: a dollar sign inside a code span is consumed
-    # by the code branch, so it never reaches the math branches.
+    # by the code branch, so it never reaches the math branches. An HTML
+    # opening tag is similarly consumed by the html branch, whose attribute
+    # values Kramdown will never expose to its math parser — so we emit
+    # MathJax's own `\(…\)` delimiters there directly (via TAG_ATTR_MATH),
+    # rather than Kramdown's `$$…$$` inline-math syntax which would arrive at
+    # the browser as literal text.
     TOKEN = /
       (?<code> (?<tick>`+) .*? \k<tick> )
+      |
+      (?<html> < [a-zA-Z][^<>]* > )
       |
       (?<display> (?<!\\)\$\$ .+? (?<!\\)\$\$ )
       |
       (?<inline> (?<![\\$]) \$ (?!\$) (?:\\\$|[^$\n])+? (?<!\\) \$ (?!\$) )
     /mx.freeze
+
+    # Same shape as the inline branch above, without the named group.
+    TAG_ATTR_MATH =
+      /(?<![\\$])\$(?!\$)((?:\\\$|[^$\n])+?)(?<!\\)\$(?!\$)/.freeze
 
     def self.normalize(content)
       return content if content.nil? || !content.include?('$')
@@ -194,6 +209,8 @@ module LahavBlog
 
         if match[:code]
           match[:code]
+        elsif match[:html]
+          rewrite_to_mathjax_inline(match[:html])
         elsif match[:display]
           body = match[:display][2..-3]
           multiline?(match[:display]) ? "$$#{body}$$" : "$$#{escape_pipes(body)}$$"
@@ -203,6 +220,13 @@ module LahavBlog
       end
     end
     private_class_method :rewrite_math
+
+    # Rewrites `$…$` spans to MathJax's inline delimiters. Used from contexts
+    # that Kramdown will not parse as markdown — HTML attribute values, and
+    # inline text inside HTML block elements the callout emitter constructs.
+    def self.rewrite_to_mathjax_inline(text)
+      text.gsub(TAG_ATTR_MATH) { "\\(#{Regexp.last_match(1)}\\)" }
+    end
 
     # A `$$…$$` that spans lines has already been given its own block by
     # pad_display_blocks, so Kramdown reaches it through `block_math`.
@@ -221,7 +245,7 @@ module LahavBlog
     def self.process(content, math:)
       return content if content.nil?
 
-      content = ObsidianCallouts.transform(content)
+      content = ObsidianCallouts.transform(content, math: math)
       math ? MathSyntax.normalize(content) : content
     end
   end
