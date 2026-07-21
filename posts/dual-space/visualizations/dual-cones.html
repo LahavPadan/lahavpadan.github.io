@@ -285,9 +285,10 @@
   .mechanism-card h3 {
     margin: 0;
     font-family: var(--font-display);
-    font-size: 0.8rem;
-    font-weight: 600;
-    line-height: 1.28;
+    font-size: 0.98rem;
+    font-weight: 650;
+    line-height: 1.24;
+    letter-spacing: -0.005em;
   }
 
   .mechanism-svg {
@@ -902,19 +903,19 @@
   .mechanism-math-label {
     fill: var(--muted);
     font-family: var(--font-reading);
-    font-size: 10.2px;
+    font-size: 9.4px;
     font-weight: 500;
   }
   .mechanism-accent-label {
     fill: var(--post-accent-ink);
     font-family: var(--font-reading);
-    font-size: 10.6px;
+    font-size: 9.6px;
     font-weight: 600;
   }
   .mechanism-danger-label {
     fill: var(--danger);
     font-family: var(--font-reading);
-    font-size: 10.2px;
+    font-size: 9.4px;
     font-weight: 600;
   }
   .mechanism-label-bg {
@@ -1742,13 +1743,25 @@
       { text: 'K', attrs: { 'font-style': 'italic' } },
       { text: '*', attrs: { 'baseline-shift': 'super', 'font-size': '8px' } }
     ], 'mechanism-accent-label', { width: 31, height: 19, fontSize: 10.6, padX: 4 });
-    addBoxedLabel(dualGroup, 331, 45, '⟨x₁, y⟩ = 0', 'mechanism-math-label', { anchor: 'end', width: 82, height: 19, fontSize: 10.2, padX: 4 });
-    addBoxedLabel(dualGroup, 10, 188, '⟨x₃, y⟩ = 0', 'mechanism-math-label', { width: 82, height: 19, fontSize: 10.2, padX: 4 });
+
+    // Place boundary-line labels next to the actual boundary lines they name.
+    // For x_i (direction angle a_i), the boundary is the line at angle a_i + 90 through (cx, cy).
+    // Sample a point on the line just past its far end and offset perpendicular.
+    var xOneBoundaryEnd  = point(cx, cy, half * 1.38, angles[0] + 90 + 180); // bottom end of x1 boundary
+    var xThreeBoundaryEnd = point(cx, cy, half * 1.38, angles[2] + 90);       // right end of x3 boundary
+    addBoxedLabel(dualGroup,
+      xOneBoundaryEnd.x + 4,   xOneBoundaryEnd.y - 4,
+      '⟨x₁, y⟩ = 0', 'mechanism-math-label',
+      { anchor: 'start', width: 76, height: 17, fontSize: 9.4, padX: 4 });
+    addBoxedLabel(dualGroup,
+      xThreeBoundaryEnd.x + 4, xThreeBoundaryEnd.y + 12,
+      '⟨x₃, y⟩ = 0', 'mechanism-math-label',
+      { anchor: 'end', width: 76, height: 17, fontSize: 9.4, padX: 4 });
 
     var q = point(cx, cy, 55, -35);
     dualGroup.appendChild(svgEl('circle', { cx: q.x, cy: q.y, r: 5, class: 'mechanism-witness' }));
     dualGroup.appendChild(svgEl('text', { x: q.x + 8, y: q.y + 4, class: 'mechanism-danger-label' }, 'q'));
-    addBoxedLabel(dualGroup, 331, 194, '⟨q, x₃⟩ < 0', 'mechanism-danger-label', { anchor: 'end', width: 84, height: 19, fontSize: 10.2, padX: 4 });
+    addBoxedLabel(dualGroup, 331, 194, '⟨q, x₃⟩ < 0', 'mechanism-danger-label', { anchor: 'end', width: 78, height: 17, fontSize: 9.4, padX: 4 });
 
     drawMechanismAxes(doubleGroup, cx, cy, half);
 

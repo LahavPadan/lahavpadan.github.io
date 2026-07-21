@@ -428,23 +428,29 @@ The word "torsion" is borrowed from module theory: in an abelian group, an eleme
 
 Two facts make this forced. The curve points are described by a polynomial equation in $(x, y)$, and the chord-and-tangent group law produces $P + Q$ via explicit rational formulas in the coordinates of $P$ and $Q$ (slope $\lambda$ from quotient of differences, new $x$ from $\lambda^2 - 2x$, etc.). A homomorphism $\phi: E_1 \to E_2$ must commute with these rational formulas.
 
-**Step A**: $\phi(x, y) = (X, Y)$ for some functions $X, Y$ of $(x, y)$. The homomorphism law applied to $P + (-P) = \mathcal{O}$ gives $\phi(P) + \phi(-P) = \phi(\mathcal{O}) = \mathcal{O}$, i.e., $\phi(-P) = -\phi(P)$. Write both sides in coordinates. Since $-P = (x, -y)$,
+**Step A (getting the shape $(F(x),\ y \cdot G(x))$)**. Write $\phi(x, y) = (X(x, y),\ Y(x, y))$ for some — as yet unconstrained — functions $X, Y$. The homomorphism law applied to $P + (-P) = \mathcal{O}$ gives $\phi(-P) = -\phi(P)$. Since $-P = (x, -y)$ on $E_1$, and negation on $E_2$ also flips the $y$-coordinate,
 
-$$\phi(-P) = (X(x, -y),\ Y(x, -y)).$$
+$$(X(x, -y),\ Y(x, -y)) = (X(x, y),\ -Y(x, y)),$$
 
-Since negation on $E'$ (target curve) also flips the $y$-coordinate,
+so $X$ is even in $y$ and $Y$ is odd in $y$. On $E_1$ we have $y^2 = f(x)$, so any even polynomial in $y$ collapses to a polynomial in $x$ and any odd polynomial is $y$ times a polynomial in $x$. Hence
 
-$$-\phi(P) = -(X(x, y),\ Y(x, y)) = (X(x, y),\ -Y(x, y)).$$
+$$X = F(x), \qquad Y = y \cdot G(x)$$
 
-Equating coordinate by coordinate:
+for some functions $F, G$ of $x$ alone. Their type is not yet pinned down — that is Step B.
 
-$$X(x, -y) = X(x, y), \qquad Y(x, -y) = -Y(x, y).$$
+**Step B (why $F, G$ must be rational)**. Apply the homomorphism law to a doubled point, $\phi(2P) = 2 \phi(P)$, and read off the $x$-coordinate on each side.
 
-So $X$ is even in $y$ and $Y$ is odd in $y$. On the curve, $y^2 = f(x)$, so any even polynomial in $y$ collapses to a polynomial in $x$, and any odd polynomial is $y$ times a polynomial in $x$. Allowing division (denominators are needed because the group law has $1/y$ in slopes): $X = R_1(x)$ and $Y = y \cdot R_2(x)$ for rational functions $R_1, R_2$.
+- **Left side**, $\phi(2P)$: Step A applied to $2P$ gives $x$-coordinate $F(x_{2P})$. Doubling on $E_1$ (the tangent-line construction, using $y_P^2 = f(x_P)$ to eliminate $y_P$) makes $x_{2P}$ a *rational expression* in $x_P$. So the left-side $x$-coordinate is $F$ evaluated at a rational expression in $x_P$.
 
-**Step B (why rational, not just even/odd of arbitrary shape)**: apply the homomorphism law to a doubled point, $\phi(2P) = 2 \phi(P)$. Doubling on $E$ (the tangent-line construction) produces $x_{2P}$ as a rational expression in $x_P$ using $y^2 = f(x_P)$. Doubling on $E'$ produces the $x$-coordinate of $2 \cdot \phi(P)$ using the same tangent-line construction on $E'$, applied to the point $(R_1(x_P), y_P R_2(x_P))$ — which comes out as a rational expression in $R_1(x_P)$, $R_2(x_P)$, and $x_P$. Equating: $R_1$ evaluated at a rational expression in $x_P$ equals a rational expression in $R_1(x_P)$, $R_2(x_P)$, $x_P$. The only functions $R_1$ that fit both roles — argument to a rational combination on one side, output of a rational combination on the other — are themselves rational: composition of a rational function with a rational function is rational, and the two sides can only agree if $R_1$ belongs to the same class of expressions the right side is built from. Reading off the $y$-coordinate of $\phi(2P) = 2\phi(P)$ constrains $R_2$ the same way.
+- **Right side**, $2 \phi(P)$: doubling on $E_2$ applied to the point $\phi(P) = (F(x_P),\ y_P G(x_P))$ — again using $y_P^2 = f(x_P)$ to eliminate $y_P^2$ — produces its $x$-coordinate as a *rational expression* in $F(x_P)$, $G(x_P)$, and $x_P$.
 
-So $\phi$ has the shape $\phi(x, y) = (R_1(x), y R_2(x))$ with $R_1, R_2 \in K(x)$ for the base field $K$.
+Equating: *$F$ evaluated at a rational expression in $x_P$ equals a rational expression in $F(x_P)$, $G(x_P)$, $x_P$*, as an identity in $x_P$. For this to hold, $F$ itself must be rational — only then does its precomposition with a rational function stay in the same class of expressions as the right side. The $y$-coordinate equality constrains $G$ the same way.
+
+Renaming $F = R_1$ and $G = R_2$:
+
+$$\phi(x, y) = (R_1(x),\ y \cdot R_2(x)), \qquad R_1, R_2 \in K(x)$$
+
+for the base field $K$.
 
 ### Why an isogeny is surjective
 
@@ -1159,12 +1165,17 @@ $$u(P) = \int_{\mathcal{O}}^{P} \frac{dx}{y},$$
 
 the integral of $dx/y$ along a path on the curve from the identity $\mathcal{O}$ to $P$.
 
-**Why $1/y$ as the integrand.** The claim to justify: integrating $dx/y$ from the identity gives the coordinate in which the group law linearizes. This holds in both cases, and here is a direct check for each.
+**Why $1/y$ as the integrand.** The claim to justify: integrating $dx/y$ from the identity gives the coordinate in which the group law linearizes. Here is a direct check for each case.
 
-- **Circle.** From $x = \cos u$, $y = \sin u$: the substitution $dx = -\sin u \, du = -y\, du$ gives $dx/y = -du$. Integrating from $(1, 0)$ recovers $-u$ (the sign is just orientation).
-- **Elliptic curve.** Once we build the Weierstrass parameterization $x = \wp(u)$, $y = \wp'(u)/2$ below, differentiating $x = \wp(u)$ gives $dx = \wp'(u)\, du = 2y\, du$, so $dx/y = 2\, du$. Integrating from $\mathcal{O}$ recovers $2u$ up to a constant.
+- **Circle.** From $x = \cos u$, $y = \sin u$: differentiating $x = \cos u$ gives $dx = -\sin u \cdot du = -y \cdot du$, so $dx/y = -du$. Integrating from $(1, 0)$ (where $u = 0$) up to a point at parameter $u_0$ gives $-u_0$: the integrand $dx/y$ integrates to the angle parameter, up to sign (which is just orientation of the loop).
 
-In both cases the integrand $1/y$ is what pulls out the group-additive coordinate. What we prove below is that this coordinate $u$ exists (as a well-defined value modulo a lattice) and that the group law becomes $u_{P+Q} = u_P + u_Q$.
+- **Elliptic curve.** With the Weierstrass parameterization $x = \wp(u)$, $y = \wp'(u)/2$ built below, differentiate $x = \wp(u)$ to get $dx = \wp'(u) \, du$. The parameterization convention $y = \wp'(u)/2$ means $\wp'(u) = 2y$, so $dx = 2y \, du$, and
+
+$$\frac{dx}{y} = 2 \, du.$$
+
+Integrating from $\mathcal{O}$ (where $u = 0$) up to a point at parameter $u_0$ gives $2 u_0$: the integrand $dx/y$ integrates to the group-additive coordinate, up to the factor $2$ (which is an artifact of the $y = \wp'/2$ convention — it disappears if we renormalize the parameterization).
+
+What we prove below is that this coordinate $u$ exists as a well-defined value modulo a lattice, and that the group law becomes $u_{P+Q} = u_P + u_Q$.
 
 ### Why the integral is doubly periodic
 
@@ -1172,12 +1183,12 @@ For the circle, $\int_0^{2\pi} dx/y$ traces out a full loop and returns to the s
 
 An elliptic curve over $\mathbb{C}$ has *two* independent loops, and the integral of $dx/y$ around each of them gives two independent periods $\omega_1, \omega_2$. This is what "doubly periodic" means, and it is forced by topology.
 
-**The topological argument.** The curve $y^2 = f(x) = x^3 + ax + b$ over $\mathbb{C}$ is a two-to-one covering of the $x$-plane $\mathbb{C}_x = \mathbb{C} \cup \{\infty\}$: for each $x$ there are two $y$-values $\pm\sqrt{f(x)}$. The two sheets are glued together at four exceptional points where the two values collapse into one:
+**The topological argument.** For each $x \in \mathbb{C}$ (except a few) the equation $y^2 = f(x) = x^3 + ax + b$ has two solutions $\pm\sqrt{f(x)}$. Think of these as two copies of the $x$-plane $\mathbb{C} \cup \{\infty\}$ — the "sheets" — one for each sign choice; a point on the curve is a point $x$ together with a sign. The two sheets share the same point at four exceptional $x$-values, where the $+$ and $-$ solutions collapse into one:
 
-- The three finite roots $e_1, e_2, e_3$ of $f(x) = 0$: at each, $y = 0$, so $+0$ and $-0$ are the same point.
-- The point $x = \infty$: near infinity, $\sqrt{f(x)} \sim x^{3/2}$, so looping once around infinity swaps $+\sqrt{f}$ with $-\sqrt{f}$ — the two sheets are joined there.
+- **The three finite roots $e_1, e_2, e_3$ of $f(x) = 0$**: at each, $f(x) = 0$, so both signs give $y = 0$.
+- **The point $x = \infty$**: near infinity, $\sqrt{f(x)} \sim x^{3/2}$. This is a multi-valued expression: writing $x = r e^{i\theta}$, we have $x^{3/2} = r^{3/2} e^{i(3/2)\theta}$, and following one full loop around $\infty$ on the Riemann sphere (equivalently, one loop around $0$ in the $x$-plane) sends $\theta \to \theta + 2\pi$, hence $x^{3/2} \to x^{3/2} \cdot e^{3\pi i} = -x^{3/2}$. So $+\sqrt{f}$ and $-\sqrt{f}$ swap. A continuous path on the curve cannot jump between sheets away from a shared point, so $\infty$ must itself be a shared point.
 
-So the curve is a two-to-one cover of the sphere $\mathbb{C}_x$ with four points where the sheets are joined.
+So the elliptic curve, seen as a subset of $(x, y)$-space, is two copies of the Riemann sphere joined at $e_1, e_2, e_3, \infty$.
 
 **From four joining points to genus 1.** A two-to-one cover of the sphere joined at $2n$ points is a surface of genus $n - 1$ (Riemann–Hurwitz; for two sheets the count is immediate: each pair of joining points contributes one "handle"). Four joining points give $n = 2$, hence genus $1$: a **torus**.
 
@@ -1187,9 +1198,9 @@ $$\omega_1 = \oint_{\gamma_1} \frac{dx}{y}, \qquad \omega_2 = \oint_{\gamma_2} \
 
 **Why $u$ takes values in $\mathbb{C}/\Lambda$, not $\mathbb{C}$.** The integral $u(P) = \int_{\mathcal{O}}^P dx/y$ depends on the path from $\mathcal{O}$ to $P$, not just on $P$. Concretely:
 
-- Any two paths from $\mathcal{O}$ to $P$ differ by a closed loop (walk out along one path, back along the other).
-- A closed loop on the torus can be continuously deformed — without crossing the joining points — into some integer combination $n_1 \gamma_1 + n_2 \gamma_2$ of the two basic loops. This is what "two independent loops" means: every loop resolves into an integer combination of $\gamma_1$ and $\gamma_2$.
-- The integral of $dx/y$ around $n_1 \gamma_1 + n_2 \gamma_2$ is $n_1 \omega_1 + n_2 \omega_2$.
+- Any two paths from $\mathcal{O}$ to $P$ differ by a closed loop (walk out along one, back along the other).
+- Every closed loop on the torus can be smoothly deformed on the surface into some integer combination $n_1 \gamma_1 + n_2 \gamma_2$: winding $n_1$ times around $\gamma_1$ (the tube direction) and $n_2$ times around $\gamma_2$ (the hole direction), for some integers $n_1, n_2 \in \mathbb{Z}$. This is the topological content of a torus having "two independent loop directions": the two basic loops generate every closed loop, and no other independent winding directions exist.
+- Hence the integral of $dx/y$ around the loop equals $n_1 \omega_1 + n_2 \omega_2$.
 
 So two path choices give integrals that differ by an element of
 
@@ -1244,15 +1255,13 @@ An endomorphism of the torus $\mathbb{C}/\Lambda$ that fixes $0$ is a *complex-d
 
 $$\alpha \Lambda \subseteq \Lambda.$$
 
-**Connecting $\alpha$ to the endomorphism $\phi$.** Given $\phi: E \to E$ (a rational map from § 8), compose with the Weierstrass parameterization:
+**Connecting $\alpha$ to the endomorphism $\phi$.** Given $\phi: E \to E$ (a rational map from § 8), we transport it to the torus side using $\Phi$: for a torus point $u \in \mathbb{C}/\Lambda$, apply $\Phi$ to reach the curve, apply $\phi$ to move within the curve, then apply $\Phi^{-1}$ to return to the torus. This defines a map $\mathbb{C}/\Lambda \to \mathbb{C}/\Lambda$ — the same endomorphism $\phi$, but expressed in the torus coordinate $u$.
 
-$$\begin{array}{ccc}
-\mathbb{C}/\Lambda & \xrightarrow{\Phi} & E(\mathbb{C}) \\
-\downarrow \alpha \cdot & & \downarrow \phi \\
-\mathbb{C}/\Lambda & \xrightarrow{\Phi} & E(\mathbb{C})
-\end{array}$$
+The transported map fixes $0$ ($\Phi$ sends $0 \to \mathcal{O}$, $\phi$ fixes $\mathcal{O}$, $\Phi^{-1}$ sends $\mathcal{O} \to 0$) and is complex-differentiable ($\Phi$ and $\phi$ both are, and complex differentiability is preserved under composition). By the previous paragraph, any such map on $\mathbb{C}/\Lambda$ is multiplication by some $\alpha \in \mathbb{C}$ with $\alpha \Lambda \subseteq \Lambda$. That $\alpha$ is the complex number attached to $\phi$; equivalently, $\alpha$ is the unique element of $\mathbb{C}$ satisfying
 
-The left column is "multiplication by $\alpha$ on the torus"; the right column is "$\phi$ on the curve." The diagram commutes: this is the definition of $\alpha$ from $\phi$ (chase $u \in \mathbb{C}/\Lambda$ around the square; the value of $\alpha$ is forced by $\Phi(\alpha u) = \phi(\Phi(u))$ for all $u$). Every endomorphism $\phi$ has exactly one such $\alpha$ attached to it, and the correspondence is a ring isomorphism:
+$$\Phi(\alpha u) = \phi(\Phi(u)) \qquad \text{for all } u \in \mathbb{C}/\Lambda.$$
+
+Every endomorphism $\phi$ has exactly one such $\alpha$, and the correspondence is a ring isomorphism:
 
 $$\phi + \psi \leftrightarrow \alpha_\phi + \alpha_\psi, \qquad \phi \circ \psi \leftrightarrow \alpha_\phi \cdot \alpha_\psi.$$
 
@@ -1274,15 +1283,23 @@ $$\phi \mapsto \begin{pmatrix} m & n \\ p & q \end{pmatrix} \in M_2(\mathbb{Z}),
 
 Not every integer matrix arises this way: the matrix must correspond to a valid $\alpha \in \mathbb{C}$, which imposes one extra constraint (the two rows must be consistent with the *same* $\alpha$; see the CM discussion below).
 
-**Restricting to $n$-torsion.** The $n$-torsion is $E[n] = \frac{1}{n}\Lambda / \Lambda$, parameterized by pairs $(j/n, k/n)$ with $j, k \in \{0, 1, \ldots, n-1\}$ — a rank-$2$ module over $\mathbb{Z}/n\mathbb{Z}$. Multiplication by $\alpha$ acts on $(j/n)\omega_1 + (k/n)\omega_2$ by the *same* integer matrix $\begin{pmatrix} m & n \\ p & q \end{pmatrix}$, reduced mod $n$. So the Tate-module picture (§ 11 Picture 2) agrees with the lattice picture: the matrix on $E[n]$ is the reduction mod $n$ of the integer matrix on $\Lambda$.
+**Restricting to $n$-torsion.** On the torus side $[n]$ is $u \mapsto n u$, so a torus point $u$ is $n$-torsion iff $n u \in \Lambda$, i.e., iff $u = \omega / n$ for some $\omega \in \Lambda$. Collect these: they form the scaled-down lattice
+
+$$\tfrac{1}{n} \Lambda = \big\{ \tfrac{j}{n} \omega_1 + \tfrac{k}{n} \omega_2 : j, k \in \mathbb{Z} \big\},$$
+
+which contains $\Lambda$ itself as a sublattice. Since $u$ is only meaningful modulo $\Lambda$, the $n$-torsion is the quotient
+
+$$E[n] = \tfrac{1}{n} \Lambda \,/\, \Lambda,$$
+
+parameterized by pairs $(j/n, k/n)$ with $j, k \in \{0, 1, \ldots, n-1\}$ — a rank-$2$ module over $\mathbb{Z}/n\mathbb{Z}$. Multiplication by $\alpha$ acts on $(j/n)\omega_1 + (k/n)\omega_2$ by the *same* integer matrix $\begin{pmatrix} m & n \\ p & q \end{pmatrix}$, reduced mod $n$. So the Tate-module picture (§ 11 Picture 2) agrees with the lattice picture: the matrix on $E[n]$ is the reduction mod $n$ of the integer matrix on $\Lambda$.
 
 **Degree = determinant, revisited.** On $\mathbb{C}/\Lambda$, the map $u \mapsto \alpha u$ has kernel $\{u : \alpha u \in \Lambda\}/\Lambda = \alpha^{-1}\Lambda / \Lambda$. This kernel has size equal to the index $[\Lambda : \alpha \Lambda]$, which for a rank-$2$ lattice map with integer matrix $M$ is $|\det M|$ (from ordinary linear algebra: the change of volume of a lattice fundamental parallelogram under a linear map is the absolute value of the determinant). By § 10, for a separable isogeny the kernel size equals the degree. So $\deg \phi = |\det M_\phi|$ — the identity we established over finite fields via matrix action on torsion now falls out of ordinary Euclidean geometry on the torus.
 
 ### The $j$-invariant as a coordinate on grid shapes
 
-Two lattices $\Lambda$ and $\Lambda'$ give isomorphic elliptic curves if and only if they are homothetic: $\Lambda' = c \Lambda$ for some $c \in \mathbb{C}^*$. Scaling by $c$ doesn't change the *shape* of the grid; only the shape matters. So the space of elliptic curves over $\mathbb{C}$ is the space of lattices modulo scaling.
+Two lattices $\Lambda$ and $\Lambda'$ give isomorphic elliptic curves if and only if one is a complex rescaling of the other: $\Lambda' = c \Lambda$ for some $c \in \mathbb{C}^*$. Scaling by $c$ doesn't change the *shape* of the grid; only the shape matters. So the space of elliptic curves over $\mathbb{C}$ is the space of lattices modulo scaling.
 
-Given any lattice $\Lambda = \mathbb{Z}\omega_1 + \mathbb{Z}\omega_2$, rescale by $c = 1/\omega_1$: the new lattice is $\mathbb{Z} + \mathbb{Z}\tau$ where $\tau = \omega_2/\omega_1$. So every lattice is (up to homothety) determined by a single complex number $\tau$ with $\text{Im}(\tau) \neq 0$ — the ratio of periods. Conventionally we take $\text{Im}(\tau) > 0$ (upper half-plane).
+Given any lattice $\Lambda = \mathbb{Z}\omega_1 + \mathbb{Z}\omega_2$, rescale by $c = 1/\omega_1$: the new lattice is $\mathbb{Z} + \mathbb{Z}\tau$ where $\tau = \omega_2/\omega_1$. So every lattice is (up to rescaling) determined by a single complex number $\tau$ with $\text{Im}(\tau) \neq 0$ — the ratio of periods. Conventionally we take $\text{Im}(\tau) > 0$ (upper half-plane).
 
 The **$j$-invariant** is a function $j: \{\tau : \text{Im}(\tau) > 0\} \to \mathbb{C}$ that assigns to each lattice-shape a complex number, in such a way that
 
@@ -1306,7 +1323,7 @@ Convention flips the roles of the letters — writing $M = \begin{pmatrix} a & b
 
 $$\tau' = \frac{a\tau + b}{c\tau + d}.$$
 
-The set of such matrices — $2 \times 2$ integer matrices with determinant $1$ — is a group under multiplication, and its action on $\tau$ by this fractional-linear formula is the change-of-basis action on the ratio-of-periods coordinate. Two values of $\tau$ describe the same lattice (hence the same curve, hence the same $j$) precisely when they are related by such a transformation, i.e., when there is a matrix $M$ with $\tau' = M \cdot \tau$:
+The set of such matrices — $2 \times 2$ integer matrices with determinant $1$ — is a group under multiplication, and the transformation $\tau \mapsto (a\tau + b)/(c\tau + d)$ is exactly what happens to the ratio $\tau = \omega_2/\omega_1$ when we change basis on the same lattice. Two values of $\tau$ describe the same lattice (hence the same curve, hence the same $j$) precisely when they are related by such a transformation, i.e., when there is a matrix $M$ with $\tau' = M \cdot \tau$:
 
 $$j(M \cdot \tau) = j(\tau) \quad \text{for every change-of-basis matrix } M.$$
 
@@ -1314,26 +1331,9 @@ $$j(M \cdot \tau) = j(\tau) \quad \text{for every change-of-basis matrix } M.$$
 
 $$\mathcal{F} = \left\{\tau = x + iy : |x| \leq \tfrac{1}{2}, \ y > 0, \ |\tau| \geq 1\right\},$$
 
-called the **fundamental domain**. Picture:
+called the **fundamental domain**.
 
-```text
-             Im
-              ^
-              |
-   .          |          .            <-- lattices with |τ|=1
-    \         |         /                are on the arc
-     \        |        /
-      \       *i       /
-       \______|______/               <-- vertical arc |τ|=1
-       |      |      |
-       |  F   |  F   |                <-- vertical strips
-       |      |      |                    |Re τ| ≤ 1/2
-       |______|______|
-       |             |
-       |             |
-   ----+------+------+-----> Re
-     -1/2   0     1/2
-```
+{% include visualization.html src="fundamental-domain.html" title="The fundamental domain of SL₂(ℤ) on the upper half-plane" %}
 
 Every lattice shape is represented by exactly one $\tau \in \mathcal{F}$, so $\mathcal{F}$ parameterizes the space of elliptic curves over $\mathbb{C}$. The $j$-invariant becomes a bijection $j: \mathcal{F} \to \mathbb{C}$, giving each shape a numerical name.
 

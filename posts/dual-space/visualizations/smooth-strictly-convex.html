@@ -196,11 +196,11 @@
     </header>
 
     <section class="equation-chain" aria-label="The three linked operations">
-      <div class="stage"><span class="stage-label">select</span><span>\(u_y^{\star}=\operatorname*{arg\,max}_{u\in\mathbb R}\{yu-f(u)\}\)</span></div>
+      <div class="stage"><span class="stage-label">select</span><span>\(x_y^{\star}=\operatorname*{arg\,max}_{x\in\mathbb R}\{y\, x-f(x)\}\)</span></div>
       <span class="arrow" aria-hidden="true">→</span>
-      <div class="stage"><span class="stage-label">locate</span><span>\(f'\!\left(u_y^{\star}\right)=y\)</span></div>
+      <div class="stage"><span class="stage-label">locate</span><span>\(f'\!\left(x_y^{\star}\right)=y\)</span></div>
       <span class="arrow" aria-hidden="true">→</span>
-      <div class="stage"><span class="stage-label">record</span><span>\(f^{*}(y)=yu_y^{\star}-f\!\left(u_y^{\star}\right)\)</span></div>
+      <div class="stage"><span class="stage-label">record</span><span>\(f^{*}(y)=y\, x_y^{\star}-f\!\left(x_y^{\star}\right)\)</span></div>
     </section>
 
     <div class="canvas-wrap">
@@ -209,7 +209,7 @@
 
     <footer class="live-strip" aria-label="Current numerical values">
       <div class="live-item"><span class="live-label">fixed slope</span><span class="live-value">\(y=\)<strong id="liveY">1.00</strong></span></div>
-      <div class="live-item"><span class="live-label">selected input</span><span class="live-value">\(u_y^{\star}=\)<strong id="liveX">0.68</strong></span></div>
+      <div class="live-item"><span class="live-label">selected input</span><span class="live-value">\(x_y^{\star}=\)<strong id="liveX">0.68</strong></span></div>
       <div class="live-item"><span class="live-label">recorded gap</span><span class="live-value">\(f^{*}(y)=\)<strong id="liveFstar">0.44</strong></span></div>
     </footer>
   </main>
@@ -374,14 +374,14 @@
         add(scene, 'circle', { cx: conX, cy: conY, r: 6.5, fill: C.surface, stroke: C.accent, 'stroke-width': 2.4 });
         add(scene, 'circle', { cx: conX, cy: conY, r: 3.1, fill: C.accent });
 
-        label(scene, L.top.x + L.top.w - 10, topS.sy(f(1.22)) - 8, 'f(u)', C.accentInk, C.accentSoft, C, 'end');
-        label(scene, L.top.x + 14, topS.sy(y * -1.35) - 7, 'yu', C.orange, C.orangeSoft, C, 'start');
-        label(scene, L.derivative.x + L.derivative.w - 12, derS.sy(fp(1.2)) - 4, "f′(u)", C.blue, C.blueSoft, C, 'end');
+        label(scene, L.top.x + L.top.w - 10, topS.sy(f(1.22)) - 8, 'f(x)', C.accentInk, C.accentSoft, C, 'end');
+        label(scene, L.top.x + 14, topS.sy(y * -1.35) - 7, 'y·x', C.orange, C.orangeSoft, C, 'start');
+        label(scene, L.derivative.x + L.derivative.w - 12, derS.sy(fp(1.2)) - 4, "f′(x)", C.blue, C.blueSoft, C, 'end');
         label(scene, L.conjugate.x + L.conjugate.w - 12, conS.sy(conjugate(2.45)) - 8, 'f*(y)', C.accentInk, C.accentSoft, C, 'end');
 
         var gapLabelY = Math.max(L.top.y + 28, Math.min(L.top.y + L.top.h - 12, (gapTop + gapBottom) / 2));
         label(scene, bracketX + side * 8, gapLabelY, 'f*(y) = ' + fmt(fStar), C.orange, C.orangeSoft, C, side === 1 ? 'start' : 'end');
-        label(scene, derS.sx(uStar), L.derivative.y - 9, 'same u*', C.blue, C.blueSoft, C, 'middle');
+        label(scene, derS.sx(uStar), L.derivative.y - 9, 'same x*', C.blue, C.blueSoft, C, 'middle');
 
         add(scene, 'rect', { x: L.bridge.x, y: L.bridge.y, width: L.bridge.w, height: L.bridge.h, rx: 12, fill: C.accentSoft, stroke: C.border });
         add(scene, 'text', { x: L.bridge.x + L.bridge.w / 2, y: L.bridge.y + 44, fill: C.muted, 'font-family': 'Inter, sans-serif', 'font-size': 10.5, 'font-weight': 760, 'text-anchor': 'middle', 'letter-spacing': .6 }, 'RECORD');

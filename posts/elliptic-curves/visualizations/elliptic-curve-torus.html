@@ -4,6 +4,54 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Elliptic curve: from two sheets to a torus and a period lattice</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap"
+>
+
+<script>
+  (function () {
+    function setTheme(theme) {
+      if (theme === 'dark' || theme === 'light') {
+        document.documentElement.dataset.theme = theme;
+      }
+    }
+    try {
+      var parentRoot = window.parent.document.documentElement;
+      var parentBody = window.parent.document.body;
+      var parentTheme = [
+        parentRoot.dataset.theme || '',
+        parentRoot.className || '',
+        parentBody && parentBody.dataset ? parentBody.dataset.theme || '' : '',
+        parentBody ? parentBody.className || '' : ''
+      ].join(' ').toLowerCase();
+      setTheme(parentTheme.indexOf('dark') >= 0 ? 'dark' : 'light');
+    } catch (_error) {
+      setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    }
+    window.addEventListener('message', function (event) {
+      if (event && event.data && event.data.theme) setTheme(event.data.theme);
+    });
+  }());
+</script>
+
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['\\[', '\\]']]
+    },
+    svg: { fontCache: 'global' },
+    options: {
+      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  };
+</script>
+<script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+
 <style>
 :root{
   color-scheme:light dark;
@@ -25,6 +73,11 @@
   --red:#c33b32;
   --gold:#a07a16;
   --shadow:0 1px 2px rgba(25,32,40,.04),0 12px 34px rgba(25,32,40,.06);
+
+  --font-display:"Lora", Georgia, "Times New Roman", serif;
+  --font-reading:"Lora", Georgia, "Times New Roman", serif;
+  --font-ui:"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:"Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 :root[data-theme=dark]{
     --page:transparent;
@@ -52,42 +105,42 @@ body{
   margin:0;
   background:var(--page);
   color:var(--ink);
-  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-family:var(--font-reading);
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
 }
 main{max-width:1140px;margin:0 auto;padding:30px 20px 46px}
 .hero{margin:0 0 22px}
-h1{margin:0 0 10px;font-size:clamp(30px,4vw,46px);line-height:1.08;letter-spacing:-.025em;color:var(--blue)}
-.hero p{max-width:930px;margin:0;font-size:15px;line-height:1.75;color:var(--muted)}
+h1{margin:0 0 10px;font-family:var(--font-display);font-size:clamp(30px,4vw,46px);line-height:1.14;letter-spacing:-.025em;color:var(--blue);font-weight:600}
+.hero p{max-width:930px;margin:0;font-family:var(--font-reading);font-size:15.5px;line-height:1.72;color:var(--muted)}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:20px;margin:0 0 20px;overflow:hidden}
 .panel-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:17px}
-.step{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:#fff;font-weight:760;font-size:22px;flex:0 0 auto}
-.panel-head h2{margin:0;font-size:clamp(24px,3vw,34px);line-height:1.14;letter-spacing:-.02em;color:var(--blue)}
-.kicker{margin-top:5px;font-size:13px;line-height:1.5;color:var(--faint)}
+.step{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:#fff;font-family:var(--font-ui);font-weight:760;font-size:22px;flex:0 0 auto}
+.panel-head h2{margin:0;font-family:var(--font-display);font-size:clamp(24px,3vw,34px);line-height:1.18;letter-spacing:-.02em;color:var(--blue);font-weight:600}
+.kicker{margin-top:5px;font-family:var(--font-ui);font-size:13px;line-height:1.5;color:var(--faint)}
 .grid-two{display:grid;grid-template-columns:minmax(290px,.41fr) minmax(0,.59fr);gap:22px;align-items:start}
 .stack{display:flex;flex-direction:column;gap:12px;min-width:0}
 .card,.figure-card,.formula-card{background:var(--surface);border:1px solid var(--line);border-radius:14px}
 .card{padding:16px}
 .figure-card{padding:14px;overflow:hidden}
-.copy{font-size:14px;line-height:1.72;color:var(--muted)}
+.copy{font-family:var(--font-reading);font-size:14.5px;line-height:1.7;color:var(--muted)}
 .copy strong{color:var(--ink)}
-.math{font-family:Cambria,"STIX Two Text","Times New Roman",Georgia,serif;color:var(--ink);font-size:20px;line-height:1.55}
+.math{font-family:var(--font-reading);color:var(--ink);font-size:20px;line-height:1.55;font-style:italic}
 .math.big{font-size:clamp(27px,3vw,33px);line-height:1.25}
-.note{border-left:4px solid var(--blue);background:var(--blue-soft);border-radius:11px;padding:12px 14px;font-size:13.5px;line-height:1.65;color:var(--muted)}
+.note{border-left:4px solid var(--blue);background:var(--blue-soft);border-radius:11px;padding:12px 14px;font-family:var(--font-reading);font-size:13.5px;line-height:1.65;color:var(--muted)}
 .note strong{color:var(--ink)}
 .note.warm{border-left-color:var(--gold);background:color-mix(in srgb,var(--gold) 11%,var(--surface))}
-.caption{font-size:12.5px;line-height:1.62;color:var(--faint);margin-top:9px}
+.caption{font-family:var(--font-ui);font-size:12.5px;line-height:1.62;color:var(--faint);margin-top:9px}
 svg{display:block;width:100%;height:auto;overflow:visible}
-.legend{display:flex;gap:15px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.legend{display:flex;gap:15px;flex-wrap:wrap;margin-top:10px;font-family:var(--font-ui);font-size:12.5px;color:var(--muted)}
 .legend span{display:flex;align-items:center;gap:7px}
 .legend i{width:11px;height:11px;border-radius:50%;display:inline-block;flex:0 0 auto}
 .flow{display:grid;place-items:center;height:34px;margin:-5px 0 8px}
 .flow svg{width:56px;height:30px}
-.mini-title{font-size:14px;font-weight:760;color:var(--ink);margin:0 0 8px}
+.mini-title{font-family:var(--font-display);font-size:14px;font-weight:650;color:var(--ink);margin:0 0 8px}
 .formula-card{padding:17px 19px}
-.formula-card .label{font-size:13px;color:var(--faint);margin-bottom:7px}
-.formula-card .eq{font-family:Cambria,"STIX Two Text","Times New Roman",Georgia,serif;font-size:clamp(23px,3vw,33px);line-height:1.3}
+.formula-card .label{font-family:var(--font-ui);font-size:13px;color:var(--faint);margin-bottom:7px}
+.formula-card .eq{font-family:var(--font-reading);font-size:clamp(23px,3vw,33px);line-height:1.3;font-style:italic}
 .formula-card.blue .eq{color:var(--blue)}
 .formula-card.orange .eq{color:var(--orange)}
 .cycle-grid{display:grid;grid-template-columns:minmax(0,1.24fr) minmax(285px,.76fr);gap:21px;align-items:start}
@@ -116,7 +169,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 
 .cycle-key{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:10px}
 .cycle-key-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-width:0}
-.cycle-key-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-family:Cambria,"STIX Two Text","Times New Roman",serif;font-size:19px}
+.cycle-key-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-family:var(--font-reading);font-style:italic;font-size:19px}
 .cycle-swatch{width:24px;height:4px;border-radius:99px;flex:0 0 auto}
 .cycle-key-item p{margin:0;font-size:12.5px;line-height:1.55;color:var(--muted)}
 .torus-frame{position:relative;isolation:isolate}
@@ -172,7 +225,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
           </div>
           <div class="math" style="margin-top:7px">y₀ and −y₀, where y₀² = f(x₀).</div>
           <div class="copy" style="margin-top:11px">
-            Keeping the two choices separate gives two local copies of the x-sphere. Moving around a special x-value swaps which copy the solution belongs to, so the copies must meet there.
+            Keeping the two choices separate gives two local copies of the x-sphere. Following a small loop around a special x-value flips <em>y</em> to −<em>y</em>, so a path that stays continuous on the curve must cross between the two copies as the loop closes — which is only possible if the two copies share a point at the special x-value itself.
           </div>
         </div>
 
@@ -198,8 +251,8 @@ svg{display:block;width:100%;height:auto;overflow:visible}
             <ellipse cx="376" cy="346" rx="280" ry="68" fill="var(--panel)" stroke="var(--line-strong)" stroke-width="1.5"/>
             <line x1="136" y1="346" x2="620" y2="346" stroke="var(--ink)" stroke-width="1.35"/>
             <path d="M620 346 l-10 -5 v10 z" fill="var(--ink)"/>
-            <text x="632" y="352" font-size="16" fill="var(--ink)" font-family="Inter,Segoe UI,sans-serif">x</text>
-            <text x="376" y="405" text-anchor="middle" font-size="14" fill="var(--muted)" font-family="Inter,Segoe UI,sans-serif">the x-plane together with its point at infinity</text>
+            <text x="632" y="352" font-size="16" fill="var(--ink)" font-family="Inter, Segoe UI, sans-serif">x</text>
+            <text x="376" y="405" text-anchor="middle" font-size="14" fill="var(--muted)" font-family="Inter, Segoe UI, sans-serif">the x-plane together with its point at infinity</text>
 
             <path d="M152 118 C219 53,319 43,400 64 C466 81,532 71,606 98 C576 131,568 170,526 193 C467 226,405 188,347 169 C281 147,221 170,174 159 C155 155,145 139,152 118 Z" fill="url(#sheetA)" stroke="var(--teal)" stroke-width="2"/>
             <path d="M153 234 C214 195,278 193,342 211 C408 230,471 251,532 222 C564 207,596 215,618 238 C582 256,566 283,526 295 C459 316,402 282,340 274 C275 265,221 285,174 277 C155 274,145 254,153 234 Z" fill="url(#sheetB)" stroke="var(--orange)" stroke-width="2"/>
@@ -211,23 +264,36 @@ svg{display:block;width:100%;height:auto;overflow:visible}
               <line x1="555" y1="346" x2="555" y2="132"/>
             </g>
 
-            <g fill="var(--red)">
-              <circle cx="205" cy="346" r="5.5"/><circle cx="310" cy="346" r="5.5"/><circle cx="421" cy="346" r="5.5"/><circle cx="555" cy="346" r="5.5"/>
-              <circle cx="205" cy="149" r="5.5"/><circle cx="310" cy="151" r="5.5"/><circle cx="421" cy="156" r="5.5"/><circle cx="555" cy="132" r="5.5"/>
+            <!-- meeting points: at each special x-value, both sheets share a single curve point.
+                 A red dot on both the upper and lower sheet, connected by a short solid red segment,
+                 indicates that the two dots are identified (one curve point, not two). -->
+            <g stroke="var(--red)" stroke-width="2.4" stroke-linecap="round">
+              <line x1="205" y1="149" x2="205" y2="245"/>
+              <line x1="310" y1="151" x2="310" y2="248"/>
+              <line x1="421" y1="156" x2="421" y2="265"/>
+              <line x1="555" y1="132" x2="555" y2="225"/>
             </g>
-            <g font-size="19" fill="var(--ink)" font-family="Cambria,STIX Two Text,Times New Roman,serif">
+            <g fill="var(--red)">
+              <!-- x-axis markers at e_i, ∞ -->
+              <circle cx="205" cy="346" r="5"/><circle cx="310" cy="346" r="5"/><circle cx="421" cy="346" r="5"/><circle cx="555" cy="346" r="5"/>
+              <!-- upper-sheet endpoint of each meeting -->
+              <circle cx="205" cy="149" r="5.5"/><circle cx="310" cy="151" r="5.5"/><circle cx="421" cy="156" r="5.5"/><circle cx="555" cy="132" r="5.5"/>
+              <!-- lower-sheet endpoint of each meeting -->
+              <circle cx="205" cy="245" r="5.5"/><circle cx="310" cy="248" r="5.5"/><circle cx="421" cy="265" r="5.5"/><circle cx="555" cy="225" r="5.5"/>
+            </g>
+            <g font-size="19" fill="var(--ink)" font-family="Lora, Georgia, Times New Roman, serif" font-style="italic">
               <text x="193" y="376">e₁</text><text x="298" y="376">e₂</text><text x="409" y="376">e₃</text><text x="547" y="376">∞</text>
             </g>
 
             <line x1="490" y1="346" x2="490" y2="115" stroke="var(--ink)" stroke-width="1.35" stroke-dasharray="6 5"/>
             <circle cx="490" cy="346" r="5.5" fill="var(--ink)"/>
             <circle cx="490" cy="112" r="6" fill="var(--ink)"/>
-            <circle cx="490" cy="252" r="6" fill="var(--ink)"/>
-            <text x="477" y="376" font-size="19" fill="var(--ink)" font-family="Cambria,STIX Two Text,Times New Roman,serif">x₀</text>
-            <text x="507" y="119" font-size="20" fill="var(--ink)" font-family="Cambria,STIX Two Text,Times New Roman,serif">(x₀, y₀)</text>
-            <text x="507" y="261" font-size="20" fill="var(--ink)" font-family="Cambria,STIX Two Text,Times New Roman,serif">(x₀, −y₀)</text>
+            <circle cx="490" cy="270" r="6" fill="var(--ink)"/>
+            <text x="477" y="376" font-size="19" fill="var(--ink)" font-family="Lora, Georgia, Times New Roman, serif" font-style="italic">x₀</text>
+            <text x="507" y="119" font-size="20" fill="var(--ink)" font-family="Lora, Georgia, Times New Roman, serif" font-style="italic">(x₀, y₀)</text>
+            <text x="507" y="278" font-size="20" fill="var(--ink)" font-family="Lora, Georgia, Times New Roman, serif" font-style="italic">(x₀, −y₀)</text>
 
-            <g font-family="Inter,Segoe UI,sans-serif" font-size="14">
+            <g font-family="Inter, Segoe UI, sans-serif" font-size="14">
               <rect x="83" y="60" width="151" height="34" rx="9" fill="var(--panel)" stroke="var(--line)"/>
               <text x="100" y="82" fill="var(--teal)">first local sheet</text>
               <rect x="81" y="198" width="158" height="34" rx="9" fill="var(--panel)" stroke="var(--line)"/>
@@ -240,7 +306,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
           <span><i style="background:var(--orange)"></i>second sheet</span>
           <span><i style="background:var(--red)"></i>values where the sheets meet</span>
         </div>
-        <div class="caption">The two black points over x₀ are distinct. At each red x-value they coincide, so those are the places where a path can pass from one sheet to the other.</div>
+        <div class="caption">The two black points over x₀ are distinct — one on each sheet. At each of e₁, e₂, e₃, ∞, the red dots on the two sheets are identified: the connecting red segment marks them as a single point on the curve, so those are the places where a path can pass from one sheet to the other.</div>
       </div>
     </div>
   </section>
@@ -261,7 +327,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     <div class="construction">
       <article class="construction-step">
         <div class="stage-top"><div class="stage-letter">A</div><h3>Pair the four meeting values</h3></div>
-        <p class="stage-copy">Draw two disjoint cuts on the x-sphere: one from e₁ to e₂, and one from e₃ to ∞. Their endpoints are exactly the four places where the sheets meet.</p>
+        <p class="stage-copy">Pick any pairing of the four meeting values and draw a cut on the x-sphere between each pair — here, e₁–e₂ and e₃–∞. Any pairing gives the same final topology; only the count of pairs matters.</p>
         <div class="stage-figure">
           <svg viewBox="0 0 260 220" role="img" aria-label="The x-sphere with four meeting values paired by two cuts">
             <defs><radialGradient id="sphereFill" cx="37%" cy="30%" r="75%"><stop offset="0%" stop-color="var(--panel)"/><stop offset="100%" stop-color="var(--surface-2)"/></radialGradient></defs>
@@ -272,17 +338,17 @@ svg{display:block;width:100%;height:auto;overflow:visible}
             <path d="M157 145 C177 169,198 160,207 131" fill="none" stroke="var(--orange)" stroke-width="8" stroke-linecap="round" opacity=".22"/>
             <path d="M157 145 C177 169,198 160,207 131" fill="none" stroke="var(--orange)" stroke-width="2.4" stroke-linecap="round"/>
             <g fill="var(--red)"><circle cx="75" cy="76" r="5"/><circle cx="127" cy="68" r="5"/><circle cx="157" cy="145" r="5"/><circle cx="207" cy="131" r="5"/></g>
-            <g font-family="Cambria,STIX Two Text,Times New Roman,serif" font-size="17" fill="var(--ink)">
+            <g font-family="Lora, Georgia, Times New Roman, serif" font-style="italic" font-size="17" fill="var(--ink)">
               <text x="48" y="72">e₁</text><text x="131" y="57">e₂</text><text x="137" y="168">e₃</text><text x="216" y="137">∞</text>
             </g>
-            <text x="130" y="207" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="Inter,Segoe UI,sans-serif">two cuts, four endpoints</text>
+            <text x="130" y="207" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="Inter, Segoe UI, sans-serif">two cuts, four endpoints</text>
           </svg>
         </div>
       </article>
 
       <article class="construction-step">
         <div class="stage-top"><div class="stage-letter">B</div><h3>Open both sheets along both cuts</h3></div>
-        <p class="stage-copy">Make the same two openings in each copy. Every opening now has two banks, one on each side of the cut.</p>
+        <p class="stage-copy">Each sheet is a copy of the x-sphere, so the cuts on the x-sphere live on both sheets simultaneously. Slit each sheet along both cuts; every opening has two banks, one on each side of the cut.</p>
         <div class="stage-figure">
           <svg viewBox="0 0 260 220" role="img" aria-label="Two sheets, each opened along the same two cuts">
             <ellipse cx="130" cy="65" rx="101" ry="37" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.7"/>
@@ -297,8 +363,8 @@ svg{display:block;width:100%;height:auto;overflow:visible}
               <circle cx="70" cy="61" r="4.5"/><circle cx="117" cy="61" r="4.5"/><circle cx="151" cy="70" r="4.5"/><circle cx="199" cy="70" r="4.5"/>
               <circle cx="70" cy="153" r="4.5"/><circle cx="117" cy="153" r="4.5"/><circle cx="151" cy="162" r="4.5"/><circle cx="199" cy="162" r="4.5"/>
             </g>
-            <text x="130" y="21" text-anchor="middle" font-size="12" fill="var(--teal)" font-family="Inter,Segoe UI,sans-serif">first sheet</text>
-            <text x="130" y="215" text-anchor="middle" font-size="12" fill="var(--orange)" font-family="Inter,Segoe UI,sans-serif">second sheet</text>
+            <text x="130" y="21" text-anchor="middle" font-size="12" fill="var(--teal)" font-family="Inter, Segoe UI, sans-serif">first sheet</text>
+            <text x="130" y="215" text-anchor="middle" font-size="12" fill="var(--orange)" font-family="Inter, Segoe UI, sans-serif">second sheet</text>
           </svg>
         </div>
       </article>
@@ -317,10 +383,10 @@ svg{display:block;width:100%;height:auto;overflow:visible}
             <path d="M195 79 C229 103,228 126,194 148" fill="none" stroke="var(--orange)" stroke-width="2.2" stroke-linecap="round"/>
 
             <ellipse cx="130" cy="113" rx="50" ry="26" fill="var(--panel)" stroke="var(--line-strong)" stroke-width="1.3" stroke-dasharray="5 5"/>
-            <text x="130" y="110" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="Inter,Segoe UI,sans-serif">gap between the</text>
-            <text x="130" y="126" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="Inter,Segoe UI,sans-serif">two connections</text>
-            <text x="40" y="203" font-size="11.5" fill="var(--blue)" font-family="Inter,Segoe UI,sans-serif">first join</text>
-            <text x="174" y="203" font-size="11.5" fill="var(--orange)" font-family="Inter,Segoe UI,sans-serif">second join</text>
+            <text x="130" y="110" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="Inter, Segoe UI, sans-serif">gap between the</text>
+            <text x="130" y="126" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="Inter, Segoe UI, sans-serif">two connections</text>
+            <text x="40" y="203" font-size="11.5" fill="var(--blue)" font-family="Inter, Segoe UI, sans-serif">first join</text>
+            <text x="174" y="203" font-size="11.5" fill="var(--orange)" font-family="Inter, Segoe UI, sans-serif">second join</text>
           </svg>
         </div>
       </article>
@@ -632,7 +698,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 
   function addTextLabel(svg, x, y, textValue, color, anchor = "start") {
     const group = el("g");
-    const text = el("text", {x,y,"text-anchor":anchor,"font-size":"18",fill:color,"font-family":"Cambria,STIX Two Text,Times New Roman,serif"});
+    const text = el("text", {x,y,"text-anchor":anchor,"font-size":"18",fill:color,"font-family":"Lora, Georgia, Times New Roman, serif","font-style":"italic"});
     text.textContent = textValue;
     group.appendChild(text);
     svg.appendChild(group);
@@ -711,7 +777,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     const quotient = el("g", {transform:"translate(82,58)"});
     quotient.appendChild(el("rect", {x:"0",y:"0",width:"168",height:"103",rx:"13",fill:"var(--panel)",stroke:"var(--line)"}));
     const q1=el("text",{x:"15",y:"25","font-size":"12.5",fill:"var(--muted)","font-family":"Inter,Segoe UI,sans-serif"});q1.textContent="identify every translated copy";quotient.appendChild(q1);
-    const q2=el("text",{x:"15",y:"59","font-size":"29",fill:"var(--blue)","font-family":"Cambria,STIX Two Text,Times New Roman,serif"});q2.textContent="ℂ / Λ";quotient.appendChild(q2);
+    const q2=el("text",{x:"15",y:"59","font-size":"29",fill:"var(--blue)","font-family":"Lora, Georgia, Times New Roman, serif","font-style":"italic"});q2.textContent="ℂ / Λ";quotient.appendChild(q2);
     const q3=el("text",{x:"15",y:"85","font-size":"12.5",fill:"var(--muted)","font-family":"Inter,Segoe UI,sans-serif"});q3.textContent="one point per lattice cell";quotient.appendChild(q3);
     svg.appendChild(quotient);
   }

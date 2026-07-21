@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The fundamental domain of SL₂(ℤ) on the upper half-plane</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap"
+>
+
+<script>
+  (function () {
+    function setTheme(theme) {
+      if (theme === 'dark' || theme === 'light') {
+        document.documentElement.dataset.theme = theme;
+      }
+    }
+    try {
+      var parentRoot = window.parent.document.documentElement;
+      var parentBody = window.parent.document.body;
+      var parentTheme = [
+        parentRoot.dataset.theme || '',
+        parentRoot.className || '',
+        parentBody && parentBody.dataset ? parentBody.dataset.theme || '' : '',
+        parentBody ? parentBody.className || '' : ''
+      ].join(' ').toLowerCase();
+      setTheme(parentTheme.indexOf('dark') >= 0 ? 'dark' : 'light');
+    } catch (_error) {
+      setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    }
+    window.addEventListener('message', function (event) {
+      if (event && event.data && event.data.theme) setTheme(event.data.theme);
+    });
+  }());
+</script>
+
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['\\[', '\\]']]
+    },
+    svg: { fontCache: 'global' },
+    options: {
+      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  };
+</script>
+<script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+
+<style>
+  :root {
+    color-scheme: light;
+    --page: #fbfbf8;
+    --surface: #ffffff;
+    --surface-muted: #f4f5f1;
+    --ink: #1c2420;
+    --muted: #667169;
+    --border: #d6ddd7;
+    --border-strong: #a6b2a9;
+    --accent: #1d61a6;
+    --accent-soft: #e8f1fa;
+    --accent-ink: #17558f;
+    --accent-border: #9cc5e6;
+    --danger: #b64b4b;
+    --shadow: 0 12px 30px rgba(25, 42, 34, 0.07);
+
+    --post-accent: var(--accent);
+    --post-accent-soft: var(--accent-soft);
+    --post-accent-ink: var(--accent-ink);
+    --post-accent-border: var(--accent-border);
+
+    --font-display: "Lora", Georgia, "Times New Roman", serif;
+    --font-reading: "Lora", Georgia, "Times New Roman", serif;
+    --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  :root[data-theme="dark"],
+  :root.dark {
+    color-scheme: dark;
+    --page: #101511;
+    --surface: #171e19;
+    --surface-muted: #1d2720;
+    --ink: #e9efeb;
+    --muted: #a7b5aa;
+    --border: #344138;
+    --border-strong: #617168;
+    --accent: #add9ff;
+    --accent-soft: #18354e;
+    --accent-border: #3f6f97;
+    --accent-ink: #c4e3ff;
+    --danger: #ef9992;
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    min-width: 320px;
+    margin: 0;
+    overflow-x: hidden;
+    background: transparent;
+    color: var(--ink);
+  }
+  body {
+    padding: clamp(8px, 2vw, 20px);
+    font-family: var(--font-reading);
+    font-size: 16px;
+    line-height: 1.58;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .fd-viz {
+    width: min(1060px, 100%);
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+  }
+
+  .fd-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+    gap: 24px;
+    align-items: end;
+    padding: clamp(20px, 3.4vw, 34px);
+    border-bottom: 1px solid var(--border);
+    background:
+      radial-gradient(circle at 95% 0%, color-mix(in srgb, var(--post-accent-soft) 72%, transparent), transparent 34%),
+      var(--surface);
+  }
+
+  @media (max-width: 720px) {
+    .fd-header { grid-template-columns: 1fr; }
+  }
+
+  .eyebrow {
+    margin: 0 0 7px;
+    color: var(--post-accent-ink);
+    font: 750 0.68rem/1 var(--font-ui);
+    letter-spacing: 0.095em;
+    text-transform: uppercase;
+  }
+
+  h1, h2, p { margin-top: 0; }
+
+  h1 {
+    max-width: 720px;
+    margin-bottom: 9px;
+    font-family: var(--font-display);
+    font-size: clamp(1.42rem, 3vw, 2.1rem);
+    font-weight: 550;
+    letter-spacing: -0.03em;
+    line-height: 1.18;
+  }
+
+  .intro {
+    max-width: 720px;
+    margin-bottom: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.62;
+  }
+
+  .definition {
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--post-accent-border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--post-accent-soft) 58%, var(--surface));
+  }
+
+  .definition-label {
+    margin: 0 0 5px;
+    color: var(--muted);
+    font: 750 0.65rem/1.3 var(--font-ui);
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+  }
+
+  .definition .math-line {
+    overflow-wrap: anywhere;
+    font-family: var(--font-reading);
+    font-size: clamp(0.98rem, 1.8vw, 1.15rem);
+    line-height: 1.5;
+  }
+
+  .definition .math-line + .math-line {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: clamp(0.82rem, 1.4vw, 0.92rem);
+  }
+
+  .diagram-section {
+    padding: clamp(14px, 2.4vw, 22px) clamp(14px, 2.4vw, 22px) 8px;
+  }
+
+  .diagram {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .diagram-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: baseline;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .diagram-title h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .diagram-title p {
+    margin: 0;
+    color: var(--muted);
+    font: 0.66rem/1.35 var(--font-mono);
+    text-align: right;
+  }
+
+  .svg-wrap {
+    min-width: 0;
+    padding: 10px 8px 6px;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface-muted) 55%, transparent), transparent 40%),
+      var(--surface);
+  }
+
+  #fd-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .figcaption {
+    padding: 6px clamp(14px, 3vw, 22px) 16px;
+    color: var(--muted);
+    font: 0.72rem/1.55 var(--font-ui);
+  }
+
+  .notes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    padding: 4px clamp(14px, 2.4vw, 22px) clamp(16px, 2.4vw, 22px);
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 780px) {
+    .notes { grid-template-columns: 1fr; }
+  }
+
+  .note {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-muted);
+  }
+
+  .note-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    color: var(--post-accent-ink);
+    font: 700 0.72rem/1 var(--font-ui);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .note-mark {
+    display: grid;
+    width: 20px;
+    height: 20px;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--post-accent-soft);
+    color: var(--post-accent-ink);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 700;
+  }
+
+  .note p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.52;
+  }
+
+  .note strong { color: var(--ink); font-weight: 600; }
+
+  /* SVG element styles */
+  .axis { stroke: var(--border-strong); stroke-width: 1.35; vector-effect: non-scaling-stroke; }
+  .gridline { stroke: var(--border); stroke-width: 1; opacity: 0.55; vector-effect: non-scaling-stroke; }
+  .boundary { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-dasharray: 6 4; vector-effect: non-scaling-stroke; }
+  .arc { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-dasharray: 6 4; vector-effect: non-scaling-stroke; }
+  .fd-fill { fill: color-mix(in srgb, var(--post-accent-soft) 85%, transparent); stroke: var(--post-accent); stroke-width: 1.75; vector-effect: non-scaling-stroke; }
+  .fd-fill-copy { fill: color-mix(in srgb, var(--post-accent-soft) 42%, transparent); stroke: var(--post-accent-border); stroke-width: 1.15; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; }
+  .special-point { fill: var(--surface); stroke: var(--post-accent-ink); stroke-width: 2.1; vector-effect: non-scaling-stroke; }
+  .example-point { fill: var(--post-accent-ink); stroke: var(--surface); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+  .example-arrow { fill: none; stroke: var(--danger); stroke-width: 1.6; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  .axis-label { fill: var(--muted); font-family: var(--font-ui); font-size: 11px; font-weight: 650; }
+  .svg-math { fill: var(--ink); font-family: var(--font-reading); font-style: italic; font-size: 14px; }
+  .svg-small { fill: var(--muted); font-family: var(--font-ui); font-size: 10.5px; }
+  .svg-accent { fill: var(--post-accent-ink); font-family: var(--font-reading); font-size: 12.5px; font-weight: 650; }
+  .svg-danger { fill: var(--danger); font-family: var(--font-ui); font-size: 10.5px; font-weight: 650; }
+</style>
+</head>
+<body>
+<div class="fd-viz">
+
+  <header class="fd-header">
+    <div>
+      <p class="eyebrow">Modular group</p>
+      <h1>The fundamental domain of SL<sub>2</sub>(ℤ) on the upper half-plane</h1>
+      <p class="intro">
+        Each lattice shape in \(\mathbb{C}\) is determined, up to rescaling, by the period ratio \(\tau = \omega_2/\omega_1 \in \mathbb{H}\). Different bases of the same lattice give different \(\tau\)'s, related by the transformation \(\tau \mapsto (a\tau+b)/(c\tau+d)\) with \(\begin{pmatrix} a & b \\ c & d \end{pmatrix} \in \mathrm{SL}_2(\mathbb{Z})\). The shaded region \(\mathcal{F}\) picks exactly one \(\tau\) from each equivalence class.
+      </p>
+    </div>
+    <aside class="definition">
+      <p class="definition-label">Fundamental domain</p>
+      <div class="math-line">\(\mathcal{F} = \Big\{ \tau \in \mathbb{H} : |\mathrm{Re}\,\tau| \le \tfrac{1}{2},\ |\tau| \ge 1 \Big\}\)</div>
+      <div class="math-line">every \(\tau \in \mathbb{H}\) has exactly one representative in \(\mathcal{F}\)</div>
+    </aside>
+  </header>
+
+  <section class="diagram-section">
+    <div class="diagram">
+      <div class="diagram-title">
+        <h2>Upper half-plane, tiled by translates of \(\mathcal{F}\)</h2>
+        <p>SL<sub>2</sub>(ℤ) · \(\mathcal{F}\) covers \(\mathbb{H}\)</p>
+      </div>
+      <div class="svg-wrap">
+        <svg id="fd-svg" viewBox="0 0 720 460" role="img" aria-label="The fundamental domain of the modular group on the upper half-plane, with SL2(Z)-equivalent copies shaded lightly around it">
+
+          <!-- coordinate frame:
+               real-axis at y=420, origin at x=360
+               scale = 180 units per Re/Im step (so |tau|=1 arc has radius 180, tau=i at (360, 420-180)=(360,240))
+          -->
+
+          <!-- vertical guides for integer real parts (soft) -->
+          <g class="gridline">
+            <line x1="0" y1="420" x2="0" y2="40" opacity="0"/>
+            <line x1="90" y1="420" x2="90" y2="40"/>   <!-- Re = -3/2 -->
+            <line x1="180" y1="420" x2="180" y2="40"/> <!-- Re = -1 -->
+            <line x1="270" y1="420" x2="270" y2="40"/> <!-- Re = -1/2 duplicated by boundary -->
+            <line x1="360" y1="420" x2="360" y2="40"/> <!-- Re = 0 -->
+            <line x1="450" y1="420" x2="450" y2="40"/> <!-- Re = 1/2 duplicated by boundary -->
+            <line x1="540" y1="420" x2="540" y2="40"/> <!-- Re = 1 -->
+            <line x1="630" y1="420" x2="630" y2="40"/> <!-- Re = 3/2 -->
+          </g>
+
+          <!-- lightly shaded SL_2(Z)-equivalent copies of F around the central F -->
+
+          <!-- Copies obtained by translation tau -> tau + n: shift F left/right by integer strips -->
+          <!-- Left translate: tau -> tau - 1, shifting F to strip [-3/2, -1/2] above arc -->
+          <path class="fd-fill-copy" d="
+            M 90 420 L 90 40 L 270 40 L 270 265.9
+            A 180 180 0 0 0 90 420 Z
+          "/>
+          <!-- Right translate: tau -> tau + 1 -->
+          <path class="fd-fill-copy" d="
+            M 450 265.9 L 450 40 L 630 40 L 630 420
+            A 180 180 0 0 0 450 265.9 Z
+          "/>
+
+          <!-- Copies via inversion S: tau -> -1/tau. F under S maps into the disc |tau| <= 1 (upper half). -->
+          <!-- Central region under the |tau|=1 arc (image of F under S) -->
+          <path class="fd-fill-copy" d="
+            M 269.5 265.9
+            A 180 180 0 0 1 450.5 265.9
+            A 180 180 0 0 1 270 420
+            A 180 180 0 0 0 450 420
+            A 180 180 0 0 1 269.5 265.9 Z
+          " opacity="0.55"/>
+
+          <!-- Central F: |Re tau| <= 1/2 and |tau| >= 1 -->
+          <path class="fd-fill" d="
+            M 270 420
+            L 270 265.9
+            A 180 180 0 0 1 450 265.9
+            L 450 420 Z
+          "/>
+          <!-- Truncate the top to keep it inside viewBox, giving F a visible ceiling -->
+          <rect class="fd-fill" x="270" y="40" width="180" height="226" style="stroke:none"/>
+          <!-- redraw side + top boundaries visibly -->
+          <line class="fd-fill" x1="270" y1="40" x2="270" y2="266" style="fill:none"/>
+          <line class="fd-fill" x1="450" y1="40" x2="450" y2="266" style="fill:none"/>
+
+          <!-- axis -->
+          <line class="axis" x1="20" y1="420" x2="700" y2="420"/>
+          <path class="axis" d="M700 420 l-9 -5 v10 z" fill="var(--border-strong)" stroke="none"/>
+          <line class="axis" x1="360" y1="440" x2="360" y2="40"/>
+          <path class="axis" d="M360 40 l-5 9 h10 z" fill="var(--border-strong)" stroke="none"/>
+
+          <!-- axis labels -->
+          <text class="axis-label" x="704" y="425">Re</text>
+          <text class="axis-label" x="364" y="34">Im</text>
+
+          <!-- boundaries |Re tau|=1/2 (dashed vertical lines) -->
+          <line class="boundary" x1="270" y1="266" x2="270" y2="40"/>
+          <line class="boundary" x1="450" y1="266" x2="450" y2="40"/>
+
+          <!-- arc |tau|=1 -->
+          <path class="arc" d="M 180 420 A 180 180 0 0 1 540 420"/>
+
+          <!-- tick marks on Re axis -->
+          <g stroke="var(--border-strong)" stroke-width="1.2">
+            <line x1="180" y1="418" x2="180" y2="424"/>
+            <line x1="270" y1="418" x2="270" y2="424"/>
+            <line x1="360" y1="418" x2="360" y2="424"/>
+            <line x1="450" y1="418" x2="450" y2="424"/>
+            <line x1="540" y1="418" x2="540" y2="424"/>
+          </g>
+          <g class="svg-small" text-anchor="middle">
+            <text x="180" y="437">−1</text>
+            <text x="270" y="437">−½</text>
+            <text x="360" y="437">0</text>
+            <text x="450" y="437">½</text>
+            <text x="540" y="437">1</text>
+          </g>
+
+          <!-- special points: tau = i and the two corners tau = rho, -rho-bar -->
+          <!-- tau = i is at (360, 240): |tau|=1, Re=0 -->
+          <circle class="special-point" cx="360" cy="240" r="5"/>
+          <text class="svg-math" x="371" y="235">i</text>
+          <text class="svg-small" x="371" y="253">(|τ| = 1, Re = 0)</text>
+
+          <!-- rho = e^(2 pi i / 3) = -1/2 + i sqrt(3)/2, at (270, 420 - 180*sqrt(3)/2) = (270, 265.9) -->
+          <circle class="special-point" cx="270" cy="265.9" r="4.5"/>
+          <text class="svg-math" x="234" y="262">ρ</text>
+          <text class="svg-small" x="196" y="279">e^{2πi/3}</text>
+
+          <!-- -rho bar = 1/2 + i sqrt(3)/2, at (450, 265.9) -->
+          <circle class="special-point" cx="450" cy="265.9" r="4.5"/>
+          <text class="svg-math" x="459" y="262">−ρ̄</text>
+
+          <!-- example equivalence: pick a point outside F and its image inside -->
+          <!-- outside point: tau_0 = 5/6 + i * 1.05, so SVG: x = 360 + 180*(5/6) = 510, y = 420 - 180*1.05 = 231 -->
+          <!-- image under T^-1: tau_0 - 1 = -1/6 + i * 1.05, x = 360 - 180/6 = 330, y = 231 -->
+          <g>
+            <circle class="example-point" cx="510" cy="231" r="4.2"/>
+            <text class="svg-danger" x="518" y="223">τ</text>
+            <text class="svg-danger" x="530" y="227" font-size="8">0</text>
+            <text class="svg-small" x="518" y="242">outside</text>
+            <circle class="example-point" cx="330" cy="231" r="4.2"/>
+            <text class="svg-accent" x="304" y="223">τ − 1</text>
+            <text class="svg-small" x="304" y="242">in F</text>
+            <path class="example-arrow" d="M 505 231 Q 420 200 335 231"/>
+            <path class="example-arrow" d="M 340 227 l -8 4 l 8 4" fill="none"/>
+            <text class="svg-danger" x="410" y="192" text-anchor="middle">T⁻¹ : τ ↦ τ − 1</text>
+          </g>
+
+          <!-- second example: tau_1 = i/2 (below arc), maps under S to tau -> -1/tau = 2i -->
+          <!-- tau_1 = 0 + i/2, SVG: (360, 420 - 90) = (360, 330); NOT in F (|tau|=1/2 < 1) -->
+          <!-- image: 2i, SVG: (360, 420 - 360) = (360, 60) -->
+          <g>
+            <circle class="example-point" cx="360" cy="330" r="4.2"/>
+            <text class="svg-danger" x="368" y="335">i/2</text>
+            <text class="svg-small" x="368" y="348">outside</text>
+            <circle class="example-point" cx="360" cy="60" r="4.2"/>
+            <text class="svg-accent" x="368" y="63">2i</text>
+            <text class="svg-small" x="368" y="76">in F</text>
+            <path class="example-arrow" d="M 355 328 Q 300 195 355 65"/>
+            <path class="example-arrow" d="M 353 71 l -4 -8 l 8 -1" fill="none"/>
+            <text class="svg-danger" x="280" y="200" text-anchor="middle">S : τ ↦ −1/τ</text>
+          </g>
+
+          <!-- label the central F -->
+          <text class="svg-accent" x="360" y="150" text-anchor="middle" font-size="18" font-style="italic">F</text>
+
+        </svg>
+      </div>
+      <div class="figcaption">
+        The solid blue region is \(\mathcal{F}\). The lighter dashed regions are its neighbors under the two generators of \(\mathrm{SL}_2(\mathbb{Z})\): the translation \(T: \tau \mapsto \tau + 1\) (adjacent vertical strips) and the inversion \(S: \tau \mapsto -1/\tau\) (the semicircular region inside \(|\tau| = 1\)). Iterated \(T\)'s and \(S\)'s tile the entire upper half-plane by copies of \(\mathcal{F}\). Two example points outside \(\mathcal{F}\) are shown together with the transformation carrying each of them back into \(\mathcal{F}\).
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <article class="note">
+      <div class="note-head"><span class="note-mark">1</span>Two boundary conditions</div>
+      <p>Every \(\tau \in \mathbb{H}\) can be moved into the vertical strip \(|\mathrm{Re}\,\tau| \le \tfrac{1}{2}\) by subtracting an integer (an iterate of \(T\)), and can be moved outside the unit disc \(|\tau| \ge 1\) by applying \(S\) if it sat inside. Alternating these two moves terminates: each application of \(S\) inside the disc strictly increases the imaginary part.</p>
+    </article>
+    <article class="note">
+      <div class="note-head"><span class="note-mark">2</span>Special points</div>
+      <p><strong>\(\tau = i\)</strong>: the square lattice \(\mathbb{Z}[i]\), fixed by \(S\).<br>
+      <strong>\(\tau = \rho = e^{2\pi i / 3}\)</strong> at the left corner, and <strong>\(-\bar\rho = e^{\pi i / 3}\)</strong> at the right corner: the hexagonal lattice \(\mathbb{Z}[\rho]\), fixed by \(ST\). These are the only \(\tau \in \mathcal{F}\) with nontrivial \(\mathrm{SL}_2(\mathbb{Z})\)-stabilizer, so the corresponding elliptic curves have extra automorphisms.</p>
+    </article>
+    <article class="note">
+      <div class="note-head"><span class="note-mark">3</span>The \(j\)-invariant</div>
+      <p>The \(j\)-invariant is a bijection \(j: \mathcal{F} \to \mathbb{C}\). It assigns to each lattice-shape a complex number so that \(j(\tau) = j(\tau') \iff\) the two lattices give isomorphic elliptic curves. Well-known values: \(j(i) = 1728\) and \(j(\rho) = 0\).</p>
+    </article>
+  </section>
+
+</div>
+</body>
+</html>

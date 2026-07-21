@@ -1,6 +1,6 @@
 # Dual Space
 
-Duality is what happens when we pair the elements of one space with the elements of another to produce a scalar, and then use the pairing to learn about each side. Different pairings give different flavours of duality: linear functionals give the *dual space* of a vector space; nonnegative pairings on a cone give a *dual cone*; sup-minus pairings on a function give a *convex conjugate*. Each carries its own theorem saying that, under the right regularity conditions, applying the construction twice recovers the original object. We start with the plain linear case, then let more structure appear as we go — inner products, cones, convex sets, convex functions — and watch what "the dual" specialises to at each step. In Section 5 all of this reassembles into the primal–dual structure of constrained optimisation.
+Duality, in the settings gathered here, is the construction of a **partner object** for a given one: a new object built by asking a natural question of the original and collecting all valid answers. For a vector space, the question is "which scalar-valued linear measurements can we make on it?" and the partner is the *dual space*. For a cone, "which directions pair nonnegatively with everything in it?" gives the *dual cone*. For a convex function, "how far can an affine function of a given slope sit below it?" gives the *convex conjugate*. In each case, applying the construction twice recovers the original — provided the original had the right regularity. We start with the plain linear case, then let more structure appear as we go — inner products, cones, convex sets, convex functions — and watch what "the dual" specialises to at each step. In Section 5 all of this reassembles into the primal–dual structure of constrained optimisation.
 
 ## 1. The dual space
 
@@ -39,11 +39,13 @@ With a basis-dependent mapping in hand, what if we dualise again — does the sa
 
 ### 1.2 The double dual
 
-Define $V^{**} = (V^*)^*$. Every $v \in V$ gives a functional on $V^*$ by evaluation:
+Define $V^{**} = (V^*)^*$ — the space of linear functionals on $V^*$. Every $v \in V$ produces such a functional by *evaluation at $v$*:
 $$
 \hat v : V^* \to \mathbb{F}, \qquad \hat v(\varphi) = \varphi(v).
 $$
-The map $v \mapsto \hat v$ from $V$ to $V^{**}$ is linear in $v$ (easy check) and — unlike the mapping $e_i \mapsto e^i$ of the previous section — requires no basis: given only $v$ and a linear functional $\varphi$, the value $\hat v(\varphi) = \varphi(v)$ is fixed.
+Read this carefully: $\hat v$ is not another copy of $v$, but a *new object one level up*. Where $v$ eats nothing and just sits in $V$, $\hat v$ eats a functional $\varphi \in V^*$ and returns the scalar $\varphi(v)$. The rule is "given a functional, evaluate it at the fixed vector $v$." Linearity of $\hat v$ in its argument $\varphi$ follows from the pointwise definition of addition and scaling on $V^*$, so $\hat v$ is indeed an element of $V^{**}$.
+
+The assignment $v \mapsto \hat v$ from $V$ to $V^{**}$ is itself linear in $v$ (a direct check), and — unlike the mapping $e_i \mapsto e^i$ of the previous section — requires no basis: the recipe "evaluate at $v$" uses only $v$ and the linear structure of $V^*$, no further choices.
 
 - **Finite dimensions.** The map is a bijection, so $V \cong V^{**}$ without any choice being made.
 - **Infinite dimensions.** With mild extra care (restrict $V^*$ to *continuous* linear functionals when $V$ is normed), the map is still injective but need not be onto. Spaces where it *is* onto are called **reflexive**. Hilbert spaces are reflexive; $L^p$ for $1 < p < \infty$ is reflexive; $L^1$ and $L^\infty$ are not (Section 2.3).
@@ -52,21 +54,27 @@ The pattern "an object equals its bidual under the right regularity conditions" 
 
 ### 1.3 The transpose of a linear map
 
-Now cross from a single vector space to a linear map between two. A linear map $T: V \to W$ induces a map going the *other way* on duals. Given $\psi \in W^*$, the composition $\psi \circ T$ is a linear map $V \to \mathbb{F}$ — an element of $V^*$. Package this into
+Sections 1.1 and 1.2 dualised a single space. The natural next question is: what does duality do to a linear map $T: V \to W$ between two spaces?
+
+Take any $\psi \in W^*$ — a scalar-valued linear measurement on $W$. Composing with $T$ gives $\psi \circ T$, which sends $v \in V$ to $\psi(Tv) \in \mathbb{F}$; being a composition of linear maps, it is itself linear in $v$ and therefore an element of $V^*$. So the assignment $\psi \mapsto \psi \circ T$ takes functionals on $W$ to functionals on $V$ — the arrow goes *backward* because composition chains right-to-left: to build a linear functional on $V$ from one on $W$, we have to first push a $v$ over to $W$ (using $T$) and only then apply the functional. Naming this construction,
 $$
 T^\vee : W^* \to V^*, \qquad (T^\vee \psi)(v) = \psi(Tv).
 $$
-This is the **transpose** or **dual map** of $T$. (The notation $T^\vee$ is not universal; $T^*$ is common but will collide with the Hilbert-space adjoint below, so we keep them apart.)
+$T^\vee$ is the **transpose** or **dual map** of $T$. (The notation $T^\vee$ is not universal; $T^*$ is common but will collide with the Hilbert-space adjoint below, so we keep them apart.)
 
 **In coordinates.** Pick a basis $\{e_j\}$ of $V$ and $\{w_i\}$ of $W$, and let $A$ be the matrix of $T$: $T e_j = A^i_j w_i$. Take the corresponding dual bases $\{e^j\}$ of $V^*$ and $\{w^i\}$ of $W^*$. The $j$-th coordinate of $T^\vee\psi$ in $\{e^j\}$ is just $(T^\vee\psi)(e_j)$, and directly from the definition,
 $$
 (T^\vee\psi)(e_j) = \psi(Te_j) = A^i_j\, \psi(w_i) = A^i_j\, \psi_i.
 $$
-The sum $\sum_i A^i_j \psi_i$ is the $j$-th entry of $A^\top \psi$: transposing $A$ makes the $j$-th row of $A^\top$ equal to the $j$-th column of $A$, and pairing it with $\psi$ gives exactly this sum. So the matrix of $T^\vee$ in dual bases is $A^\top$. **Matrix transpose is what the abstract dual construction looks like in coordinates** — the name is exactly right.
+Read the sum $\sum_i A^i_j \psi_i$ as an entry of a matrix–vector product. In ordinary notation, the $j$-th entry of $M\psi$ is $\sum_i M_{ji} \psi_i$ — the entries of *row $j$ of $M$*, dotted with $\psi$. Our sum has $A^i_j$ instead, which is *column $j$* of $A$ (row varying, column fixed at $j$). Column $j$ of $A$ is exactly row $j$ of $A^\top$, so
+$$
+\sum_i A^i_j\, \psi_i = \sum_i (A^\top)_{ji}\, \psi_i = (A^\top \psi)_j.
+$$
+So the matrix of $T^\vee$ in dual bases is $A^\top$. **Matrix transpose is what the abstract dual construction looks like in coordinates** — the name is exactly right.
 
 ## 2. Inner products, Riesz representation, and adjoints
 
-So far the only structure in play has been the vector space itself. Adding an inner product supplies a way of turning a vector into a functional — without a choice of basis, though now with a choice of inner product. This sharpens "$V$ and $V^*$ have the same dimension" into "$V$ and $V^*$ pair up in a way that only depends on the inner product".
+So far the only structure in play has been the vector space itself. Adding an inner product does not by itself change $V$ or $V^*$ — the linear functionals on $V$ are still exactly what they were — but it does supply, for each vector $u \in V$, a **specific** linear functional built out of $u$: the map $v \mapsto \langle u, v \rangle$. Collecting these as $u$ varies gives a mapping $V \to V^*$ that uses no basis, only the inner product. In finite dimensions this mapping is an isomorphism, and the Section 1.1 statement "$\dim V = \dim V^*$" gets upgraded to "$V \cong V^*$ *canonically once an inner product is fixed*" — same dimension, plus a chosen bijection between the two spaces that no basis has to broker.
 
 ### 2.1 The Riesz map
 
@@ -76,12 +84,12 @@ An **inner product** on $V$ is a map $\langle \cdot, \cdot \rangle: V \times V \
 - conjugate-symmetric: $\langle u, v \rangle = \overline{\langle v, u \rangle}$ (in the real case, symmetric),
 - positive: $\langle v, v \rangle \geq 0$, with equality iff $v = 0$.
 
-Fix $u \in V$. The map $v \mapsto \langle u, v \rangle$ is linear in $v$, hence an element of $V^*$; call it $\Phi_u$. The mapping $u \mapsto \Phi_u$ is the **Riesz map** $\Phi: V \to V^*$.
+Fix $u \in V$. The map $v \mapsto \langle u, v \rangle$ is linear in $v$, hence an element of $V^*$; call it $\Phi_u$. The mapping $u \mapsto \Phi_u$ is the **Riesz map** $\Phi: V \to V^*$. It is a *function* from vectors to functionals — not itself a pairing, but built from the pairing $\langle \cdot, \cdot \rangle$ by freezing the first slot and letting the second vary.
 
 - In the **real** case, $\Phi$ is linear: $\Phi_{u_1 + u_2} = \Phi_{u_1} + \Phi_{u_2}$, $\Phi_{cu} = c \Phi_u$.
 - In the **complex** case, $\Phi$ is *conjugate-linear* (antilinear): $\Phi_{cu} = \bar c \Phi_u$, since $\langle cu, v \rangle = \bar c \langle u, v \rangle$ by conjugate symmetry.
 
-In finite dimensions $\Phi$ is a bijection. The **Riesz representation theorem** extends this to Hilbert spaces (complete inner-product spaces): every continuous linear functional on a Hilbert space $H$ has the form $\varphi(v) = \langle u, v \rangle$ for a unique $u \in H$. So $H^* \cong H$ — linearly in the real case, conjugate-linearly in the complex case. Hilbert spaces are **self-dual**: every functional is "inner product with a fixed vector".
+In finite dimensions $\Phi$ is a bijection. *Injectivity:* if $\Phi_u \equiv 0$ then in particular $\Phi_u(u) = \langle u, u \rangle = 0$, and positivity forces $u = 0$. *Surjectivity:* $\dim V = \dim V^*$, so an injective linear (or conjugate-linear) map between them is onto by a dimension count. The **Riesz representation theorem** extends the bijection to arbitrary Hilbert spaces (complete inner-product spaces): every continuous linear functional on a Hilbert space $H$ has the form $\varphi(v) = \langle u, v \rangle$ for a unique $u \in H$. So $H^* \cong H$ — linearly in the real case, conjugate-linearly in the complex case. Hilbert spaces are **self-dual**: every continuous functional is "inner product with a fixed vector".
 
 Once we can identify $V$ with $V^*$, what does the dual map $T^\vee$ from Section 1.3 look like when transported back to a map inside the original spaces?
 
@@ -91,23 +99,31 @@ The transpose $T^\vee: W^* \to V^*$ from Section 1.3 exists for any linear map. 
 $$
 T^\dagger = \Phi_V^{-1} \circ T^\vee \circ \Phi_W : W \to V.
 $$
-The composition is characterised by the "moving-the-star" identity
+The composition unfolds cleanly. For $w \in W$, set $\psi = \Phi_W(w) \in W^*$, so $\psi(\cdot) = \langle w, \cdot \rangle_W$. Then $T^\vee \psi = \psi \circ T$, i.e., $(T^\vee \psi)(v) = \langle w, Tv \rangle_W$. Applying $\Phi_V^{-1}$ hunts for the unique vector $T^\dagger w \in V$ whose inner product with any $v$ gives that same scalar. Written out:
 $$
-\langle Tv, w \rangle_W = \langle v, T^\dagger w \rangle_V \quad \text{for all } v \in V, w \in W.
+\langle Tv, w \rangle_W = \langle v, T^\dagger w \rangle_V \quad \text{for all } v \in V, w \in W. \qquad \text{(moving-the-star identity)}
 $$
-$T^\dagger$ is the **adjoint** of $T$ (denoted $T^*$ in most of the literature; we use $\dagger$ here to keep it distinct from the dual map $T^\vee$).
+This identity is not an extra assumption — it is the composite $T^\dagger = \Phi_V^{-1} \circ T^\vee \circ \Phi_W$ read one line at a time. $T^\dagger$ is the **adjoint** of $T$ (denoted $T^*$ in most of the literature; we use $\dagger$ here to keep it distinct from the dual map $T^\vee$).
 
-**Real matrix case.** With standard inner products $\langle x, y \rangle = x^\top y$, we get $A^\dagger = A^\top$. Adjoint and matrix transpose coincide, and the distinction between $T^\vee$ and $T^\dagger$ collapses.
+**Real matrix case.** With standard inner products $\langle x, y \rangle = x^\top y$, chase the moving-the-star identity in coordinates:
+$$
+\langle Ax, y \rangle = (Ax)^\top y = x^\top A^\top y = \langle x, A^\top y \rangle.
+$$
+The right-hand side is $\langle x, A^\top y \rangle$, so by the uniqueness in the moving-the-star identity, $A^\dagger = A^\top$. Adjoint and matrix transpose coincide, and the distinction between $T^\vee$ and $T^\dagger$ collapses.
 
-**Complex matrix case.** With $\langle x, y \rangle = x^* y$ (bar-transpose times $y$), we get $A^\dagger = A^*$, the **conjugate transpose**. The conjugation is not an extra convention; it comes from the conjugate-linearity of the Riesz map, which itself comes from insisting that $\langle v, v \rangle$ be a nonnegative real number. If we had defined a linear-in-both-slots pairing over $\mathbb{C}$, we would lose positivity. The name "conjugate transpose" is the coordinate trace of that choice.
+**Complex matrix case.** With $\langle x, y \rangle = x^* y$ (bar-transpose times $y$), the same chase gives
+$$
+\langle Ax, y \rangle = (Ax)^* y = x^* A^* y = \langle x, A^* y \rangle,
+$$
+so $A^\dagger = A^*$, the **conjugate transpose**. The conjugation is not an extra convention; it comes from the conjugate-linearity of the Riesz map, which itself comes from insisting that $\langle v, v \rangle$ be a nonnegative real number. If we had defined a linear-in-both-slots pairing over $\mathbb{C}$, we would lose positivity. The name "conjugate transpose" is the coordinate trace of that choice.
 
 ### 2.3 Examples of dual spaces
 
-For a normed space $V$, the **continuous dual** $V^*$ consists of the linear functionals $\varphi$ for which
+A remark before the examples. Up to Section 1 we worked with the **algebraic dual**: *all* linear functionals on $V$, with no continuity requirement — the natural setting when $V$ has no topology, only algebra. Once $V$ carries a norm, the useful notion narrows to the **continuous dual**: the linear functionals $\varphi$ for which
 $$
 \|\varphi\|_* = \sup_{v \neq 0}\, \frac{|\varphi(v)|}{\|v\|}
 $$
-is finite (equivalently, $\varphi$ is continuous). In finite dimensions every linear functional is automatically continuous, so this extra requirement adds nothing; in infinite dimensions it is essential.
+is finite (equivalently, $\varphi$ is continuous). In finite dimensions the two coincide — every linear functional is automatically continuous — so nothing was lost in Section 1. In infinite dimensions the algebraic dual is much larger than the continuous dual, and it is the *continuous* dual that supports the theorems: Riesz representation, reflexivity, the $L^p$–$L^q$ duality below, and the bipolar/Fenchel–Moreau results of later sections all use "continuous dual" throughout. From here on, "$V^*$" means the continuous dual when $V$ is normed.
 
 - **$L^p$ spaces.** For $1 \leq p < \infty$, the dual of $L^p([a,b])$ is $L^q([a,b])$ with $\tfrac 1 p + \tfrac 1 q = 1$; the pairing is $\langle g, f \rangle = \int_a^b f g \, dx$. The case $p = q = 2$ is a special case of Riesz representation ($L^2$ is Hilbert); general $p$ needs more work. Taking $p = 1$: $(L^1)^* = L^\infty$, but $(L^\infty)^*$ contains functionals that are not represented by $L^1$ functions, so $L^1$ is not reflexive.
 - **$C([a,b])$.** The dual of $C([a,b])$ (continuous functions on $[a,b]$) is a space of measures: every continuous linear functional has the form $f \mapsto \int_a^b f \, d\mu$ for some signed measure $\mu$ on $[a,b]$. Point evaluations $f \mapsto f(x_0)$ correspond to Dirac measures $\delta_{x_0}$.
@@ -135,7 +151,9 @@ For $K \subseteq V$, the **dual cone** collects the vectors $y$ whose pairing wi
 $$
 K^* = \{ y \in V : \langle y, x \rangle \geq 0 \text{ for all } x \in K \}.
 $$
-(Basis-freely, this lives in $V^*$ as $\{\varphi : \varphi(x) \geq 0 \; \forall x \in K\}$.) Two properties come for free:
+A comment on where $K^*$ actually lives. Without the inner product, the natural home of the dual cone is $V^*$: its elements are functionals, $\{\varphi \in V^* : \varphi(x) \geq 0 \text{ for all } x \in K\}$. The inner product supplies the Riesz map $\Phi: V \to V^*$ from Section 2.1, which lets us re-express each such functional $\varphi$ as $\varphi = \langle y, \cdot \rangle$ for a unique $y \in V$, and it is the collection of these $y$'s that we call $K^*$. So the dual cone is *properly* a subset of $V^*$, and we are viewing it inside $V$ only because a choice of inner product identifies the two.
+
+Two properties come for free:
 
 - $K^*$ is itself a convex cone: sums and nonnegative scalings of $y$'s preserve the "$\geq 0$" inequality.
 - $K^*$ is closed: it's an intersection of closed halfspaces $\{y : \langle y, x \rangle \geq 0\}$, one per $x \in K$.
@@ -271,13 +289,13 @@ $\partial f(x)$ is the set of slopes of linear-plus-constant functions that touc
 
 ### 4.4 The Legendre transform
 
-When $f$ is smooth and strictly convex, the definition of $f^*$ simplifies. The sup over $x$ in $\sup_x (\langle y, x \rangle - f(x))$ is attained where the derivative in $x$ vanishes: $\nabla f(x) = y$. Strict convexity means this equation has a unique solution $x(y)$, and $\nabla f$ is invertible on its range:
+When $f$ is smooth and strictly convex, the definition of $f^*$ simplifies. The sup over $x$ in $\sup_x (\langle y, x \rangle - f(x))$ is attained where the derivative in $x$ vanishes: $\nabla f(x) = y$. Strict convexity means this equation has a unique solution — call it $x^\star_y$, the maximiser of $\langle y, \cdot \rangle - f$ — and $\nabla f$ is invertible on its range, giving
 $$
-x(y) = (\nabla f)^{-1}(y).
+x^\star_y = (\nabla f)^{-1}(y).
 $$
 Substituting back,
 $$
-f^*(y) = \langle y, x(y) \rangle - f(x(y)).
+f^*(y) = \langle y, x^\star_y \rangle - f(x^\star_y).
 $$
 This closed-form version is the classical **Legendre transform**. Whenever $f$ is smooth and strictly convex, the Legendre transform and the convex conjugate agree.
 
@@ -293,20 +311,30 @@ The general convex conjugate extends the Legendre transform beyond the smooth st
 $$
 f^*(y) \leq \liminf_{n \to \infty} f^*(y_n).
 $$
-Values can drop at limits but not jump up. Same reason as (1): a pointwise sup of continuous functions is always lsc.
+Values can drop at limits but not jump up. The reason is structurally parallel to (1) but uses a different closure property of pointwise suprema: each function $y \mapsto \langle y, x \rangle - f(x)$ is not just convex, it is continuous in $y$; and a pointwise sup of continuous (in fact, of merely lsc) functions is always lsc. So convexity of $f^*$ comes from sup-preserves-convexity, and lower semi-continuity of $f^*$ comes from sup-preserves-lsc — same recipe, different closure property.
 
 **3. The biconjugate satisfies $f^{**} \leq f$.** From Fenchel–Young,
 $$
 f(x) \geq \langle y, x \rangle - f^*(y) \quad \text{for all } y \implies f(x) \geq \sup_y \bigl( \langle y, x \rangle - f^*(y) \bigr) = f^{**}(x).
 $$
 
-**4. Fenchel–Moreau theorem.** $f^{**} = f$ under the following conditions:
+**4. Fenchel–Moreau theorem.** $f^{**} = f$ under three conditions on $f$:
 
 - $f$ is convex,
 - $f$ is lsc,
-- $f$ is proper: $f \not\equiv +\infty$ and $f > -\infty$ everywhere.
+- $f$ is **proper**. This means $f$ is not identically $+\infty$ (it takes at least one finite value) and $f > -\infty$ everywhere (it never plunges to $-\infty$). The name comes from ruling out the two degenerate ways a function to $\mathbb{R} \cup \{\pm\infty\}$ can fail to carry useful information: being infinite everywhere it's defined, or diverging downward.
 
-The forward direction is immediate: $f^{**}$ is convex and lsc by (1) and (2), so if $f = f^{**}$ then $f$ is convex and lsc. The reverse is the content. Sketch: $f^{**}(x)$ turns out to equal the pointwise sup, over all linear-plus-constant functions $\ell$ that lie below $f$ everywhere, of $\ell(x)$. For $f$ convex, proper, lsc, the collection of such $\ell$ is rich enough that at any $x$ one can find one touching $f$ from below at $x$ — and the sup of their values at $x$ recovers $f(x)$.
+The forward direction is immediate: $f^{**}$ is convex and lsc by (1) and (2), so if $f = f^{**}$ then $f$ is convex and lsc. The reverse is the content of the theorem; here is a sketch in three steps.
+
+*Step 1 — unfold the biconjugate as a sup of affine minorants.* From the definitions,
+$$
+f^{**}(x) = \sup_y \bigl( \langle y, x \rangle - f^*(y) \bigr).
+$$
+For each $y$, $f^*(y)$ is the smallest constant $c$ (allowing $c = -\infty$) for which the affine function $x' \mapsto \langle y, x' \rangle - c$ sits below $f$ everywhere (Section 4.1). So $\langle y, x \rangle - f^*(y)$ is the value at $x$ of the *highest* affine function of slope $y$ that stays under $f$, and $f^{**}(x)$ is the sup, over all slopes $y$, of these values. In short: **$f^{**}(x)$ is the pointwise supremum, evaluated at $x$, of every affine minorant of $f$**.
+
+*Step 2 — the easy inequality.* Every such affine minorant $\ell$ satisfies $\ell(x) \leq f(x)$ by definition, so taking the sup preserves the inequality: $f^{**}(x) \leq f(x)$. This much holds with no assumptions on $f$ — it is property 3 above, in geometric dress.
+
+*Step 3 — where the three assumptions enter.* The reverse inequality $f^{**}(x) \geq f(x)$ needs, at each $x$, an affine minorant of $f$ whose value at $x$ approaches $f(x)$. The Hahn–Banach separation theorem, applied to the epigraph $\{(x', t) : t \geq f(x')\}$, produces such a minorant — provided the epigraph is nonempty (this is *proper*), is closed (this is *lsc*), and is convex (this is *convex*). All three assumptions are consumed at this single step.
 
 **Interpretation.** Fenchel–Moreau is the fourth appearance of the same pattern — an object equals its bidual under the right regularity conditions. Collecting the four cases:
 
@@ -330,13 +358,15 @@ $$
 \delta_C^*(y) = \sup_x \bigl( \langle y, x \rangle - \delta_C(x) \bigr) = \sup_{x \in C} \langle y, x \rangle = \sigma_C(y).
 $$
 
-**The convex conjugate of an indicator function is the support function.** Section 3's "duality of sets" is a special case of Section 4's "duality of functions". Reading the correspondence:
+**The convex conjugate of an indicator function is the support function.** So Section 3's "duality of sets" was never a separate story — it is what Section 4's "duality of functions" reduces to when the function is the indicator of a set. All the mechanism is inherited; only the input has less structure.
 
-- Indicator function ↔ the set of points that make up $C$.
-- Support function ↔ how far $C$ extends in each direction.
-- Convex conjugation ↔ the passage between them.
+Reading the correspondence:
 
-The bipolar theorem for closed convex sets containing $0$ (Section 3.3) is exactly Fenchel–Moreau applied to indicator functions.
+- The indicator $\delta_C$ **stores** the set $C$: takes value $0$ inside, $+\infty$ outside, and encodes nothing beyond membership.
+- The support function $\sigma_C$ **measures** the set $C$: in each direction $y$, records how far $C$ extends.
+- Convex conjugation is the mechanism that **crosses between the two representations**, turning "which points are in $C$?" into "how far in each direction?" and back.
+
+Now the bipolar theorem falls out of Fenchel–Moreau by tracking a round trip. Start with a closed convex set $C$ containing $0$. Its indicator $\delta_C$ is proper (finite at $0$), convex, and lsc — all three hypotheses of Fenchel–Moreau. So $(\delta_C)^{**} = \delta_C$. Unfold the composition: the first conjugation gives $(\delta_C)^{*} = \sigma_C$, the second gives $(\sigma_C)^{*} = \delta_{C^{\circ\circ}}$ — which by Fenchel–Moreau equals $\delta_C$. Reading off the sets whose indicators these are: $C^{\circ\circ} = C$. The bipolar theorem is Fenchel–Moreau in disguise, and every "regularity" condition in Section 3 (closed, convex, contains $0$) is exactly what makes $\delta_C$ meet the three Fenchel–Moreau hypotheses.
 
 ## 5. Duality in optimisation
 
@@ -366,7 +396,7 @@ with $f_0, f_i, h_j: \mathcal{D} \to \mathbb{R}$. Define the **Lagrangian**
 $$
 L(x, \lambda, \nu) = f_0(x) + \sum_i \lambda_i f_i(x) + \sum_j \nu_j h_j(x), \qquad \lambda \in \mathbb{R}^m_+, \; \nu \in \mathbb{R}^p.
 $$
-The multipliers $\lambda_i \geq 0$ and $\nu_j \in \mathbb{R}$ live in the dual space of the "constraint space" — one multiplier per constraint. Nonnegativity of $\lambda$ is the price of encoding an *inequality*.
+Package the multipliers into vectors $\lambda \in \mathbb{R}^m_+$ and $\nu \in \mathbb{R}^p$ — one component per constraint. Read the sums $\sum_i \lambda_i f_i(x)$ and $\sum_j \nu_j h_j(x)$ as the pairings $\langle \lambda, f(x) \rangle$ and $\langle \nu, h(x) \rangle$, where $f(x) = (f_1(x), \ldots, f_m(x)) \in \mathbb{R}^m$ collects the inequality-constraint values into a vector and $h(x)$ does the same for equalities. So each multiplier component pairs with the corresponding constraint value, and the pairing is a scalar penalty added to $f_0(x)$. The sign restriction $\lambda \geq 0$ (but no restriction on $\nu$) is not decorative: it is what makes the "Key observation" below work — the sup over $\lambda \geq 0$ diverges to $+\infty$ exactly when an *inequality* $f_i(x) \leq 0$ is violated (positive $\lambda_i$ against positive $f_i(x)$ can be blown up), while equalities need multipliers of either sign because $h_j(x) \neq 0$ can be violated in either direction.
 
 **Key observation.** For fixed $x$,
 $$
@@ -390,11 +420,18 @@ By the min–max inequality of Section 5.1, dual $\leq$ primal — **weak dualit
 
 Two structural facts fall out of the construction.
 
-**The dual is always a maximisation.** In the primal we sup over $(\lambda, \nu)$ *inside* an inf; in the dual we sup over $(\lambda, \nu)$ *outside*. Same variable, same operator ($\sup$) — no flip. The perceived "min becomes max" is really "the outer operation on $(\lambda, \nu)$ was always a sup, and the dual isolates it".
+**The dual is always a maximisation.** Compare the two forms side by side:
+$$
+\text{primal:}\quad \inf_x \, \bigl[ \sup_{\lambda \geq 0, \nu} L(x, \lambda, \nu) \bigr], \qquad \text{dual:}\quad \sup_{\lambda \geq 0, \nu} \, \bigl[ \inf_x L(x, \lambda, \nu) \bigr].
+$$
+The $\sup_{\lambda \geq 0, \nu}$ is *the same operator* in both — it never turned into a min. What changed is only its *position*: in the primal it sits inside the outer $\inf_x$ and collapses to $f_0(x)$ at feasible $x$; in the dual it sits outside and is what we are maximising over. The common phrasing "the dual turns a min into a max" is a helpful summary but misleading in the mechanism: it is not that the operator flips, but that a supremum which was buried under an infimum is now the top-level operation.
 
-**$g$ is concave in $(\lambda, \nu)$ regardless of anything else.** For fixed $x$, $L(x, \lambda, \nu)$ is linear-plus-constant in $(\lambda, \nu)$. So $g(\lambda, \nu) = \inf_x L(x, \lambda, \nu)$ is a pointwise infimum of linear-plus-constant functions of $(\lambda, \nu)$, hence concave in $(\lambda, \nu)$. This holds even if the primal is thoroughly non-convex.
+**$g$ is concave in $(\lambda, \nu)$ regardless of anything else.** In two steps:
 
-Concavity of the dual is often *the point* of dualising: even a nasty primal has a concave dual, and a $\sup$ over a concave function on a convex feasible set is a nice problem — a lower bound on the primal that we can actually compute.
+1. For each fixed $x$, the coefficients $f_i(x)$ and $h_j(x)$ are constants (they depend only on $x$, not on the multipliers), and $f_0(x)$ is a constant offset. So $L(x, \lambda, \nu) = f_0(x) + \sum_i \lambda_i f_i(x) + \sum_j \nu_j h_j(x)$ is *affine* in $(\lambda, \nu)$ — no matter how horrible $f_0, f_i, h_j$ are as functions of $x$.
+2. $g(\lambda, \nu) = \inf_x L(x, \lambda, \nu)$ is a pointwise infimum, over $x$, of these affine-in-$(\lambda,\nu)$ functions. An infimum of affine functions is always concave (it is the mirror image of the "sup of affine is convex" that gave us convexity of $f^*$ in Section 4.5).
+
+Two takeaways from this. First, the concavity of $g$ holds even if the primal is nonconvex — the primal's nonconvexity lives in *how the $f_i, h_j$ depend on $x$*, and step 2 sweeps that dependence away by taking the inf. Second, this is often *the point* of dualising: a nonconvex primal is generically intractable, but its dual is always a concave maximisation over a convex set — a problem a standard convex solver can attack, and one that gives a rigorous lower bound on the primal optimum.
 
 ### 5.4 Connecting to the convex conjugate
 
@@ -416,7 +453,7 @@ $$
 \max_{\lambda \geq 0} \bigl( -f^*(-A^\top \lambda) - \langle \lambda, b \rangle \bigr).
 $$
 
-The convex conjugate is the "engine" that produces the closed-form dual, and the dual map $A^\top$ (Section 1.3) is exactly what should appear: the primal variable $x$ lives in $V$, the multiplier $\lambda$ lives in $\mathbb{R}^m$ (dual to the constraint space), and $A^\top$ transports from constraint space back to $V^*$.
+The convex conjugate is the "engine" that produces the closed-form dual, and the dual map $A^\top$ (Section 1.3) is exactly what should appear: $A$ sends the primal variable $x \in V$ forward to the constraint-value vector $Ax \in \mathbb{R}^m$, the multiplier $\lambda$ lives in the (self-)dual $\mathbb{R}^m$ of that constraint-value space, and $A^\top$ transports $\lambda$ backward to $V^*$ — where it can be paired with $x$ inside $f^*$. The transpose is doing exactly the job Section 1.3 introduced it to do.
 
 For nonlinear constraint functions this closed-form compaction breaks — the terms don't line up as $x$-times-something — and one keeps the general Lagrangian expression.
 
@@ -445,7 +482,7 @@ $$
 \inf_x \bigl( f(x) + g(Ax) \bigr) \geq \sup_y \bigl( -f^*(-A^\top y) - g^*(y) \bigr).
 $$
 
-**Strong duality** (Fenchel–Rockafellar theorem, statement only): if $f, g$ are proper convex lsc and there exists $x \in \mathrm{relint}(\mathrm{dom}\, f)$ with $Ax \in \mathrm{relint}(\mathrm{dom}\, g)$ (a *constraint qualification*), then equality holds and the dual sup is attained.
+**Strong duality** (Fenchel–Rockafellar theorem, statement only): if $f, g$ are proper convex lsc and there exists $x \in \mathrm{relint}(\mathrm{dom}\, f)$ with $Ax \in \mathrm{relint}(\mathrm{dom}\, g)$, then equality holds and the dual sup is attained. Here $\mathrm{relint}(S)$ is the **relative interior** of $S$: the interior taken inside the affine hull of $S$ rather than the ambient space. The distinction matters whenever $\mathrm{dom}\, f$ is a lower-dimensional slice — a line segment inside $\mathbb{R}^2$, or an equality-constrained affine subspace — because its ordinary interior is empty while its relative interior is not. The existence of such an $x$ is the *constraint qualification*.
 
 The linear-constraint case of Section 5.4 is Fenchel–Rockafellar with $g = \delta_{\{y \leq b\}}$, the indicator of a halfspace, whose conjugate is a support function.
 
@@ -551,7 +588,7 @@ The dependence of momentum on the mass tensor (a Riemannian metric on configurat
 
 ## 7. The recurring pattern
 
-At each level, "the dual" was a construction pairing an object with something to produce a scalar, and asking "what set of pairing-partners makes sense?":
+At each level, "the dual" was a **partner object** built from the original by asking a natural question of it and collecting the valid answers — evaluation, testing, minoration — with the pair carrying more information than either alone:
 
 - Vector space $V$ → dual space $V^*$ (linear functionals).
 - Vector space with inner product → $V^* \cong V$ (Riesz), giving adjoints.
