@@ -7,7 +7,7 @@ $$
 \hat{x}_i = \langle x_1, x_i \rangle x_1 + \langle x_2, x_i \rangle x_2 + \ldots + \langle x_n, x_i \rangle x_n
 $$
 
-Yet, it is preferred to introduce extra flexibility. Instead of using the plain vectors $z_i$, we use three matrices $Q$, $K$, and $V$ to transform our $z_i$. We get:
+Yet, it is preferred to introduce extra flexibility. Instead of using the plain vectors $x_i$, we use three matrices $Q$, $K$, and $V$ to transform our $x_i$. We get:
 
 - Query $q$
 - Key $k$
@@ -33,7 +33,7 @@ $$
 \hat{X} = \text{Softmax}(Q K^T)V
 $$
 
-###### Connection Between Attention and Kernel Methods
+## Connection Between Attention and Kernel Methods
 
 We apply softmax to the attention scores $a_{ij} = \frac{\mathbf{q}_i^\top \mathbf{k}_j}{\sqrt{d}}$, i.e. $\alpha_{ij} = \text{softmax}(a_{ij}) = \frac{\exp(a_{ij})}{\sum_{j'} \exp(a_{ij'})}$,
 The key relationship to the RBF kernel arises from the form of $a_{ij}$ after expanding it using the Euclidean norm identity:

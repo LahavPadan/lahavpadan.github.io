@@ -3,8 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap"
+  >
+
   <title>Kramers–Kronig: one causal response, two linked spectra</title>
+  <!-- Same MathJax config as the reference viz (posts/dual-space/visualizations/fenchel-young-equality.html) -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\(', '\)']],
+        displayMath: [['\[', '\]']]
+      },
+      svg: { fontCache: 'global' },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      },
+      startup: {
+        pageReady: function () {
+          return MathJax.startup.defaultPageReady().then(function () {
+            document.documentElement.dataset.mathReady = 'true';
+            document.dispatchEvent(new CustomEvent('viz:math-ready'));
+          });
+        }
+      }
+    };
+  </script>
+  <script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+
   <style>
+
+    /* Adopt reference viz typography for all headings; per-class rules
+       further down override sizing/positioning as needed. */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-display);
+      font-weight: 550;
+      letter-spacing: -0.035em;
+      line-height: 1.16;
+    }
+
     :root {
       color-scheme: light;
       --page: #fbfbf8;
@@ -25,6 +67,10 @@
       --negative: #32668f;
       --grid: #e6e4df;
       --shadow: rgba(37, 30, 33, 0.08);
+      --font-display: "Lora", Georgia, "Times New Roman", serif;
+      --font-reading: "Lora", Georgia, "Times New Roman", serif;
+      --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
 
     :root[data-theme="dark"] {
@@ -60,7 +106,7 @@
     }
 
     body {
-      font-family: Georgia, "Times New Roman", serif;
+      font-family: var(--font-reading);
       font-size: 16px;
       line-height: 1.58;
       -webkit-font-smoothing: antialiased;

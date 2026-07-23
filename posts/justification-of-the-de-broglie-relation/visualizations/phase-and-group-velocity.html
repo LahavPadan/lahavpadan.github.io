@@ -153,14 +153,18 @@ h1 { margin: 0; font-size: clamp(1.22rem, 2.5vw, 1.82rem); font-weight: 560; lin
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 10px 9px;
+  padding: 12px 9px;
   color: var(--muted);
   font-size: clamp(.67rem, 1.06vw, .78rem);
-  line-height: 1.26;
+  line-height: 1.8;
   text-align: center;
 }
 .bridge-item + .bridge-item { border-left: 1px solid var(--border); }
-.bridge-item mjx-container { margin: 0 !important; }
+.bridge-item mjx-container {
+  margin: 0 !important;
+  display: inline-block;
+  vertical-align: middle;
+}
 .swatch { flex: 0 0 auto; display: inline-block; width: 20px; height: 0; border-top: 3px solid var(--accent); }
 .swatch.phase { border-top-color: var(--phase); }
 .swatch.group { border-top-color: var(--group); border-top-style: dashed; }

@@ -83,20 +83,19 @@ html, body { margin: 0; min-width: 0; overflow-x: hidden; background: transparen
 body { padding: clamp(7px, 1.8vw, 18px); font-family: var(--sans); text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
 button, input { font: inherit; }
 .viz { width: min(1120px, 100%); margin: 0 auto; overflow: hidden; border: 1px solid var(--border); background: var(--surface); box-shadow: 0 18px 48px var(--shadow); }
-.topbar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(330px, .44fr); gap: 20px; align-items: start; padding: clamp(15px, 2.4vw, 23px); border-bottom: 1px solid var(--border); }
-.control-stack { display: grid; gap: 10px; }
+.topbar { padding: clamp(15px, 2.4vw, 23px); border-bottom: 1px solid var(--border); }
 .heading-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 9px 17px; }
 .eyebrow { margin: 0; color: var(--accent-ink); font: 760 .68rem/1 var(--sans); letter-spacing: .10em; text-transform: uppercase; }
 h1 { margin: 0; font-size: clamp(1.22rem, 2.5vw, 1.82rem); font-weight: 560; line-height: 1.14; letter-spacing: -.025em; }
 .definition { margin: 7px 0 0; color: var(--muted); font-family: var(--serif); font-size: clamp(.9rem, 1.45vw, 1.01rem); line-height: 1.42; }
 .definition mjx-container { margin: 0 !important; }
-.k-control, .time-control-box { min-width: 0; padding: 9px 11px 10px; border: 1px solid var(--border); background: var(--surface-muted); }
+.panel-control { min-width: 0; padding: 8px 12px 10px; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--surface-muted) 70%, transparent); }
 .k-label { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: .7rem; }
 .k-label strong { color: var(--accent-ink); font-family: var(--math-font); font-weight: 700; }
-.k-control input, .time-track { width: 100%; margin: 8px 0 0; accent-color: var(--accent); }
-.time-row { display: grid; grid-template-columns: 34px minmax(0,1fr) 48px; gap: 8px; align-items: center; margin-top: 8px; }
-.play { width: 34px; height: 31px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--accent-ink); cursor: pointer; font-size: .82rem; }
-.time-value { color: var(--accent-ink); font-family: var(--math-font); font-size: .78rem; text-align: right; white-space: nowrap; }
+.panel-control input[type="range"] { width: 100%; margin: 6px 0 0; accent-color: var(--accent); }
+.time-row { display: grid; grid-template-columns: 30px minmax(0,1fr) 42px; gap: 8px; align-items: center; margin-top: 6px; }
+.play { width: 30px; height: 26px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--accent-ink); cursor: pointer; font-size: .74rem; padding: 0; }
+.time-value { color: var(--accent-ink); font-family: var(--math-font); font-size: .74rem; text-align: right; white-space: nowrap; }
 .medium-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--border); background: var(--surface-muted); }
 .medium-tabs button { min-width: 0; min-height: 43px; padding: 7px 9px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: clamp(.66rem, 1.05vw, .77rem); font-weight: 760; line-height: 1.2; }
 .medium-tabs button + button { border-left: 1px solid var(--border); }
@@ -157,7 +156,6 @@ h1 { margin: 0; font-size: clamp(1.22rem, 2.5vw, 1.82rem); font-weight: 560; lin
 .explanation strong { color: var(--accent-ink); font-weight: 770; }
 .explanation mjx-container { margin: 0 !important; }
 @media (max-width: 820px) {
-  .topbar { grid-template-columns: 1fr; }
   .canvas { grid-template-columns: 1fr; }
   .panel + .panel { border-left: 0; border-top: 1px solid var(--border); }
   .readout-strip { grid-template-columns: 1fr 1fr; }
@@ -179,29 +177,13 @@ h1 { margin: 0; font-size: clamp(1.22rem, 2.5vw, 1.82rem); font-weight: 560; lin
 <body>
 <main class="viz">
   <header class="topbar">
-    <div>
-      <div class="heading-row">
-        <p class="eyebrow">dispersion relation</p>
-        <h1>The medium chooses the curve \(\omega=\omega(k)\)</h1>
-      </div>
-      <p class="definition">
-        The ray from the origin measures \(\omega_0/k_0\); the tangent measures \(d\omega/dk\). A linear dispersion relation makes those two slopes identical everywhere.
-      </p>
+    <div class="heading-row">
+      <p class="eyebrow">dispersion relation</p>
+      <h1>The medium chooses the curve \(\omega=\omega(k)\)</h1>
     </div>
-    <div class="control-stack">
-      <label class="k-control" for="kChoice">
-        <span class="k-label"><span>choose the carrier wavenumber</span><strong id="kValue">\(k_0=6.0\)</strong></span>
-        <input id="kChoice" type="range" min="1.2" max="9.0" step="0.05" value="6.0" aria-label="Carrier wavenumber">
-      </label>
-      <div class="time-control-box">
-        <span class="k-label"><span>time</span><strong id="timeReadoutTop">t = 4.0</strong></span>
-        <div class="time-row">
-          <button class="play" id="play" type="button" aria-label="Play animation">▶</button>
-          <input id="timeChoice" class="time-track" type="range" min="0" max="10" step="0.01" value="4.0" aria-label="Time">
-          <output id="timeValue" class="time-value">4.0</output>
-        </div>
-      </div>
-    </div>
+    <p class="definition">
+      The ray from the origin measures \(\omega_0/k_0\); the tangent measures \(d\omega/dk\). A linear dispersion relation makes those two slopes identical everywhere.
+    </p>
   </header>
 
   <nav class="medium-tabs" aria-label="Classical dispersion relations">
@@ -214,6 +196,10 @@ h1 { margin: 0; font-size: clamp(1.22rem, 2.5vw, 1.82rem); font-weight: 560; lin
   <figure class="figure">
     <div class="canvas">
       <section class="panel" aria-label="Dispersion curve">
+        <label class="panel-control" for="kChoice">
+          <span class="k-label"><span>choose the carrier wavenumber</span><strong id="kValue">\(k_0=6.0\)</strong></span>
+          <input id="kChoice" type="range" min="1.2" max="9.0" step="0.05" value="6.0" aria-label="Carrier wavenumber">
+        </label>
         <div class="panel-head">
           <span class="panel-title">frequency versus wavenumber</span>
           <span id="curveFormula" class="panel-formula">\(\omega(k)=\sqrt{gk}\)</span>
@@ -244,9 +230,17 @@ h1 { margin: 0; font-size: clamp(1.22rem, 2.5vw, 1.82rem); font-weight: 560; lin
       </section>
 
       <section class="panel" aria-label="Real-space wave packet">
+        <div class="panel-control">
+          <span class="k-label"><span>time</span><strong id="timeReadoutTop">t = 4.0</strong></span>
+          <div class="time-row">
+            <button class="play" id="play" type="button" aria-label="Play animation">▶</button>
+            <input id="timeChoice" type="range" min="0" max="10" step="0.01" value="4.0" aria-label="Time">
+            <output id="timeValue" class="time-value">4.0</output>
+          </div>
+        </div>
         <div class="panel-head">
           <span class="panel-title">real space</span>
-          <span id="packetHeading" class="panel-formula">real-space packet \(A(z-v_g t)\cos(k_0z-\omega_0 t)\)</span>
+          <span id="packetHeading" class="panel-formula">\(v_g=v_p/2\)</span>
         </div>
         <svg id="packetPlot" viewBox="0 0 360 440" role="img" aria-labelledby="packetTitle packetDesc" preserveAspectRatio="xMidYMid meet">
           <title id="packetTitle">Wave packet in real space</title>
@@ -272,9 +266,6 @@ h1 { margin: 0; font-size: clamp(1.22rem, 2.5vw, 1.82rem); font-weight: 560; lin
           </g>
           <text class="axis-text" x="320" y="395" text-anchor="end">position \(z\)</text>
           <text class="axis-text" x="42" y="58">amplitude</text>
-          <text class="svg-label muted" x="44" y="74">dashed grey: packet at \(t=0\)</text>
-          <text class="svg-label phase" x="44" y="96">blue: carrier at the chosen time \(t\)</text>
-          <text class="svg-label group" x="44" y="118">brown: envelope at the same time \(t\)</text>
           <text id="packetResult" class="svg-label group"></text>
           <text id="packetMotionLabel" class="svg-label accent" text-anchor="middle"></text>
           <text id="phaseMarkerLabel" class="svg-label phase"></text>
@@ -552,14 +543,16 @@ h1 { margin: 0; font-size: clamp(1.22rem, 2.5vw, 1.82rem); font-weight: 560; lin
     motion.setAttribute("y", 344);
 
     const phaseMarkerLabel = document.getElementById("phaseMarkerLabel");
-    phaseMarkerLabel.textContent = "crest position  z = vₚ t";
-    phaseMarkerLabel.setAttribute("x", clamp(px(crest) + 8, 58, 238));
-    phaseMarkerLabel.setAttribute("y", 150);
+    phaseMarkerLabel.textContent = "crest  z = vₚt";
+    phaseMarkerLabel.setAttribute("x", clamp(px(crest) + 4, 42, 316));
+    phaseMarkerLabel.setAttribute("y", 34);
+    phaseMarkerLabel.setAttribute("text-anchor", "start");
 
     const groupMarkerLabel = document.getElementById("groupMarkerLabel");
-    groupMarkerLabel.textContent = "envelope center  z = v_g t";
-    groupMarkerLabel.setAttribute("x", clamp(px(center) + 8, 58, 220));
-    groupMarkerLabel.setAttribute("y", 128);
+    groupMarkerLabel.textContent = "envelope  z = v_gt";
+    groupMarkerLabel.setAttribute("x", clamp(px(center) - 4, 42, 316));
+    groupMarkerLabel.setAttribute("y", 34);
+    groupMarkerLabel.setAttribute("text-anchor", "end");
 
     const result = document.getElementById("packetResult");
     result.textContent = cfg.spread === 1 ? "width unchanged" : `width at time t: broader by a factor ${broaden.toFixed(2)}`;
@@ -577,7 +570,7 @@ h1 { margin: 0; font-size: clamp(1.22rem, 2.5vw, 1.82rem); font-weight: 560; lin
     document.getElementById("curveFormula").innerHTML = cfg.formula;
     timeValue.textContent = state.time.toFixed(1);
     document.getElementById("timeReadoutTop").textContent = `t = ${state.time.toFixed(1)}`;
-    document.getElementById("packetHeading").textContent = cfg.heading;
+    document.getElementById("packetHeading").innerHTML = cfg.heading;
     document.getElementById("relationReadout").innerHTML = cfg.relation;
     document.getElementById("relationNote").textContent = cfg.note;
     document.getElementById("phaseReadout").innerHTML = `\\(v_p=${vp.toFixed(2)}\\)`;
@@ -588,6 +581,7 @@ h1 { margin: 0; font-size: clamp(1.22rem, 2.5vw, 1.82rem); font-weight: 560; lin
     typeset([
       document.getElementById("kValue"),
       document.getElementById("curveFormula"),
+      document.getElementById("packetHeading"),
       document.getElementById("relationReadout"),
       document.getElementById("phaseReadout"),
       document.getElementById("groupReadout"),

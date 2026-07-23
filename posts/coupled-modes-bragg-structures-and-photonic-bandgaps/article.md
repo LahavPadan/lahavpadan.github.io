@@ -4,7 +4,7 @@
 
 ## § 0. The two-mode framework {#sec-0}
 
-The core object of what follows is the eigenvalue problem of a $2 \times 2$ Hermitian matrix with two nearly degenerate diagonal entries linked by a small off-diagonal entry. Solving it once produces three quantities used everywhere later: the two eigenvalues (a hyperbolic separation), the two eigenvectors (a mixing angle), and the minimum separation between the eigenvalues at zero detuning (the gap). Each later section reduces to identifying, for one physical setting, *which two amplitudes sit in the vector, what fills the off-diagonal entry, and what mechanism produces that filling*.
+The core object of what follows is the eigenvalue problem of a $2 \times 2$ Hermitian matrix whose two nearly equal diagonal entries are linked by a small [coupling](#defn-coupling) — one complex number in an off-diagonal slot, with its conjugate at the mirror slot as Hermiticity requires. Solving it once produces three quantities used everywhere later: the two eigenvalues (a hyperbolic separation), the two eigenvectors (a [mixing angle](#defn-mixing-angle)), and the minimum separation between the eigenvalues that occurs when the two diagonal entries are made exactly equal. Each later section reduces to identifying, for one physical setting, *which two amplitudes sit in the vector, what fills the off-diagonal, and which physical process — a spring, a periodic index modulation, a magnetic bias — supplies that filling*.
 
 We develop the algebra on a pair of coupled mechanical oscillators. Two masses joined by a spring is the shortest concrete realization of the matrix; nothing about the derivation is specific to mechanics, and the same object reappears as a dispersion relation in each of the wave settings that follow.
 
@@ -54,7 +54,7 @@ These are coupled equations in the literal sense that each acceleration depends 
 
 ### § 0.2. The eigenvalue problem {#sec-0-2}
 
-Ask whether there is a motion in which both masses oscillate at one common frequency:
+**Ask whether there is a motion in which both masses oscillate at one common frequency:**
 
 $$
 x_A(t)=X_A\cos(\omega t),
@@ -101,16 +101,16 @@ $$
 
 This is a quadratic equation in $\omega^2$, so it has two roots: the two normal-mode frequencies.
 
-Introduce the mean and detuning of the coupling-loaded diagonal entries, divided by $m$ so that both have units of frequency squared:
+> Introduce the **mean**{:#defn-mean} $\bar\omega^2$ and the **detuning**{:#defn-detuning} $\delta$ of the [coupling](#defn-coupling)-loaded diagonal entries — each divided by $m$ so that both have units of frequency squared:
+>
+> $$
+> \bar\omega^2=\frac{(k_A+\kappa)+(k_B+\kappa)}{2m},
+> \qquad
+> \delta=\frac{(k_A+\kappa)-(k_B+\kappa)}{2m}
+>       =\frac{k_A-k_B}{2m}.
+> $$
 
-$$
-\bar\omega^2=\frac{(k_A+\kappa)+(k_B+\kappa)}{2m},
-\qquad
-\delta=\frac{(k_A+\kappa)-(k_B+\kappa)}{2m}
-      =\frac{k_A-k_B}{2m}.
-$$
-
-The detuning $\delta$ measures the mismatch between the two diagonal frequencies. The coupling scale that can mix them is
+The [detuning](#defn-detuning) $\delta$ measures the mismatch between the two diagonal frequencies. The coupling scale that can mix them is
 
 $$
 \kappa'\equiv\frac{\kappa}{m}.
@@ -128,7 +128,12 @@ $$
 
 so the two competing quantities are visible directly on the matrix: $\delta$ is the half-difference between the diagonals, $\kappa'$ is the off-diagonal.
 
-The relevant comparison is therefore the dimensionless ratio $|\kappa'/\delta|$. When $|\kappa'/\delta|\ll1$, the off-diagonal $\kappa'$ is small compared with the diagonal spread $2\delta$: each eigenvector remains concentrated on one mass, and coupling produces only a small admixture of the other. When $|\kappa'/\delta|\gtrsim1$, the off-diagonal is comparable to or larger than the diagonal spread, and neither mass can be treated independently — the eigenvectors become strong mixtures. The ratio does not merely say that coupling is present; it says whether coupling is large enough to overcome the separation of the uncoupled frequencies.
+The relevant comparison is the dimensionless ratio $|\kappa'/\delta|$, and it distinguishes two regimes:
+
+- **$|\kappa'/\delta|\ll 1$** — the off-diagonal $\kappa'$ is small compared with the diagonal spread $2\delta$. Each eigenvector remains concentrated on one mass, and the coupling produces only a small admixture of the other.
+- **$|\kappa'/\delta|\gtrsim 1$** — the off-diagonal is comparable to or larger than the diagonal spread. Neither mass can be treated independently, and the eigenvectors become strong mixtures.
+
+The ratio does not merely say that coupling is present; it says whether the coupling is large enough to overcome the separation of the uncoupled frequencies.
 
 With these variables, the determinant condition becomes
 
@@ -148,7 +153,7 @@ $$
 
 ### § 0.3. Modes and the mixing angle {#sec-0-3}
 
-A **mode** is a motion in which both masses oscillate at one common frequency with a fixed ratio of their two amplitudes; equivalently, it is an eigenvector of the coefficient matrix together with its eigenvalue $\omega^2$. Every mode picks a single number — the amplitude ratio $X_B/X_A$ — and rides that ratio at fixed frequency forever. Every general motion is a superposition of the two modes.
+A **mode**{:#defn-mode} is a motion in which both masses oscillate at one common frequency with a fixed ratio of their two amplitudes; equivalently, it is an eigenvector of the coefficient matrix together with its eigenvalue $\omega^2$. Every mode picks a single number — the amplitude ratio $X_B/X_A$ — and rides that ratio at fixed frequency forever. Every general motion is a superposition of the two modes.
 
 Write a normalized eigenvector as
 
@@ -160,7 +165,7 @@ $$
 \end{pmatrix}.
 $$
 
-Every real unit vector in the plane has this form for some angle $\theta$; the angle $\theta$ *is* the amplitude ratio in disguise, since $\tan\theta=X_B/X_A$. We will call it the **mixing angle**, and the eigenvalue problem below fixes its two allowed values in terms of $\delta$ and $\kappa'$.
+Every real unit vector in the plane has this form for some angle $\theta$; the angle $\theta$ *is* the amplitude ratio in disguise, since $\tan\theta=X_B/X_A$. We will call it the **mixing angle**{:#defn-mixing-angle}, and the eigenvalue problem below fixes its two allowed values in terms of $\delta$ and $\kappa'$.
 
 The coefficient matrix, after division by $m$, is
 
@@ -222,14 +227,14 @@ $$
 
 This is the **mixing angle**. It has two limiting cases:
 
-- **Large detuning** ($|\delta|\gg\kappa'$): $\theta\to0$, so each mode is close to one uncoupled oscillator.
-- **Exact tuning** ($\delta=0$): $\theta=\pi/4$, so the two eigenvectors are the equal mixtures $(1,1)/\sqrt2$ and $(1,-1)/\sqrt2$.
+- **Large [detuning](#defn-detuning)** ($|\delta|\gg\kappa'$): $\theta\to0$, so each mode is close to one uncoupled oscillator.
+- **Exact tuning**{:#defn-tuning} ($\delta=0$): $\theta=\pi/4$, so the two eigenvectors are the equal mixtures $(1,1)/\sqrt2$ and $(1,-1)/\sqrt2$.
 
-At exact tuning, those two combinations can be read directly from the spring motion:
+At exact [tuning](#defn-tuning), those two combinations can be read directly from the spring motion:
 
 {% include visualization.html src="exact-tuning-modes.html" title="Common and differential normal modes at exact tuning" %}
 
-In the **common mode**, $x_A=x_B$ at every instant, so $\Delta L=x_B-x_A=0$: the coupling spring exerts no force. Its frequency is
+In the **common mode**, $x_A=x_B$ at every instant, so $\Delta L=x_B-x_A=0$: the [coupling](#defn-coupling) spring exerts no force. Its frequency is
 
 $$
 \omega_-^2=\frac{k}{m}=\bar\omega^2-\kappa'.
@@ -249,7 +254,7 @@ $$
 \omega_+^2=\frac{k+2\kappa}{m}=\bar\omega^2+\kappa'.
 $$
 
-The same mixing angle will recur in every $2\times2$ problem below. It measures how much of each uncoupled basis state enters the two coupled eigenmodes.
+> The same [mixing angle](#defn-mixing-angle) will recur in every $2\times2$ problem below. It measures how much of each uncoupled basis state enters the two coupled eigenmodes.
 
 ### § 0.4. The Pauli decomposition of any $2 \times 2$ Hermitian problem {#sec-0-4}
 
@@ -261,11 +266,11 @@ $$\sigma_x = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}, \quad \sigma_y = \beg
 
 Each Pauli component has a specific physical meaning that is universal across the problems considered here, and it is worth committing them to memory at this stage.
 
-- **$c_0 I$ (identity)**: uniform frequency shift of both modes together. In the oscillator problem, this is $\bar\omega^2$. Why does it shift both eigenvalues equally: for any vector $\mathbf{v}$, the identity satisfies $I\mathbf{v} = \mathbf{v}$, so $c_0 I$ contributes $+c_0$ to every eigenvalue regardless of which eigenvector one is looking at. It shifts the whole spectrum rigidly and does not open any gap. Physically neutral to the interesting dynamics.
+- **$c_0 I$ (identity)**: uniform frequency shift of both modes together. In the oscillator problem, this is $\bar\omega^2$. Why does it shift both eigenvalues equally: for any vector $\mathbf{v}$, the identity satisfies $I\mathbf{v} = \mathbf{v}$, so $c_0 I$ contributes $+c_0$ to every eigenvalue regardless of which eigenvector one is looking at. It shifts the whole spectrum rigidly and does not open any [gap](#defn-gap). Physically neutral to the interesting dynamics.
 
-- **$c_z \sigma_z$ (diagonal difference)**: detuning. This is $\delta$: it pulls the two diagonals apart and, in the absence of any off-diagonal, gives eigenvalues $\bar\omega^2 \pm \delta$ with eigenvectors $(1,0)$ and $(0,1)$. Physically: how far apart the two unperturbed modes sit on the frequency axis.
+- **$c_z \sigma_z$ (diagonal difference)**: [detuning](#defn-detuning). This is $\delta$: it pulls the two diagonals apart and, in the absence of any off-diagonal, gives eigenvalues $\bar\omega^2 \pm \delta$ with eigenvectors $(1,0)$ and $(0,1)$. Physically: how far apart the two unperturbed modes sit on the frequency axis.
 
-- **$c_x \sigma_x$ (real symmetric off-diagonal)**: the ordinary coupling term. It puts equal real numbers in the two off-diagonal slots and produces the standard hyperbolic anticrossing when combined with $c_z$. The coupled-oscillator spring gives $c_x = -\kappa'$; the periodic-index modulation of [§ 4](#sec-4) will give $c_x \propto \Delta\varepsilon$; any mechanism that couples the two modes symmetrically — spring, capacitive coupling in an $LC$ pair, index modulation — populates this slot.
+- **$c_x \sigma_x$ (real symmetric off-diagonal)**: the ordinary **coupling**{:#defn-coupling} term. It puts equal real numbers in the two off-diagonal slots and produces the standard hyperbolic anticrossing when combined with $c_z$. The coupled-oscillator spring gives $c_x = -\kappa'$; the periodic-index modulation of [§ 4](#sec-4) will give $c_x \propto \Delta\varepsilon$; any mechanism that couples the two modes symmetrically — spring, capacitive [coupling](#defn-coupling) in an $LC$ pair, index modulation — populates this slot.
 
 - **$c_y \sigma_y$ (antisymmetric imaginary off-diagonal)**: a coupling that puts $+i$ in one off-diagonal slot and $-i$ in the other. For a passive classical system with no external bias, this slot is empty. Populating $c_y$ requires a physical mechanism that distinguishes clockwise from counterclockwise circulation in the two-mode space — a static magnetic bias is the standard one, and [§ 5](#sec-5) derives it in detail from the linearized magnetization equation of a biased ferrite. The reason such a bias is required (Onsager's reciprocity constraint) is derived in [§ 5.6](#sec-5-6); here we only note that populating $c_y$ has structural consequences distinct from those of $c_x$.
 
@@ -279,13 +284,13 @@ with $\omega^2$ retained as the eigenvalue variable of equations \eqref{eq:hyper
 $$\Delta \equiv \omega_+^2 - \omega_-^2 = 2\sqrt{c_x^2 + c_y^2 + c_z^2}.
 \tag{5}\label{eq:pauli-gap}$$
 
-Reading this: $c_z$ (detuning) and $(c_x, c_y)$ (couplings) combine in Euclidean quadrature to set the gap. At **exact tuning** ($c_z = 0$) the gap collapses to $2\sqrt{c_x^2 + c_y^2}$. This is the smallest gap achievable for a given pair of couplings, because the quantity under the square root then omits the $c_z^2$ term entirely and cannot be reduced further by any choice of operating point — increasing $|c_z|$ only makes the gap larger. Either coupling ($c_x$ or $c_y$) alone is enough to open a gap; both together add in quadrature.
+Reading this: $c_z$ (detuning) and $(c_x, c_y)$ (couplings) combine in Euclidean quadrature to set the gap. At **exact [tuning](#defn-tuning)** ($c_z = 0$) the gap collapses to $2\sqrt{c_x^2 + c_y^2}$. This is the smallest gap achievable for a given pair of couplings, because the quantity under the square root then omits the $c_z^2$ term entirely and cannot be reduced further by any choice of operating point — increasing $|c_z|$ only makes the gap larger. Either coupling ($c_x$ or $c_y$) alone is enough to open a gap; both together add in quadrature.
 
 Which $c$'s are nonzero in a given physical problem, and by what mechanism, becomes the entire content of every application section below.
 
 ### § 0.5. The eigenvalue hyperbola and the definition of gap {#sec-0-5}
 
-Plot the two eigenvalues against detuning at fixed coupling. From equation \eqref{eq:hyperbola-eigenvalue},
+Plot the two eigenvalues against [detuning](#defn-detuning) at fixed [coupling](#defn-coupling). From equation \eqref{eq:hyperbola-eigenvalue},
 
 $$
 (\omega^2-\bar\omega^2)^2=\delta^2+\kappa'^2.
@@ -295,7 +300,7 @@ This is a hyperbola in the $(\delta,\omega^2-\bar\omega^2)$ plane. The two branc
 
 {% include visualization.html src="eigenvalue-gap.html" title="How coupling changes a crossing into an avoided crossing" %}
 
-The vertical separation between the branches is the **gap**.
+The vertical separation between the branches is the **gap**{:#defn-gap}.
 
 - **Bandgap** or **stopband** — a frequency interval in which the medium has no propagating solution at real wavenumber. *Bandgap* names the missing interval in the spectrum; *stopband* names the same interval by what the medium does to a wave sent at it from the outside (an **incident wave**) — such a wave at a stopband frequency cannot propagate through the medium and is instead reflected.
 - **Avoided crossing** — the same splitting viewed while detuning is swept. Without coupling, the two uncoupled branches cross at $\delta=0$; with coupling, the eigenvalues remain separated there.
@@ -304,7 +309,7 @@ These names emphasize different plots or experiments, but the underlying operati
 
 ### § 0.6. Reading the hyperbola: propagation, evanescence, and the mass-like term {#sec-0-6}
 
-The preceding section used the eigenvalue view: frequency against detuning at fixed coupling. The later wave problems — beginning with [the scalar-wave-equation refresher](#picture-3-scalar-wave-equation) and [the Bloch-theorem refresher](#picture-3-bloch-theorem) beneath Picture 3, and continuing through § 12 — also require the inverse question: at a chosen driving frequency, what spatial wavenumber does the medium support? Near the coupled-mode crossing, the answer takes the form
+The preceding section used the eigenvalue view: frequency against [detuning](#defn-detuning) at fixed [coupling](#defn-coupling). The later wave problems — beginning with [the scalar-wave-equation refresher](#picture-3-scalar-wave-equation) and [the Bloch-theorem refresher](#picture-3-bloch-theorem) beneath Picture 3, and continuing through § 12 — also require the inverse question: at a chosen driving frequency, what spatial wavenumber does the medium support? Near the coupled-mode crossing, the answer takes the form
 
 $$
 \boxed{
@@ -315,7 +320,7 @@ $$
 
 Keeping the sign of $q$ displays the two propagation directions. Plotting $q^2$ instead folds those directions together, so the same relation appears with a different visible geometry. The physical meaning of $q$ depends on the problem — a spatial wavenumber inside a Bragg grating ([§ 4](#sec-4)), a plane-wave $k_z$ in a waveguide ([§ 6](#sec-6)), a plasma wavenumber ([§ 6](#sec-6)) — but the interpretation is universal.
 
-The visualization below plots $q/\kappa$ against $\delta/\kappa$ rather than $q$ against $\delta$. The reason is that $\kappa$ is the *only* intrinsic scale in the equation once units are stripped: dividing both axes by it produces a single dimensionless hyperbola that describes every physical realization at once — a Bragg grating, a waveguide, a plasma — with the gap edges always at $\delta/\kappa=\pm 1$ and the propagating hyperbola always the same curve. Any specific problem then picks its own value of $\kappa$ and stretches the same picture to fit its own axes.
+The visualization below plots $q/\kappa$ against $\delta/\kappa$ rather than $q$ against $\delta$. The reason is that $\kappa$ is the *only* intrinsic scale in the equation once units are stripped: dividing both axes by it produces a single dimensionless hyperbola that describes every physical realization at once — a Bragg grating, a waveguide, a plasma — with the [gap](#defn-gap) edges always at $\delta/\kappa=\pm 1$ and the propagating hyperbola always the same curve. Any specific problem then picks its own value of $\kappa$ and stretches the same picture to fit its own axes.
 
 {% include visualization.html src="hyperbola-propagation.html" title="Propagation, evanescence, and the same relation in three coordinate views" %}
 
@@ -339,7 +344,7 @@ $$
 L_B=\frac{1}{\kappa},
 $$
 
-the **Bragg length**. Section 7.3 will use this infinite-medium decay scale as the starting point for the finite-mirror boundary-value problem.
+the **Bragg length**. [§ 7.3](#sec-7-3) will use this infinite-medium decay scale as the starting point for the finite-mirror boundary-value problem.
 
 #### At the gap edge ($\delta=\pm\kappa$)
 
@@ -351,11 +356,11 @@ $$
 E^2=(pc)^2+(mc^2)^2.
 $$
 
-After rearrangement, $p^2c^2=E^2-m^2c^4$, which has the same threshold structure as $q^2=\delta^2-\kappa^2$: the term $\kappa$ sets a nonzero minimum detuning before propagation is possible. This is the precise sense in which the gap edge acts like a mass term. Section 6 derives the corresponding cutoff scale separately for waveguides, plasmas, band edges, and matter waves.
+After rearrangement, $p^2c^2=E^2-m^2c^4$, which has the same threshold structure as $q^2=\delta^2-\kappa^2$: the term $\kappa$ sets a nonzero minimum detuning before propagation is possible. This is the precise sense in which the gap edge acts like a mass term. [§ 6](#sec-6) develops the cutoff reading in the Bragg setting and defers the waveguide, plasma, and relativistic cases to a standalone piece on cutoff phenomena.
 
 ### § 0.7. Group velocity: the slope of the dispersion curve {#sec-0-7}
 
-For a wavepacket concentrated in frequency around $\omega$ (or in detuning around $\delta$), the transported energy moves at the **group velocity**
+For a wavepacket concentrated in frequency around $\omega$ (or in [detuning](#defn-detuning) around $\delta$), the transported energy moves at the **group velocity**
 
 $$v_g \equiv \frac{d\omega}{dq}.$$
 
@@ -365,7 +370,7 @@ $$v_g = \frac{d\delta}{dq} = \frac{q}{\delta}.$$
 
 Reading this:
 
-- **Far outside the gap** ($|\delta| \gg \kappa$): $q \approx |\delta|$, so $v_g \approx 1$ — in the units of the specific problem, this is the free-medium propagation speed (in vacuum $c$; in a dielectric $c/n$; in a mechanical medium the appropriate wave speed).
+- **Far outside the [gap](#defn-gap)** ($|\delta| \gg \kappa$): $q \approx |\delta|$, so $v_g \approx 1$ — in the units of the specific problem, this is the free-medium propagation speed (in vacuum $c$; in a dielectric $c/n$; in a mechanical medium the appropriate wave speed).
 
 - **Approaching the gap edge from outside** ($|\delta| \to \kappa^+$): $q \to 0$, so $v_g \to 0$. This is **slow light** — a wavepacket at frequencies near the band edge propagates arbitrarily slowly. In the DFB laser ([§ 10](#sec-10)) slow light multiplies the gain per unit length, an effect that will be picked up in that section by direct reference to the formula above.
 
@@ -399,13 +404,13 @@ Every mention of gain, absorption, or a complex refractive index in the sections
 
 ### § 0.9. What follows {#sec-0-9}
 
-The universal machinery is now in place. The wave setting begins in [§ 3](#sec-3). Its first two pictures derive the Bragg condition geometrically; Picture 3 then combines two background results kept directly beneath it as collapsible refreshers: [the scalar wave equation for an inhomogeneous medium](#picture-3-scalar-wave-equation) and [Bloch's theorem for a periodic medium](#picture-3-bloch-theorem). [§ 4](#sec-4) uses those results to show that the small-modulation limit of Bragg scattering is literally the $2 \times 2$ of [§ 0](#sec-0), with $c_x \propto \Delta\varepsilon$, $c_z = k - k_{\text{Bragg}}$, and $c_y = 0$. [§ 5](#sec-5) does the same identification for a magnetically biased ferrite, producing $c_y \neq 0$ as the Polder tensor. [§ 6](#sec-6) collects the "one edge of the gap" reading of [§ 0.6](#sec-0-6) into a unified section on waveguide, plasma, Klein–Gordon, and band-edge cutoffs. [§ 7](#sec-7) opens the reading of the hyperbola at band edges — standing waves, penetration depth, Bragg length — that governs the design of any Bragg-based device. [§ 8](#sec-8) develops the transfer-matrix formalism as the algorithmic dual to coupled-mode theory. §§ 9–12 are the applications: DBR mirrors, DFB lasers, non-reciprocal circulators and isolators, and further-engineered gratings.
+The universal machinery is now in place. The wave setting begins in [§ 3](#sec-3). Its first two pictures derive the Bragg condition geometrically; Picture 3 then combines two background results kept directly beneath it as collapsible refreshers: [the scalar wave equation for an inhomogeneous medium](#picture-3-scalar-wave-equation) and [Bloch's theorem for a periodic medium](#picture-3-bloch-theorem). [§ 4](#sec-4) uses those results to show that the small-modulation limit of Bragg scattering is literally the $2 \times 2$ of [§ 0](#sec-0), with $c_x \propto \Delta\varepsilon$, $c_z = k - k_{\text{Bragg}}$, and $c_y = 0$. [§ 5](#sec-5) does the same identification for a magnetically biased ferrite, producing $c_y \neq 0$ as the Polder tensor. [§ 6](#sec-6) collects the "one edge of the [gap](#defn-gap)" reading of [§ 0.6](#sec-0-6) into a unified section on waveguide, plasma, Klein–Gordon, and band-edge cutoffs. [§ 7](#sec-7) opens the reading of the hyperbola at band edges — standing waves, penetration depth, Bragg length — that governs the design of any Bragg-based device. [§ 8](#sec-8) develops the transfer-matrix formalism as the algorithmic dual to coupled-mode theory. §§ 9–12 are the applications: DBR mirrors, DFB lasers, non-reciprocal circulators and isolators, and further-engineered gratings.
 
 ---
 
 ## § 3. Background: the Bragg condition {#sec-3}
 
-The next section, [§ 4](#sec-4), is the point at which the two-mode framework of [§ 0](#sec-0) lands on a periodic dielectric and becomes coupled-mode theory: the main route of the article. This section prepares the ground for that identification by deriving the geometric condition — *for what direction of propagation and what wavelength does a specific gap open?* — from three complementary starting points that all reduce to the same relation.
+The next section, [§ 4](#sec-4), is the point at which the two-mode framework of [§ 0](#sec-0) lands on a periodic dielectric and becomes coupled-mode theory: the main route of the article. This section prepares the ground for that identification by deriving the geometric condition — *for what direction of propagation and what wavelength does a specific [gap](#defn-gap) open?* — from three complementary starting points that all reduce to the same relation.
 
 ### Picture 1: classical path-difference
 
@@ -496,7 +501,7 @@ So the permittivity is "one plus the material's electric response." Gases have $
 
 The **refractive index** is $n(\mathbf{r}) = \sqrt{\varepsilon(\mathbf{r})}$. For a plane wave $E \propto e^{ikz}$ in a homogeneous medium, the Helmholtz equation gives $k = n\omega/c$, so the phase velocity is $c/n$: a wave slows by the factor $n$ inside a dense dielectric.
 
-When the medium absorbs or amplifies, $\varepsilon$ acquires an imaginary part. Section 0.8 develops complex response, absorption, and gain; the causal Kramers–Kronig link between the real and imaginary parts of $\varepsilon(\omega)$ is derived in [§ 10.4](#sec-10-4), where it directly constrains index-coupled and gain-coupled DFB design.
+When the medium absorbs or amplifies, $\varepsilon$ acquires an imaginary part. [§ 0.8](#sec-0-8) develops complex response, absorption, and gain; the causal Kramers–Kronig link between the real and imaginary parts of $\varepsilon(\omega)$ is derived in [§ 10.4](#sec-10-4), where it directly constrains index-coupled and gain-coupled DFB design.
 
 <div class="guided-fold-end"></div>
 
@@ -546,7 +551,7 @@ One more structural fact worth stating explicitly. $T_\Lambda$ is a **unitary** 
 
 Any $2 \times 2$ matrix has two eigenvalues (over $\mathbb{C}$). For a lossless medium, the argument of the previous subsection fixes $|\lambda| = 1$ on both. In general, both roots satisfy $\lambda_1 \lambda_2 = \det T_\Lambda$; [§ 8](#sec-8) will show $\det T_\Lambda = 1$ from a conservation law. Together these imply that in a lossless medium either both eigenvalues have $|\lambda| = 1$ (a **band**), or they are real reciprocals with $\lambda_2 = 1/\lambda_1$ (a **gap**, where one solution grows exponentially with $z$ and the other decays).
 
-Each eigenvalue produces one Bloch-form solution, and their linear combinations span the whole two-dimensional solution space. When both eigenvalues coincide at $\pm 1$, the two eigenvectors merge; this happens exactly at the top and bottom of each stopband and corresponds to the standing waves of [§ 7](#sec-7). That degeneracy is the special "double root" case where $\text{tr}(T_\Lambda) = \pm 2$ with $\det = 1$.
+Each eigenvalue produces one Bloch-form solution, and their linear combinations span the whole two-dimensional solution space. When both eigenvalues coincide at $\pm 1$, the two eigenvectors merge; this happens exactly at the top and bottom of each stopband and corresponds to the standing waves of [§ 7](#sec-7). That coincidence is the special "double root" case where $\text{tr}(T_\Lambda) = \pm 2$ with $\det = 1$.
 
 #### Reciprocal-lattice equivalence
 
@@ -566,7 +571,7 @@ For each $k$ in the Brillouin zone, the eigenvalue problem has a discrete set of
 
 For a homogeneous medium ($\varepsilon = \text{const}$), the band curves are straight lines $\omega = \pm ck/\sqrt{\varepsilon}$ folded into the Brillouin zone (they are called "folded" because the reciprocal-lattice equivalence forces $k$ into the first zone). For a periodic medium, the curves bend near the Brillouin-zone edge, and gaps open where no real $k$ gives a real $\omega$: this is the non-propagating regime of equation \eqref{eq:hyperbola-q} appearing in its wave-mechanical guise.
 
-The group velocity of a wavepacket centered at $k$ is $v_g = d\omega_n/dk$, whose interpretation was fixed once in [§ 0.7](#sec-0-7): nonzero and near the material speed far from the gap, vanishing at the band edges (slow light), imaginary inside the gap. Every subsequent reference to $v_g$ in the following sections refers back to that formula and its reading.
+The group velocity of a wavepacket centered at $k$ is $v_g = d\omega_n/dk$, whose interpretation was fixed once in [§ 0.7](#sec-0-7): nonzero and near the material speed far from the [gap](#defn-gap), vanishing at the band edges (slow light), imaginary inside the gap. Every subsequent reference to $v_g$ in the following sections refers back to that formula and its reading.
 
 <div class="guided-fold-end"></div>
 
@@ -593,7 +598,7 @@ Matching coefficients of $e^{i(k+nG_1)z}$ on both sides of the wave equation giv
 
 $$\left[(k+nG_1)^2 - \frac{\omega^2}{c^2}\bar\varepsilon\right] E_n \;=\; \frac{\omega^2}{c^2} \sum_{m \neq 0} \varepsilon_m\, E_{n-m}.$$
 
-This is the **master equation**: an infinite system of linear equations coupling the $E_n$'s to one another through the Fourier coefficients of the modulation.
+This is the **master equation**: an infinite system of linear equations [coupling](#defn-coupling) the $E_n$'s to one another through the Fourier coefficients of the modulation.
 
 Written as an infinite matrix, with rows and columns indexed by $n$, the left side puts on-shell energies $D_n \equiv (k+nG_1)^2 - (\omega/c)^2\bar\varepsilon$ on the diagonal, and the right side puts the modulation-coupling entries $\varepsilon_{n-n'}$ (times $(\omega/c)^2$) in the off-diagonals:
 
@@ -605,7 +610,7 @@ $$\begin{pmatrix}
        & \vdots       & \vdots       & \vdots      & \ddots
 \end{pmatrix} \begin{pmatrix} \vdots \\ E_{-1} \\ E_{0} \\ E_{+1} \\ \vdots \end{pmatrix} = 0.$$
 
-The diagonal $D_n$ is the "detuning" of Fourier mode $n$ from being an on-shell plane wave in the average medium; the off-diagonal $\varepsilon_p$ is the "coupling" between mode $n$ and mode $n - p$, which physically transfers a wavenumber-$pG_1$ momentum kick from the lattice to the wave. This is the same structure as the $2\times 2$ of [§ 0](#sec-0), extended to infinitely many modes and populated by a specific mechanism: the periodic index modulation.
+The diagonal $D_n$ is the "[detuning](#defn-detuning)" of Fourier mode $n$ from being an on-shell plane wave in the average medium; the off-diagonal $\varepsilon_p$ is the "coupling" between mode $n$ and mode $n - p$, which physically transfers a wavenumber-$pG_1$ momentum kick from the lattice to the wave. This is the same structure as the $2\times 2$ of [§ 0](#sec-0), extended to infinitely many modes and populated by a specific mechanism: the periodic index modulation.
 
 Coefficient by coefficient, the Bragg condition emerges as the resonance condition of this matrix: it is the value of $k$ at which two diagonals $D_n$ vanish simultaneously (up to $\omega^2 \bar\varepsilon /c^2$), so that the two corresponding modes are both on-shell and their off-diagonal coupling dominates. [§ 4](#sec-4) makes this quantitative by keeping only the two near-resonant modes.
 
@@ -681,7 +686,7 @@ A pure cosine has exactly two nonzero Fourier components (at $\pm 1$), each of a
 
 ### Choosing the reference wavenumber and identifying near-resonant modes
 
-The two-mode framework of [§ 0](#sec-0) asks for two amplitudes that are near-degenerate under some coupling; here the coupling is the periodic modulation $\varepsilon_1$, and the corresponding degeneracy is between a forward wave and its Bragg-reflected backward wave. Reciprocal-lattice equivalence tells us that any wavenumber $k$ is coupled to $k+m G_1$ for every integer $m$: the grating can impart momentum kicks of size $G_1,2G_1,\ldots$ Backscattering — sending $k$ to $-k$ — is achieved by a *single* first-order kick precisely when $-k=k-G_1$, that is, when $k=G_1/2$. That single wavenumber is the pivot around which the two-mode picture is built, and we give it its own symbol.
+The two-mode framework of [§ 0](#sec-0) asks for two amplitudes that are nearly equal in frequency under some [coupling](#defn-coupling); here the coupling is the periodic modulation $\varepsilon_1$, and the nearly-equal pair is the forward wave and its Bragg-reflected backward counterpart. Reciprocal-lattice equivalence tells us that any wavenumber $k$ is coupled to $k+m G_1$ for every integer $m$: the grating can impart momentum kicks of size $G_1,2G_1,\ldots$ Backscattering — sending $k$ to $-k$ — is achieved by a *single* first-order kick precisely when $-k=k-G_1$, that is, when $k=G_1/2$. That single wavenumber is the pivot around which the two-mode picture is built, and we give it its own symbol.
 
 Define
 
@@ -723,7 +728,7 @@ Take any off-resonant mode, say $E_{+1}$, and solve its master equation row for 
 
 $$D_{+1}\, E_{+1} \;=\; \frac{\omega^2}{c^2}\left(\varepsilon_1 E_0 + \varepsilon_{-1} E_{+2} + \ldots\right).$$
 
-Since $\varepsilon_m = 0$ for $|m| \geq 2$, only the $\varepsilon_{\pm 1}$ terms survive, coupling $E_{+1}$ to $E_0$ (via $\varepsilon_1$) and to $E_{+2}$ (via $\varepsilon_{-1}$). At leading order, dropping the further-off-resonant $E_{+2}$,
+Since $\varepsilon_m = 0$ for $|m| \geq 2$, only the $\varepsilon_{\pm 1}$ terms survive, [coupling](#defn-coupling) $E_{+1}$ to $E_0$ (via $\varepsilon_1$) and to $E_{+2}$ (via $\varepsilon_{-1}$). At leading order, dropping the further-off-resonant $E_{+2}$,
 
 $$E_{+1} \;\approx\; \frac{(\omega/c)^2 \varepsilon_1}{D_{+1}} E_0 \;\approx\; \frac{k_B^2 \cdot (\Delta\varepsilon/2)}{\bar\varepsilon \cdot 8 k_B^2} E_0 \;=\; \frac{\Delta\varepsilon}{16\,\bar\varepsilon}\, E_0,$$
 
@@ -750,7 +755,7 @@ D_0=k^2-(\omega/c)^2\bar\varepsilon,\qquad
 D_{-1}=(k-2k_B)^2-(\omega/c)^2\bar\varepsilon,\qquad
 \Omega=-(\omega/c)^2\Delta\varepsilon/2.$$
 
-Any such Hermitian matrix decomposes as $H = c_0 I + c_z \sigma_z + c_x \sigma_x + c_y \sigma_y$, and by inspection of the general form $c_0 I+c_z\sigma_z+c_x\sigma_x+c_y\sigma_y=\begin{pmatrix}c_0+c_z & c_x-ic_y\\ c_x+ic_y & c_0-c_z\end{pmatrix}$ the four coefficients read off as: the half-sum of the diagonals sits in $c_0$ (uniform shift, opens no gap), the half-difference of the diagonals sits in $c_z$ (detuning), the real part of the off-diagonal sits in $c_x$ (symmetric coupling), and the imaginary part of the off-diagonal sits in $c_y$ (antisymmetric coupling — zero here).
+Any such Hermitian matrix decomposes as $H = c_0 I + c_z \sigma_z + c_x \sigma_x + c_y \sigma_y$, and by inspection of the general form $c_0 I+c_z\sigma_z+c_x\sigma_x+c_y\sigma_y=\begin{pmatrix}c_0+c_z & c_x-ic_y\\ c_x+ic_y & c_0-c_z\end{pmatrix}$ the four coefficients read off as: the half-sum of the diagonals sits in $c_0$ (uniform shift, opens no [gap](#defn-gap)), the half-difference of the diagonals sits in $c_z$ ([detuning](#defn-detuning)), the real part of the off-diagonal sits in $c_x$ (symmetric [coupling](#defn-coupling)), and the imaginary part of the off-diagonal sits in $c_y$ (antisymmetric coupling — zero here).
 
 Compute each on the matrix above. The half-sum of the two diagonals is
 
@@ -788,25 +793,25 @@ Every consequence of the two-wave truncation is a reading of the [§ 0](#sec-0) 
 - Inside the stopband, the imaginary-$q$ branch of equation \eqref{eq:hyperbola-q} gives the decay constant $\alpha = \sqrt{\kappa^2 - \delta^2}$; at $\delta = 0$ the **penetration depth** is $1/\kappa$, the Bragg length.
 - **Group velocity** vanishes at the band edges $\delta = \pm\kappa$ where $q = 0$; the slow-light gain enhancement of the DFB laser ([§ 10](#sec-10)) is the direct consequence.
 - **Group velocity dispersion** diverges at the band edges as $d^2q/d\omega^2 \to \infty$; [§ 12](#sec-12) uses this in a chirped Bragg grating.
-- The **mixing angle** in equation \eqref{eq:mixing-angle}, here $\tan 2\theta = \kappa/\delta$, governs how much of the forward and backward components sit in each eigenmode. At exact tuning, the two eigenmodes are equal mixtures $(E_0 \pm E_{-1})/\sqrt 2$: pure standing waves. [§ 7](#sec-7) works out their nodes and antinodes.
+- The **mixing angle** in equation \eqref{eq:mixing-angle}, here $\tan 2\theta = \kappa/\delta$, governs how much of the forward and backward components sit in each eigenmode. At exact [tuning](#defn-tuning), the two eigenmodes are equal mixtures $(E_0 \pm E_{-1})/\sqrt 2$: pure standing waves. [§ 7](#sec-7) works out their nodes and antinodes.
 
 The two-wave truncation, read through the framework, is the complete first-order theory of small-modulation Bragg gratings.
 
 ### When the two-wave truncation fails
 
-The amplitude-suppression argument above required the ratio $\Delta\varepsilon/\bar\varepsilon$ to be small relative to the *detuning ratio* $|D_n|/k_B^2$ for every off-resonant mode. This gives the quantitative validity condition
+The amplitude-suppression argument above required the ratio $\Delta\varepsilon/\bar\varepsilon$ to be small relative to the *[detuning](#defn-detuning) ratio* $|D_n|/k_B^2$ for every off-resonant mode. This gives the quantitative validity condition
 
 $$\frac{\Delta\varepsilon}{\bar\varepsilon} \ll \frac{|D_n|}{k_B^2} = \begin{cases} 8 & \text{for } n = +1 \\ 4|n|^2 - 1 & \text{for higher } n \end{cases}$$
 
 The tightest constraint comes from the closest off-resonant mode ($n = +1$), giving $\Delta\varepsilon/\bar\varepsilon \ll 8$. For $\Delta\varepsilon/\bar\varepsilon = 0.01$ (a typical fiber Bragg grating), corrections are of order $10^{-3}$: the two-wave approximation is essentially exact. For $\Delta\varepsilon/\bar\varepsilon = 0.3$ (an aggressive multilayer stack) corrections start to matter, and the exact transfer-matrix treatment of [§ 8](#sec-8) becomes necessary.
 
-At second order, keeping $E_{+1}$ and $E_{-2}$ as small perturbations couples them back into the master-equation rows for $E_0$ and $E_{-1}$. Solving self-consistently, each near-resonant amplitude picks up a correction of order $\Delta\varepsilon/\bar\varepsilon$ from the suppressed mode's back-action, and this back-action shifts the effective coupling $\kappa$ by a further factor of $\Delta\varepsilon/\bar\varepsilon$. Net: the correction to $\kappa$ is of order $(\Delta\varepsilon/\bar\varepsilon)^2 \cdot \kappa$, small in the regime of validity above. Higher structure-factor coefficients $\varepsilon_2, \varepsilon_3, \ldots$ enter through their own suppression channels; for a cosine profile they are zero and no such corrections arise, but for a square-wave modulation ([§ 9](#sec-9)) they are present.
+At second order, keeping $E_{+1}$ and $E_{-2}$ as small perturbations couples them back into the master-equation rows for $E_0$ and $E_{-1}$. Solving self-consistently, each near-resonant amplitude picks up a correction of order $\Delta\varepsilon/\bar\varepsilon$ from the suppressed mode's back-action, and this back-action shifts the effective [coupling](#defn-coupling) $\kappa$ by a further factor of $\Delta\varepsilon/\bar\varepsilon$. Net: the correction to $\kappa$ is of order $(\Delta\varepsilon/\bar\varepsilon)^2 \cdot \kappa$, small in the regime of validity above. Higher structure-factor coefficients $\varepsilon_2, \varepsilon_3, \ldots$ enter through their own suppression channels; for a cosine profile they are zero and no such corrections arise, but for a square-wave modulation ([§ 9](#sec-9)) they are present.
 
 ---
 
 ## § 5. Gyromagnetic media: the $\sigma_y$ realization {#sec-5}
 
-Equations \eqref{eq:delta-bragg} and \eqref{eq:kappa-bragg} supply the Bragg detuning and the real coupling coefficient. Together with the real-symmetric two-wave matrix immediately above them, they identify the Bragg grating as an instance of the [§ 0](#sec-0) framework with $c_z \neq 0$, $c_x \neq 0$, and $c_y = 0$. That last identification carries a physical statement worth restating: **$c_y = 0$ is equivalent to reciprocity of the medium**, in the sense that a wave reversed in time or in direction sees the same coupling matrix as the original wave. Concretely: reversing the direction of a propagating wave amounts to complex-conjugating the matrix (via the $e^{ikz} \to e^{-ikz}$ substitution); a matrix with $c_y = 0$ is real symmetric and unchanged by complex conjugation, so forward and backward waves see the same physics. A $c_y \neq 0$ matrix has entries $\pm i c_y$ in the off-diagonal; complex conjugation flips their signs, so forward and backward waves see *different* effective couplings — the medium is non-reciprocal. This section derives the one class of physical medium that produces $c_y \neq 0$: a magnetically biased ferrite. The linearized susceptibility tensor of such a medium (the **Polder tensor**) is exactly $c_0 I + c_y \sigma_y$ in the notation of [§ 0.4](#sec-0-4), with $c_y$ set by the bias field and the magnetization; its consequence — different phase velocities for the two circular polarizations, giving Faraday rotation and non-reciprocity — is the mechanism behind every device in [§ 11](#sec-11).
+Equations \eqref{eq:delta-bragg} and \eqref{eq:kappa-bragg} supply the Bragg [detuning](#defn-detuning) and the real [coupling](#defn-coupling) coefficient. Together with the real-symmetric two-wave matrix immediately above them, they identify the Bragg grating as an instance of the [§ 0](#sec-0) framework with $c_z \neq 0$, $c_x \neq 0$, and $c_y = 0$. That last identification carries a physical statement worth restating: **$c_y = 0$ is equivalent to reciprocity of the medium**, in the sense that a wave reversed in time or in direction sees the same coupling matrix as the original wave. Concretely: reversing the direction of a propagating wave amounts to complex-conjugating the matrix (via the $e^{ikz} \to e^{-ikz}$ substitution); a matrix with $c_y = 0$ is real symmetric and unchanged by complex conjugation, so forward and backward waves see the same physics. A $c_y \neq 0$ matrix has entries $\pm i c_y$ in the off-diagonal; complex conjugation flips their signs, so forward and backward waves see *different* effective couplings — the medium is non-reciprocal. This section derives the one class of physical medium that produces $c_y \neq 0$: a magnetically biased ferrite. The linearized susceptibility tensor of such a medium (the **Polder tensor**) is exactly $c_0 I + c_y \sigma_y$ in the notation of [§ 0.4](#sec-0-4), with $c_y$ set by the bias field and the magnetization; its consequence — different phase velocities for the two circular polarizations, giving Faraday rotation and non-reciprocity — is the mechanism behind every device in [§ 11](#sec-11).
 
 This section deals only with the theory of the gyromagnetic material; the device applications (Y-junction circulator, optical isolator, materials selection) are deferred to [§ 11](#sec-11) alongside the other applications.
 
@@ -874,7 +879,7 @@ The permeability tensor is $\hat\mu = \mu_0(I + \hat\chi)$; absorbing $\mu_0$ in
 
 $$\boxed{\;\hat\mu_r = \begin{pmatrix} \mu & -i\kappa_P \\ i\kappa_P & \mu \end{pmatrix},\;}$$
 
-with the diagonal $\mu = 1 + \omega_0\omega_M/(\omega_0^2 - \omega^2)$ and the antisymmetric imaginary off-diagonal $\kappa_P = \omega\omega_M/(\omega_0^2 - \omega^2)$. This is the **Polder tensor**. (The subscript $_P$ distinguishes the Polder coupling from the Bragg coupling of [§ 4](#sec-4) — see [§ 5.4](#sec-5-4) below.)
+with the diagonal $\mu = 1 + \omega_0\omega_M/(\omega_0^2 - \omega^2)$ and the antisymmetric imaginary off-diagonal $\kappa_P = \omega\omega_M/(\omega_0^2 - \omega^2)$. This is the **Polder tensor**. (The subscript $_P$ distinguishes the Polder [coupling](#defn-coupling) from the Bragg coupling of [§ 4](#sec-4) — see [§ 5.4](#sec-5-4) below.)
 
 ### § 5.3. Identification with the § 0 framework {#sec-5-3}
 
@@ -882,8 +887,8 @@ The Polder tensor is exactly $\mu\, I + \kappa_P\, \sigma_y$: it has $c_y = \kap
 
 - $c_0 = \mu$: uniform shift of both eigenvalues.
 - $c_y = \kappa_P$: **antisymmetric imaginary off-diagonal**, the signature of broken time-reversal symmetry that [§ 0.4](#sec-0-4) flagged as physically realized only by a magnetic bias.
-- $c_x = 0$: the medium is not periodically modulated, so no Bragg-style coupling.
-- $c_z = 0$: no imposed detuning; the isotropy of the ferrite in the transverse plane makes $\mu_{xx} = \mu_{yy}$.
+- $c_x = 0$: the medium is not periodically modulated, so no Bragg-style [coupling](#defn-coupling).
+- $c_z = 0$: no imposed [detuning](#defn-detuning); the isotropy of the ferrite in the transverse plane makes $\mu_{xx} = \mu_{yy}$.
 
 The gyromagnetic mechanism activates the $\sigma_y$ slot of the framework; [§ 4](#sec-4)'s Bragg mechanism activates the $\sigma_x$ slot; the two are algebraically distinct entries in the same universal Hermitian matrix.
 
@@ -962,93 +967,29 @@ with $\xi$ the bound-electron off-diagonal (proportional to $B_0$ times a materi
 
 ### Naming: the two $\kappa$'s
 
-The document has now introduced two distinct $\kappa$'s in the framework. In equation \eqref{eq:kappa-bragg}, the Bragg coupling coefficient $\kappa = \pi\Delta n/\lambda_B$ plays the role of $c_x$: real symmetric off-diagonal produced by periodic index modulation. Here in [§ 5](#sec-5) the Polder coefficient $\kappa_P = \omega\omega_M/(\omega_0^2 - \omega^2)$ plays the role of $c_y$: antisymmetric imaginary off-diagonal produced by a magnetic bias. Both sit in the same off-diagonal slot of the Hermitian matrix introduced in [§ 0.4](#sec-0-4), but in orthogonal Pauli directions ($\sigma_x$ versus $\sigma_y$). When both mechanisms are present simultaneously (a magnetically biased Bragg grating), the gap formula \eqref{eq:pauli-gap} gives $2\sqrt{\kappa^2 + \kappa_P^2 + \delta^2}$: a quadrature sum of detuning and the two orthogonal couplings.
+The document has now introduced two distinct $\kappa$'s in the framework. In equation \eqref{eq:kappa-bragg}, the Bragg [coupling](#defn-coupling) coefficient $\kappa = \pi\Delta n/\lambda_B$ plays the role of $c_x$: real symmetric off-diagonal produced by periodic index modulation. Here in [§ 5](#sec-5) the Polder coefficient $\kappa_P = \omega\omega_M/(\omega_0^2 - \omega^2)$ plays the role of $c_y$: antisymmetric imaginary off-diagonal produced by a magnetic bias. Both sit in the same off-diagonal slot of the Hermitian matrix introduced in [§ 0.4](#sec-0-4), but in orthogonal Pauli directions ($\sigma_x$ versus $\sigma_y$). When both mechanisms are present simultaneously (a magnetically biased Bragg grating), the [gap](#defn-gap) formula \eqref{eq:pauli-gap} gives $2\sqrt{\kappa^2 + \kappa_P^2 + \delta^2}$: a quadrature sum of [detuning](#defn-detuning) and the two orthogonal couplings.
 
-The third $\kappa$ used above is the coupled-oscillator spring stiffness of [§ 0](#sec-0). That, too, sits in the $\sigma_x$ slot — real symmetric coupling — but for a different physical reason (a mechanical spring). All three share notation because all three occupy the same algebraic role: **off-diagonal element that lifts two-mode degeneracy**. The physical mechanism must be supplied from context.
+The third $\kappa$ used above is the coupled-oscillator spring stiffness of [§ 0](#sec-0). That, too, sits in the $\sigma_x$ slot — real symmetric coupling — but for a different physical reason (a mechanical spring). All three share notation because all three occupy the same algebraic role: **off-diagonal element that separates two nearly-equal modes**. The physical mechanism must be supplied from context.
 
 ---
 
-## § 6. Cutoff phenomena: the same hyperbola in four settings {#sec-6}
+## § 6. Bragg and the general cutoff {#sec-6}
 
-Equation \eqref{eq:hyperbola-q} is the source of the concept of a **gap**: a range in one variable ($\delta$) for which the other variable ($q$) has no real solution. This section applies the same reading to four physical settings in which the concept is called "cutoff" rather than "bandgap," and shows that all four are the same hyperbola with different physical interpretations of $\delta$ and $\kappa$.
+The Bragg reduction of [§ 4](#sec-4), with the [detuning](#defn-detuning) and [coupling](#defn-coupling) defined by equations \eqref{eq:delta-bragg} and \eqref{eq:kappa-bragg}, produces the dispersion relation of equation \eqref{eq:hyperbola-q},
 
-The point is dedupication: rather than introducing "waveguide cutoff," "plasma cutoff," and "Klein–Gordon mass" as separate topics, this section shows they are one topic — a lower edge of the gap in the framework of [§ 0](#sec-0) — with four different underlying mechanisms setting the coupling $\kappa$.
+$$q^2 = \delta^2 - \kappa^2,$$
 
-### § 6.1. The general shape {#sec-6-1}
+whose two [gap](#defn-gap) edges sit at $\delta = \pm\kappa$. This algebraic structure — a hyperbolic threshold separating a propagating regime from an exponentially decaying one — is not unique to Bragg. The same relation, with different physical meanings for $\delta$ and $\kappa$, describes a wave forced between conducting walls, an electromagnetic wave in a free-electron plasma, and a relativistic massive particle field. Collectively these go under the name **cutoff phenomena**, and a companion piece, [Cutoff phenomena](/posts/cutoff-phenomena/), works through the three cases in full: what physical process sets the cutoff frequency in each, what the evanescent behavior below it means physically, why the effective-mass reading of [§ 0.6](#sec-0-6) applies near every such threshold, and how the group velocity behaves right at the edge.
 
-The propagation condition in equation \eqref{eq:hyperbola-q} has two edges: an upper one at $\delta = +\kappa$ and a lower one at $\delta = -\kappa$. In a symmetric situation both edges matter (Bragg gratings: [§ 4](#sec-4), [§ 7](#sec-7)). In an asymmetric situation only the lower edge is physically accessible — the wave lives above $\delta = 0$, and the gap is a *cutoff* below which no propagation exists. This asymmetric form is what the four settings below share.
+For present purposes only one feature separates Bragg from the other members of the family, and it is what makes [§ 7](#sec-7) possible: **Bragg has both edges of the gap physically accessible; every other cutoff has only the lower one.**
 
-Rewrite the hyperbola with $\delta \to \omega$ (the driving frequency) and $\kappa \to \omega_c$ (the coupling now labeled as a cutoff frequency):
-
-$$q^2 = \frac{\omega^2 - \omega_c^2}{v^2}.$$
-
-Here $v$ is the propagation speed at high frequencies (far above cutoff). Reading the formula:
-
-- $\omega > \omega_c$: propagation, $q$ real, group velocity $v_g = v\sqrt{1 - (\omega_c/\omega)^2}$.
-- $\omega = \omega_c$: $q = 0$, standing wave, $v_g = 0$.
-- $\omega < \omega_c$: evanescent, $q$ imaginary, spatial decay rate $\alpha = \sqrt{\omega_c^2 - \omega^2}/v$.
-{% include visualization.html src="cutoff-propagation.html" title="How one cutoff dispersion curve separates propagating, threshold, and evanescent regimes" %}
-
-Every setting below is this formula with a specific mechanism setting $\omega_c$.
-
-### § 6.2. Waveguide cutoff {#sec-6-2}
-
-A rectangular metallic waveguide of transverse dimension $a$ (in the direction perpendicular to propagation) supports transverse modes with quantized wavevector $k_\perp = m\pi/a$ for integer $m$. The wave equation in vacuum reads
-
-$$\left(-\nabla^2 - \frac{\omega^2}{c^2}\right)E = 0.$$
-
-Separating variables into a transverse-mode function times $e^{ik_z z}$ gives
-
-$$k_z^2 = \frac{\omega^2}{c^2} - k_\perp^2.$$
-
-Identify $q \to k_z$, $\omega/c \to \omega/v$ with $v = c$, and $\omega_c/c \to k_\perp = m\pi/a$: same hyperbola. The cutoff frequency of the $m$-th transverse mode is
-
-$$\omega_c = \frac{m\pi c}{a}.$$
-
-Physical origin of the coupling: the metallic walls impose $E_\parallel = 0$ at $x = 0, a$, which forces the transverse field to vibrate at least once between them (the fundamental $m = 1$ mode has half a wavelength in the transverse dimension). Any driving frequency low enough that the wave "wants" a smaller transverse wavenumber than $k_\perp$ cannot fit — evanescent.
-
-### § 6.3. Plasma cutoff {#sec-6-3}
-
-Electrons in a plasma (or a metal) respond to an applied field but with inertia. Their response is captured by the Drude permittivity
-
-$$\varepsilon(\omega) = 1 - \frac{\omega_p^2}{\omega^2}, \qquad \omega_p^2 = \frac{n_e e^2}{m_e \varepsilon_0},$$
-
-with $n_e$ the electron number density and $\omega_p$ the **plasma frequency**. Substituting into the free-space dispersion $k^2 = \omega^2\varepsilon/c^2$,
-
-$$k^2 = \frac{\omega^2 - \omega_p^2}{c^2}.$$
-
-Same hyperbola. The cutoff is $\omega_c = \omega_p$. Physical origin of the coupling: the free-electron plasma has a natural collective oscillation at $\omega_p$, and an electromagnetic wave below $\omega_p$ is fully screened out — the electrons rearrange themselves to cancel the applied field within a skin depth $c/\omega_p$. This is why metals reflect visible light: the plasma frequency of typical metals is in the ultraviolet, so all frequencies below UV are below cutoff and are reflected. It is also why the ionosphere reflects short-wave radio: the ionospheric plasma frequency ($\sim 10$ MHz) is above short-wave frequencies and below the frequencies that go through to space.
-
-### § 6.4. The Klein–Gordon equation {#sec-6-4}
-
-A relativistic scalar particle of mass $m$ has energy–momentum relation
-
-$$E^2 = (pc)^2 + (mc^2)^2, \qquad \text{equivalently} \qquad p^2 = \frac{E^2 - m^2c^4}{c^2}.$$
-
-Identify $q \to p/\hbar$, $\omega \to E/\hbar$, $\omega_c \to mc^2/\hbar$: same hyperbola. The cutoff is set by the **rest energy** of the particle, $\hbar\omega_c = mc^2$. Physical origin: producing a particle at rest requires an energy input of $mc^2$; any driving with less energy cannot excite the field. Below cutoff there is no propagating particle; the field is Yukawa-suppressed (the evanescent branch of equation \eqref{eq:hyperbola-q} in the relativistic setting). This is what makes short-range forces mediated by massive particles fall off exponentially with distance, with the exponential decay length equal to the Compton wavelength $\hbar/(mc)$.
-
-### § 6.5. The Bragg band edge, once more {#sec-6-5}
-
-The Bragg reduction, with detuning and coupling defined by equations \eqref{eq:delta-bragg} and \eqref{eq:kappa-bragg}, already worked out this case. At the lower band edge ($\delta = -\kappa$ in equation \eqref{eq:hyperbola-q}), $q = 0$ and the wave is a standing wave: same as $\omega = \omega_c$ in the other three settings. The Bragg case is *symmetric* — there is an upper band edge as well at $\delta = +\kappa$ — because both edges of the gap are physically accessible in the Bragg setting, whereas in the waveguide/plasma/KG case only the lower edge is meaningful (there is no natural physical variable that goes below zero for propagation). This is the sole way in which the Bragg problem is richer than the three cutoff problems: it has two edges instead of one.
+At the lower edge $\delta = -\kappa$, where $q = 0$, the wave becomes a standing wave — exactly as in the other three settings. What is peculiar to Bragg is that a *second* standing wave exists at the upper edge $\delta = +\kappa$, at a distinct frequency, again with $q = 0$. In the waveguide, plasma, and relativistic cases the analogue of the upper edge has no physical realization: producing it would require the driving frequency to drop below zero, which no natural physical variable supports. Bragg is different because $\delta = k - k_B$ is a signed *deviation* from a reference [tuning](#defn-tuning), and it is genuinely allowed to take either sign around zero. So the Bragg gap is bounded by two propagating bands, one above and one below, whereas each one-sided cutoff gap is bounded only from above.
 
 ![A Bragg gap has an upper and a lower accessible band edge](assets/bragg-gap-two-edges.png)
 
 *Unlike a one-sided cutoff, the Bragg dispersion has a lower band below the stopband and an upper band above it.*
 
-### § 6.6. What is the same, what is different {#sec-6-6}
-
-In all four settings the algebra is $q^2 = (\omega^2 - \omega_c^2)/v^2$: a single formula, one hyperbola, one gap. What differs is the mechanism setting the cutoff.
-
-| Setting     | Cutoff mechanism                    | $\omega_c$                    |
-| ----------- | ----------------------------------- | ----------------------------- |
-| Waveguide   | Quantized transverse mode           | $m\pi c/a$                    |
-| Plasma      | Collective electron oscillation     | $\omega_p = \sqrt{n_e e^2/(m_e\varepsilon_0)}$ |
-| Klein–Gordon| Particle rest energy                | $mc^2/\hbar$                  |
-| Bragg edge  | Periodic index modulation           | $\pi \Delta n / \lambda_B \cdot v_g$ (using $\kappa$ from equation \eqref{eq:kappa-bragg}) |
-
-Each mechanism has its own downstream consequences (skin depth in metals, mode filtering in optical fibers, Yukawa fall-off of short-range forces, DBR mirror engineering), but the mathematical object is the same and every "cutoff" or "band edge" behavior in the sections that follow is a reading of this single hyperbola.
-
-The mass-like reading is worth planting once. Near the cutoff, expand $\omega^2 = \omega_c^2 + q^2 v^2$; for small $q$ (i.e., barely above cutoff) this behaves as $\omega \approx \omega_c + q^2 v^2/(2\omega_c)$. This is a *quadratic* dispersion in $q$, just as a nonrelativistic massive particle has $E = p^2/(2m)$. Comparing coefficients gives an **effective mass** $m_{\text{eff}} = \hbar\omega_c/v^2$ — a genuine dynamical mass that governs the transverse spreading of a wave packet near cutoff. In every setting, the wave near the cutoff behaves like a massive particle whose mass is set by the mechanism-specific coupling.
+This single difference is what generates the entire content of [§ 7](#sec-7). The two Bragg band edges have different real-space standing-wave profiles — one concentrated in the high-index regions of the periodic modulation and one in the low-index regions — and a variational argument fixes which of the two sits at the lower frequency. Their frequency separation is the stopband width $2\kappa v_g$. The penetration depth of a wave into a finite mirror follows from the way an incident wave couples to the evanescent branch of the same hyperbola between the two edges. None of these three readings have counterparts in the one-sided cutoff problems, where a single standing wave at cutoff exhausts the story; the companion Cutoff Phenomena piece therefore closes at the corresponding point in its own arc, and [§ 7](#sec-7) picks up where it leaves off, using the second edge as its central object.
 
 ---
 
@@ -1060,7 +1001,7 @@ None of these adds new algebra beyond equation \eqref{eq:hyperbola-q}; they are 
 
 ### § 7.1. The two standing waves at the band edges {#sec-7-1}
 
-At the Bragg wavenumber ($k = k_B$, hence $\delta = 0$), the two-wave truncation reduces to the pure-coupling problem $H = \kappa \sigma_x$: the diagonal has been zeroed by choice of reference wavenumber, and only the off-diagonal is left. Its eigenvalues are $\pm\kappa$ — the two band-edge frequencies above and below the reference — and its eigenvectors are the equal-mixture combinations
+At the Bragg wavenumber ($k = k_B$, hence $\delta = 0$), the two-wave truncation reduces to the pure-[coupling](#defn-coupling) problem $H = \kappa \sigma_x$: the diagonal has been zeroed by choice of reference wavenumber, and only the off-diagonal is left. Its eigenvalues are $\pm\kappa$ — the two band-edge frequencies above and below the reference — and its eigenvectors are the equal-mixture combinations
 
 $$(A, B) = (1, 1)/\sqrt 2 \quad \text{and} \quad (A, B) = (1, -1)/\sqrt 2.$$
 
@@ -1069,7 +1010,7 @@ Translated to real-space fields via $E(z) = A\, e^{ik_B z} + B\, e^{-ik_B z}$:
 - $(1, 1)/\sqrt 2$ gives $E(z) \propto e^{ik_Bz} + e^{-ik_Bz} = 2\cos(k_B z)$ — a **cosine standing wave**;
 - $(1, -1)/\sqrt 2$ gives $E(z) \propto e^{ik_Bz} - e^{-ik_Bz} = 2i\sin(k_B z)$ — a **sine standing wave**.
 
-These are the two eigenvectors of the framework's $2\times 2$ matrix at $\delta = 0$; equivalently, they are the two modes that live exactly at the two band edges of the dispersion diagram (where $q = 0$). Same eigenmodes, two different viewpoints — the eigenvalue-versus-detuning view puts them at the boundary of the gap; the real-space view shows them as standing waves at the Bragg period.
+These are the two eigenvectors of the framework's $2\times 2$ matrix at $\delta = 0$; equivalently, they are the two modes that live exactly at the two band edges of the dispersion diagram (where $q = 0$). Same eigenmodes, two different viewpoints — the eigenvalue-versus-[detuning](#defn-detuning) view puts them at the boundary of the [gap](#defn-gap); the real-space view shows them as standing waves at the Bragg period.
 
 The two standing waves have their intensity maxima at complementary positions in the unit cell of the modulation. The cosine peaks where $\cos(2k_Bz) = \cos(G_1 z)$ peaks — that is, where the permittivity $\varepsilon(z) = \bar\varepsilon + \Delta\varepsilon\cos(G_1 z)$ is largest. The sine peaks where the permittivity is smallest.
 
@@ -1108,7 +1049,7 @@ Both reflected amplitudes therefore return with total phase $\pi$ and add constr
 
 ### § 7.3. Penetration into a finite Bragg mirror {#sec-7-3}
 
-Equation \eqref{eq:hyperbola-q} answers an infinite-medium eigenmode question. At exact Bragg tuning, $\delta=0$, it becomes
+Equation \eqref{eq:hyperbola-q} answers an infinite-medium eigenmode question. At exact Bragg [tuning](#defn-tuning), $\delta=0$, it becomes
 
 $$
 q^2=-\kappa^2,
@@ -1214,7 +1155,7 @@ Thus a useful engineering rule is: **a grating needs about three Bragg lengths t
 
 ### § 7.4. The stopband width as an accumulation-of-error argument {#sec-7-4}
 
-Combining the gap edges of equation \eqref{eq:hyperbola-q} with the Bragg coupling in equation \eqref{eq:kappa-bragg} gives $\Delta\omega = 2\kappa v_g$. It has a physical reading from the layered-mirror viewpoint that is worth spelling out, because it exposes why $\kappa$ and $L_B = 1/\kappa$ appear together as reciprocals in every design formula.
+Combining the [gap](#defn-gap) edges of equation \eqref{eq:hyperbola-q} with the Bragg [coupling](#defn-coupling) in equation \eqref{eq:kappa-bragg} gives $\Delta\omega = 2\kappa v_g$. It has a physical reading from the layered-mirror viewpoint that is worth spelling out, because it exposes why $\kappa$ and $L_B = 1/\kappa$ appear together as reciprocals in every design formula.
 
 Take a mirror at exactly its design wavelength $\lambda_0$: each quarter-wave layer contributes a round-trip phase of exactly $\pi$, and combined with the boundary-reflection phase, all reflections arrive at the input in constructive interference.
 
@@ -1379,7 +1320,7 @@ Two engineering opportunities follow:
 
 ### § 9.4. Angular dependence: polarization sensitivity {#sec-9-4}
 
-At normal incidence, both polarizations of the incoming wave see the same reflectivity because the layer normal has no preferred transverse direction. When the wave is incident at an angle $\theta_0$ from the layer normal, three things change simultaneously: the effective path length through each layer becomes $d/\cos\theta_i$ (with $\theta_i$ the in-layer angle from Snell's law), which shifts the Bragg condition; and the two polarizations (transverse-electric TE, and transverse-magnetic TM) see different Fresnel coefficients at each interface, so they now have distinct coupling constants and distinct stopbands.
+At normal incidence, both polarizations of the incoming wave see the same reflectivity because the layer normal has no preferred transverse direction. When the wave is incident at an angle $\theta_0$ from the layer normal, three things change simultaneously: the effective path length through each layer becomes $d/\cos\theta_i$ (with $\theta_i$ the in-layer angle from Snell's law), which shifts the Bragg condition; and the two polarizations (transverse-electric TE, and transverse-magnetic TM) see different Fresnel coefficients at each interface, so they now have distinct [coupling](#defn-coupling) constants and distinct stopbands.
 {% include visualization.html src="oblique-bragg-phase.html" title="Why oblique incidence shifts the Bragg wavelength through the normal wavevector component" %}
 
 The Fresnel coefficients at the interface between $n_1$ and $n_2$ are
@@ -1398,7 +1339,7 @@ At the small internal angles of a VCSEL ([§ 10](#sec-10)), polarization effects
 
 ## § 10. Semiconductor lasers with Bragg feedback: DFB, DBR, and tunable architectures {#sec-10}
 
-The Bragg physics of §[§ 4](#sec-4), 7, 9 becomes engineering when the grating is embedded in a gain medium. This section covers the three principal architectures: the DFB laser (grating co-located with gain), the DBR laser (grating outside the gain region), and the multi-section tunable DBR (multiple gratings for wavelength tuning). The theory is the same throughout — a photonic bandgap acts as a wavelength-selective mirror — but the placement of the grating relative to the gain changes what the device can and cannot do.
+The Bragg physics of §[§ 4](#sec-4), 7, 9 becomes engineering when the grating is embedded in a gain medium. This section covers the three principal architectures: the DFB laser (grating co-located with gain), the DBR laser (grating outside the gain region), and the multi-section tunable DBR (multiple gratings for wavelength [tuning](#defn-tuning)). The theory is the same throughout — a photonic bandgap acts as a wavelength-selective mirror — but the placement of the grating relative to the gain changes what the device can and cannot do.
 
 ### § 10.1. Reference: the flat-mirror semiconductor laser {#sec-10-1}
 
@@ -1418,9 +1359,9 @@ The DFB and the VCSEL differ in which of these architectures they use: the DFB u
 
 ### § 10.3. Where the DFB wants to lase: the two-band-edge problem {#sec-10-3}
 
-Consider a defect-free Bragg grating embedded in a gain medium with broad spectral gain. The reflection is strong throughout the stopband, strongest at exact tuning where the evanescent decay rate is largest. Lasing requires not only reflection but also gain accumulation — the wave must interact with the gain medium enough to overcome loss on each round trip.
+Consider a defect-free Bragg grating embedded in a gain medium with broad spectral gain. The reflection is strong throughout the stopband, strongest at exact [tuning](#defn-tuning) where the evanescent decay rate is largest. Lasing requires not only reflection but also gain accumulation — the wave must interact with the gain medium enough to overcome loss on each round trip.
 
-At exact Bragg tuning the mode is the standing wave analyzed in [§ 7.1](#sec-7-1): no net translation, all reflection. At the two band edges $\delta = \pm \kappa$ the eigenmodes have $q = 0$ (still standing waves, but at the boundary of the gap where the group velocity vanishes) and two independent enhancements act on them:
+At exact Bragg tuning the mode is the standing wave analyzed in [§ 7.1](#sec-7-1): no net translation, all reflection. At the two band edges $\delta = \pm \kappa$ the eigenmodes have $q = 0$ (still standing waves, but at the boundary of the [gap](#defn-gap) where the group velocity vanishes) and two independent enhancements act on them:
 
 #### Enhancement 1 — density of states.
 
@@ -1436,13 +1377,13 @@ which can exceed the volume-averaged gain by a substantial factor. When the gain
 
 #### The remaining problem: two band edges.
 
-A pure index-modulated DFB has two nearly-degenerate band-edge modes, and generic small perturbations can hop the laser between them.
+A pure index-modulated DFB has two nearly-equal band-edge modes, and generic small perturbations can hop the laser between them.
 
 #### The two solutions:
 
-- **Quarter-wave phase shift at the grating center.** Introducing a $\lambda/4$ optical-thickness spacer breaks the two-edge degeneracy by creating a *single* defect mode at the exact center of the stopband, localized around the phase-shift point. This mode is spatially symmetric under $z \to -z$ (whereas the two band-edge modes are related by half-period translation), so it has no degenerate partner. The $\lambda/4$-shifted DFB is the industry-standard telecom single-mode laser.
+- **Quarter-wave phase shift at the grating center.** Introducing a $\lambda/4$ optical-thickness spacer separates the two edges by creating a *single* defect mode at the exact center of the stopband, localized around the phase-shift point. This mode is spatially symmetric under $z \to -z$ (whereas the two band-edge modes are related by half-period translation), so it has no equal-frequency partner. The $\lambda/4$-shifted DFB is the industry-standard telecom single-mode laser.
 
-- **Gain coupling.** If the modulation is not pure index but has a gain-modulation component, one band-edge mode overlaps the high-gain regions and the other overlaps the low-gain regions — the two are no longer degenerate. [§ 10.4](#sec-10-4) develops this.
+- **Gain [coupling](#defn-coupling).** If the modulation is not pure index but has a gain-modulation component, one band-edge mode overlaps the high-gain regions and the other overlaps the low-gain regions — the two are no longer equal in loss. [§ 10.4](#sec-10-4) develops this.
 
 The defect mode of the $\lambda/4$-shifted DFB is exactly analogous to a bound state in a semiconductor's electronic bandgap: a localized state inside the gap, decaying exponentially into the surrounding stopband. The decay length is the center-gap value $L_B = 1/\kappa$ obtained from the imaginary-$q$ branch of equation \eqref{eq:hyperbola-q}.
 
@@ -1454,7 +1395,7 @@ $$\Delta\varepsilon(z) = \Delta\varepsilon'(z) + i\, \Delta\varepsilon''(z).$$
 
 Real semiconductor DFBs have both components in general, and the two produce dramatically different behavior:
 
-- **Pure index coupling** ($\Delta\varepsilon'' = 0$): two symmetric band edges with identical loss in the absence of structural asymmetry; mode selection prone to hopping; the $\lambda/4$ shift is needed to break degeneracy reliably.
+- **Pure index [coupling](#defn-coupling)** ($\Delta\varepsilon'' = 0$): two symmetric band edges with identical loss in the absence of structural asymmetry; mode selection prone to hopping; the $\lambda/4$ shift is needed to separate the two edges reliably.
 - **Pure gain coupling** ($\Delta\varepsilon' = 0$): the mode overlapping the gain-modulation peaks has lower net loss than the mode overlapping the loss peaks; single-mode operation is intrinsic without a $\lambda/4$ shift. The trade-off is fabrication: gain coupling requires physically corrugating the active region or using a periodic quantum-well structure.
 
 #### The Kramers–Kronig constraint
@@ -1501,7 +1442,7 @@ In a semiconductor DFB, current injection into a gain-modulated region simultane
 
 ### § 10.5. Linewidth of a DFB {#sec-10-5}
 
-The DFB linewidth is set by cavity Q, gain, and the coupling between amplitude and phase noise via the carrier-density-dependent index (parametrized by the Henry linewidth-enhancement factor $\alpha_H$). The **Schawlow–Townes linewidth** including the Henry factor is
+The DFB linewidth is set by cavity Q, gain, and the [coupling](#defn-coupling) between amplitude and phase noise via the carrier-density-dependent index (parametrized by the Henry linewidth-enhancement factor $\alpha_H$). The **Schawlow–Townes linewidth** including the Henry factor is
 
 $$\Delta\nu_{\text{ST}} = \frac{\pi h\nu\, (\Delta\nu_c)^2\, n_{sp}}{P_{\text{out}}}(1 + \alpha_H^2),$$
 
@@ -1512,7 +1453,7 @@ with $\Delta\nu_c$ the cold-cavity linewidth, $n_{sp}$ the spontaneous-emission 
 Tuning a DFB requires shifting the Bragg wavelength itself: $\lambda_B = 2n_{\text{avg}}\Lambda$. Since $\Lambda$ is set by lithography, tuning proceeds by changing $n_{\text{avg}}$. Two mechanisms:
 
 - Temperature: thermo-optic and thermal-expansion coefficients give in InGaAsP roughly $0.1$ nm/K; total tuning range about 5 nm, response time in milliseconds.
-- Current injection: injected carriers change $n_{\text{avg}}$ (fast, nanosecond) but only by $\sim 0.01$ nm/mA and with output-power coupling.
+- Current injection: injected carriers change $n_{\text{avg}}$ (fast, nanosecond) but only by $\sim 0.01$ nm/mA and with output-power [coupling](#defn-coupling).
 
 Both mechanisms tune the *entire* laser (grating and gain simultaneously), and both are limited to a few nm. For 10 nm and wider, one has to split the grating from the gain — the DBR-laser architecture.
 
@@ -1520,7 +1461,7 @@ Both mechanisms tune the *entire* laser (grating and gain simultaneously), and b
 
 A DBR laser places the Bragg grating *outside* the gain region: the gain sits in a central active section, and one or both ends of the waveguide are terminated by a passive Bragg grating serving as a wavelength-selective mirror. The grating and the gain are electrically isolated (separate contacts, separate current-injection paths), so their refractive indices can be tuned independently.
 
-Tuning strategies:
+[Tuning](#defn-tuning) strategies:
 
 - **Grating-only tune:** change the index of the DBR section by carrier injection or thermal drift. This shifts the Bragg wavelength while leaving the cavity length (and hence the longitudinal mode spacing) essentially fixed. Mode hopping occurs when the moving Bragg wavelength crosses adjacent cavity modes.
 - **Cavity-only tune:** change the index of a separate passive phase-shift section between grating and gain. This shifts the cavity modes without moving the Bragg wavelength. Continuous tuning (no mode hop) is possible over one FSR.
@@ -1530,7 +1471,7 @@ The trade-off relative to DFB: the DBR laser has more sections to control (typic
 
 ### § 10.8. Multi-section tunable DBR: extending the range with a comb {#sec-10-8}
 
-To achieve tuning ranges of 40 nm or more (the whole telecom C-band), a single grating is insufficient — one exploits *two* gratings with slightly different periods, playing them against each other via the Vernier principle.
+To achieve [tuning](#defn-tuning) ranges of 40 nm or more (the whole telecom C-band), a single grating is insufficient — one exploits *two* gratings with slightly different periods, playing them against each other via the Vernier principle.
 
 **The Vernier-tunable DBR** has a gain section between two DBRs whose stopbands are narrow combs of reflection peaks (rather than single peaks) with slightly different comb periods. Only where a front-mirror peak and a rear-mirror peak coincide does the cavity have low loss; only that wavelength lases. Tuning one comb slightly slides its peaks across the other comb's peaks, and the coincidence jumps to a new wavelength — accessible over the entire span of the comb envelope.
 
@@ -1551,18 +1492,18 @@ A **circulator** is a three-port device that routes signals cyclically: an input
 <!-- embedded-visualization:y-junction-circulator-routing:v1 -->
 {% include visualization.html src="y-junction-circulator-routing.html" title="How the biased Y-junction routes each input to the next port" %}
 
-The device is a thin disk of ferrite biased perpendicular to the disk plane ($\vec B_0 \parallel \hat z$, disk in the $xy$-plane), with three coplanar waveguide ports coupling in and out at 120° around the rim (at angles $\phi = 0°, 120°, 240°$).
+The device is a thin disk of ferrite biased perpendicular to the disk plane ($\vec B_0 \parallel \hat z$, disk in the $xy$-plane), with three coplanar waveguide ports [coupling](#defn-coupling) in and out at 120° around the rim (at angles $\phi = 0°, 120°, 240°$).
 
 #### Step 1 — cavity modes without bias.
 
-With no bias, the disk is a passive circular resonator. Its electromagnetic modes are Bessel-function standing waves labeled by an azimuthal quantum number $m = 0, \pm 1, \pm 2, \ldots$ The two dipole modes at $m = \pm 1$ have one nodal diameter and one antinodal diameter perpendicular to it. Because the disk has rotational symmetry, $m = +1$ and $m = -1$ are exactly degenerate and every linear combination is also an eigenmode. Exciting the disk from port 1 induces a standing wave whose antinode aligns with port 1 and whose nodal line lies perpendicular to it. Ports 2 and 3, at 120° from port 1, receive equal amounts of energy — a passive 3-way power splitter, not a circulator.
+With no bias, the disk is a passive circular resonator. Its electromagnetic modes are Bessel-function standing waves labeled by an azimuthal quantum number $m = 0, \pm 1, \pm 2, \ldots$ The two dipole modes at $m = \pm 1$ have one nodal diameter and one antinodal diameter perpendicular to it. Because the disk has rotational symmetry, $m = +1$ and $m = -1$ have exactly equal frequencies and every linear combination is also an eigenmode. Exciting the disk from port 1 induces a standing wave whose antinode aligns with port 1 and whose nodal line lies perpendicular to it. Ports 2 and 3, at 120° from port 1, receive equal amounts of energy — a passive 3-way power splitter, not a circulator.
 
 <!-- embedded-visualization:circulator-cavity-modes:v1 -->
 {% include visualization.html src="circulator-cavity-modes.html" title="The unbiased cavity modes and their responses at the three ports" %}
 
 #### Step 2 — modes with bias.
 
-Turn on $\vec B_0$. Applying equation \eqref{eq:pauli-eigenvalues} to the Polder tensor derived in [§ 5](#sec-5), the CP eigenmodes (which are the $m = +1$ and $m = -1$ modes with respect to axial rotation) see different effective permeabilities $\mu_\pm = \mu \pm \kappa_P$, and hence resonate at different frequencies $\omega_\pm \propto 1/\sqrt{\mu_\pm}$. The two formerly-degenerate modes are split by an energy gap of order $\kappa_P \omega_0$.
+Turn on $\vec B_0$. Applying equation \eqref{eq:pauli-eigenvalues} to the Polder tensor derived in [§ 5](#sec-5), the CP eigenmodes (which are the $m = +1$ and $m = -1$ modes with respect to axial rotation) see different effective permeabilities $\mu_\pm = \mu \pm \kappa_P$, and hence resonate at different frequencies $\omega_\pm \propto 1/\sqrt{\mu_\pm}$. The two formerly-equal modes are split by an energy [gap](#defn-gap) of order $\kappa_P \omega_0$.
 
 #### Step 3 — operating at the mid-frequency.
 
@@ -1615,7 +1556,7 @@ Three families of magneto-optic materials cover the practical spectrum.
 
 - **YIG** (yttrium iron garnet, Y$_3$Fe$_5$O$_{12}$): microwave workhorse. Extremely narrow FMR linewidth (MHz-scale), stable at room temperature. Optically opaque because the Fe$^{3+}$ electronic transitions absorb visible-to-near-IR light strongly.
 
-- **TGG** (terbium gallium garnet, Tb$_3$Ga$_5$O$_{12}$): paramagnetic, no self-magnetization at room temperature, but exhibits a large **Verdet constant** at visible and near-IR wavelengths through strong spin–orbit coupling in the Tb$^{3+}$ ion. Standard material for optical Faraday rotators used in high-power laser isolators (e.g., protecting 1064 nm cutting lasers from back-reflection). Trade-off: needs an external permanent magnet of order 1 T to deliver the required rotation angle.
+- **TGG** (terbium gallium garnet, Tb$_3$Ga$_5$O$_{12}$): paramagnetic, no self-magnetization at room temperature, but exhibits a large **Verdet constant** at visible and near-IR wavelengths through strong spin–orbit [coupling](#defn-coupling) in the Tb$^{3+}$ ion. Standard material for optical Faraday rotators used in high-power laser isolators (e.g., protecting 1064 nm cutting lasers from back-reflection). Trade-off: needs an external permanent magnet of order 1 T to deliver the required rotation angle.
 
 - **Bi:YIG** (bismuth-substituted YIG): the workhorse of *fiber-optic* isolators. YIG's optical opacity is largely opened in the C-band (1550 nm telecom window) by substituting Bi$^{3+}$ for Y$^{3+}$; the substituted material has a much larger Verdet constant while retaining YIG's ferrimagnetic self-magnetization, so a millimeter-thick chip is a complete self-biased optical isolator — an essential component for every long-haul optical transmitter.
 
@@ -1650,7 +1591,7 @@ The formalism of §§ 4–10 assumed a sinusoidal modulation with a fixed spatia
 
 ### § 12.1. Apodization: shaping the modulation amplitude {#sec-12-1}
 
-A uniform grating of length $L$ with coupling $\kappa$ has a rectangular spatial-window profile: full modulation over the length of the grating, zero outside. Its transmission spectrum shows the sinc-like sidelobes characteristic of a rectangular window — the reflectivity peaks in the stopband but has ripples on either side that leak light into unwanted wavelengths.
+A uniform grating of length $L$ with [coupling](#defn-coupling) $\kappa$ has a rectangular spatial-window profile: full modulation over the length of the grating, zero outside. Its transmission spectrum shows the sinc-like sidelobes characteristic of a rectangular window — the reflectivity peaks in the stopband but has ripples on either side that leak light into unwanted wavelengths.
 
 **Apodization** means making $\kappa$ vary smoothly with $z$: $\kappa(z) = \kappa_0\, w(z)$, with $w(z)$ a window function that vanishes smoothly at both ends. Common choices are Gaussian, raised-cosine, and Kaiser windows. Fourier-analytically, the grating's spectral response is the Fourier transform of its coupling profile, and apodization is exactly the standard window-function technique of filter engineering.
 
@@ -1712,7 +1653,7 @@ The band structure is now a set of *surfaces* $\omega_n(\mathbf{k})$ over the Br
 
 #### Difference 1: not all directions have gaps.
 
-In 1D, a stopband is a stopband: no propagation, period. In 2D or 3D, a wave with wavevector at angle $\theta$ to the crystal's symmetry axes may or may not lie in a gap. For a stopband to exist in *some* direction it suffices that a gap opens along that particular direction — this is easy. For a **complete photonic bandgap** — a frequency range where no wave can propagate in *any* direction — the gap must open at all points of the Brillouin zone simultaneously. This is much harder.
+In 1D, a stopband is a stopband: no propagation, period. In 2D or 3D, a wave with wavevector at angle $\theta$ to the crystal's symmetry axes may or may not lie in a [gap](#defn-gap). For a stopband to exist in *some* direction it suffices that a gap opens along that particular direction — this is easy. For a **complete photonic bandgap** — a frequency range where no wave can propagate in *any* direction — the gap must open at all points of the Brillouin zone simultaneously. This is much harder.
 
 Complete bandgaps exist only for specific lattice symmetries. The **face-centered cubic (FCC) diamond structure** is the classic 3D geometry that supports a complete bandgap; **inverse opal** structures (self-assembled from colloidal spheres) also work. In 2D, the **triangular lattice** with air holes in high-index background supports complete gaps for both TE and TM polarizations if the geometry is right.
 
@@ -1753,21 +1694,21 @@ The differences are conventional:
 - Electron band structure is typically parabolic near the bottom of a band ("effective mass" $m^*$), whereas photonic band structure is typically linear ("group velocity" $v_g$).
 - Electrons are fermions (Pauli exclusion, Fermi surface); photons are bosons (many photons can occupy the same mode). This affects statistical mechanics, not the single-particle band structure.
 
-The transfer of concepts is a two-way street. Ideas developed for electronic solids (topological insulators, Berry phase, band inversion) have been adapted to photonics; ideas developed for photonic crystals (defect engineering, sub-wavelength homogenization) have found application in electronic materials (superlattices, quantum-well engineering). The unifying framework is Bloch's theorem and its consequences for the algebra of $2 \times 2$ near-degenerate coupling.
+The transfer of concepts is a two-way street. Ideas developed for electronic solids (topological insulators, Berry phase, band inversion) have been adapted to photonics; ideas developed for photonic crystals (defect engineering, sub-wavelength homogenization) have found application in electronic materials (superlattices, quantum-well engineering). The unifying framework is Bloch's theorem and its consequences for the algebra of $2 \times 2$ nearly-equal-frequency [coupling](#defn-coupling).
 
 ### The universality of the two-mode picture
 
-We opened the document with the observation that any near-degenerate coupled pair gives the same hyperbola. To close: here are systems in which this pattern appears, all obeying essentially the same $2 \times 2$ algebra:
+We opened the document with the observation that any coupled pair with nearly-equal uncoupled frequencies gives the same hyperbola. To close: here are systems in which this pattern appears, all obeying essentially the same $2 \times 2$ algebra:
 
 - **Coupled pendulums** ([§ 0](#sec-0)): two mechanical oscillators linked by a spring.
 - **Bragg reflection** ([§ 4](#sec-4)): forward and backward waves coupled by a periodic index modulation.
 - **Waveguide TE/TM mixing:** two polarization modes coupled by an anisotropic perturbation.
 - **Directional couplers:** two adjacent waveguides with overlapping evanescent tails; the fundamental mode of the pair is a symmetric combination, the higher mode antisymmetric.
 - **Atomic-transition dressed states:** a two-level atom driven by a resonant laser field; the "bare" excited and ground states hybridize into "dressed" symmetric and antisymmetric superpositions, split by the Rabi frequency $\Omega$.
-- **Superconducting flux qubits:** two current-carrying states in a Josephson junction ring; coupling comes from tunneling between the states, opening a gap in the flux-energy dispersion.
+- **Superconducting flux qubits:** two current-carrying states in a Josephson junction ring; [coupling](#defn-coupling) comes from tunneling between the states, opening a [gap](#defn-gap) in the flux-energy dispersion.
 - **Topological edge states:** two counterpropagating modes on opposite edges of a Chern insulator can be gapped by coupling; the resulting bulk gap defines the topological phase.
 
-In each case, the same equation $\lambda^2 = \delta^2 + \kappa^2$ (or $\delta^2 - \kappa^2$ depending on which variable is the eigenvalue) describes the hyperbolic separation of the two modes near their degeneracy. The engineering problem is always: how do I identify $\delta$ and $\kappa$ in my specific system? What physical mechanism produces each? Once that's answered, the algebra runs on rails.
+In each case, the same equation $\lambda^2 = \delta^2 + \kappa^2$ (or $\delta^2 - \kappa^2$ depending on which variable is the eigenvalue) describes the hyperbolic separation of the two modes near where their uncoupled frequencies would coincide. The engineering problem is always: how do I identify $\delta$ and $\kappa$ in my specific system? What physical mechanism produces each? Once that's answered, the algebra runs on rails.
 
 ### What lies beyond the two-mode picture
 
@@ -1809,6 +1750,6 @@ Every phenomenon in the sections above is a reading of the same $2 \times 2$ Her
 | Plasma                         | 0                  | 0                      | $\omega^2 - \omega_p^2$      | equation \eqref{eq:hyperbola-q} |
 | Klein–Gordon                   | 0                  | 0                      | $E^2 - (mc^2)^2$             | equation \eqref{eq:hyperbola-q} |
 
-The gap width in every row is the quadrature form of equation \eqref{eq:pauli-gap}; the mixing angle is equation \eqref{eq:mixing-angle} with $\kappa' \to \sqrt{c_x^2+c_y^2}$ and $\delta \to c_z$; the dispersion hyperbola is equation \eqref{eq:hyperbola-q} with $\delta \leftrightarrow c_z$ and $\kappa \leftrightarrow \sqrt{c_x^2+c_y^2}$. Every subsequent design formula — stopband width, penetration depth, Bragg reflectivity, group velocity vanishing at the edge, Faraday rotation angle — is a reading of that hyperbola at a specific point.
+The [gap](#defn-gap) width in every row is the quadrature form of equation \eqref{eq:pauli-gap}; the [mixing angle](#defn-mixing-angle) is equation \eqref{eq:mixing-angle} with $\kappa' \to \sqrt{c_x^2+c_y^2}$ and $\delta \to c_z$; the dispersion hyperbola is equation \eqref{eq:hyperbola-q} with $\delta \leftrightarrow c_z$ and $\kappa \leftrightarrow \sqrt{c_x^2+c_y^2}$. Every subsequent design formula — stopband width, penetration depth, Bragg reflectivity, group velocity vanishing at the edge, Faraday rotation angle — is a reading of that hyperbola at a specific point.
 
 The whole document is one $2 \times 2$ eigenvalue problem taken seriously, with each section identifying the physical mechanism that populates one Pauli component of the general Hermitian matrix. Every design formula in every application section reduces to a reading of equation \eqref{eq:hyperbola-q} at the appropriate parameter values.

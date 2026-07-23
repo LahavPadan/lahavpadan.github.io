@@ -1324,11 +1324,34 @@
         );
         dot(sliceMinimum, accent, 5.2);
 
+        // When the argmax/argmin along the transverse axis jumps discontinuously
+        // between grid samples (typical when F is convex-in-y with the sup at an
+        // endpoint, so argmax flips between the two ends), a single polyline
+        // through consecutive samples cuts across the domain and paints a
+        // spurious flat segment. Split the polyline whenever the arg-index
+        // moves by more than a small threshold.
+        function segmentByArg(argIndices) {
+          const jumpThreshold = Math.max(2, Math.floor(N * 0.15));
+          const segments = [[0]];
+          for (let k = 1; k < argIndices.length; k += 1) {
+            if (Math.abs(argIndices[k] - argIndices[k - 1]) > jumpThreshold) {
+              segments.push([k]);
+            } else {
+              segments[segments.length - 1].push(k);
+            }
+          }
+          return segments;
+        }
+
         const warmRidge = [];
         for (let i = 0; i < N; i += 1) {
           warmRidge.push(project(values[i], values[data.rowArg[i]], data.rowSup[i]));
         }
-        path(warmRidge, warm, 3.1);
+        const warmSegments = segmentByArg(data.rowArg);
+        for (let s = 0; s < warmSegments.length; s += 1) {
+          const seg = warmSegments[s].map(k => warmRidge[k]);
+          path(seg, warm, 3.1);
+        }
         const warmMinimum = project(
           values[data.leftIndex],
           values[data.rowArg[data.leftIndex]],
@@ -1340,7 +1363,11 @@
         for (let j = 0; j < N; j += 1) {
           coolRidge.push(project(values[data.colArg[j]], values[j], data.colInf[j]));
         }
-        path(coolRidge, cool, 3.1);
+        const coolSegments = segmentByArg(data.colArg);
+        for (let s = 0; s < coolSegments.length; s += 1) {
+          const seg = coolSegments[s].map(k => coolRidge[k]);
+          path(seg, cool, 3.1);
+        }
         const coolMaximum = project(
           values[data.colArg[data.rightIndex]],
           values[data.rightIndex],

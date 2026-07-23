@@ -2,7 +2,7 @@
 
 ---
 
-## § 0. Motivation and roadmap
+## § 0. Motivation and roadmap {#sec-0}
 
 The Fourier transform, the Walsh–Hadamard transform, and the classical orthogonal-polynomial expansions (Legendre, Chebyshev, Bessel) look like unrelated tools invented by different traditions for different problems. This document treats them as manifestations of a single construction: on each domain — the integers modulo $N$, binary strings under XOR, points on a sphere, points on a disc — there is a natural translation action, and each transform is the basis of *eigenfunctions* of that translation.
 
@@ -10,17 +10,17 @@ For $\mathbb{Z}_N$ (time-shifts modulo $N$), the eigenfunctions of shift are the
 
 The construction splits into two branches that we develop in order.
 
-- **Group representation theory** (§ 1 – § 13). When the symmetry is a finite abelian group, the eigenvectors are called *characters*. Characters diagonalize every operator that commutes with group translation. The cyclic group $\mathbb{Z}_N$ produces the Discrete Fourier Transform. The dyadic group $(\mathbb{Z}_2)^n$ produces the Walsh–Hadamard transform. Both admit $O(N \log N)$ algorithms because both groups decompose into chains of subgroups.
+- **Group representation theory** ([§ 1](#sec-1) – [§ 13](#sec-13)). When the symmetry is a finite abelian group, the eigenvectors are called *characters*. Characters diagonalize every operator that commutes with group translation. The cyclic group $\mathbb{Z}_N$ produces the Discrete Fourier Transform. The dyadic group $(\mathbb{Z}_2)^n$ produces the Walsh–Hadamard transform. Both admit $O(N \log N)$ algorithms because both groups decompose into chains of subgroups.
 
-- **Sturm–Liouville theory** (§ 14 – § 15). When the symmetry is a continuous self-adjoint differential operator on a function space, the eigenvectors are the classical orthogonal polynomials and Bessel functions. A choice of weight function inside the Sturm–Liouville operator selects Legendre, Chebyshev, or Bessel.
+- **Sturm–Liouville theory** ([§ 14](#sec-14) – [§ 15](#sec-15)). When the symmetry is a continuous self-adjoint differential operator on a function space, the eigenvectors are the classical orthogonal polynomials and Bessel functions. A choice of weight function inside the Sturm–Liouville operator selects Legendre, Chebyshev, or Bessel.
 
-The two branches are not actually separate. The Sturm–Liouville problems that produce the classical special functions are exactly the ones that arise from the rotation group $SO(3)$, the rigid-motion group of the plane $ISO(2)$, and their relatives — the non-abelian generalization of the finite-abelian setup. We sketch this bridge in § 16.
+The two branches are not actually separate. The Sturm–Liouville problems that produce the classical special functions are exactly the ones that arise from the rotation group $SO(3)$, the rigid-motion group of the plane $ISO(2)$, and their relatives — the non-abelian generalization of the finite-abelian setup. We sketch this bridge in [§ 16](#sec-16).
 
 Throughout, we prefer derivations to statements, and expand abbreviations on first use.
 
 ---
 
-## § 1. Function spaces over a finite group
+## § 1. Function spaces over a finite group {#sec-1}
 
 Let $G$ be a finite group with $|G|$ elements. The set of functions $f: G \to \mathbb{C}$ forms a complex vector space $V$ of dimension $|G|$: a function is completely determined by the $|G|$ values it takes, so we can write it as a column vector
 
@@ -30,15 +30,15 @@ Any linear operation on $f$ — filtering, convolution, changing to a new basis 
 
 $$\langle f, h \rangle = \sum_{g \in G} f(g) \overline{h(g)}.$$
 
-The choice of $G$ dictates what "shifting" means. If $G = \mathbb{Z}_N$ (integers modulo $N$ under addition), shifting is the ordinary time-shift $f(n) \mapsto f(n - k)$. If $G = (\mathbb{Z}_2)^n$ (binary vectors under bitwise XOR), shifting is XOR of the argument by a fixed vector: $f(v) \mapsto f(v \oplus u)$. These are two examples of one construction — the translation operator — that we formalize in § 5.
+The choice of $G$ dictates what "shifting" means. If $G = \mathbb{Z}_N$ (integers modulo $N$ under addition), shifting is the ordinary time-shift $f(n) \mapsto f(n - k)$. If $G = (\mathbb{Z}_2)^n$ (binary vectors under bitwise XOR), shifting is XOR of the argument by a fixed vector: $f(v) \mapsto f(v \oplus u)$. These are two examples of one construction — the translation operator — that we formalize in [§ 5](#sec-5).
 
 When you index a signal by "time samples $0, 1, \ldots, N-1$", the group is $\mathbb{Z}_N$. When you index a signal by "the $2^n$ possible states of $n$ binary variables", the group is $(\mathbb{Z}_2)^n$. When you index a signal by "the $12$ semitones of an octave", the group is $\mathbb{Z}_{12}$. Different indexing sets → different groups → different natural transforms.
 
 ---
 
-## § 2. Representations and Schur's lemma
+## § 2. Representations and Schur's lemma {#sec-2}
 
-The space $V$ of functions $G \to \mathbb{C}$ from § 1 already carries an action of $G$ on itself: each $h \in G$ acts on $V$ by translating the argument, $(T_h f)(g) := f(h^{-1} g)$, and this respects group multiplication, $T_a T_b = T_{ab}$. So $T: G \to \operatorname{GL}(V)$ is a homomorphism from the abstract group into the concrete matrices on $V$. This is the **regular representation**.
+The space $V$ of functions $G \to \mathbb{C}$ from [§ 1](#sec-1) already carries an action of $G$ on itself: each $h \in G$ acts on $V$ by translating the argument, $(T_h f)(g) := f(h^{-1} g)$, and this respects group multiplication, $T_a T_b = T_{ab}$. So $T: G \to \operatorname{GL}(V)$ is a homomorphism from the abstract group into the concrete matrices on $V$. This is the **regular representation**.
 
 ### What a representation is
 
@@ -50,7 +50,7 @@ where $\operatorname{GL}(W)$ is the group of invertible linear maps $W \to W$. E
 
 The space $W$ is the arena on which those matrices act — a vector space of some dimension, and there is no canonical choice of what dimension it should be. Different $W$'s give different representations of the same $G$. The scalar field of $W$ is $\mathbb{C}$, not because $G$ has anything to do with complex numbers ($G$ is an abstract group, no more), but because we need every characteristic polynomial to have a root: over $\mathbb{R}$ a $90^\circ$ rotation of the plane already has no eigenvalues, and the decomposition story we are about to build breaks down.
 
-The regular representation on $V$ from § 1 is the concrete example of this setup. There $W = V$ is the complex-valued function space on $G$, and $M(h) = T_h$ is the $|G| \times |G|$ permutation matrix that shifts the argument by $h$; group multiplication in $G$ turns into matrix multiplication because shift-by-$a$ followed by shift-by-$b$ equals shift-by-$ab$. The field is $\mathbb{C}$ here because function values into $\mathbb{C}$ are what § 1 needed for its inner product — not because $G$ was ever complex.
+The regular representation on $V$ from [§ 1](#sec-1) is the concrete example of this setup. There $W = V$ is the complex-valued function space on $G$, and $M(h) = T_h$ is the $|G| \times |G|$ permutation matrix that shifts the argument by $h$; group multiplication in $G$ turns into matrix multiplication because shift-by-$a$ followed by shift-by-$b$ equals shift-by-$ab$. The field is $\mathbb{C}$ here because function values into $\mathbb{C}$ are what [§ 1](#sec-1) needed for its inner product — not because $G$ was ever complex.
 
 > [!info] Why $W$ is arbitrary
 >
@@ -64,7 +64,9 @@ A subspace $W' \subseteq W$ is **$G$-invariant** if $M(g)\, W' \subseteq W'$ for
 
 **Theorem.** *Every representation of a finite group decomposes as a direct sum of irreducibles.*
 
-The plan is to peel off one $G$-invariant subspace at a time using its orthogonal complement in a well-chosen inner product; each peel-off is legitimate because that complement is again $G$-invariant. Two supporting facts do the work. The word "$G$-invariant" gets attached to three different kinds of object along the way — subspaces, inner products, and later operators — all sharing the meaning "compatible with the $G$-action": the subspace stays inside itself, the inner product is preserved, the operator commutes. An inner product $\langle \cdot, \cdot \rangle$ is called $G$-invariant when $\langle M(h) v, M(h) w \rangle = \langle v, w \rangle$ for every $h \in G$, which is the same condition as every $M(h)$ being *unitary* with respect to $\langle \cdot, \cdot \rangle$: preserving the inner product is what "unitary" means. Two names, one condition.
+Compare with the spectral theorem: for a normal operator on a complex inner-product space, the space decomposes into an orthogonal direct sum of eigenspaces, each of which is a subspace on which the operator acts by scalar multiplication — the simplest possible action. Here we are asking for the analogous decomposition when the object of interest is not a single operator but the whole family $\{M(g)\}_{g \in G}$, forced to respect group structure: $W$ should decompose into invariant subspaces on which the entire family acts as simply as possible (irreducibly).
+
+The strategy carries over intact. Find or build an inner product in which every $M(h)$ is *unitary*, then peel off invariant subspaces one at a time using orthogonal complements. Two supporting facts do the work — the first supplies the inner product, the second says the complement of any invariant subspace is again invariant, so the peeling never gets stuck. (The word "$G$-invariant" is used for three related things below — subspaces, inner products, and later operators — all meaning "compatible with the $G$-action": the subspace stays inside itself, the inner product is preserved, the operator commutes. An inner product $\langle \cdot, \cdot \rangle$ satisfying $\langle M(h) v, M(h) w \rangle = \langle v, w \rangle$ for every $h$ is the same thing as every $M(h)$ being unitary with respect to $\langle \cdot, \cdot \rangle$ — two names for one condition.)
 
 <div class="guided-fold-start" data-label="A $G$-invariant inner product exists on $W$" data-tone="proof"></div>
 
@@ -114,13 +116,13 @@ For abelian $G$, every irreducible representation is 1-dimensional. This is the 
 
 Suppose $M$ is an irreducible representation of abelian $G$ on some $W$ with $\dim W > 1$. We derive a contradiction in four steps.
 
-- **Every $M(a)$ has an eigenvector.** Fix any $a \in G$. The characteristic polynomial $\det(\lambda I - M(a))$ has degree $\dim W \geq 1$; over $\mathbb{C}$, the fundamental theorem of algebra says it has at least one root. Call it $\lambda$; the corresponding eigenspace $W_\lambda := \{w \in W : M(a) w = \lambda w\}$ is nonzero.
+- **Every $M(a)$ has an eigenvector.** Pick any specific element $a \in G$; it gives us a specific matrix $M(a)$, a $(\dim W) \times (\dim W)$ matrix with entries in $\mathbb{C}$ acting on $W$. Its characteristic polynomial $\det(\lambda I - M(a))$ has degree exactly $\dim W$; because $W$ is a nontrivial representation ($\dim W \geq 1$) this polynomial is nonconstant, and over $\mathbb{C}$ the fundamental theorem of algebra guarantees at least one root $\lambda$. The corresponding eigenspace $W_\lambda := \{w \in W : M(a) w = \lambda w\}$ therefore contains a nonzero vector — an eigenvector of $M(a)$ with eigenvalue $\lambda$.
 
 - **The eigenspace $W_\lambda$ is $G$-invariant.** Because $G$ is abelian, $M(a) M(b) = M(b) M(a)$ for every $b$. So for any $w \in W_\lambda$ and any $b \in G$,
 $$M(a) [M(b) w] = M(b) [M(a) w] = M(b) [\lambda w] = \lambda \cdot [M(b) w].$$
-Hence $M(b) w \in W_\lambda$: applying any group element to a $\lambda$-eigenvector of $M(a)$ produces another $\lambda$-eigenvector.
+Hence $M(b) w \in W_\lambda$: applying any group element to an eigenvector of $M(a)$ with eigenvalue $\lambda$ produces another vector with the same eigenvalue $\lambda$.
 
-- **Irreducibility forces $W_\lambda = W$.** By assumption the only $G$-invariant subspaces are $\{0\}$ and $W$; $W_\lambda$ contains an eigenvector so it isn't $\{0\}$; therefore $W_\lambda = W$. This says every vector in $W$ is a $\lambda$-eigenvector of $M(a)$, which is exactly the statement $M(a) = \lambda \cdot I$ as an operator on all of $W$.
+- **Irreducibility forces $W_\lambda = W$.** By assumption the only $G$-invariant subspaces are $\{0\}$ and $W$; $W_\lambda$ contains an eigenvector so it isn't $\{0\}$; therefore $W_\lambda = W$. This says every vector in $W$ is an eigenvector of $M(a)$ with eigenvalue $\lambda$, which is exactly the statement $M(a) = \lambda \cdot I$ as an operator on all of $W$.
 
 - **Every $M(a)$ is a scalar matrix.** The previous three steps used only that $a$ was some fixed element; repeating with any other group element gives $M(a) = \lambda_a \cdot I$ for a scalar $\lambda_a$ depending on $a$. So every matrix in the representation is a scalar multiple of the identity.
 
@@ -128,27 +130,31 @@ Hence $M(b) w \in W_\lambda$: applying any group element to a $\lambda$-eigenvec
 
 <div class="guided-fold-end"></div>
 
-Unpacking what this gives us for abelian $G$. Each irreducible acts on a 1-dimensional $W$, which we may identify with $\mathbb{C}$ itself; a $1 \times 1$ invertible matrix is a nonzero complex number, so $\operatorname{GL}(W) = \mathbb{C}^*$, and the representation collapses to a homomorphism $\chi: G \to \mathbb{C}^*$ — a scalar attached to each group element, respecting multiplication. For any larger representation of abelian $G$, decomposing it into irreducibles means finding a basis in which every $M(g)$ becomes diagonal *simultaneously*: each basis vector then spans a 1-dimensional $G$-invariant line on which $M(g)$ acts by the scalar $\chi(g)$ for one of these homomorphisms $\chi$. Because $G$ is abelian, the $M(g)$ all commute pairwise, so such a common eigenbasis is guaranteed to exist. Finding all irreducibles of $G$ and simultaneously diagonalizing the family $\{M(g)\}_{g \in G}$ are thus two names for the same task, which § 3 carries out explicitly.
+Unpacking what this gives us for abelian $G$. Each irreducible acts on a 1-dimensional $W$, which we may identify with $\mathbb{C}$ itself; a $1 \times 1$ invertible matrix is just a nonzero complex number, so $\operatorname{GL}(W) = \mathbb{C}^*$ (the group of nonzero complex numbers under multiplication), and the representation collapses to a homomorphism $\chi: G \to \mathbb{C}^*$ — a scalar attached to each group element, respecting multiplication.
+
+For any larger representation of abelian $G$, decomposing it into irreducibles means finding a basis in which every $M(g)$ becomes diagonal *simultaneously*: each basis vector $b_k$ then spans a 1-dimensional $G$-invariant line, and along that line every $M(g)$ acts as multiplication by some scalar $\chi_k(g)$. The rule $M(a) M(b) = M(ab)$ inherited from the group forces each $\chi_k: G \to \mathbb{C}^*$ to itself be one of the homomorphisms from the previous paragraph — the $k$-th basis line is a copy of the $k$-th irreducible, and $\chi_k$ is the specific homomorphism attached to it.
+
+Because $G$ is abelian, the family $\{M(g)\}_{g \in G}$ commutes pairwise, so such a common eigenbasis is guaranteed to exist. Finding all irreducibles of $G$ and simultaneously diagonalizing the family $\{M(g)\}_{g \in G}$ are thus two names for the same task, which [§ 3](#sec-3) carries out explicitly.
 
 ### What breaks in the non-abelian case
 
-For non-abelian $G$, the matrices $M(g)$ do not all commute, so they cannot in general be simultaneously diagonalized. Irreducibles can then have dimension $2, 3, \ldots$ The theory that handles this case is the content of § 16; until then we stay in the abelian world where everything reduces to scalar functions.
+For non-abelian $G$, the matrices $M(g)$ do not all commute, so they cannot in general be simultaneously diagonalized. Irreducibles can then have dimension $2, 3, \ldots$ The theory that handles this case is the content of [§ 16](#sec-16); until then we stay in the abelian world where everything reduces to scalar functions.
 
 ---
 
-## § 3. Characters, roots of unity, and the dual group
+## § 3. Characters, roots of unity, and the dual group {#sec-3}
 
 A 1-dimensional representation has $W = \mathbb{C}$, so $\operatorname{GL}(W) = \mathbb{C}^*$ and the representation is a homomorphism into the multiplicative group of nonzero complex numbers. In this specialization we drop the letter $M$ (which we used for general representations) and denote it $\chi$:
 
 $$\chi: G \to \mathbb{C}^*, \qquad \chi(a b) = \chi(a) \chi(b).$$
 
-These are called **characters** of $G$. By § 2, when $G$ is abelian, the characters are exactly the irreducible representations.
+These are called **characters** of $G$. By [§ 2](#sec-2), when $G$ is abelian, the characters are exactly the irreducible representations.
 
 ### Characters take values on the unit circle
 
 Because $G$ is finite, every element $g$ has finite order: some power $g^m$ equals the identity $e$. Applying the homomorphism property $m$ times gives $\chi(g)^m = \chi(g^m) = \chi(e) = 1$. So $\chi(g)$ is an $m$-th root of unity — a specific point on the complex unit circle.
 
-Two immediate consequences. First, $|\chi(g)| = 1$ for every $g$, so characters are unitary functions. Second, because $\chi(g)$ sits on the unit circle we have $|\chi(g)|^2 = \chi(g) \overline{\chi(g)} = 1$, so $\overline{\chi(g)} = \chi(g)^{-1}$; and the homomorphism property gives $\chi(g) \chi(g^{-1}) = \chi(g g^{-1}) = \chi(e) = 1$, so $\chi(g^{-1}) = \chi(g)^{-1}$ as well. Chaining: $\overline{\chi(g)} = \chi(g^{-1})$. Complex conjugation of a character value equals evaluation at the inverse group element — a fact we will use in the orthogonality proof (§ 4).
+Two immediate consequences. First, $|\chi(g)| = 1$ for every $g$, so characters are unitary functions. Second, because $\chi(g)$ sits on the unit circle we have $|\chi(g)|^2 = \chi(g) \overline{\chi(g)} = 1$, so $\overline{\chi(g)} = \chi(g)^{-1}$; and the homomorphism property gives $\chi(g) \chi(g^{-1}) = \chi(g g^{-1}) = \chi(e) = 1$, so $\chi(g^{-1}) = \chi(g)^{-1}$ as well. Chaining: $\overline{\chi(g)} = \chi(g^{-1})$. Complex conjugation of a character value equals evaluation at the inverse group element — a fact we will use in the orthogonality proof ([§ 4](#sec-4)).
 
 ### The dual group $\widehat{G}$
 
@@ -161,7 +167,7 @@ The set of all characters of $G$ therefore forms a group under pointwise multipl
 For finite abelian $G$, $\widehat{G}$ is isomorphic to $G$. For instance:
 
 - $\widehat{\mathbb{Z}_N} \cong \mathbb{Z}_N$: a character of $\mathbb{Z}_N$ is determined by where it sends the generator $1$, which must be an $N$-th root of unity, and there are $N$ of those. Concretely, the characters are $\chi_k(n) = e^{2\pi i k n / N}$ for $k = 0, 1, \ldots, N-1$.
-- $\widehat{(\mathbb{Z}_2)^n} \cong (\mathbb{Z}_2)^n$: a character is determined by its values on the $n$ generators (one for each coordinate), each of which must be $\pm 1$ (a square root of unity, since each generator has order $2$). This gives $2^n$ characters, one per choice vector $u \in (\mathbb{Z}_2)^n$; we work them out explicitly in § 11.
+- $\widehat{(\mathbb{Z}_2)^n} \cong (\mathbb{Z}_2)^n$: a character is determined by its values on the $n$ generators (one for each coordinate), each of which must be $\pm 1$ (a square root of unity, since each generator has order $2$). This gives $2^n$ characters, one per choice vector $u \in (\mathbb{Z}_2)^n$; we work them out explicitly in [§ 11](#sec-11).
 
 The isomorphism $G \cong \widehat{G}$ is what people mean by calling finite abelian groups **self-dual**. The set of "frequencies" (elements of $\widehat{G}$) can be indexed by the same labels as the set of "time slots" (elements of $G$). For $\mathbb{Z}_N$, both are integers $0, \ldots, N-1$; for $(\mathbb{Z}_2)^n$, both are $n$-bit strings. This is why the DFT matrix and the Hadamard matrix are square with matched row/column labels.
 
@@ -169,7 +175,7 @@ Self-duality is a finite-abelian phenomenon. For the continuous abelian group $\
 
 ---
 
-## § 4. Orthogonality of characters
+## § 4. Orthogonality of characters {#sec-4}
 
 **Claim.** Distinct characters $\chi_1, \chi_2$ of a finite group $G$ are orthogonal under the inner product on $V = \mathbb{C}^{|G|}$:
 
@@ -177,7 +183,7 @@ $$\langle \chi_1, \chi_2 \rangle = \sum_{g \in G} \chi_1(g) \overline{\chi_2(g)}
 
 Together with the direct computation $\langle \chi, \chi \rangle = |G|$ (a sum of $|G|$ terms each equal to $1$), this means the $|G|$ characters form an orthogonal basis of $V$ after normalization by $1/\sqrt{|G|}$.
 
-**Proof.** Using $\overline{\chi_2(g)} = \chi_2(g)^{-1}$ from § 3, define $\chi_3 := \chi_1 \chi_2^{-1}$. Then
+**Proof.** Using $\overline{\chi_2(g)} = \chi_2(g)^{-1}$ from [§ 3](#sec-3), define $\chi_3 := \chi_1 \chi_2^{-1}$. Then
 
 $$\langle \chi_1, \chi_2 \rangle = \sum_{g \in G} \chi_3(g) =: S.$$
 
@@ -193,7 +199,7 @@ Since $\chi_3(h) \neq 1$, the factor $(\chi_3(h) - 1)$ is nonzero, so $S = 0$. $
 
 This proof is worth pausing on. It uses nothing about the specific structure of $G$ beyond (i) finiteness, so the sum converges and the "shifted sum equals original sum" trick works, and (ii) that characters are homomorphisms, so $\chi_3 = \chi_1 \chi_2^{-1}$ is again a character. When we specialize the theorem to specific groups in later sections, the abstract sum $\sum_g \chi_3(g)$ turns into concrete objects.
 
-Consider the cyclic group $\mathbb{Z}_N$ (developed in § 7). Its characters are the complex exponentials $\chi_k(n) = e^{2\pi i k n / N}$, one for each $k \in \{0, \ldots, N-1\}$. Take two distinct characters $\chi_k$ and $\chi_{k'}$; their ratio is again a character, $\chi_{k - k'}$, corresponding to some nonzero difference $k - k' \pmod N$. The character sum becomes
+Consider the cyclic group $\mathbb{Z}_N$ (developed in [§ 7](#sec-7)). Its characters are the complex exponentials $\chi_k(n) = e^{2\pi i k n / N}$, one for each $k \in \{0, \ldots, N-1\}$. Take two distinct characters $\chi_k$ and $\chi_{k'}$; their ratio is again a character, $\chi_{k - k'}$, corresponding to some nonzero difference $k - k' \pmod N$. The character sum becomes
 
 $$\sum_{n = 0}^{N-1} \omega^n \qquad \text{with } \omega = e^{2 \pi i (k - k') / N} \neq 1,$$
 
@@ -203,7 +209,7 @@ $$\sum_{n = 0}^{N-1} \omega^n = \frac{\omega^N - 1}{\omega - 1} = 0,$$
 
 because $\omega^N = e^{2 \pi i (k - k')} = 1$. So the two characters are orthogonal, and this is the standard column-orthogonality of the DFT matrix. The general argument specializes to a geometric-series calculation.
 
-Now consider the dyadic group $(\mathbb{Z}_2)^n$ (developed in § 8). Its characters are the sign functions $\chi_u(v) = (-1)^{u \cdot v}$, one for each mask vector $u \in (\mathbb{Z}_2)^n$, where $u \cdot v = \sum_i u_i v_i \pmod 2$ is the bitwise-AND parity. Take two distinct characters $\chi_u$ and $\chi_{u'}$; their ratio (which for real-valued characters is the same as their product) is $\chi_{u \oplus u'}$ with the difference vector $d := u \oplus u'$ nonzero. The character sum becomes
+Now consider the dyadic group $(\mathbb{Z}_2)^n$ (developed in [§ 8](#sec-8)). Its characters are the sign functions $\chi_u(v) = (-1)^{u \cdot v}$, one for each mask vector $u \in (\mathbb{Z}_2)^n$, where $u \cdot v = \sum_i u_i v_i \pmod 2$ is the bitwise-AND parity. Take two distinct characters $\chi_u$ and $\chi_{u'}$; their ratio (which for real-valued characters is the same as their product) is $\chi_{u \oplus u'}$ with the difference vector $d := u \oplus u'$ nonzero. The character sum becomes
 
 $$\sum_{v \in (\mathbb{Z}_2)^n} (-1)^{d \cdot v}.$$
 
@@ -213,7 +219,7 @@ Both computations are the same theorem — the proof above — with two differen
 
 ---
 
-## § 5. Translation, convolution, and group-invariant operators
+## § 5. Translation, convolution, and group-invariant operators {#sec-5}
 
 We now bring in dynamics: what operators does the character basis diagonalize? We need three definitions.
 
@@ -280,7 +286,7 @@ Feeding a unit spike into $T$ produces exactly the function $h$ as output. So th
 
 The correspondence goes both ways. Any function $h: G \to \mathbb{C}$ we write down defines a group-invariant operator via $(f * h)(x) = \sum_y f(y) h(y^{-1} x)$: direct calculation confirms this new operator commutes with every translation. And any group-invariant operator, as we showed above, arises from a unique $h$. So there is a one-to-one correspondence between group-invariant operators on $V$ and functions $h$ on $G$.
 
-The upshot for what follows: "understand every operator that commutes with translation" and "understand convolution against every possible kernel $h$" are the same problem. When § 6 shows that characters diagonalize every group-invariant operator, that will simultaneously mean the characters diagonalize every convolution.
+The upshot for what follows: "understand every operator that commutes with translation" and "understand convolution against every possible kernel $h$" are the same problem. When [§ 6](#sec-6) shows that characters diagonalize every group-invariant operator, that will simultaneously mean the characters diagonalize every convolution.
 
 ### The complexity problem
 
@@ -288,7 +294,7 @@ Convolution as written is expensive: for a signal of length $N = |G|$, computing
 
 ---
 
-## § 6. Characters diagonalize every group-invariant operator
+## § 6. Characters diagonalize every group-invariant operator {#sec-6}
 
 The central claim of this section: for every character $\chi$ and every group-invariant operator $T$,
 
@@ -304,7 +310,7 @@ The proof of the eigenvector claim splits cleanly into two steps. First, we show
 
 ### Step 1: characters are eigenvectors of every translation
 
-Fix a character $\chi$ and a group element $g$. Applying the translation operator $L_g$ (from § 5) to $\chi$:
+Fix a character $\chi$ and a group element $g$. Applying the translation operator $L_g$ (from [§ 5](#sec-5)) to $\chi$:
 
 $$(L_g \chi)(x) = \chi(g^{-1} x) = \chi(g^{-1}) \, \chi(x),$$
 
@@ -320,7 +326,7 @@ $$\left\{ \chi(g^{-1}) : g \in G \right\}.$$
 
 Different characters produce different sequences. Suppose $\chi_1$ and $\chi_2$ are two distinct characters. Being distinct means they disagree at *some* group element $g^*$: $\chi_1(g^*) \neq \chi_2(g^*)$, equivalently $\chi_1((g^*)^{-1}) \neq \chi_2((g^*)^{-1})$. Their eigenvalue sequences therefore disagree at the entry corresponding to $g^*$. Two characters with different eigenvalue sequences must sit in different joint eigenspaces of the family $\{L_g\}_{g \in G}$.
 
-Combine this with the counting result from § 4. There are exactly $|G|$ characters, they are mutually orthogonal, and together they span the $|G|$-dimensional space $V$. Each character sits in a distinct joint eigenspace of $\{L_g\}$, and together the characters span everything. So each of these joint eigenspaces is exactly 1-dimensional, and each is spanned by exactly one character.
+Combine this with the counting result from [§ 4](#sec-4). There are exactly $|G|$ characters, they are mutually orthogonal, and together they span the $|G|$-dimensional space $V$. Each character sits in a distinct joint eigenspace of $\{L_g\}$, and together the characters span everything. So each of these joint eigenspaces is exactly 1-dimensional, and each is spanned by exactly one character.
 
 ### Step 2: group-invariant operators preserve those 1-dimensional eigenspaces
 
@@ -338,11 +344,11 @@ $$T \chi = \mu_T(\chi) \cdot \chi. \qquad \blacksquare$$
 
 ### The eigenvalue as a Fourier coefficient
 
-The proof gives us more than the eigenvector claim: we can compute $\mu_T(\chi)$ explicitly when $T$ is convolution with a kernel $h$ (using § 5's identification). Applying $T = T_h$ to $\chi$:
+The proof gives us more than the eigenvector claim: we can compute $\mu_T(\chi)$ explicitly when $T$ is convolution with a kernel $h$ (using [§ 5](#sec-5)'s identification). Applying $T = T_h$ to $\chi$:
 
 $$(T_h \chi)(x) = \sum_{y \in G} \chi(y) \, h(y^{-1} x).$$
 
-Change variables in the sum. Let $z = y^{-1} x$, so $y = x z^{-1}$. Then $\chi(y) = \chi(x z^{-1}) = \chi(x) \chi(z^{-1}) = \chi(x) \overline{\chi(z)}$, using the conjugate-equals-inverse identity from § 3. As $y$ ranges over $G$, so does $z$. Substituting,
+Change variables in the sum. Let $z = y^{-1} x$, so $y = x z^{-1}$. Then $\chi(y) = \chi(x z^{-1}) = \chi(x) \chi(z^{-1}) = \chi(x) \overline{\chi(z)}$, using the conjugate-equals-inverse identity from [§ 3](#sec-3). As $y$ ranges over $G$, so does $z$. Substituting,
 
 $$(T_h \chi)(x) = \chi(x) \sum_{z \in G} h(z) \overline{\chi(z)}.$$
 
@@ -350,7 +356,7 @@ The sum on the right is a single complex number — call it $\widehat{h}(\chi)$ 
 
 $$T_h \chi = \widehat{h}(\chi) \cdot \chi, \qquad \mu_{T_h}(\chi) = \widehat{h}(\chi) = \sum_{g \in G} h(g) \overline{\chi(g)}.$$
 
-The eigenvalue is exactly the value of the character-basis transform of $h$ at frequency $\chi$. This is the **group convolution theorem**: convolution in the "time" (or group) domain becomes pointwise multiplication in the "frequency" (or dual-group) domain, and the specific frequency multiplier is the value $\widehat{h}(\chi)$ that the kernel's transform takes at that frequency. We will meet this transform explicitly for $\mathbb{Z}_N$ in § 7 (where it is the DFT) and for $(\mathbb{Z}_2)^n$ in § 8 (where it is the Walsh–Hadamard transform).
+The eigenvalue is exactly the value of the character-basis transform of $h$ at frequency $\chi$. This is the **group convolution theorem**: convolution in the "time" (or group) domain becomes pointwise multiplication in the "frequency" (or dual-group) domain, and the specific frequency multiplier is the value $\widehat{h}(\chi)$ that the kernel's transform takes at that frequency. We will meet this transform explicitly for $\mathbb{Z}_N$ in [§ 7](#sec-7) (where it is the DFT) and for $(\mathbb{Z}_2)^n$ in [§ 8](#sec-8) (where it is the Walsh–Hadamard transform).
 
 ### The computational payoff, in outline
 
@@ -364,13 +370,13 @@ so applying $T$ to a signal $x$ decomposes into three steps:
 2. Pointwise scale: $\hat{y}_k = \mu_k \hat{x}_k$.
 3. Inverse transform: $y = U \hat{y}$.
 
-Step 2 is $O(N)$. Steps 1 and 3 are, in general, $O(N^2)$ matrix–vector multiplications — no speedup so far. The gain comes only when the matrix $U$ has enough structure that steps 1 and 3 can be computed in $O(N \log N)$. That structure comes from the subgroup lattice of $G$, and it is what § 8 – § 9 are about.
+Step 2 is $O(N)$. Steps 1 and 3 are, in general, $O(N^2)$ matrix–vector multiplications — no speedup so far. The gain comes only when the matrix $U$ has enough structure that steps 1 and 3 can be computed in $O(N \log N)$. That structure comes from the subgroup lattice of $G$, and it is what [§ 8](#sec-8) – [§ 9](#sec-9) are about.
 
 ---
 
-## § 7. The cyclic group $\mathbb{Z}_N$ and the DFT
+## § 7. The cyclic group $\mathbb{Z}_N$ and the DFT {#sec-7}
 
-Set $G = \mathbb{Z}_N$, the integers modulo $N$ under addition. From § 3, the characters are
+Set $G = \mathbb{Z}_N$, the integers modulo $N$ under addition. From [§ 3](#sec-3), the characters are
 
 $$\chi_k(n) = e^{2\pi i k n / N}, \qquad k = 0, 1, \ldots, N - 1.$$
 
@@ -382,7 +388,7 @@ $$\widehat{x}_k = \langle x, \chi_k \rangle = \sum_{n = 0}^{N-1} x_n \, e^{-2 \p
 
 This is exactly the **Discrete Fourier Transform**. The change-of-basis matrix $U$ has entries $U_{n,k} = \chi_k(n) = e^{2\pi i k n / N}$.
 
-Because the DFT is the character basis for $\mathbb{Z}_N$, by § 6 it automatically diagonalizes every operator that commutes with cyclic shift — that is, every LTI filter operating on the length-$N$ signal (with cyclic boundary conditions). This is the cyclic convolution theorem, recovered from the general framework.
+Because the DFT is the character basis for $\mathbb{Z}_N$, by [§ 6](#sec-6) it automatically diagonalizes every operator that commutes with cyclic shift — that is, every LTI filter operating on the length-$N$ signal (with cyclic boundary conditions). This is the cyclic convolution theorem, recovered from the general framework.
 
 ### An aside: the Number Theoretic Transform
 
@@ -390,19 +396,19 @@ The DFT above sends signals with complex values to complex frequencies. The **Nu
 
 Such an $\omega$ exists exactly when $N \mid p - 1$. The multiplicative group $\mathbb{F}_p^*$ is cyclic of order $p - 1$, and a cyclic group of order $m$ contains an element of exact order $N$ if and only if $N$ divides $m$. So the primes usable for a length-$N$ NTT are those with $p \equiv 1 \pmod N$. In practice one picks "NTT-friendly primes" like $p = 12 \cdot 2^{27} + 1$ or $p = 17 \cdot 2^{27} + 1$, where $p - 1$ contains a large power of $2$ as a factor, so a wide range of transform lengths are supported by the same prime.
 
-Everything from § 4 transfers verbatim. The orthogonality proof used only finiteness of the group and the homomorphism property of characters; both hold for the $\mathbb{F}_p$-valued characters. The Cooley–Tukey butterfly (§ 10) applies with the $\mathbb{C}$-valued twiddle factor $\omega = e^{2\pi i / N}$ replaced by the $\mathbb{F}_p$-valued primitive root. The advantage over the ordinary DFT is that arithmetic in $\mathbb{F}_p$ is exact — no floating-point rounding — so the NTT is used for polynomial multiplication where every coefficient must be preserved bit-exactly. This makes it the workhorse of lattice-based post-quantum cryptography (Kyber, Dilithium, and other schemes operate in rings like $\mathbb{Z}_q[X]/(X^n + 1)$, where polynomial multiplication modulo $X^n + 1$ is computed as a length-$2n$ negacyclic convolution via NTT). The choice of $\mathbb{F}_p$ vs. $\mathbb{C}$ is a matter of what values you care about; the transform algorithm is dictated by the group $\mathbb{Z}_N$ underlying the index set.
+Everything from [§ 4](#sec-4) transfers verbatim. The orthogonality proof used only finiteness of the group and the homomorphism property of characters; both hold for the $\mathbb{F}_p$-valued characters. The Cooley–Tukey butterfly ([§ 10](#sec-10)) applies with the $\mathbb{C}$-valued twiddle factor $\omega = e^{2\pi i / N}$ replaced by the $\mathbb{F}_p$-valued primitive root. The advantage over the ordinary DFT is that arithmetic in $\mathbb{F}_p$ is exact — no floating-point rounding — so the NTT is used for polynomial multiplication where every coefficient must be preserved bit-exactly. This makes it the workhorse of lattice-based post-quantum cryptography (Kyber, Dilithium, and other schemes operate in rings like $\mathbb{Z}_q[X]/(X^n + 1)$, where polynomial multiplication modulo $X^n + 1$ is computed as a length-$2n$ negacyclic convolution via NTT). The choice of $\mathbb{F}_p$ vs. $\mathbb{C}$ is a matter of what values you care about; the transform algorithm is dictated by the group $\mathbb{Z}_N$ underlying the index set.
 
 ### An aside: the Discrete Cosine Transform
 
 A natural question at this point is where the Discrete Cosine Transform (DCT) sits in the framework we've built. The DCT is everywhere the DFT would nominally apply but the signal doesn't naturally wrap around cyclically: the $8 \times 8$ image blocks inside JPEG, the audio frames inside MP3, filtering of one-shot non-periodic time series. It looks like a real-valued cousin of the DFT and it works on the same length-$N$ signals, so a reader coming from the DFT expects to see it here too.
 
-It doesn't quite belong here, though, and the reason why is a useful sanity check on what "character basis" means. The characters of $\mathbb{Z}_N$ are the complex exponentials $\chi_k(n) = e^{2\pi i k n / N}$. Taking only their real parts, as the DCT effectively does, throws away the homomorphism property that everything in § 1 – § 6 was built on: $\cos(A + B) \neq \cos(A) \cos(B)$, so the real part of a character is not itself a character. The DCT is therefore not the character basis of the group $\mathbb{Z}_N$, nor of any other finite abelian group.
+It doesn't quite belong here, though, and the reason why is a useful sanity check on what "character basis" means. The characters of $\mathbb{Z}_N$ are the complex exponentials $\chi_k(n) = e^{2\pi i k n / N}$. Taking only their real parts, as the DCT effectively does, throws away the homomorphism property that everything in [§ 1](#sec-1) – [§ 6](#sec-6) was built on: $\cos(A + B) \neq \cos(A) \cos(B)$, so the real part of a character is not itself a character. The DCT is therefore not the character basis of the group $\mathbb{Z}_N$, nor of any other finite abelian group.
 
-The right home for the DCT is the Sturm–Liouville framework of § 14 – § 15. It arises there as the discretization of the Chebyshev-polynomial expansion, sampled at a specific set of interval points, and its usefulness for non-periodic signals falls out of the underlying interval-based (rather than circle-based) function space. We defer the derivation to § 15, and mention it here only so that the reader wondering "why isn't the DCT just another special case of § 6?" has an answer.
+The right home for the DCT is the Sturm–Liouville framework of [§ 14](#sec-14) – [§ 15](#sec-15). It arises there as the discretization of the Chebyshev-polynomial expansion, sampled at a specific set of interval points, and its usefulness for non-periodic signals falls out of the underlying interval-based (rather than circle-based) function space. We defer the derivation to [§ 15](#sec-15), and mention it here only so that the reader wondering "why isn't the DCT just another special case of [§ 6](#sec-6)?" has an answer.
 
 ---
 
-## § 8. The dyadic group $(\mathbb{Z}_2)^n$ and the Walsh–Hadamard transform
+## § 8. The dyadic group $(\mathbb{Z}_2)^n$ and the Walsh–Hadamard transform {#sec-8}
 
 Set $G = (\mathbb{Z}_2)^n$: the group of length-$n$ binary vectors under bitwise XOR. The group has order $N = 2^n$, and every element is its own inverse: $v \oplus v = 0$.
 
@@ -440,7 +446,7 @@ Answering an earlier open question: **the character of the Sylvester–Hadamard 
 
 ### Orthogonality, recovered from § 4
 
-We do not need a separate proof. Since $\chi_u(v) = (-1)^{u \cdot v}$ is a character of the finite abelian group $(\mathbb{Z}_2)^n$, § 4 immediately gives
+We do not need a separate proof. Since $\chi_u(v) = (-1)^{u \cdot v}$ is a character of the finite abelian group $(\mathbb{Z}_2)^n$, [§ 4](#sec-4) immediately gives
 
 $$\sum_{v} \chi_u(v) \overline{\chi_{u'}(v)} = \sum_{v} (-1)^{u \cdot v} \cdot (-1)^{u' \cdot v} = \sum_v (-1)^{(u \oplus u') \cdot v} = \begin{cases} N & \text{if } u = u', \\ 0 & \text{otherwise.} \end{cases}$$
 
@@ -448,7 +454,7 @@ The identity $\overline{(-1)^{u' \cdot v}} = (-1)^{u' \cdot v}$ used the real-va
 
 ---
 
-## § 9. The Sylvester construction and the tensor-product structure
+## § 9. The Sylvester construction and the tensor-product structure {#sec-9}
 
 The Hadamard matrix has a recursive definition. Let
 
@@ -494,7 +500,7 @@ This is the **Fast Walsh–Hadamard Transform**. The "butterfly" operation at ea
 
 ---
 
-## § 10. Fast algorithms from subgroup structure: the FFT parallel
+## § 10. Fast algorithms from subgroup structure: the FFT parallel {#sec-10}
 
 The FWHT factorization is one instance of a general phenomenon: fast transforms exist for a group $G$ whenever $G$ has a chain of subgroups you can quotient down. For $(\mathbb{Z}_2)^n$, the chain is
 
@@ -547,7 +553,7 @@ The upshot: the same subgroup-decomposition idea powers both the FFT and the FWH
 
 ---
 
-## § 11. Rademacher functions, Walsh functions, and sequency
+## § 11. Rademacher functions, Walsh functions, and sequency {#sec-11}
 
 We now zoom into the Walsh–Hadamard basis to understand its physical shape. The characters of $(\mathbb{Z}_2)^n$ are indexed by $u \in (\mathbb{Z}_2)^n$, but with a specific ordering they can be understood as a sequence of increasing "frequency" (in a sense we'll make precise).
 
@@ -583,9 +589,9 @@ For a general Walsh function $\chi_u$: writing $u$ in binary, higher-order bits 
 
 ---
 
-## § 12. Gray codes as the ordering bijection
+## § 12. Gray codes as the ordering bijection {#sec-12}
 
-If you list the $N = 2^n$ Hadamard rows in their Sylvester-natural order — i.e., ordered by the integer value of the index $u = (u_{n-1}, \ldots, u_0)$ — you get a matrix whose rows do *not* have monotonically increasing sequency. The Hadamard order is convenient for the tensor-product factorization (§ 9) but does not put low-frequency rows at the top and high-frequency rows at the bottom.
+If you list the $N = 2^n$ Hadamard rows in their Sylvester-natural order — i.e., ordered by the integer value of the index $u = (u_{n-1}, \ldots, u_0)$ — you get a matrix whose rows do *not* have monotonically increasing sequency. The Hadamard order is convenient for the tensor-product factorization ([§ 9](#sec-9)) but does not put low-frequency rows at the top and high-frequency rows at the bottom.
 
 The **Walsh order** does. It is defined precisely so that row $s$ has sequency $s$ — the number of sign changes matches the row index. Relating the two orders exposes the Gray code.
 
@@ -633,13 +639,13 @@ In both cases, the Gray code is chosen for the physical-layer protection it prov
 
 ---
 
-## § 13. Where these transforms actually live: coding vs. scrambling
+## § 13. Where these transforms actually live: coding vs. scrambling {#sec-13}
 
 The Fourier and Walsh–Hadamard machinery underpins large portions of digital communication. The two transforms play surprisingly different roles depending on whether the receiver has synchronized to the sender.
 
 ### Walsh / OVSF codes: synchronous channelization
 
-Walsh functions (§ 11) form a set of $N = 2^n$ mutually orthogonal $\pm 1$ sequences. In a cellular downlink from a base station, each user gets assigned one Walsh sequence $w_i$; the base station transmits the sum $\sum_i b_i(t) w_i(t)$, where $b_i(t)$ is user $i$'s data stream (bipolar $\pm 1$). Because the sequences are orthogonal *when perfectly aligned*, user $i$'s receiver recovers $b_i$ by correlating with $w_i$: the other users' contributions integrate to zero.
+Walsh functions ([§ 11](#sec-11)) form a set of $N = 2^n$ mutually orthogonal $\pm 1$ sequences. In a cellular downlink from a base station, each user gets assigned one Walsh sequence $w_i$; the base station transmits the sum $\sum_i b_i(t) w_i(t)$, where $b_i(t)$ is user $i$'s data stream (bipolar $\pm 1$). Because the sequences are orthogonal *when perfectly aligned*, user $i$'s receiver recovers $b_i$ by correlating with $w_i$: the other users' contributions integrate to zero.
 
 **Orthogonal Variable Spreading Factor (OVSF) codes** are a hierarchical version of Walsh codes, arranged in a tree so that codes at different levels have compatible orthogonality. They are used in Wideband CDMA to allocate variable-rate channels within one cell.
 
@@ -667,7 +673,7 @@ The Walsh functions are perfect for the "clean, synchronized" corner of the prob
 
 ---
 
-## § 14. What we needed, and what we didn't: setting up Sturm–Liouville
+## § 14. What we needed, and what we didn't: setting up Sturm–Liouville {#sec-14}
 
 Everything so far required three ingredients: (i) a finite group $G$, (ii) a linear operator commuting with translation by $G$, (iii) the standard inner product on $\mathbb{C}^{|G|}$. Given these, characters emerged as a basis that diagonalized every group-invariant operator.
 
@@ -727,7 +733,7 @@ Applying this $\mu$ to the original ODE and identifying terms, we read off $p(t)
 
 ---
 
-## § 15. The classical eigenfunctions
+## § 15. The classical eigenfunctions {#sec-15}
 
 We apply the SL machinery to derive Legendre, Chebyshev, and Bessel bases in turn. Each is characterized by a choice of $(p, q, w)$ and interval, and each recovers a physically motivated symmetry.
 
@@ -737,7 +743,7 @@ The SL equation reduces to $-y'' = \lambda y$. Bounded solutions on a compact in
 
 $$\int_0^\pi \sin(m t) \sin(n t) \, dt = 0 \quad (m \neq n).$$
 
-The same construction produces the group-theoretic character basis of $\mathbb{R}$ acting on the circle $S^1$ by rotation. Its characters are the exponentials $e^{i n t}$, of which $\sin(n t)$ and $\cos(n t)$ are the imaginary and real parts. So the SL and the group-representation derivations produce the same basis by two different routes, which is the first (and simplest) case of the bridge we develop in § 16.
+The same construction produces the group-theoretic character basis of $\mathbb{R}$ acting on the circle $S^1$ by rotation. Its characters are the exponentials $e^{i n t}$, of which $\sin(n t)$ and $\cos(n t)$ are the imaginary and real parts. So the SL and the group-representation derivations produce the same basis by two different routes, which is the first (and simplest) case of the bridge we develop in [§ 16](#sec-16).
 
 ### Legendre polynomials: $p(t) = 1 - t^2, q = 0, w = 1$ on $[-1, 1]$
 
@@ -745,7 +751,7 @@ The SL equation is
 
 $$-\frac{d}{dt}\left[ (1 - t^2) y' \right] = \lambda y,$$
 
-which expands to $(1 - t^2) y'' - 2 t y' + \lambda y = 0$. The choice $p = 1 - t^2$ makes $p$ vanish at both endpoints $t = \pm 1$, which automatically kills the boundary terms in integration by parts: the boundary term from § 14 was $[p (f \bar h' - f' \bar h)]_a^b$, and if $p(a) = p(b) = 0$ then this vanishes for *any* bounded $f, h$ — no separate boundary condition on $y$ is needed.
+which expands to $(1 - t^2) y'' - 2 t y' + \lambda y = 0$. The choice $p = 1 - t^2$ makes $p$ vanish at both endpoints $t = \pm 1$, which automatically kills the boundary terms in integration by parts: the boundary term from [§ 14](#sec-14) was $[p (f \bar h' - f' \bar h)]_a^b$, and if $p(a) = p(b) = 0$ then this vanishes for *any* bounded $f, h$ — no separate boundary condition on $y$ is needed.
 
 The endpoints where $p$ vanishes are called **singular endpoints**, meaning the coefficient of the highest-derivative term $p(t) y''$ vanishes there — the equation loses its second-order character at the boundary and its behavior degenerates. The only condition we impose is that $y$ stay bounded as $t \to \pm 1$; ordinary Frobenius-series analysis at the singular points shows that generic solutions blow up, and polynomial solutions exist only for the discrete eigenvalues $\lambda = n(n+1)$ with $n$ a non-negative integer. These polynomial solutions are the **Legendre polynomials** $P_n(t)$. Orthogonality:
 
@@ -783,7 +789,7 @@ Bounded solutions on $[0, \pi]$ are $\tilde y(\theta) = \cos(n \theta)$ and $\ti
 
 $$T_n(t) := \tilde y(\arccos t) = \cos(n \arccos t), \qquad \text{equivalently,} \quad T_n(\cos\theta) = \cos(n\theta).$$
 
-Everything about $T_n$ — orthogonality, node structure, the strength of $T_n$ as a polynomial-approximation basis — follows from the fact that in the $\theta$-variable $T_n$ is literally $\cos(n\theta)$. In the $t$-variable it is a polynomial because the identity $\cos(n\theta) = 2\cos\theta \cos((n-1)\theta) - \cos((n-2)\theta)$ recurses down to $T_0 = 1$ and $T_1 = t$, so $T_n$ is expressible as a polynomial of degree $n$ in $\cos\theta = t$. The sine branch, similarly transported, defines the Chebyshev polynomials of the second kind, which we meet in § 16.
+Everything about $T_n$ — orthogonality, node structure, the strength of $T_n$ as a polynomial-approximation basis — follows from the fact that in the $\theta$-variable $T_n$ is literally $\cos(n\theta)$. In the $t$-variable it is a polynomial because the identity $\cos(n\theta) = 2\cos\theta \cos((n-1)\theta) - \cos((n-2)\theta)$ recurses down to $T_0 = 1$ and $T_1 = t$, so $T_n$ is expressible as a polynomial of degree $n$ in $\cos\theta = t$. The sine branch, similarly transported, defines the Chebyshev polynomials of the second kind, which we meet in [§ 16](#sec-16).
 
 {% include visualization.html src="chebyshev.html#coordinate" title="Chebyshev polynomials as ordinary cosine modes under t equals cos theta" %}
 
@@ -805,7 +811,7 @@ $$M_{n, k} = T_n(t_k) = \cos(n k \pi / N),$$
 
 which is (up to boundary weights) the **Discrete Cosine Transform matrix of type I**. So the DCT is exactly the discrete Chebyshev transform: applying it to a signal sampled at Chebyshev nodes gives the coefficients of the signal's Chebyshev expansion.
 
-Why does this matter for real-world signal compression? The DFT (§ 7) assumes the signal wraps around cyclically: the last sample connects back to the first. When a real signal (an image row, an audio window) does *not* naturally wrap, treating it as though it did introduces a discontinuity at the seam. That discontinuity is inherited by the spectrum as a slowly-decaying tail of Fourier coefficients (the Gibbs phenomenon), so many DFT coefficients must be kept to reconstruct the signal accurately. The DCT lives on a bounded interval instead: the endpoints are handled by the weight $1/\sqrt{1 - t^2}$, not by imposing periodicity. For smooth signals on an interval, DCT coefficients decay much faster than DFT coefficients, so far fewer coefficients need to be kept for a given reconstruction accuracy. This is why JPEG uses an $8 \times 8$ two-dimensional DCT on image blocks, and MP3 uses a modified DCT on audio frames.
+Why does this matter for real-world signal compression? The DFT ([§ 7](#sec-7)) assumes the signal wraps around cyclically: the last sample connects back to the first. When a real signal (an image row, an audio window) does *not* naturally wrap, treating it as though it did introduces a discontinuity at the seam. That discontinuity is inherited by the spectrum as a slowly-decaying tail of Fourier coefficients (the Gibbs phenomenon), so many DFT coefficients must be kept to reconstruct the signal accurately. The DCT lives on a bounded interval instead: the endpoints are handled by the weight $1/\sqrt{1 - t^2}$, not by imposing periodicity. For smooth signals on an interval, DCT coefficients decay much faster than DFT coefficients, so far fewer coefficients need to be kept for a given reconstruction accuracy. This is why JPEG uses an $8 \times 8$ two-dimensional DCT on image blocks, and MP3 uses a modified DCT on audio frames.
 
 ### Bessel functions: $p(t) = t, q(t) = -\nu^2 / t, w(t) = t$ on $[0, R]$
 
@@ -837,17 +843,17 @@ The pattern is that $w$ is the Jacobian of the coordinate parameterization, whic
 
 ---
 
-## § 16. The bridge: symmetry, self-adjointness, and non-abelian representations
+## § 16. The bridge: symmetry, self-adjointness, and non-abelian representations {#sec-16}
 
-The framework we developed for finite abelian groups (§ 1 – § 13) and the framework we used for Sturm–Liouville (§ 14 – § 15) look independent, but they are two views of the same underlying idea. This section sketches the unifying picture, which is the content of **representation theory of compact groups**.
+The framework we developed for finite abelian groups ([§ 1](#sec-1) – [§ 13](#sec-13)) and the framework we used for Sturm–Liouville ([§ 14](#sec-14) – [§ 15](#sec-15)) look independent, but they are two views of the same underlying idea. This section sketches the unifying picture, which is the content of **representation theory of compact groups**.
 
 ### The general setup
 
 Let $G$ be a group acting on a space $X$ (possibly continuous, possibly non-abelian), and let $L^2(X)$ be the space of square-integrable functions on $X$. The action of $G$ on $X$ induces an action on $L^2(X)$ by translation: $(L_g f)(x) = f(g^{-1} \cdot x)$. Any operator $T$ on $L^2(X)$ that commutes with this action (a $G$-equivariant operator) preserves each irreducible piece of the decomposition of $L^2(X)$ under $G$, and is therefore block-diagonalized by any basis that respects the irreducible decomposition.
 
-For finite abelian $G$, irreducibles are 1-dimensional, and the basis is the characters (§ 3). For continuous non-abelian $G$, irreducibles can be higher-dimensional, but there is still a canonical decomposition. The **Peter–Weyl theorem** states this for compact groups: $L^2(G)$ decomposes as a direct sum over the irreducibles of $G$, with each irreducible contributing an orthogonal block whose basis is given by matrix coefficients of that irreducible.
+For finite abelian $G$, irreducibles are 1-dimensional, and the basis is the characters ([§ 3](#sec-3)). For continuous non-abelian $G$, irreducibles can be higher-dimensional, but there is still a canonical decomposition. The **Peter–Weyl theorem** states this for compact groups: $L^2(G)$ decomposes as a direct sum over the irreducibles of $G$, with each irreducible contributing an orthogonal block whose basis is given by matrix coefficients of that irreducible.
 
-The classical orthogonal functions of § 15 are exactly the matrix coefficients (or their diagonals) of specific irreducibles of specific groups.
+The classical orthogonal functions of [§ 15](#sec-15) are exactly the matrix coefficients (or their diagonals) of specific irreducibles of specific groups.
 
 ### Trigonometric functions from $SO(2) \cong S^1$
 
@@ -887,7 +893,7 @@ The first-kind Chebyshev polynomials $T_n$ arise from taking the *real part* of 
 
 $$e^{in\theta} + e^{-in\theta} = 2\cos(n\theta) = 2 T_n(\cos\theta).$$
 
-So both kinds of Chebyshev polynomials live inside the character theory of $SU(2)$: $U_{n-1}$ as the full character of the $n$-dimensional irrep, $T_n$ as (half) the trace of the $n$-th power of the fundamental. The trigonometric identity $T_n(\cos\theta) = \cos(n\theta)$ that made the Sturm–Liouville substitution work in § 15 is not a special feature of Chebyshev polynomials — it is the fact that these polynomials are literally sums of $e^{\pm i n \theta}$ evaluated at the eigenvalues of $D_\theta$, and $\theta$ is the natural coordinate on the circle of diagonal elements of $SU(2)$.
+So both kinds of Chebyshev polynomials live inside the character theory of $SU(2)$: $U_{n-1}$ as the full character of the $n$-dimensional irrep, $T_n$ as (half) the trace of the $n$-th power of the fundamental. The trigonometric identity $T_n(\cos\theta) = \cos(n\theta)$ that made the Sturm–Liouville substitution work in [§ 15](#sec-15) is not a special feature of Chebyshev polynomials — it is the fact that these polynomials are literally sums of $e^{\pm i n \theta}$ evaluated at the eigenvalues of $D_\theta$, and $\theta$ is the natural coordinate on the circle of diagonal elements of $SU(2)$.
 
 {% include visualization.html src="chebyshev.html#trace" title="Chebyshev polynomials from traces of opposite phases" %}
 
