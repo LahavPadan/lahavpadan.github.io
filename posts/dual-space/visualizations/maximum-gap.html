@@ -772,6 +772,17 @@
       svg {
         min-height: 390px;
       }
+
+      .curve-label {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+      }
+
+      .graph-note {
+        max-width: 160px;
+        font-size: 0.68rem;
+        padding: 6px 8px;
+      }
     }
 
     @media (max-width: 520px) {
@@ -810,16 +821,19 @@
 
       .plot-wrap,
       svg {
-        min-height: 350px;
+        min-height: 320px;
       }
 
       .curve-label {
-        font-size: 0.72rem;
+        font-size: 0.66rem;
+        padding: 2px 5px;
       }
 
+      /* Hide the floating explanatory notes on narrow screens —
+         they overlap the plot. The same information appears in the
+         numbered steps panel below the plot. */
       .graph-note {
-        max-width: 150px;
-        font-size: 0.68rem;
+        display: none !important;
       }
 
       .equivalence {
@@ -1156,13 +1170,12 @@
                 \[
                 \langle y,x\rangle-f^*(y)
                 \le f(x)
-                \qquad\text{for every }x.
                 \]
               </p>
 
               <p class="meaning">
-                The green line therefore lies below \(f\) over the
-                entire graph.
+                Holds at every \(x\), so the green line lies below
+                \(f\) over the entire graph.
               </p>
             </div>
           </div>
