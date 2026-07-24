@@ -56,7 +56,7 @@ When the wave represents a particle, the relevant quantity is momentum. The rela
 
 ---
 
-## § 2. Before a packet can move: the relation between $\omega$ and $k$
+## § 2. The dispersion relation, and its two velocities
 
 A single plane wave of the form
 
@@ -74,61 +74,32 @@ is called the **dispersion relation**.
 
 A few classical examples make its origin clear.
 
-### Light in vacuum
-
-Maxwell's equations give
-
-$$
-\partial_t^2 E = c^2\partial_x^2 E.
-$$
-
-Substituting $E = E_0e^{i(kx-\omega t)}$ gives $-\omega^2=-c^2k^2$, and therefore
-
-$$
-\omega(k) = c\lvert k\rvert.
-$$
-
-The relation is linear and therefore **nondispersive**. All frequencies propagate at the same speed $c$, so a packet preserves its shape indefinitely.
-
-### A wave on a stretched string
-
-The equation of motion for a transverse displacement $y(x,t)$ is
-
-$$
-\mu\partial_t^2y = T\partial_x^2y,
-$$
-
-where $T$ is the tension and $\mu$ is the linear mass density. Substitution gives
-
-$$
-\omega(k)=c_s\lvert k\rvert,
-\qquad
-c_s=\sqrt{\frac{T}{\mu}}.
-$$
-
-Again the relation is linear, and again the wave is nondispersive.
-
-### Deep-water waves
-
-Solving the fluid equations with the free-surface boundary condition under gravity $g$ gives
-
-$$
-\omega(k)=\sqrt{g\lvert k\rvert}.
-$$
-
-This dispersion relation is **nonlinear**, and therefore genuinely dispersive. Different frequency components travel at different speeds. A wave packet on the ocean surface consequently does not preserve its shape: it spreads.
-
-### Electromagnetic waves in a material
-
-The effect of the material's polarization on the total field introduces a frequency-dependent refractive index $n(\omega)$, so that
-
-$$
-\omega = \frac{ck}{n(\omega)}.
-$$
-
-This is the setting from which the word *dispersion* takes its name: a prism separates white light into colors because $n$ depends on $\omega$.
-
-{% include visualization.html src="dispersion-relations.html" title="Dispersion relations and the phase- and group-velocity slopes" %}
+<div class="dispersion-cases">
+  <article class="dispersion-case">
+    <p class="dispersion-case__name">Light in vacuum</p>
+    <p class="dispersion-case__from">\(\partial_t^2 E = c^2\partial_x^2 E\)</p>
+    <p class="dispersion-case__to">\(\omega(k) = c\lvert k\rvert\)</p>
+    <p class="dispersion-case__note">Linear — nondispersive. Every frequency propagates at \(c\), so a packet preserves its shape indefinitely.</p>
+  </article>
+  <article class="dispersion-case">
+    <p class="dispersion-case__name">A wave on a stretched string</p>
+    <p class="dispersion-case__from">\(\mu\partial_t^2 y = T\partial_x^2 y\)</p>
+    <p class="dispersion-case__to">\(\omega(k) = c_s\lvert k\rvert,\ c_s=\sqrt{T/\mu}\)</p>
+    <p class="dispersion-case__note">Same form as vacuum with \(c\to c_s\). Tension or mass density change the slope, not the linearity.</p>
+  </article>
+  <article class="dispersion-case">
+    <p class="dispersion-case__name">Deep-water waves</p>
+    <p class="dispersion-case__from">fluid equations with a free-surface boundary under gravity \(g\)</p>
+    <p class="dispersion-case__to">\(\omega(k) = \sqrt{g\lvert k\rvert}\)</p>
+    <p class="dispersion-case__note">Nonlinear — genuinely dispersive. Different frequencies travel at different speeds, so a packet on the surface spreads.</p>
+  </article>
+  <article class="dispersion-case">
+    <p class="dispersion-case__name">Electromagnetic waves in a material</p>
+    <p class="dispersion-case__from">polarization gives a frequency-dependent refractive index \(n(\omega)\)</p>
+    <p class="dispersion-case__to">\(\omega = ck / n(\omega)\)</p>
+    <p class="dispersion-case__note">The setting from which the word <em>dispersion</em> takes its name: a prism separates white light into colors because \(n\) depends on \(\omega\).</p>
+  </article>
+</div>
 
 ### For a matter wave, the order of the problem is reversed
 
@@ -136,9 +107,7 @@ This is the setting from which the word *dispersion* takes its name: a prism sep
 
 The purpose of the development below is to determine $\omega(k)$ for a free particle and then, from that relation, derive the wave equation itself—the Schrödinger equation.
 
----
-
-## § 3. A crest and a packet need not move together
+### A crest and a packet need not move together
 
 For a single plane wave $e^{i(kx-\omega t)}$, the **phase velocity** is defined as
 
@@ -158,7 +127,7 @@ $$
 
 The next section will show why this derivative gives the envelope velocity. For now, consider two physical distinctions.
 
-### When every component travels together
+#### When every component travels together
 
 When $\omega=ck$ is a straight line,
 
@@ -168,7 +137,7 @@ $$
 
 The phase and the packet move together.
 
-### When different components travel differently
+#### When different components travel differently
 
 For deep-water waves, $\omega=\sqrt{gk}$, and therefore
 
@@ -186,9 +155,11 @@ The envelope of the pulse—the outline, the shape, the location of “where the
 
 If the medium is non-dispersive, so that all frequencies have the same phase velocity, then $v_p$ and $v_g$ are equal, and the pulse moves rigidly: the envelope and carrier travel together. In a dispersive medium, however, $v_p \neq v_g$. The envelope then moves at one speed while the carrier oscillations inside it move at another. Crests appear at the back of the envelope, slide through it at the relative speed $v_p-v_g$, and disappear at the front—or the other way around, depending on the sign of the dispersion.
 
+{% include visualization.html src="dispersion-relations.html" title="The medium chooses the curve ω = ω(k)" %}
+
 ---
 
-## § 4. Building a localized wave from plane waves
+## § 3. Building a localized wave from plane waves
 
 Consider a superposition of plane waves with weights $A(k)$:
 
@@ -266,7 +237,7 @@ It therefore does not depend on position and time separately: to first order, it
 
 ---
 
-## § 5. The same structure with only two waves
+## § 4. The same structure with only two waves
 
 As an elementary special case, take $A(k)$ to consist of two Dirac delta functions:
 
@@ -330,7 +301,7 @@ which is the group velocity obtained above.
 
 ---
 
-## § 6. Why the wave-packet velocity leads to $p = \hbar k$
+## § 5. Why the wave-packet velocity leads to $p = \hbar k$
 
 We now have three facts.
 
@@ -453,7 +424,7 @@ The phase of the wavefunction does not represent the position of the particle. I
 
 ---
 
-## § 7. From the dispersion relation to the Schrödinger equation
+## § 6. From the dispersion relation to the Schrödinger equation
 
 The dispersion relation
 
@@ -575,7 +546,7 @@ These are the momentum and energy operators used in the operator formulation of 
 
 ---
 
-## § 8. What Fourier analysis becomes after $p = \hbar k$
+## § 7. What Fourier analysis becomes after $p = \hbar k$
 
 Now that the relation $p=\hbar k$ has been established, we can return to the Fourier inequality
 
@@ -585,7 +556,7 @@ $$
 
 and translate it into physics.
 
-### § 8.1. The Heisenberg uncertainty relation
+### § 7.1. The Heisenberg uncertainty relation
 
 Multiplying by $\hbar$ gives immediately
 
@@ -597,7 +568,7 @@ $$
 
 This is Heisenberg's uncertainty principle. Here it follows directly from the Fourier inequality after using $k=p/\hbar$.
 
-### § 8.2. Why confinement leaves no zero-energy state
+### § 7.2. Why confinement leaves no zero-energy state
 
 An infinite potential well is the model
 
@@ -663,7 +634,7 @@ This gives the correct scale. The exact Schrödinger solution contains the addit
 
 **Confining a particle to a finite region therefore implies a positive ground-state energy**, because the Fourier transform of a function with finite support cannot be a delta function at $k=0$.
 
-### § 8.3. Tunneling without the “borrowed energy” story
+### § 7.3. Tunneling without the “borrowed energy” story
 
 For a rectangular potential barrier of height $V>E$, the time-independent Schrödinger equation inside the barrier is
 
@@ -723,7 +694,7 @@ The physical name for this phenomenon is **tunneling**. Its most basic example i
 
 ---
 
-## § 9. What the next Taylor term does to the packet
+## § 8. What the next Taylor term does to the packet
 
 Return to the second-order term in the Taylor expansion of $\omega(k)$:
 
@@ -878,7 +849,7 @@ The spreading of the packet corresponds to the spreading of heat. One can someti
 
 ---
 
-## § 10. The same argument with relativistic energy
+## § 9. The same argument with relativistic energy
 
 So far, we used the classical nonrelativistic energy
 
@@ -1018,7 +989,7 @@ That difference is the source of interpretation problems: the probability densit
 
 ---
 
-## § 11. The chain of ideas
+## § 10. The chain of ideas
 
 The conceptual path is now complete.
 

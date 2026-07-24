@@ -1475,6 +1475,77 @@ kbd {
 .article-prose mjx-container:not([display="true"]) {
   color: var(--post-accent-ink);
 }
+
+/* Comparison-case grid ----------------------------------------------------
+   A small set of parallel objects (a wave equation and its dispersion
+   relation, one per row) reads as a set when it shares a column, not as
+   prose that has to be re-read for each item. The grid is the shape; the
+   left rule ties every card back to the post accent so it reads as part of
+   the article rather than a foreign table. */
+.article-prose .dispersion-cases {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.05em 1.35em;
+  margin: 1.8em 0 2.2em;
+}
+.article-prose .dispersion-case {
+  min-width: 0;
+  padding: 0.15em 0 0.15em 1em;
+  border-left: 2px solid var(--post-accent-border);
+}
+.article-prose .dispersion-case > p {
+  margin: 0 0 0.35em;
+}
+.article-prose .dispersion-case > p:last-child {
+  margin-bottom: 0;
+}
+.article-prose .dispersion-case__name {
+  color: var(--post-accent-ink);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.95em;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+.article-prose .dispersion-case__from,
+.article-prose .dispersion-case__to {
+  overflow-x: auto;
+  font-size: 0.94em;
+  line-height: 1.4;
+}
+.article-prose .dispersion-case__to::before {
+  content: "→\a0";
+  color: var(--post-accent);
+  font-weight: 700;
+}
+.article-prose .dispersion-case__note {
+  color: var(--muted);
+  font-family: var(--font-reading);
+  font-style: italic;
+  font-size: 0.88em;
+  line-height: 1.5;
+}
+@media (max-width: 640px) {
+  .article-prose .dispersion-cases {
+    grid-template-columns: 1fr;
+    gap: 0.9em;
+  }
+}
+
+/* MathJax \eqref links (e.g. "(2)") — the browser default is a saturated blue
+   that vanishes on the dark theme's #11131a background. Adopt the post accent
+   so the number stays legible on both themes. */
+.article-prose mjx-container a,
+.article-prose .MathJax a {
+  color: var(--post-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.article-prose mjx-container a:hover,
+.article-prose .MathJax a:hover {
+  filter: brightness(1.15);
+}
 .article-prose--cyber h2,
 .article-prose--cyber h3 {
   color: var(--post-accent-ink);

@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Dual Space
-description: A bottom-up account of dual spaces, adjoints, dual cones, convex conjugates, optimisation duality, and cotangent spaces.
+description: A bottom-up account of the convex conjugate, the broader duality constructions it fits into, and its role in constrained optimisation.
 date: 2024-09-04
 tags:
 - math
