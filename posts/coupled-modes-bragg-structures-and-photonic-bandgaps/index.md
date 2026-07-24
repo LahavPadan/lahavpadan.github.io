@@ -2,7 +2,7 @@
 layout: post
 title: "Coupled Modes, Bragg Structures, and Photonic Bandgaps"
 description: "A unified derivation of mode splitting, avoided crossings, Bragg stopbands, transfer matrices, and photonic bandgaps from the same two-mode algebra."
-date: 2026-07-10
+date: 2026-04-20
 tags:
   - physics
   - math
