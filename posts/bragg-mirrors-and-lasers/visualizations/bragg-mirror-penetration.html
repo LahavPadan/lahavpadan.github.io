@@ -473,6 +473,8 @@
     .bmp-svg-marker { fill: var(--bmp-paper); stroke: var(--bmp-main); stroke-width: 3; vector-effect: non-scaling-stroke; }
     .bmp-svg-medium { fill: color-mix(in srgb, var(--bmp-main-soft) 62%, transparent); }
     .bmp-svg-flux { fill: color-mix(in srgb, var(--bmp-teal-soft) 72%, transparent); }
+    .bmp-svg-layer-h { fill: color-mix(in srgb, var(--bmp-main) 14%, transparent); }
+    .bmp-svg-layer-l { fill: transparent; }
 
     .bmp-derivation {
       display: grid;
@@ -601,23 +603,23 @@
       </div>
       <div class="bmp-bridge__step">
         <span class="bmp-bridge__label">Amplitude decay length</span>
-        <span class="bmp-bridge__math"><i>L</i><sub>B</sub> = 1 / κ</span>
+        <span class="bmp-bridge__math">1 / κ</span>
       </div>
     </div>
 
     <section class="bmp-controls" aria-label="Mirror length control">
       <div>
         <div class="bmp-control__top">
-          <label class="bmp-control__label" for="length-control">Physical length in Bragg lengths</label>
-          <output class="bmp-control__value" id="length-output" for="length-control">κL = L/LB = 3.00</output>
+          <label class="bmp-control__label" for="length-control">Physical length in units of 1/κ</label>
+          <output class="bmp-control__value" id="length-output" for="length-control">κL = 3.00</output>
         </div>
         <input id="length-control" type="range" min="0.2" max="5" step="0.05" value="3" aria-label="Set kappa times mirror length">
       </div>
       <div class="bmp-presets" aria-label="Length presets">
-        <button class="bmp-preset" type="button" data-length="1">1 Bragg length</button>
+        <button class="bmp-preset" type="button" data-length="1">κL = 1</button>
         <button class="bmp-preset" type="button" data-length="2.65">κL = 2.65</button>
         <button class="bmp-preset" type="button" data-length="3">99% power</button>
-        <button class="bmp-preset" type="button" data-length="4">4 Bragg lengths</button>
+        <button class="bmp-preset" type="button" data-length="4">κL = 4</button>
       </div>
     </section>
 
@@ -675,31 +677,12 @@
         </div>
       </div>
 
-      <div class="bmp-results" aria-live="polite">
-        <div class="bmp-result">
-          <span class="bmp-result__label">amplitude reflection</span>
-          <span class="bmp-result__value" id="r-readout">|r| = tanh N = 0.9951</span>
-        </div>
-        <div class="bmp-result bmp-result--main">
-          <span class="bmp-result__label">power reflectivity</span>
-          <span class="bmp-result__value" id="R-readout">R = tanh² N = 99.01%</span>
-        </div>
-        <div class="bmp-result">
-          <span class="bmp-result__label">power transmission</span>
-          <span class="bmp-result__value" id="T-readout">T = sech² N = 0.99%</span>
-        </div>
-        <div class="bmp-result">
-          <span class="bmp-result__label">rear-face amplitude</span>
-          <span class="bmp-result__value" id="rear-readout">|A(L)| = sech N = 0.0993</span>
-        </div>
-      </div>
-
       <div class="bmp-plots">
         <article class="bmp-panel bmp-plot-panel">
           <div class="bmp-plot-head">
             <div>
               <h3>Envelope amplitudes inside the finite mirror</h3>
-              <p>Horizontal position is measured in Bragg lengths: <i>z</i>/<i>L</i><sub>B</sub> = κ<i>z</i>.</p>
+              <p>Horizontal position is measured in units of the decay length 1/κ: horizontal coordinate is κ<i>z</i>. Shaded bands mark the alternating high-index (H) and low-index (L) layers of the underlying grating.</p>
             </div>
             <div class="bmp-legend" aria-label="Profile legend">
               <span class="bmp-legend__item bmp-legend__item--a"><span class="bmp-legend__swatch"></span>|A(z)| forward</span>
@@ -708,7 +691,7 @@
             </div>
           </div>
           <div class="bmp-svg-wrap">
-            <svg id="profile-plot" viewBox="0 0 760 330" role="img" aria-label="Forward and backward envelope profiles inside a finite Bragg mirror"></svg>
+            <svg id="profile-plot" viewBox="0 0 760 330" role="img" aria-label="Forward and backward envelope profiles inside a finite Bragg mirror, overlaid on the alternating high and low index layers"></svg>
           </div>
         </article>
 
@@ -716,7 +699,7 @@
           <div class="bmp-plot-head">
             <div>
               <h3>Reflectivity versus mirror length</h3>
-              <p>The horizontal scale is <i>N</i>=κ<i>L</i>=<i>L</i>/<i>L</i><sub>B</sub>.</p>
+              <p>The horizontal scale is <i>N</i>=κ<i>L</i>.</p>
             </div>
           </div>
           <div class="bmp-svg-wrap">
@@ -737,38 +720,21 @@
 
       <div class="bmp-derivation">
         <article class="bmp-derivation__card">
-          <h3>Amplitude Bragg length</h3>
+          <h3>Amplitude decay length</h3>
           <p>For a semi-infinite mirror at exact Bragg tuning, the non-growing eigenmode is</p>
-          <span class="bmp-mini-equation">|E(z)| ∝ e<sup>−κz</sup> = e<sup>−z/L<sub>B</sub></sup>.</span>
-          <p>After one <i>L</i><sub>B</sub>=1/κ, the field amplitude is 1/e of its surface value.</p>
-        </article>
-        <article class="bmp-derivation__card">
-          <h3>Intensity decay length</h3>
-          <p>Power or intensity is quadratic in field amplitude:</p>
-          <span class="bmp-mini-equation">I(z) ∝ e<sup>−2κz</sup> = e<sup>−z/(L<sub>B</sub>/2)</sup>.</span>
-          <p>Its e-folding length is therefore <i>L</i><sub>B</sub>/2, not <i>L</i><sub>B</sub>.</p>
-        </article>
-        <article class="bmp-derivation__card">
-          <h3>Effective reflection position</h3>
-          <p>The centroid of that intensity-like exponential is</p>
-          <span class="bmp-mini-equation">∫z e<sup>−2κz</sup>dz / ∫e<sup>−2κz</sup>dz = 1/(2κ).</span>
-          <p>This gives the useful exact-Bragg, long-mirror estimate <i>L</i><sub>pen</sub>≈<i>L</i><sub>B</sub>/2.</p>
+          <span class="bmp-mini-equation">|E(z)| ∝ e<sup>−κz</sup>.</span>
+          <p>After one length 1/κ, the field amplitude is 1/e of its surface value; the intensity |E|<sup>2</sup>, quadratic in the amplitude, is 1/e over the shorter length 1/(2κ).</p>
         </article>
       </div>
     </section>
 
-    <aside class="bmp-correction" aria-label="Correction to the former ninety-nine percent claim">
+    <aside class="bmp-correction" aria-label="Amplitude versus power">
       <span class="bmp-correction__mark">!</span>
       <div>
         <h3>Amplitude is not power</h3>
-        <p>At κ<i>L</i>=2.65, tanh(κ<i>L</i>)≈0.990 is the <em>amplitude</em> reflection coefficient, while <i>R</i>=tanh²(κ<i>L</i>)≈0.980. Requiring <i>R</i>&gt;99% gives κ<i>L</i>&gt;atanh(√0.99)=2.993 — essentially three Bragg lengths.</p>
+        <p>At κ<i>L</i>=2.65, tanh(κ<i>L</i>)≈0.990 is the <em>amplitude</em> reflection coefficient, while <i>R</i>=tanh²(κ<i>L</i>)≈0.980. Requiring <i>R</i>&gt;99% gives κ<i>L</i>&gt;atanh(√0.99)=2.993 — a physical length of about 3/κ.</p>
       </div>
     </aside>
-
-    <footer class="bmp-conclusion">
-      <span class="bmp-conclusion__label">The missing logical chain</span>
-      <p><strong>The hyperbola supplies the imaginary wavenumber and hence the local decay scale.</strong> The finite mirror’s reflectivity comes only after the forward/backward coupled equations are solved with both boundaries. That boundary-value problem is why exponentials combine into cosh and sinh, and why the final answer is <i>R</i>=tanh²(κ<i>L</i>).</p>
-    </footer>
   </main>
 
   <script>
@@ -778,10 +744,6 @@
       const root = document.getElementById('bragg-penetration-viz');
       const lengthInput = document.getElementById('length-control');
       const lengthOutput = document.getElementById('length-output');
-      const rReadout = document.getElementById('r-readout');
-      const RReadout = document.getElementById('R-readout');
-      const TReadout = document.getElementById('T-readout');
-      const rearReadout = document.getElementById('rear-readout');
       const profileSvg = document.getElementById('profile-plot');
       const reflectivitySvg = document.getElementById('reflectivity-plot');
       const presetButtons = Array.from(root.querySelectorAll('[data-length]'));
@@ -819,6 +781,25 @@
 
         profileSvg.appendChild(svgEl('rect', { x: left, y: top, width, height, rx: 7, class: 'bmp-svg-medium' }));
 
+        // Alternating high-index (H) / low-index (L) layer bands showing the underlying grating.
+        // The mirror occupies 0 <= κz <= N; we show ~12 H/L pairs across it for a legible periodic pattern.
+        const nBands = Math.max(4, Math.round(24 * Math.min(1, N / 4)));
+        const bandWidth = width / nBands;
+        for (let b = 0; b < nBands; b += 1) {
+          profileSvg.appendChild(svgEl('rect', {
+            x: left + b * bandWidth,
+            y: top,
+            width: bandWidth,
+            height,
+            class: b % 2 === 0 ? 'bmp-svg-layer-h' : 'bmp-svg-layer-l'
+          }));
+        }
+        // H / L labels on the first pair, so viewers can read the encoding.
+        if (nBands >= 2) {
+          addText(profileSvg, left + bandWidth / 2, top + 14, 'H', 'bmp-svg-text bmp-svg-text--strong', 'middle');
+          addText(profileSvg, left + bandWidth * 1.5, top + 14, 'L', 'bmp-svg-text bmp-svg-text--strong', 'middle');
+        }
+
         [0, .25, .5, .75, 1].forEach(tick => {
           const yy = y(tick);
           profileSvg.appendChild(svgEl('line', { x1: left, y1: yy, x2: right, y2: yy, class: 'bmp-svg-grid' }));
@@ -840,7 +821,7 @@
 
         profileSvg.appendChild(svgEl('line', { x1: left, y1: bottom, x2: right, y2: bottom, class: 'bmp-svg-axis' }));
         profileSvg.appendChild(svgEl('line', { x1: left, y1: top, x2: left, y2: bottom, class: 'bmp-svg-axis' }));
-        addText(profileSvg, (left + right) / 2, axisY, 'z / LB = κz', 'bmp-svg-text bmp-svg-text--strong', 'middle');
+        addText(profileSvg, (left + right) / 2, axisY, 'κz', 'bmp-svg-text bmp-svg-text--strong', 'middle');
         addText(profileSvg, 15, 24, 'relative amplitude', 'bmp-svg-text bmp-svg-text--strong');
 
         const denom = Math.cosh(N);
@@ -893,7 +874,7 @@
         });
         reflectivitySvg.appendChild(svgEl('line', { x1: left, y1: bottom, x2: right, y2: bottom, class: 'bmp-svg-axis' }));
         reflectivitySvg.appendChild(svgEl('line', { x1: left, y1: top, x2: left, y2: bottom, class: 'bmp-svg-axis' }));
-        addText(reflectivitySvg, (left + right) / 2, 320, 'N = κL = L / LB', 'bmp-svg-text bmp-svg-text--strong', 'middle');
+        addText(reflectivitySvg, (left + right) / 2, 320, 'N = κL', 'bmp-svg-text bmp-svg-text--strong', 'middle');
 
         const threshold = Math.atanh(Math.sqrt(.99));
         reflectivitySvg.appendChild(svgEl('line', { x1: left, y1: y(.99), x2: right, y2: y(.99), class: 'bmp-svg-threshold' }));
@@ -918,16 +899,8 @@
 
       function update() {
         const N = Number(lengthInput.value);
-        const r = Math.tanh(N);
-        const R = r * r;
-        const t = sech(N);
-        const T = t * t;
 
-        lengthOutput.textContent = `κL = L/LB = ${N.toFixed(2)}`;
-        rReadout.textContent = `|r| = tanh N = ${decimal(r)}`;
-        RReadout.textContent = `R = tanh² N = ${percent(R)}`;
-        TReadout.textContent = `T = sech² N = ${percent(T)}`;
-        rearReadout.textContent = `|A(L)| = sech N = ${decimal(t)}`;
+        lengthOutput.textContent = `κL = ${N.toFixed(2)}`;
 
         presetButtons.forEach(button => {
           button.setAttribute('aria-pressed', String(Math.abs(Number(button.dataset.length) - N) < .026));

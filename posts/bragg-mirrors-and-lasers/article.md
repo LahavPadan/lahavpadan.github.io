@@ -225,7 +225,7 @@ For a stack of $N$ high-low pairs plus a final high layer, sandwiched between a 
 
 $$R = \left( \frac{n_0\, n_L^{2N} - n_s\, n_H^{2N}}{n_0\, n_L^{2N} + n_s\, n_H^{2N}} \right)^2. \tag{7}\label{eq:dbr-refl}$$
 
-The formula falls out of the transfer-matrix product for the stack at quarter-wave thickness — the [transfer-matrix formalism from the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-8) gives it directly. We take \eqref{eq:dbr-refl} here as the closed-form output.
+The formula falls out of the transfer-matrix product for the stack at quarter-wave thickness — the [transfer-matrix formalism from the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-5) gives it directly. We take \eqref{eq:dbr-refl} here as the closed-form output.
 
 How quickly $R$ approaches 1 as we add periods depends on the ratio $n_H / n_L$:
 
@@ -236,7 +236,7 @@ For a large enough $N$, \eqref{eq:dbr-refl} agrees with the coupled-mode formula
 
 ### § 3.2. Bandwidth from the index difference {#sec-3-2}
 
-The formula $\kappa = \pi\, \Delta n / \lambda_B$, derived at [§ 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4), is for a sinusoidal index modulation. A DBR is instead *piecewise-constant* — the refractive index takes only two values, $n_H$ and $n_L$. Its Fourier expansion has a fundamental cosine coefficient of $4/\pi$ times the peak-to-average amplitude of the square wave, so the coupling seen at the fundamental Bragg wavelength is
+The formula $\kappa = \pi\, \Delta n / \lambda_B$, derived at [§ 2 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-2), is for a sinusoidal index modulation. A DBR is instead *piecewise-constant* — the refractive index takes only two values, $n_H$ and $n_L$. Its Fourier expansion has a fundamental cosine coefficient of $4/\pi$ times the peak-to-average amplitude of the square wave, so the coupling seen at the fundamental Bragg wavelength is
 
 $$\kappa_\text{DBR} = \frac{2\, \Delta n}{\lambda_0}, \qquad \Delta n \equiv n_H - n_L.$$
 
@@ -257,7 +257,7 @@ That ties the two design axes together. For a fixed index difference $\Delta n$,
 
 A square-wave DBR has stopbands not just at $\lambda_0$, but also at odd sub-multiples $\lambda_0 / 3, \lambda_0 / 5, \ldots$ At those shorter wavelengths, the same quarter-wave layer is also a $3\lambda/4, 5\lambda/4, \ldots$ layer, satisfying the Bragg condition at higher order.
 
-The strength of the $m$-th stopband is set by the corresponding Fourier coefficient $\varepsilon_m$ of the modulation profile — the modulation's **structure factor**. The [Bragg-condition background in the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-3) develops this for a general periodic $\varepsilon(z)$. The rule: a purely sinusoidal modulation has only the fundamental $\varepsilon_{\pm 1}$ nonzero and produces only the first-order stopband, while a square-wave modulation has $\varepsilon_m \propto 1/m$ for odd $m$ (and zero for even $m$), producing weaker higher-order stopbands at each odd $m$.
+The strength of the $m$-th stopband is set by the corresponding Fourier coefficient $\varepsilon_m$ of the modulation profile — the modulation's **structure factor**. The [Bragg-condition background in the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-1) develops this for a general periodic $\varepsilon(z)$. The rule: a purely sinusoidal modulation has only the fundamental $\varepsilon_{\pm 1}$ nonzero and produces only the first-order stopband, while a square-wave modulation has $\varepsilon_m \propto 1/m$ for odd $m$ (and zero for even $m$), producing weaker higher-order stopbands at each odd $m$.
 
 Two engineering consequences:
 
@@ -469,7 +469,7 @@ different parts of the grating reflect different wavelengths.
 
 An incident wave at wavelength $\lambda$ propagates into the grating from the left, at first outside every local stopband, until it reaches the depth $z^*$ at which $\lambda_B(z^*) = \lambda$ — its "own" Bragg point. There it reflects. Shorter wavelengths turn around near the entrance; longer wavelengths propagate deeper before turning around. Different wavelengths therefore acquire different round-trip *times*, and the grating acts as a **dispersive reflector**: group delay as a function of wavelength has a controlled slope, engineered by the chirp profile.
 
-The primary application is dispersion compensation in fiber-optic links. Standard telecom fiber has group-velocity dispersion of about $17\,\text{ps}/(\text{nm} \cdot \text{km})$: a pulse with 10 nm of spectral bandwidth broadens by 170 ps of temporal width after 1 km of propagation. A chirped fiber Bragg grating with the *opposite* sign of dispersion, of matched magnitude, undoes the broadening: the received pulse is recompressed to its original width. Real designs must match not just first-order dispersion but the slope (second-order dispersion) and polarization behavior across the spectrum; those refinements need the full transfer-matrix treatment of [§ 8 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-8).
+The primary application is dispersion compensation in fiber-optic links. Standard telecom fiber has group-velocity dispersion of about $17\,\text{ps}/(\text{nm} \cdot \text{km})$: a pulse with 10 nm of spectral bandwidth broadens by 170 ps of temporal width after 1 km of propagation. A chirped fiber Bragg grating with the *opposite* sign of dispersion, of matched magnitude, undoes the broadening: the received pulse is recompressed to its original width. Real designs must match not just first-order dispersion but the slope (second-order dispersion) and polarization behavior across the spectrum; those refinements need the full transfer-matrix treatment of [§ 5 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-5).
 
 A related use is intracavity dispersion compensation in femtosecond lasers, where the round-trip group-velocity dispersion from prisms, air, and the gain medium has to be cancelled to sustain pulses of picosecond duration or shorter. Chirped mirrors are the standard element for delivering a prescribed group-delay profile.
 
@@ -477,7 +477,7 @@ The mechanism is a direct reading of \eqref{eq:hyperbola}'s edge behavior: group
 
 ### § 5.3. Co-propagating coupling and long-period gratings {#sec-5-3}
 
-The coupled-mode analysis of [§ 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4) handled a *counter*-propagating pair: forward and backward waves along the same waveguide, coupled by a grating with $G_1 = 2 k_B$ that supplies the round-trip momentum kick. The same formalism applies to a *co*-propagating pair: two guided modes of a waveguide, both moving in the same direction with wavenumbers $k_1 > k_2$, coupled by a grating with $G = k_1 - k_2$.
+The coupled-mode analysis of [§ 2 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-2) handled a *counter*-propagating pair: forward and backward waves along the same waveguide, coupled by a grating with $G_1 = 2 k_B$ that supplies the round-trip momentum kick. The same formalism applies to a *co*-propagating pair: two guided modes of a waveguide, both moving in the same direction with wavenumbers $k_1 > k_2$, coupled by a grating with $G = k_1 - k_2$.
 
 The coupled-mode equations for the two co-propagating amplitudes are
 
@@ -527,4 +527,4 @@ Every section reads \eqref{eq:hyperbola} — the Bragg dispersion $q^2 = \delta^
 
 At $\delta = \pm\kappa$: the two edge standing waves and which of them sits at the lower frequency (§ 1). At $\delta = 0$ inside an infinite medium: the Bragg length $L_B = 1/\kappa$ (§ 2.1). Inside the stopband with two boundaries: the finite-mirror reflectivity $\tanh^2(\kappa L)$ (§ 2.2). Piecewise-constant modulation as fabricated hardware: the DBR (§ 3). Modulation in the presence of gain: the DFB laser and its DBR-laser and Vernier-tunable cousins (§ 4). Modulation shaped along its length: apodization, chirp, co-propagating coupling, and quasi-phase matching (§ 5).
 
-The two ingredients that make all of it work were the two-wave truncation of the previous post's § 4 and the accessibility of both stopband edges from § 6. Every device-specific formula in this post follows from those two facts, taken through one universal hyperbola.
+The two ingredients that make all of it work were the two-wave truncation of the previous post's § 2 and the accessibility of both stopband edges from § 4. Every device-specific formula in this post follows from those two facts, taken through one universal hyperbola.

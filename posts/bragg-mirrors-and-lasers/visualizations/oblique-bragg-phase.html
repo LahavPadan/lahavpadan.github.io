@@ -439,7 +439,6 @@
 
 <figure class="oblique-bragg" aria-labelledby="oblique-bragg-title">
   <header class="oblique-bragg__head">
-    <p class="oblique-bragg__kicker">Oblique incidence</p>
     <h4 class="oblique-bragg__title" id="oblique-bragg-title">The stack phase follows the normal wavevector component</h4>
     <p class="oblique-bragg__lead">Tilting the wave makes the diagonal crossing longer, but a multilayer is periodic along its normal coordinate <i>z</i>. The phase accumulated from one interface plane to the next is therefore set by <i>k</i><sub>z,i</sub>, not by the geometric ray length alone.</p>
   </header>
@@ -447,20 +446,23 @@
   <div class="oblique-bragg__steps">
     <section class="oblique-bragg__step" aria-labelledby="oblique-geometry-title">
       <div class="oblique-bragg__step-head">
-        <span class="oblique-bragg__step-index">1 · Geometry</span>
-        <h5 class="oblique-bragg__step-title" id="oblique-geometry-title">The diagonal crossing becomes longer</h5>
-        <p class="oblique-bragg__step-note">The physical layer thickness remains fixed.</p>
+        <span class="oblique-bragg__step-index">1 · Geometry &amp; phase</span>
+        <h5 class="oblique-bragg__step-title" id="oblique-geometry-title">Diagonal ray, but only the normal component advances the stack coordinate</h5>
+        <p class="oblique-bragg__step-note">The physical layer thickness is fixed. The ray crosses diagonally; the wavevector decomposes along <i>z</i> (normal, the periodicity axis) and along <i>x</i> (tangential). Only <i>k</i><sub>z,i</sub> accumulates phase between one interface plane and the next.</p>
       </div>
 
       <svg class="oblique-bragg__drawing" viewBox="0 0 320 220" role="img" aria-labelledby="oblique-geometry-svg-title oblique-geometry-svg-desc">
-        <title id="oblique-geometry-svg-title">An oblique ray crossing a dielectric layer</title>
-        <desc id="oblique-geometry-svg-desc">A ray crosses between two parallel interfaces. The vertical layer thickness is fixed while the diagonal ray segment is longer.</desc>
+        <title id="oblique-geometry-svg-title">Oblique ray crossing a dielectric layer, with wavevector decomposition</title>
+        <desc id="oblique-geometry-svg-desc">A ray crosses between two parallel interfaces at angle θ<sub>i</sub>. The vertical layer thickness d<sub>i</sub> is fixed while the diagonal ray segment ℓ<sub>i</sub> = d<sub>i</sub>/cos θ<sub>i</sub> is longer. Overlaid on the same ray is its wavevector k<sub>i</sub>, whose normal component k<sub>z,i</sub> = k<sub>i</sub> cos θ<sub>i</sub> is what advances the stack phase.</desc>
         <defs>
           <marker id="oblique-geometry-ray-arrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
             <path d="M0,0 L10,5 L0,10 z" fill="var(--ob-ink)"></path>
           </marker>
           <marker id="oblique-geometry-dim-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
             <path d="M0,5 L10,0 L10,10 z" fill="var(--ob-accent)"></path>
+          </marker>
+          <marker id="oblique-geometry-k-arrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ob-accent)"></path>
           </marker>
         </defs>
 
@@ -469,14 +471,23 @@
         <line class="ob-interface" x1="42" y1="176" x2="278" y2="176"></line>
 
         <line class="ob-guide" x1="104" y1="20" x2="104" y2="197"></line>
-        <text class="ob-label-small ob-label-muted" x="104" y="15" text-anchor="middle">layer normal</text>
+        <text class="ob-label-small ob-label-muted" x="104" y="15" text-anchor="middle">layer normal (z)</text>
 
+        <!-- Diagonal ray -->
         <line class="ob-ink-line" x1="104" y1="42" x2="228" y2="176" marker-end="url(#oblique-geometry-ray-arrow)"></line>
         <path class="ob-accent-line" d="M104 78 A36 36 0 0 0 128 68"></path>
         <text class="ob-label-accent" x="135" y="74">θ<tspan baseline-shift="sub" font-size="9">i</tspan></text>
 
+        <!-- Layer thickness dimension -->
         <line class="ob-accent-line" x1="70" y1="48" x2="70" y2="170" marker-start="url(#oblique-geometry-dim-arrow)" marker-end="url(#oblique-geometry-dim-arrow)"></line>
         <text class="ob-label-accent" x="60" y="112" text-anchor="end">d<tspan baseline-shift="sub" font-size="9">i</tspan></text>
+
+        <!-- Wavevector k_i along the ray, and its normal projection k_{z,i} -->
+        <line class="ob-accent-line" x1="166" y1="109" x2="196" y2="141" marker-end="url(#oblique-geometry-k-arrow)"></line>
+        <text class="ob-label-accent" x="204" y="143">k<tspan baseline-shift="sub" font-size="9">i</tspan></text>
+        <line class="ob-accent-line" x1="166" y1="109" x2="166" y2="141" marker-end="url(#oblique-geometry-k-arrow)" opacity="0.85"></line>
+        <text class="ob-label-accent" x="152" y="138" text-anchor="end">k<tspan baseline-shift="sub" font-size="9">z,i</tspan></text>
+        <line class="ob-guide" x1="166" y1="141" x2="196" y2="141"></line>
 
         <circle cx="104" cy="42" r="3.3" fill="var(--ob-surface)" stroke="var(--ob-ink)" stroke-width="1.7"></circle>
         <circle cx="228" cy="176" r="3.3" fill="var(--ob-surface)" stroke="var(--ob-ink)" stroke-width="1.7"></circle>
@@ -485,68 +496,20 @@
       </svg>
 
       <div class="oblique-bragg__equation">
-        <span class="oblique-bragg__equation-label">Ray distance</span>
-        <span class="oblique-bragg__equation-math">ℓ<sub>i</sub> = d<sub>i</sub>/cos&nbsp;θ<sub>i</sub></span>
-      </div>
-      <p class="oblique-bragg__reading">As θ<sub>i</sub> increases, cos θ<sub>i</sub> decreases, so the diagonal distance increases.</p>
-    </section>
-
-    <section class="oblique-bragg__step" aria-labelledby="oblique-phase-title">
-      <div class="oblique-bragg__step-head">
-        <span class="oblique-bragg__step-index">2 · Phase</span>
-        <h5 class="oblique-bragg__step-title" id="oblique-phase-title">Only the normal component advances the stack coordinate</h5>
-        <p class="oblique-bragg__step-note">Resolve the wavevector along <i>z</i>, the direction in which the layers repeat.</p>
-      </div>
-
-      <svg class="oblique-bragg__drawing" viewBox="0 0 320 220" role="img" aria-labelledby="oblique-phase-svg-title oblique-phase-svg-desc">
-        <title id="oblique-phase-svg-title">Wavevector decomposition into tangential and normal components</title>
-        <desc id="oblique-phase-svg-desc">The wavevector is decomposed into a horizontal tangential component and a vertical normal component. The normal component is highlighted.</desc>
-        <defs>
-          <marker id="oblique-phase-ink-arrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-            <path d="M0,0 L10,5 L0,10 z" fill="var(--ob-ink)"></path>
-          </marker>
-          <marker id="oblique-phase-accent-arrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-            <path d="M0,0 L10,5 L0,10 z" fill="var(--ob-accent)"></path>
-          </marker>
-        </defs>
-
-        <line class="ob-axis" x1="62" y1="176" x2="273" y2="176"></line>
-        <line class="ob-axis" x1="62" y1="176" x2="62" y2="30"></line>
-        <text class="ob-label-small ob-label-muted" x="280" y="181">x</text>
-        <text class="ob-label-small ob-label-muted" x="56" y="25" text-anchor="end">z</text>
-
-        <line class="ob-ink-line" x1="62" y1="176" x2="224" y2="55" marker-end="url(#oblique-phase-ink-arrow)"></line>
-        <line class="ob-guide" x1="224" y1="55" x2="224" y2="176"></line>
-        <line class="ob-guide" x1="62" y1="55" x2="224" y2="55"></line>
-
-        <line class="ob-accent-line" x1="62" y1="176" x2="62" y2="55" marker-end="url(#oblique-phase-accent-arrow)"></line>
-        <line class="ob-axis" x1="62" y1="176" x2="224" y2="176"></line>
-
-        <text x="230" y="54">k<tspan baseline-shift="sub" font-size="9">i</tspan></text>
-        <text class="ob-label-accent" x="48" y="111" text-anchor="end">k<tspan baseline-shift="sub" font-size="9">z,i</tspan></text>
-        <text class="ob-label-small ob-label-muted" x="143" y="196" text-anchor="middle">k<tspan baseline-shift="sub" font-size="8">x</tspan></text>
-
-        <path class="ob-accent-line" d="M62 137 A39 39 0 0 1 86 145"></path>
-        <text class="ob-label-accent" x="91" y="144">θ<tspan baseline-shift="sub" font-size="9">i</tspan></text>
-
-        <text class="ob-label-small ob-label-muted" x="160" y="20" text-anchor="middle">normal projection</text>
-      </svg>
-
-      <div class="oblique-bragg__equation">
-        <span class="oblique-bragg__equation-label">Layer phase</span>
+        <span class="oblique-bragg__equation-label">Ray distance vs layer phase</span>
         <span class="oblique-bragg__equation-math">
-          <span class="oblique-bragg__equation-line">φ<sub>i</sub> = k<sub>z,i</sub>d<sub>i</sub></span>
-          <span class="oblique-bragg__equation-line">= (2π/λ)n<sub>i</sub>d<sub>i</sub>cos&nbsp;θ<sub>i</sub></span>
+          <span class="oblique-bragg__equation-line">ℓ<sub>i</sub> = d<sub>i</sub>/cos&nbsp;θ<sub>i</sub> &nbsp;(diagonal path)</span>
+          <span class="oblique-bragg__equation-line">φ<sub>i</sub> = k<sub>z,i</sub>d<sub>i</sub> = (2π/λ)n<sub>i</sub>d<sub>i</sub>cos&nbsp;θ<sub>i</sub></span>
         </span>
       </div>
-      <p class="oblique-bragg__reading">Here the cosine multiplies the phase thickness. Increasing the angle therefore reduces the phase accumulated between adjacent interface planes at fixed λ.</p>
+      <p class="oblique-bragg__reading">The two are compatible, not competing: the ray traverses a longer diagonal distance, but the phase accumulated across the layer at the given wavelength is set by <i>k</i><sub>z,i</sub><i>d</i><sub>i</sub>, and this phase carries a factor of cos&nbsp;θ<sub>i</sub>. Increasing the angle therefore reduces the phase accumulated between adjacent interface planes at fixed λ.</p>
     </section>
 
     <section class="oblique-bragg__step" aria-labelledby="oblique-shift-title">
       <div class="oblique-bragg__step-head">
-        <span class="oblique-bragg__step-index">3 · Consequence</span>
+        <span class="oblique-bragg__step-index">2 · Consequence</span>
         <h5 class="oblique-bragg__step-title" id="oblique-shift-title">The Bragg centre moves to shorter wavelength</h5>
-        <p class="oblique-bragg__step-note">Both layers contribute their own normal phase thickness.</p>
+        <p class="oblique-bragg__step-note">Bragg resonance requires each layer to contribute a round-trip phase of π. From panel&nbsp;1, each layer's contribution now carries a factor of cos&nbsp;θ<sub>i</sub>; to keep the round-trip phase at π, the vacuum wavelength that satisfies resonance must shrink.</p>
       </div>
 
       <svg class="oblique-bragg__drawing" viewBox="0 0 320 220" role="img" aria-labelledby="oblique-shift-svg-title oblique-shift-svg-desc">
@@ -600,7 +563,6 @@
     </div>
   </div>
 
-  <figcaption>The longer diagonal path and the smaller normal phase are not competing estimates of the same quantity. The first describes the ray geometry; the second is the phase advance used by the one-dimensional multilayer calculation.</figcaption>
 </figure>
 <script>
   (function () {
