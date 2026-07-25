@@ -56,11 +56,7 @@
   box-sizing: border-box;
 }
 html {
-  /* In-page scrolling is eased in JS (assets/js/article-reading.js) only for
-     deliberate anchor clicks. A global smooth behaviour also animates history
-     restoration, which made the browser Back button crawl through a long
-     article instead of returning to it. */
-  scroll-behavior: auto;
+  scroll-behavior: smooth;
 }
 body {
   min-width: 320px;
@@ -729,14 +725,9 @@ kbd {
 .post-page--cyber .post-page__rule {
   background: var(--border);
 }
-/* The cyber posts share the reading column with every other post and differ
-   only in voice: a terminal register set in the UI typeface, section headings
-   prefixed like a shell prompt, and tighter, monospace-leaning code. Everything
-   not restated here — the reading font, colours, spacing rhythm, code and quote
-   treatment — is inherited from `.article-prose` above, so the two never drift
-   apart by omission. */
 .article-prose--cyber {
   max-width: 730px;
+  font-family: var(--font-reading);
   font-size: 0.93rem;
   line-height: 1.82;
 }
@@ -778,15 +769,32 @@ kbd {
   font-size: 0.96rem;
   letter-spacing: -0.02em;
 }
+.article-prose--cyber ul,
+.article-prose--cyber ol {
+  padding-left: 1.7rem;
+}
+.article-prose--cyber li {
+  margin: 0.42em 0;
+  padding-left: 0.25rem;
+}
 .article-prose--cyber li::marker {
   color: var(--post-accent, var(--accent));
   font-weight: 700;
 }
+.article-prose--cyber li > ul,
+.article-prose--cyber li > ol {
+  padding-left: 1.45rem;
+}
 .article-prose--cyber code {
+  font-family: var(--font-mono);
   font-size: 0.9em;
 }
 .article-prose--cyber pre {
   border-left-width: 2px;
+  font-family: var(--font-mono);
+}
+.article-prose--cyber blockquote {
+  font-family: inherit;
 }
 
 /* Whoami */

@@ -12,54 +12,9 @@
   var TOP_OFFSET = 150;
   var DESKTOP_RAIL_QUERY = '(min-width: 1121px)';
 
-  function prefersReducedMotion() {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  }
-
   function tocLink(id) {
     if (!id) return null;
     return document.querySelector('.post-toc__link[href="#' + CSS.escape(id) + '"]');
-  }
-
-  /**
-   * In-page navigation without a growing history stack.
-   *
-   * A long article holds hundreds of anchor links — every contents entry and
-   * every cross-reference. Followed with their default behaviour, each one
-   * pushes a history entry, so leaving the article means pressing Back once per
-   * section visited instead of once. Here a click scrolls to the target and
-   * rewrites the current entry's URL, so the section stays shareable but Back
-   * returns to whatever came before the article. The scroll itself is a short,
-   * quiet ease, and is skipped entirely when the reader asks for reduced motion.
-   */
-  function wireInPageLinks() {
-    document.addEventListener('click', function (event) {
-      if (event.defaultPrevented || event.button !== 0 ||
-          event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-
-      var link = event.target.closest('a[href^="#"]');
-      if (!link) return;
-
-      var id = decodeURIComponent(link.getAttribute('href').slice(1));
-      if (!id) return;
-      var target = document.getElementById(id);
-      if (!target) return;
-
-      event.preventDefault();
-      scrollToTarget(target);
-      history.replaceState(null, '', '#' + id);
-    });
-  }
-
-  function scrollToTarget(target) {
-    var top = target.getBoundingClientRect().top + window.scrollY - TOP_OFFSET + 8;
-    window.scrollTo({
-      top: Math.max(0, top),
-      behavior: prefersReducedMotion() ? 'auto' : 'smooth'
-    });
-    // Move focus for keyboard and screen-reader users without a second jump.
-    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
-    target.focus({ preventScroll: true });
   }
 
   function wireMobileToc() {
@@ -126,8 +81,6 @@
     var activeIndex = -1;
     var ticking = false;
     var needsMeasure = true;
-    var desktopRail = window.matchMedia(DESKTOP_RAIL_QUERY);
-    var activeLink = null;
 
     function measure() {
       offsets = headings.map(function (heading) {
@@ -146,22 +99,21 @@
     }
 
     function highlight(index) {
-      var link = links[index] || null;
-      if (link === activeLink) return;
+      links.forEach(function (link) {
+        if (!link) return;
+        link.classList.remove('is-active');
+        link.removeAttribute('aria-current');
+        link.parentElement.classList.remove('is-current');
+      });
 
-      if (activeLink) {
-        activeLink.classList.remove('is-active');
-        activeLink.removeAttribute('aria-current');
-        activeLink.parentElement.classList.remove('is-current');
-      }
-      activeLink = link;
+      var link = links[index];
       if (!link) return;
 
       link.classList.add('is-active');
       link.setAttribute('aria-current', 'location');
       link.parentElement.classList.add('is-current');
 
-      if (desktopRail.matches) {
+      if (window.matchMedia(DESKTOP_RAIL_QUERY).matches) {
         link.parentElement.scrollIntoView({ block: 'nearest' });
       }
     }
@@ -216,7 +168,6 @@
     );
 
     wireMobileToc();
-    wireInPageLinks();
     wirePrintDisclosureState();
     if (chapters.length) wireScrollState(chapters);
   }

@@ -122,49 +122,6 @@ module LahavBlog
         end
       end
 
-      # The visible heading carries `\(…\)` so its mathematics renders like any
-      # other; the chapter title is also copied into a data attribute and shown,
-      # as plain text, in the progress indicator, where delimiters and TeX
-      # commands would read as noise. This is that plain form: the mathematics
-      # reduced to the symbols a reader would say aloud.
-      def plain_text(heading)
-        heading.children.map { |child| plain_of(child) }.join
-      end
-
-      def plain_of(element)
-        case element.type
-        when :text, :codespan then element.value
-        when :math then math_to_text(element.value.to_s)
-        when :smart_quote then Kramdown::Utils::Entities.entity(element.value.to_s).char
-        else element.children.map { |child| plain_of(child) }.join
-        end
-      end
-
-      TEX_SYMBOLS = {
-        'alpha' => 'α', 'beta' => 'β', 'gamma' => 'γ', 'delta' => 'δ',
-        'epsilon' => 'ε', 'varepsilon' => 'ε', 'zeta' => 'ζ', 'eta' => 'η',
-        'theta' => 'θ', 'vartheta' => 'ϑ', 'iota' => 'ι', 'kappa' => 'κ',
-        'lambda' => 'λ', 'mu' => 'μ', 'nu' => 'ν', 'xi' => 'ξ', 'pi' => 'π',
-        'rho' => 'ρ', 'sigma' => 'σ', 'tau' => 'τ', 'upsilon' => 'υ',
-        'phi' => 'φ', 'varphi' => 'φ', 'chi' => 'χ', 'psi' => 'ψ',
-        'omega' => 'ω', 'Gamma' => 'Γ', 'Delta' => 'Δ', 'Theta' => 'Θ',
-        'Lambda' => 'Λ', 'Xi' => 'Ξ', 'Pi' => 'Π', 'Sigma' => 'Σ',
-        'Phi' => 'Φ', 'Psi' => 'Ψ', 'Omega' => 'Ω', 'infty' => '∞',
-        'times' => '×', 'cdot' => '·', 'to' => '→', 'mapsto' => '↦',
-        'leq' => '≤', 'geq' => '≥', 'neq' => '≠', 'approx' => '≈',
-        'in' => '∈', 'ldots' => '…', 'dots' => '…'
-      }.freeze
-
-      def math_to_text(tex)
-        text = tex.dup
-        text.gsub!(/\\mathbb\{([^}]*)\}/, '\1')
-        text.gsub!(/\\(?:mathrm|mathcal|mathbf|text|operatorname)\{([^}]*)\}/, '\1')
-        text.gsub!(/\\([a-zA-Z]+)/) { TEX_SYMBOLS[Regexp.last_match(1)] || Regexp.last_match(1) }
-        text.gsub!(/[{}]/, '')
-        text.gsub!(/\s+/, ' ')
-        text.strip
-      end
-
       def each_heading(element, &block)
         element.children.each do |child|
           block.call(child) if child.type == :header
@@ -208,10 +165,9 @@ module LahavBlog
       def finish_chapter(chapter, index)
         heading = chapter.children.first
         number, title = split_heading(heading_text(heading), index)
-        _, plain = split_heading(plain_text(heading), index)
 
         chapter.attr['data-chapter-number'] = number
-        chapter.attr['data-chapter-title'] = plain
+        chapter.attr['data-chapter-title'] = title
         heading.children.replace([
           span('chapter-heading__number', "§ #{number}"),
           span('chapter-heading__title', title)
