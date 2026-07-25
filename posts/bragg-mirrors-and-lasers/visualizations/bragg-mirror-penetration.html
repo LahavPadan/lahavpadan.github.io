@@ -473,8 +473,11 @@
     .bmp-svg-marker { fill: var(--bmp-paper); stroke: var(--bmp-main); stroke-width: 3; vector-effect: non-scaling-stroke; }
     .bmp-svg-medium { fill: color-mix(in srgb, var(--bmp-main-soft) 62%, transparent); }
     .bmp-svg-flux { fill: color-mix(in srgb, var(--bmp-teal-soft) 72%, transparent); }
-    .bmp-svg-layer-h { fill: color-mix(in srgb, var(--bmp-main) 14%, transparent); }
+    .bmp-svg-layer-h { fill: color-mix(in srgb, var(--bmp-main) 8%, transparent); }
     .bmp-svg-layer-l { fill: transparent; }
+    .bmp-svg-endpoint { stroke: var(--bmp-paper); stroke-width: 2; vector-effect: non-scaling-stroke; }
+    .bmp-svg-endpoint--a { fill: var(--bmp-main); }
+    .bmp-svg-endpoint--b { fill: var(--bmp-teal); }
 
     .bmp-derivation {
       display: grid;
@@ -794,10 +797,10 @@
             class: b % 2 === 0 ? 'bmp-svg-layer-h' : 'bmp-svg-layer-l'
           }));
         }
-        // H / L labels on the first pair, so viewers can read the encoding.
-        if (nBands >= 2) {
-          addText(profileSvg, left + bandWidth / 2, top + 14, 'H', 'bmp-svg-text bmp-svg-text--strong', 'middle');
-          addText(profileSvg, left + bandWidth * 1.5, top + 14, 'L', 'bmp-svg-text bmp-svg-text--strong', 'middle');
+        // H / L legend labels sit ABOVE the plot area so they never fight the curves or the "entrance/far end" labels.
+        if (nBands >= 2 && !compact) {
+          addText(profileSvg, left + bandWidth / 2, top - 5, 'H', 'bmp-svg-text bmp-svg-text--strong', 'middle');
+          addText(profileSvg, left + bandWidth * 1.5, top - 5, 'L', 'bmp-svg-text bmp-svg-text--strong', 'middle');
         }
 
         [0, .25, .5, .75, 1].forEach(tick => {
@@ -841,14 +844,26 @@
 
         profileSvg.appendChild(svgEl('line', { x1: left, y1: top, x2: left, y2: bottom, class: 'bmp-svg-axis' }));
         profileSvg.appendChild(svgEl('line', { x1: right, y1: top, x2: right, y2: bottom, class: 'bmp-svg-axis' }));
-        addText(profileSvg, left + 8, top + 17, 'input face: A(0)=1', 'bmp-svg-text bmp-svg-text--strong');
-        addText(profileSvg, right - 8, top + 17, 'far face: B(L)=0', 'bmp-svg-text bmp-svg-text--strong', 'end');
+        // Boundary labels sit ABOVE the plot area so they never fight the layer bands or the curves.
+        addText(profileSvg, left, top - 5, 'entrance: A(0) = 1', 'bmp-svg-text bmp-svg-text--strong', 'start');
+        addText(profileSvg, right, top - 5, 'far end: B(L) = 0', 'bmp-svg-text bmp-svg-text--strong', 'end');
+
+        // Endpoint markers so the far-end boundary condition B(L) = 0 is visually anchored.
+        const sechN = sech(N);
+        profileSvg.appendChild(svgEl('circle', { cx: x(N), cy: y(sechN), r: 4, class: 'bmp-svg-endpoint bmp-svg-endpoint--a' }));
+        profileSvg.appendChild(svgEl('circle', { cx: x(N), cy: y(0), r: 4, class: 'bmp-svg-endpoint bmp-svg-endpoint--b' }));
+        // Only annotate the endpoints when the plot has room.
+        if (!compact && N > 0.5) {
+          addText(profileSvg, x(N) - 6, y(sechN) - 8, `A(L) = sech N = ${decimal(sechN)}`, 'bmp-svg-text', 'end');
+          addText(profileSvg, x(N) - 6, y(0) - 8, 'B(L) = 0', 'bmp-svg-text', 'end');
+        }
 
         const flux = sech(N) ** 2;
         const fluxY = y(Math.min(1, flux));
         profileSvg.appendChild(svgEl('rect', { x: left, y: fluxY, width, height: Math.max(0, bottom - fluxY), class: 'bmp-svg-flux' }));
         profileSvg.insertBefore(profileSvg.lastChild, profileSvg.querySelector('.bmp-svg-exp'));
-        addText(profileSvg, right - 8, Math.max(top + 38, fluxY - 7), `constant net flux A²−B² = T = ${percent(flux)}`, 'bmp-svg-text', 'end');
+        // Flux annotation sits at left instead of right, so the transmitted-amplitude labels near z=L have room.
+        addText(profileSvg, left + 8, Math.min(bottom - 8, fluxY + 14), `net flux |A|² − |B|² = T = ${percent(flux)}`, 'bmp-svg-text', 'start');
       }
 
       function drawReflectivity(N) {

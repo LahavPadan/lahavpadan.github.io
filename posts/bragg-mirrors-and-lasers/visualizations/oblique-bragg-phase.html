@@ -482,11 +482,11 @@
         <line class="ob-accent-line" x1="70" y1="48" x2="70" y2="170" marker-start="url(#oblique-geometry-dim-arrow)" marker-end="url(#oblique-geometry-dim-arrow)"></line>
         <text class="ob-label-accent" x="60" y="112" text-anchor="end">d<tspan baseline-shift="sub" font-size="9">i</tspan></text>
 
-        <!-- Wavevector k_i along the ray, and its normal projection k_{z,i} -->
+        <!-- Wavevector k_i along the ray, and its normal projection k_{⊥,i} -->
         <line class="ob-accent-line" x1="166" y1="109" x2="196" y2="141" marker-end="url(#oblique-geometry-k-arrow)"></line>
         <text class="ob-label-accent" x="204" y="143">k<tspan baseline-shift="sub" font-size="9">i</tspan></text>
         <line class="ob-accent-line" x1="166" y1="109" x2="166" y2="141" marker-end="url(#oblique-geometry-k-arrow)" opacity="0.85"></line>
-        <text class="ob-label-accent" x="152" y="138" text-anchor="end">k<tspan baseline-shift="sub" font-size="9">z,i</tspan></text>
+        <text class="ob-label-accent" x="152" y="138" text-anchor="end">k<tspan baseline-shift="sub" font-size="9">⊥,i</tspan></text>
         <line class="ob-guide" x1="166" y1="141" x2="196" y2="141"></line>
 
         <circle cx="104" cy="42" r="3.3" fill="var(--ob-surface)" stroke="var(--ob-ink)" stroke-width="1.7"></circle>
@@ -499,50 +499,81 @@
         <span class="oblique-bragg__equation-label">Ray distance vs layer phase</span>
         <span class="oblique-bragg__equation-math">
           <span class="oblique-bragg__equation-line">ℓ<sub>i</sub> = d<sub>i</sub>/cos&nbsp;θ<sub>i</sub> &nbsp;(diagonal path)</span>
-          <span class="oblique-bragg__equation-line">φ<sub>i</sub> = k<sub>z,i</sub>d<sub>i</sub> = (2π/λ)n<sub>i</sub>d<sub>i</sub>cos&nbsp;θ<sub>i</sub></span>
+          <span class="oblique-bragg__equation-line">φ<sub>i</sub> = k<sub>⊥,i</sub>d<sub>i</sub> = (2π/λ)n<sub>i</sub>d<sub>i</sub>cos&nbsp;θ<sub>i</sub></span>
         </span>
       </div>
-      <p class="oblique-bragg__reading">The two are compatible, not competing: the ray traverses a longer diagonal distance, but the phase accumulated across the layer at the given wavelength is set by <i>k</i><sub>z,i</sub><i>d</i><sub>i</sub>, and this phase carries a factor of cos&nbsp;θ<sub>i</sub>. Increasing the angle therefore reduces the phase accumulated between adjacent interface planes at fixed λ.</p>
+      <p class="oblique-bragg__reading">The two are compatible, not competing: the ray traverses a longer diagonal distance, but the phase accumulated across the layer at the given wavelength is set by <i>k</i><sub>⊥,i</sub><i>d</i><sub>i</sub>, and this phase carries a factor of cos&nbsp;θ<sub>i</sub>. Increasing the angle therefore reduces the phase accumulated between adjacent interface planes at fixed λ.</p>
     </section>
 
     <section class="oblique-bragg__step" aria-labelledby="oblique-shift-title">
       <div class="oblique-bragg__step-head">
         <span class="oblique-bragg__step-index">2 · Consequence</span>
-        <h5 class="oblique-bragg__step-title" id="oblique-shift-title">The Bragg centre moves to shorter wavelength</h5>
-        <p class="oblique-bragg__step-note">Bragg resonance requires each layer to contribute a round-trip phase of π. From panel&nbsp;1, each layer's contribution now carries a factor of cos&nbsp;θ<sub>i</sub>; to keep the round-trip phase at π, the vacuum wavelength that satisfies resonance must shrink.</p>
+        <h5 class="oblique-bragg__step-title" id="oblique-shift-title">Snell&rsquo;s law grows every internal angle, and the Bragg wavelength shrinks</h5>
+        <p class="oblique-bragg__step-note">Snell&rsquo;s law <i>n</i><sub>0</sub>&thinsp;sin&thinsp;θ<sub>0</sub> = <i>n</i><sub>H</sub>&thinsp;sin&thinsp;θ<sub>H</sub> = <i>n</i><sub>L</sub>&thinsp;sin&thinsp;θ<sub>L</sub> forces every internal angle to grow with θ<sub>0</sub>. Bragg resonance requires each layer to contribute a round-trip phase of π, and from panel&nbsp;1 that phase carries a factor of cos&thinsp;θ<sub>i</sub>. Growing θ<sub>i</sub>&#8202;→&#8202;shrinking cos&thinsp;θ<sub>i</sub>&#8202;→&#8202;shorter vacuum wavelength needed to keep the round trip at π.</p>
       </div>
 
       <svg class="oblique-bragg__drawing" viewBox="0 0 320 220" role="img" aria-labelledby="oblique-shift-svg-title oblique-shift-svg-desc">
-        <title id="oblique-shift-svg-title">Normalized Bragg wavelength decreases with external angle</title>
-        <desc id="oblique-shift-svg-desc">A smooth descending curve begins at the normal-incidence value one and falls as the external angle increases.</desc>
+        <title id="oblique-shift-svg-title">A ray refracting through a stack of alternating H and L layers</title>
+        <desc id="oblique-shift-svg-desc">A ray enters from the top-left of an outer medium at angle theta zero, refracts into a high-index H layer at a smaller angle theta H, then into a low-index L layer at an intermediate angle theta L. All angles are measured from the layer normal; Snell&rsquo;s law links them.</desc>
+        <defs>
+          <marker id="oblique-shift-ray-arrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ob-ink)"></path>
+          </marker>
+        </defs>
 
-        <text class="ob-label-small ob-label-muted" x="49" y="21">λ<tspan baseline-shift="sub" font-size="8">B</tspan>(θ<tspan baseline-shift="sub" font-size="8">0</tspan>) / λ<tspan baseline-shift="sub" font-size="8">B</tspan>(0)</text>
+        <!-- Three horizontal layers stacked: outside (n0), H, L. Normal is vertical. -->
+        <rect x="16" y="20" width="288" height="42" fill="none" stroke="var(--ob-line)" stroke-dasharray="3 4"></rect>
+        <rect x="16" y="62" width="288" height="60" class="ob-layer"></rect>
+        <rect x="16" y="122" width="288" height="60" fill="none" stroke="var(--ob-line)"></rect>
 
-        <line class="ob-axis" x1="49" y1="39" x2="49" y2="176"></line>
-        <line class="ob-axis" x1="49" y1="176" x2="286" y2="176"></line>
+        <!-- Interfaces -->
+        <line class="ob-interface" x1="16" y1="62" x2="304" y2="62"></line>
+        <line class="ob-interface" x1="16" y1="122" x2="304" y2="122"></line>
+        <line class="ob-interface" x1="16" y1="182" x2="304" y2="182"></line>
 
-        <line class="ob-guide" x1="49" y1="61" x2="281" y2="61"></line>
-        <text class="ob-label-small ob-label-muted" x="38" y="65" text-anchor="end">1</text>
+        <text class="ob-label-small ob-label-muted" x="22" y="38">outside, n<tspan baseline-shift="sub" font-size="8">0</tspan></text>
+        <text class="ob-label-small ob-label-muted" x="22" y="86">H&nbsp;layer, n<tspan baseline-shift="sub" font-size="8">H</tspan></text>
+        <text class="ob-label-small ob-label-muted" x="22" y="146">L&nbsp;layer, n<tspan baseline-shift="sub" font-size="8">L</tspan></text>
 
-        <path class="ob-curve" fill="none" d="M58 61 C106 63, 151 74, 191 94 C227 112, 257 137, 280 159"></path>
-        <circle class="ob-point" cx="58" cy="61" r="4.5"></circle>
+        <!-- Normal line at refraction point -->
+        <line class="ob-guide" x1="130" y1="20" x2="130" y2="182"></line>
+        <text class="ob-label-small ob-label-muted" x="130" y="15" text-anchor="middle">normal</text>
 
-        <line class="ob-guide" x1="232" y1="115" x2="232" y2="176"></line>
-        <circle class="ob-point" cx="232" cy="115" r="4.5"></circle>
+        <!-- Ray segments: (52,26) -> (130, 62) in outside; (130,62) -> (170, 122) in H; (170,122) -> (222, 182) in L -->
+        <line class="ob-ink-line" x1="52" y1="26" x2="130" y2="62"></line>
+        <line class="ob-ink-line" x1="130" y1="62" x2="170" y2="122"></line>
+        <line class="ob-ink-line" x1="170" y1="122" x2="222" y2="182" marker-end="url(#oblique-shift-ray-arrow)"></line>
 
-        <text class="ob-label-small ob-label-muted" x="58" y="196" text-anchor="start">0</text>
-        <text class="ob-label-small ob-label-muted" x="286" y="196" text-anchor="end">larger θ<tspan baseline-shift="sub" font-size="8">0</tspan></text>
-        <text class="ob-label-accent" x="137" y="148" text-anchor="middle">λ<tspan baseline-shift="sub" font-size="9">B</tspan> decreases</text>
+        <!-- Angle arcs at each interface, measured from the normal -->
+        <path class="ob-accent-line" d="M130 78 A16 16 0 0 0 122 68" fill="none"></path>
+        <text class="ob-label-accent" x="115" y="74" text-anchor="end">θ<tspan baseline-shift="sub" font-size="9">0</tspan></text>
+
+        <path class="ob-accent-line" d="M130 82 A20 20 0 0 1 142 90" fill="none"></path>
+        <text class="ob-label-accent" x="150" y="88">θ<tspan baseline-shift="sub" font-size="9">H</tspan></text>
+
+        <path class="ob-accent-line" d="M170 142 A20 20 0 0 1 184 152" fill="none"></path>
+        <text class="ob-label-accent" x="192" y="150">θ<tspan baseline-shift="sub" font-size="9">L</tspan></text>
+
+        <!-- Small dots at refraction points -->
+        <circle cx="130" cy="62" r="2.8" fill="var(--ob-surface)" stroke="var(--ob-ink)" stroke-width="1.5"></circle>
+        <circle cx="170" cy="122" r="2.8" fill="var(--ob-surface)" stroke="var(--ob-ink)" stroke-width="1.5"></circle>
+
+        <!-- Text callout on the right showing what happens as θ_0 grows -->
+        <text class="ob-label-accent" x="240" y="55">grow θ<tspan baseline-shift="sub" font-size="8">0</tspan></text>
+        <text class="ob-label-accent" x="240" y="90">⇒ grow θ<tspan baseline-shift="sub" font-size="8">H</tspan></text>
+        <text class="ob-label-accent" x="240" y="150">⇒ grow θ<tspan baseline-shift="sub" font-size="8">L</tspan></text>
+
+        <text class="ob-label-small ob-label-muted" x="160" y="207" text-anchor="middle">Snell: n<tspan baseline-shift="sub" font-size="8">0</tspan>&thinsp;sin&thinsp;θ<tspan baseline-shift="sub" font-size="8">0</tspan> = n<tspan baseline-shift="sub" font-size="8">H</tspan>&thinsp;sin&thinsp;θ<tspan baseline-shift="sub" font-size="8">H</tspan> = n<tspan baseline-shift="sub" font-size="8">L</tspan>&thinsp;sin&thinsp;θ<tspan baseline-shift="sub" font-size="8">L</tspan></text>
       </svg>
 
       <div class="oblique-bragg__equation">
-        <span class="oblique-bragg__equation-label">One H–L period at Bragg resonance</span>
+        <span class="oblique-bragg__equation-label">One H-L period at Bragg resonance</span>
         <span class="oblique-bragg__equation-math">
           <span class="oblique-bragg__equation-line">λ<sub>B</sub>(θ<sub>0</sub>) = 2[</span>
           <span class="oblique-bragg__equation-line">n<sub>H</sub>d<sub>H</sub>cos&nbsp;θ<sub>H</sub> + n<sub>L</sub>d<sub>L</sub>cos&nbsp;θ<sub>L</sub>]</span>
         </span>
       </div>
-      <p class="oblique-bragg__reading">Snell’s law makes θ<sub>H</sub> and θ<sub>L</sub> increase with θ<sub>0</sub>. Their cosine factors decrease, so the Bragg condition is recovered at a shorter vacuum wavelength.</p>
+      <p class="oblique-bragg__reading">Because the sines of the internal angles grow with sin&thinsp;θ<sub>0</sub>, so do the angles themselves; their cosines fall, and both terms on the right shrink. λ<sub>B</sub> is monotonically decreasing in θ<sub>0</sub>, dropping from λ<sub>B</sub>(0) = 2(n<sub>H</sub>d<sub>H</sub> + n<sub>L</sub>d<sub>L</sub>) at normal incidence toward smaller values at glancing incidence.</p>
     </section>
   </div>
 
