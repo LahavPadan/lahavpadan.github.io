@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hall-effect sensor</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&display=swap">
+
+<script>
+(() => {
+  if (window.parent === window) return;
+
+  const applyParentTheme = () => {
+    try {
+      const root = window.parent.document.documentElement;
+      const body = window.parent.document.body;
+      const raw = `${root.dataset.theme || ""} ${root.className || ""} ${body?.dataset?.theme || ""} ${body?.className || ""}`.toLowerCase();
+      const next = raw.includes("dark") ? "dark" : raw.includes("light") ? "light" : "";
+      if (document.documentElement.dataset.theme !== next) document.documentElement.dataset.theme = next;
+    } catch (_) {}
+  };
+
+  applyParentTheme();
+
+  try {
+    const root = window.parent.document.documentElement;
+    const body = window.parent.document.body;
+    const observer = new MutationObserver(applyParentTheme);
+    observer.observe(root, { attributes: true, attributeFilter: ["class", "data-theme"] });
+    if (body) observer.observe(body, { attributes: true, attributeFilter: ["class", "data-theme"] });
+  } catch (_) {}
+})();
+</script>
+
+<style>
+:root {
+  color-scheme: light;
+  --page: #fbfbf8;
+  --surface: #ffffff;
+  --surface-muted: #f4f5f1;
+  --ink: #1c2420;
+  --muted: #667169;
+  --border: #d6ddd7;
+  --border-strong: #a6b2a9;
+  --accent: #85295e;
+  --accent-ink: #70204d;
+  --accent-soft: #fdeef6;
+  --accent-border: #e8b2d1;
+  --field: #315fae;
+  --field-soft: rgba(49, 95, 174, .10);
+  --positive: #b74d42;
+  --negative: #315fae;
+  --copper: #9b631b;
+  --inactive: #8b958f;
+  --shadow: rgba(20, 31, 25, .07);
+  --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --serif: Lora, Georgia, "Times New Roman", serif;
+  --math: "Lora", "STIX Two Math", "Cambria Math", Georgia, serif;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #101511;
+  --surface: #171e19;
+  --surface-muted: #1d2720;
+  --ink: #e9efeb;
+  --muted: #a7b5aa;
+  --border: #344138;
+  --border-strong: #617168;
+  --accent: #ffb9df;
+  --accent-ink: #ffb9df;
+  --accent-soft: #3f2033;
+  --accent-border: #914f75;
+  --field: #8bb2ff;
+  --field-soft: rgba(139, 178, 255, .12);
+  --positive: #ef8177;
+  --negative: #8bb2ff;
+  --copper: #e0a666;
+  --inactive: #77827a;
+  --shadow: rgba(0, 0, 0, .20);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #101511;
+    --surface: #171e19;
+    --surface-muted: #1d2720;
+    --ink: #e9efeb;
+    --muted: #a7b5aa;
+    --border: #344138;
+    --border-strong: #617168;
+    --accent: #ffb9df;
+    --accent-ink: #ffb9df;
+    --accent-soft: #3f2033;
+    --accent-border: #914f75;
+    --field: #8bb2ff;
+    --field-soft: rgba(139, 178, 255, .12);
+    --positive: #ef8177;
+    --negative: #8bb2ff;
+    --copper: #e0a666;
+    --inactive: #77827a;
+    --shadow: rgba(0, 0, 0, .20);
+  }
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  overflow-x: hidden;
+  background: transparent;
+  color: var(--ink);
+}
+body {
+  padding: clamp(7px, 1.8vw, 18px);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; }
+
+.viz {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 18px 48px var(--shadow);
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(255px, .33fr);
+  gap: 20px;
+  align-items: center;
+  padding: clamp(16px, 2.6vw, 25px);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 76%);
+}
+.heading-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 18px;
+}
+.eyebrow {
+  margin: 0;
+  color: var(--accent-ink);
+  font-size: .68rem;
+  font-weight: 760;
+  line-height: 1;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.7vw, 1.9rem);
+  font-weight: 560;
+  line-height: 1.14;
+  letter-spacing: -.026em;
+}
+.definition {
+  max-width: 720px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: clamp(.9rem, 1.55vw, 1.03rem);
+  line-height: 1.42;
+}
+.math-inline {
+  color: var(--ink);
+  font-family: var(--math);
+  font-style: italic;
+}
+
+.control {
+  min-width: 0;
+  padding: 10px 12px 11px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.control-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: .74rem;
+}
+.control-label strong {
+  color: var(--accent-ink);
+  font-weight: 760;
+  white-space: nowrap;
+}
+.control input[type="range"] {
+  width: 100%;
+  margin: 9px 0 0;
+  accent-color: var(--accent);
+}
+.control-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: .62rem;
+  line-height: 1;
+}
+
+.figure {
+  margin: 0;
+  padding: clamp(11px, 2.3vw, 22px);
+}
+.canvas {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+#plot {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.plot-bg { fill: var(--surface-muted); }
+.section-rule { stroke: var(--border); stroke-width: 1; }
+.section-label {
+  fill: var(--muted);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.chip-shell {
+  fill: color-mix(in srgb, var(--surface) 84%, var(--border));
+  stroke: var(--border-strong);
+  stroke-width: 2;
+}
+.chip-cavity {
+  fill: color-mix(in srgb, var(--accent-soft) 43%, var(--surface));
+  stroke: color-mix(in srgb, var(--accent) 80%, var(--border));
+  stroke-width: 1.7;
+}
+.plate {
+  fill: color-mix(in srgb, var(--field-soft) 62%, var(--surface));
+  stroke: var(--field);
+  stroke-width: 2.4;
+}
+.plate-band {
+  fill: color-mix(in srgb, var(--field) 10%, transparent);
+}
+.device-label {
+  fill: var(--accent-ink);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 760;
+}
+.plate-label {
+  fill: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 760;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.small-label {
+  fill: var(--muted);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 590;
+}
+.small-label.strong {
+  fill: var(--ink);
+  font-weight: 720;
+}
+.math-label {
+  fill: var(--ink);
+  font-family: var(--math);
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 650;
+}
+.field-label { fill: var(--field); }
+.current-label { fill: var(--copper); }
+.force-label { fill: var(--accent-ink); }
+
+.magnet-outline {
+  fill: var(--surface);
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+}
+.magnet-n { fill: var(--positive); }
+.magnet-s { fill: var(--negative); }
+.magnet-letter {
+  fill: #fff;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.field-symbol-ring {
+  fill: none;
+  stroke: var(--field);
+  stroke-width: 1.35;
+  opacity: .22;
+}
+.field-symbol {
+  fill: var(--field);
+  font-family: var(--sans);
+  font-size: 20px;
+  font-weight: 760;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.current-wire {
+  fill: none;
+  stroke: var(--copper);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.current-arrow {
+  stroke: var(--copper);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+}
+.sense-wire {
+  fill: none;
+  stroke: var(--field);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.contact {
+  fill: var(--surface);
+  stroke: var(--border-strong);
+  stroke-width: 1.6;
+}
+.contact-glow {
+  fill: none;
+  stroke-width: 7;
+  opacity: .2;
+}
+
+.carrier {
+  fill: color-mix(in srgb, var(--copper) 74%, var(--surface));
+  stroke: var(--copper);
+  stroke-width: 1;
+}
+.force-arrow {
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.charge-sign {
+  font-family: var(--sans);
+  font-size: 18px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.charge-positive { fill: var(--positive); }
+.charge-negative { fill: var(--negative); }
+
+.voltage-bracket {
+  fill: none;
+  stroke: var(--field);
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.voltage-label {
+  fill: var(--field);
+  font-family: var(--math);
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 650;
+}
+.voltage-value {
+  fill: var(--field);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.comparator {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.comparator-title {
+  fill: var(--accent-ink);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 760;
+  text-anchor: middle;
+}
+.meter-track {
+  stroke: var(--border-strong);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.meter-zero {
+  stroke: var(--ink);
+  stroke-width: 1.3;
+}
+.meter-threshold {
+  stroke: var(--accent);
+  stroke-width: 1.6;
+  stroke-dasharray: 3 3;
+}
+.meter-signal {
+  stroke: var(--field);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.meter-dot {
+  fill: var(--field);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+.meter-label {
+  fill: var(--muted);
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 650;
+  text-anchor: middle;
+}
+.output-pill {
+  fill: color-mix(in srgb, var(--accent-soft) 70%, var(--surface));
+  stroke: var(--accent-border);
+  stroke-width: 1;
+}
+.output-pill.low {
+  fill: color-mix(in srgb, var(--surface-muted) 78%, var(--surface));
+  stroke: var(--border);
+}
+.output-pill-text {
+  fill: var(--accent-ink);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  letter-spacing: .04em;
+}
+.output-pill-text.low { fill: var(--muted); }
+.output-wire {
+  fill: none;
+  stroke: var(--copper);
+  stroke-width: 2.7;
+  stroke-linecap: round;
+}
+.output-led {
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+}
+.output-led.on { fill: var(--accent); }
+.output-led.off { fill: color-mix(in srgb, var(--surface) 78%, var(--border)); }
+
+.flow-card {
+  fill: color-mix(in srgb, var(--surface) 94%, transparent);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.flow-card.active { stroke: var(--accent-border); }
+.flow-number {
+  fill: var(--accent-ink);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.flow-number-ring {
+  fill: var(--accent-soft);
+  stroke: var(--accent-border);
+  stroke-width: 1;
+}
+.flow-title {
+  fill: var(--ink);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 760;
+}
+.flow-formula {
+  fill: var(--accent-ink);
+  font-family: var(--math);
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 650;
+}
+.flow-note {
+  fill: var(--muted);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 500;
+}
+.flow-arrow {
+  stroke: var(--border-strong);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.status-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--border);
+  border-top: 0;
+  background: var(--surface);
+}
+.status-item {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 9px;
+  color: var(--muted);
+  font-size: clamp(.69rem, 1.15vw, .8rem);
+  line-height: 1.25;
+  text-align: center;
+}
+.status-item + .status-item { border-left: 1px solid var(--border); }
+.status-item strong { color: var(--ink); font-weight: 760; }
+.status-item.state strong { color: var(--muted); }
+.status-item.state.detected strong { color: var(--accent-ink); }
+.swatch {
+  flex: 0 0 auto;
+  display: inline-block;
+}
+.swatch.field {
+  width: 19px;
+  height: 10px;
+  border: 2px solid var(--field);
+  border-radius: 50%;
+}
+.swatch.voltage {
+  width: 18px;
+  height: 0;
+  border-top: 3px solid var(--field);
+}
+.swatch.output {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+@media (max-width: 780px) {
+  .topbar { grid-template-columns: 1fr; }
+}
+@media (max-width: 590px) {
+  body { padding: 5px; }
+  .topbar { padding: 14px; }
+  .figure { padding: 8px; }
+  .status-strip { grid-template-columns: 1fr; }
+  .status-item + .status-item { border-top: 1px solid var(--border); border-left: 0; }
+}
+</style>
+</head>
+
+<body>
+<main class="viz">
+  <header class="topbar">
+    <div>
+      <div class="heading-row">
+        <p class="eyebrow">Hall-effect switch</p>
+        <h1>From a perpendicular magnetic field to a digital state</h1>
+      </div>
+      <p class="definition">
+        The bias current fixes the carrier drift through the plate. A perpendicular field bends that drift sideways, creating a transverse <span class="math-inline">V<sub>H</sub></span>; the on-chip comparator turns it into HIGH or LOW.
+      </p>
+    </div>
+
+    <label class="control" for="fieldStrength">
+      <span class="control-label">
+        <span>magnetic field through the plate</span>
+        <strong id="fieldReadout">B = +48 mT</strong>
+      </span>
+      <input id="fieldStrength" type="range" min="-90" max="90" step="1" value="48" aria-label="Perpendicular magnetic field strength">
+      <span class="control-scale"><span>out of page</span><span>0</span><span>into page</span></span>
+    </label>
+  </header>
+
+  <figure class="figure">
+    <div class="canvas" id="canvas">
+      <svg id="plot" viewBox="0 0 1000 590" role="img" aria-labelledby="plotTitle plotDescription" preserveAspectRatio="xMidYMid meet">
+        <title id="plotTitle">Interactive Hall-effect switch schematic</title>
+        <desc id="plotDescription">A magnet creates a field perpendicular to a Hall plate. Bias current flows horizontally through the plate, carriers are pushed toward one edge, a transverse Hall voltage appears between the sense contacts, and an amplifier and comparator produce a digital output.</desc>
+
+        <defs>
+          <clipPath id="plateClip"><rect x="235" y="230" width="325" height="140" rx="10"></rect></clipPath>
+          <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="var(--shadow)" flood-opacity="1"></feDropShadow>
+          </filter>
+          <marker id="arrowCopper" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0L10 5L0 10Z" fill="var(--copper)"></path>
+          </marker>
+          <marker id="arrowAccent" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0L10 5L0 10Z" fill="var(--accent)"></path>
+          </marker>
+          <marker id="arrowMuted" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0 0L10 5L0 10Z" fill="var(--border-strong)"></path>
+          </marker>
+        </defs>
+
+        <rect class="plot-bg" x="0" y="0" width="1000" height="590"></rect>
+        <text class="section-label" x="70" y="30">magnetic input and Hall plate</text>
+        <text class="section-label" x="720" y="30">signal conditioning</text>
+        <line class="section-rule" x1="55" y1="42" x2="655" y2="42"></line>
+        <line class="section-rule" x1="700" y1="42" x2="945" y2="42"></line>
+
+        <g id="magnetGroup" transform="translate(395 72)">
+          <text x="0" y="-17" class="small-label strong" text-anchor="middle">lid magnet</text>
+          <rect x="-60" y="0" width="120" height="40" rx="7" class="magnet-outline"></rect>
+          <path d="M-60 7Q-60 0-53 0H0V40H-53Q-60 40-60 33Z" class="magnet-n"></path>
+          <path d="M0 0H53Q60 0 60 7V33Q60 40 53 40H0Z" class="magnet-s"></path>
+          <text x="-30" y="21" class="magnet-letter">N</text>
+          <text x="30" y="21" class="magnet-letter">S</text>
+        </g>
+
+        <g id="fieldColumn"></g>
+        <text id="fieldDirectionLabel" x="465" y="132" class="small-label field-label">field into the page</text>
+
+        <g id="sensorGroup">
+          <rect x="100" y="160" width="560" height="292" rx="18" class="chip-shell"></rect>
+          <rect x="128" y="186" width="504" height="238" rx="13" class="chip-cavity"></rect>
+          <text x="380" y="180" class="device-label" text-anchor="middle">Hall sensor IC</text>
+
+          <rect x="235" y="230" width="325" height="140" rx="10" class="plate"></rect>
+          <rect x="235" y="230" width="325" height="19" rx="10" class="plate-band"></rect>
+          <rect x="235" y="351" width="325" height="19" rx="10" class="plate-band"></rect>
+          <text x="397" y="306" class="plate-label" text-anchor="middle">Hall plate</text>
+
+          <path class="current-wire" d="M55 300H235"></path>
+          <path class="current-wire" d="M560 300H682"></path>
+          <circle cx="235" cy="300" r="8.5" class="contact"></circle>
+          <circle cx="560" cy="300" r="8.5" class="contact"></circle>
+          <line x1="92" y1="300" x2="200" y2="300" class="current-arrow" marker-end="url(#arrowCopper)"></line>
+          <text x="112" y="280" class="small-label current-label">bias current</text>
+          <text x="186" y="280" class="math-label current-label">I</text>
+          <text x="147" y="324" class="small-label">current contact</text>
+
+          <path class="sense-wire" d="M470 230V198H684V266H715"></path>
+          <path class="sense-wire" d="M470 370V402H684V334H715"></path>
+          <circle id="topSensePad" cx="470" cy="230" r="8.5" class="contact"></circle>
+          <circle id="bottomSensePad" cx="470" cy="370" r="8.5" class="contact"></circle>
+          <circle id="topSenseGlow" cx="470" cy="230" r="14.5" class="contact-glow"></circle>
+          <circle id="bottomSenseGlow" cx="470" cy="370" r="14.5" class="contact-glow"></circle>
+          <text x="493" y="215" class="small-label field-label">sense contacts</text>
+
+          <g id="carrierGroup" clip-path="url(#plateClip)"></g>
+          <g id="chargeGroup"></g>
+
+          <line id="forceArrow" x1="430" y1="300" x2="430" y2="248" class="force-arrow" marker-end="url(#arrowAccent)"></line>
+          <text id="forceLabel" x="444" y="270" class="small-label force-label">sideways force</text>
+
+          <path class="voltage-bracket" d="M586 241H598V359H586"></path>
+          <text x="608" y="258" class="small-label field-label">Hall voltage</text>
+          <text id="voltageValue" x="608" y="280" class="voltage-label">Vₕ = +0.53</text>
+        </g>
+
+        <g id="comparatorGroup">
+          <rect x="715" y="205" width="205" height="190" rx="13" class="comparator" filter="url(#softShadow)"></rect>
+          <text x="817.5" y="232" class="comparator-title">amplifier and comparator</text>
+          <text x="817.5" y="252" class="small-label" text-anchor="middle">amplifies and thresholds Vₕ</text>
+
+          <line x1="754" y1="300" x2="881" y2="300" class="meter-track"></line>
+          <line x1="817.5" y1="288" x2="817.5" y2="312" class="meter-zero"></line>
+          <line id="thresholdLeft" x1="788" y1="286" x2="788" y2="314" class="meter-threshold"></line>
+          <line id="thresholdRight" x1="847" y1="286" x2="847" y2="314" class="meter-threshold"></line>
+          <line id="meterSignal" x1="817.5" y1="300" x2="852" y2="300" class="meter-signal"></line>
+          <circle id="meterDot" cx="852" cy="300" r="5.5" class="meter-dot"></circle>
+          <text x="788" y="326" class="meter-label">−Vₜ</text>
+          <text x="817.5" y="326" class="meter-label">0</text>
+          <text x="847" y="326" class="meter-label">+Vₜ</text>
+
+          <rect id="outputPill" x="766" y="344" width="103" height="27" rx="13.5" class="output-pill"></rect>
+          <text id="outputPillText" x="817.5" y="358" class="output-pill-text">OUTPUT HIGH</text>
+
+          <path class="output-wire" d="M920 300H965"></path>
+          <circle id="outputLed" cx="965" cy="300" r="10.5" class="output-led on"></circle>
+          <text x="965" y="324" class="small-label strong" text-anchor="middle">digital state</text>
+        </g>
+
+        <g id="flowStrip">
+          <line class="section-rule" x1="55" y1="476" x2="945" y2="476"></line>
+
+          <rect x="58" y="496" width="252" height="66" rx="7" class="flow-card"></rect>
+          <circle cx="81" cy="519" r="11" class="flow-number-ring"></circle>
+          <text x="81" y="519" class="flow-number">1</text>
+          <text x="100" y="516" class="flow-title">drift through the plate</text>
+          <text x="100" y="538" class="flow-formula">I →</text>
+          <text x="143" y="538" class="flow-note">sets the carrier motion</text>
+
+          <line x1="322" y1="529" x2="347" y2="529" class="flow-arrow" marker-end="url(#arrowMuted)"></line>
+
+          <rect x="359" y="496" width="282" height="66" rx="7" class="flow-card active"></rect>
+          <circle cx="382" cy="519" r="11" class="flow-number-ring"></circle>
+          <text x="382" y="519" class="flow-number">2</text>
+          <text x="401" y="516" class="flow-title">magnetic deflection</text>
+          <text x="401" y="538" class="flow-formula">q(v × B)</text>
+          <text x="485" y="538" class="flow-note">creates the Hall voltage</text>
+
+          <line x1="653" y1="529" x2="678" y2="529" class="flow-arrow" marker-end="url(#arrowMuted)"></line>
+
+          <rect x="690" y="496" width="252" height="66" rx="7" class="flow-card"></rect>
+          <circle cx="713" cy="519" r="11" class="flow-number-ring"></circle>
+          <text x="713" y="519" class="flow-number">3</text>
+          <text x="732" y="516" class="flow-title">thresholded output</text>
+          <text x="732" y="538" class="flow-formula">|Vₕ| ≥ Vₜ</text>
+          <text id="flowOutputNote" x="815" y="538" class="flow-note">switches HIGH</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="status-strip" aria-label="Live Hall-effect readout">
+      <div class="status-item"><i class="swatch field"></i><span>perpendicular field <strong id="statusField">+48 mT</strong></span></div>
+      <div class="status-item"><i class="swatch voltage"></i><span>Hall voltage <strong id="statusVoltage">+0.53</strong></span></div>
+      <div id="statusStateItem" class="status-item state detected"><i class="swatch output"></i><span>switch state <strong id="statusState">HIGH</strong></span></div>
+    </div>
+  </figure>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  const fieldInput = document.getElementById("fieldStrength");
+  const fieldReadout = document.getElementById("fieldReadout");
+  const fieldColumn = document.getElementById("fieldColumn");
+  const fieldDirectionLabel = document.getElementById("fieldDirectionLabel");
+  const carrierGroup = document.getElementById("carrierGroup");
+  const chargeGroup = document.getElementById("chargeGroup");
+  const forceArrow = document.getElementById("forceArrow");
+  const forceLabel = document.getElementById("forceLabel");
+  const voltageValue = document.getElementById("voltageValue");
+  const topSenseGlow = document.getElementById("topSenseGlow");
+  const bottomSenseGlow = document.getElementById("bottomSenseGlow");
+  const meterSignal = document.getElementById("meterSignal");
+  const meterDot = document.getElementById("meterDot");
+  const outputPill = document.getElementById("outputPill");
+  const outputPillText = document.getElementById("outputPillText");
+  const outputLed = document.getElementById("outputLed");
+  const flowOutputNote = document.getElementById("flowOutputNote");
+  const statusField = document.getElementById("statusField");
+  const statusVoltage = document.getElementById("statusVoltage");
+  const statusState = document.getElementById("statusState");
+  const statusStateItem = document.getElementById("statusStateItem");
+
+  const THRESHOLD = 42;
+  const METER_CENTER = 817.5;
+  const METER_HALF = 63.5;
+  const carriers = [];
+  let field = Number(fieldInput.value);
+  let animationFrame = 0;
+
+  const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
+  const signText = value => `${value >= 0 ? "+" : "−"}${Math.abs(value)}`;
+
+  function svgElement(name, attributes = {}) {
+    const element = document.createElementNS(NS, name);
+    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+    return element;
+  }
+
+  function renderFieldSymbols() {
+    fieldColumn.replaceChildren();
+    const strength = Math.abs(field) / 90;
+    const symbol = field >= 0 ? "⊗" : "⊙";
+    const opacity = .22 + .72 * strength;
+    const positions = [132, 172, 212, 258, 342, 390, 430];
+
+    positions.forEach((y, index) => {
+      const x = index < 3 ? 395 : index % 2 ? 350 : 445;
+      const ring = svgElement("circle", {
+        cx: x,
+        cy: y,
+        r: 13.5,
+        class: "field-symbol-ring",
+        opacity: (.34 + .66 * strength).toFixed(2)
+      });
+      const text = svgElement("text", {
+        x,
+        y: y + .5,
+        class: "field-symbol",
+        opacity: opacity.toFixed(2)
+      });
+      text.textContent = symbol;
+      fieldColumn.append(ring, text);
+    });
+  }
+
+  function createCarriers() {
+    carrierGroup.replaceChildren();
+    carriers.length = 0;
+    const rowOffsets = [-31, -16, 0, 16, 31, -8, 8, 24];
+    rowOffsets.forEach((offset, index) => {
+      const circle = svgElement("circle", { r: 4.1, class: "carrier" });
+      carrierGroup.appendChild(circle);
+      carriers.push({ element: circle, offset, phase: index / rowOffsets.length });
+    });
+  }
+
+  function renderCharges() {
+    chargeGroup.replaceChildren();
+    const positiveOnTop = field >= 0;
+    const magnitude = Math.abs(field) / 90;
+    const opacity = clamp(.12 + .88 * magnitude, .12, 1);
+    const xs = [276, 338, 400, 462, 524];
+
+    xs.forEach(x => {
+      const top = svgElement("text", {
+        x,
+        y: 245,
+        class: `charge-sign ${positiveOnTop ? "charge-positive" : "charge-negative"}`,
+        opacity: opacity.toFixed(2)
+      });
+      top.textContent = positiveOnTop ? "+" : "−";
+
+      const bottom = svgElement("text", {
+        x,
+        y: 355,
+        class: `charge-sign ${positiveOnTop ? "charge-negative" : "charge-positive"}`,
+        opacity: opacity.toFixed(2)
+      });
+      bottom.textContent = positiveOnTop ? "−" : "+";
+
+      chargeGroup.append(top, bottom);
+    });
+  }
+
+  function renderStaticState() {
+    const strength = Math.abs(field) / 90;
+    const hallVoltage = field * .0111;
+    const hallText = `${hallVoltage >= 0 ? "+" : "−"}${Math.abs(hallVoltage).toFixed(2)}`;
+    const detected = Math.abs(field) >= THRESHOLD;
+    const forceDirection = field >= 0 ? -1 : 1;
+    const forceLength = field === 0 ? 0 : 17 + 43 * strength;
+    const forceEndY = 300 + forceDirection * forceLength;
+    const meterX = METER_CENTER + field / 90 * METER_HALF;
+
+    fieldReadout.textContent = `B = ${signText(field)} mT`;
+    fieldDirectionLabel.textContent = field === 0 ? "no perpendicular field" : field > 0 ? "field into the page" : "field out of the page";
+    voltageValue.textContent = `Vₕ = ${hallText}`;
+    statusField.textContent = `${signText(field)} mT`;
+    statusVoltage.textContent = hallText;
+    statusState.textContent = detected ? "HIGH" : "LOW";
+    flowOutputNote.textContent = detected ? "switches HIGH" : "remains LOW";
+
+    forceArrow.setAttribute("x1", 430);
+    forceArrow.setAttribute("y1", 300);
+    forceArrow.setAttribute("x2", 430);
+    forceArrow.setAttribute("y2", forceEndY);
+    forceArrow.setAttribute("opacity", field === 0 ? 0 : clamp(.28 + .72 * strength, .28, 1));
+    forceLabel.textContent = field === 0 ? "no sideways force" : "sideways force";
+    forceLabel.setAttribute("y", forceDirection < 0 ? 267 : 342);
+
+    meterSignal.setAttribute("x2", meterX);
+    meterDot.setAttribute("cx", meterX);
+
+    topSenseGlow.setAttribute("stroke", field >= 0 ? "var(--positive)" : "var(--negative)");
+    bottomSenseGlow.setAttribute("stroke", field >= 0 ? "var(--negative)" : "var(--positive)");
+    topSenseGlow.setAttribute("opacity", clamp(.05 + .3 * strength, .05, .35));
+    bottomSenseGlow.setAttribute("opacity", clamp(.05 + .3 * strength, .05, .35));
+
+    outputPill.setAttribute("class", `output-pill${detected ? "" : " low"}`);
+    outputPillText.setAttribute("class", `output-pill-text${detected ? "" : " low"}`);
+    outputPillText.textContent = detected ? "OUTPUT HIGH" : "OUTPUT LOW";
+    outputLed.setAttribute("class", `output-led ${detected ? "on" : "off"}`);
+    statusStateItem.classList.toggle("detected", detected);
+
+    renderFieldSymbols();
+    renderCharges();
+    reportHeight();
+  }
+
+  function animateCarriers(time) {
+    const strength = Math.abs(field) / 90;
+    const direction = field >= 0 ? -1 : 1;
+    const speed = .00012;
+
+    carriers.forEach((carrier, index) => {
+      const u = (time * speed + carrier.phase) % 1;
+      const x = 250 + u * 294;
+      const deflection = direction * strength * 48 * Math.pow(u, 1.65);
+      const y = 300 + carrier.offset + deflection;
+      carrier.element.setAttribute("cx", x.toFixed(2));
+      carrier.element.setAttribute("cy", y.toFixed(2));
+      carrier.element.setAttribute("opacity", (.45 + .55 * (1 - Math.abs(u - .5))).toFixed(2));
+    });
+
+    animationFrame = requestAnimationFrame(animateCarriers);
+  }
+
+  fieldInput.addEventListener("input", () => {
+    field = Number(fieldInput.value);
+    renderStaticState();
+  });
+
+  let lastReportedHeight = 0;
+  function reportHeight() {
+    if (window.parent === window) return;
+    const target = document.querySelector(".viz") || document.body;
+    const rect = target.getBoundingClientRect();
+    const height = Math.max(1, Math.ceil(rect.bottom + window.scrollY));
+    if (Math.abs(height - lastReportedHeight) < 2) return;
+    lastReportedHeight = height;
+    try {
+      const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+      window.parent.postMessage({ type: "article-visualization-height", height }, targetOrigin);
+    } catch (_) {}
+  }
+
+  createCarriers();
+  renderStaticState();
+  animationFrame = requestAnimationFrame(animateCarriers);
+
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(reportHeight);
+    observer.observe(document.querySelector(".viz") || document.body);
+  }
+  window.addEventListener("load", reportHeight);
+  window.addEventListener("resize", reportHeight);
+  window.addEventListener("beforeunload", () => cancelAnimationFrame(animationFrame));
+})();
+</script>
+</body>
+</html>
