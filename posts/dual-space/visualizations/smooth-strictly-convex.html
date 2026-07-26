@@ -313,9 +313,9 @@
           var el = document.getElementById('visualization');
           var height = Math.ceil(el.getBoundingClientRect().height + 18);
           if (window.parent !== window) {
-            window.parent.postMessage({ type: 'article-visualization:resize', height: height }, '*');
-            window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, '*');
-            window.parent.postMessage({ height: height }, '*');
+            window.parent.postMessage({ type: 'article-visualization:resize', height: height }, window.location.origin);
+            window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, window.location.origin);
+            window.parent.postMessage({ height: height }, window.location.origin);
           }
         });
       }
@@ -402,5 +402,6 @@
       window.setTimeout(reportHeight, 260);
     }());
   </script>
+  <script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>

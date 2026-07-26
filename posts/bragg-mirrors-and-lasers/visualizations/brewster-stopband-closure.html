@@ -218,11 +218,12 @@
           });
         } catch (_) {}
       }
-      function resize() { const h = Math.ceil(document.documentElement.scrollHeight); try { if (frameElement) frameElement.style.height = h + 'px'; } catch (_) {} try { parent.postMessage({type:'article-visualization:resize',height:h},'*'); } catch (_) {} }
+      function resize() { const h = Math.ceil(document.documentElement.scrollHeight); try { if (frameElement) frameElement.style.height = h + 'px'; } catch (_) {} try { parent.postMessage({type:'article-visualization:resize',height:h}, window.location.origin); } catch (_) {} }
       sync(); resize();
       try { if (parent !== window) new MutationObserver(sync).observe(parent.document.documentElement,{attributes:true,attributeFilter:['class','data-theme','data-color-mode']}); } catch (_) {}
       addEventListener('load', resize); addEventListener('resize', resize); if ('ResizeObserver' in window) new ResizeObserver(resize).observe(document.body);
     }());
   </script>
+  <script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>

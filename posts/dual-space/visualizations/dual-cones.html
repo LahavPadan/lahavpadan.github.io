@@ -89,7 +89,7 @@
     --font-display: "Lora", Georgia, "Times New Roman", serif;
     --font-reading: "Lora", Georgia, "Times New Roman", serif;
     --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
 
   :root[data-theme="dark"],
@@ -2176,9 +2176,9 @@
     window.requestAnimationFrame(function () {
       var height = Math.ceil(document.getElementById('dual-viz').getBoundingClientRect().height + 24);
       if (window.parent !== window) {
-        window.parent.postMessage({ type: 'article-visualization:resize', height: height }, '*');
-        window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, '*');
-        window.parent.postMessage({ height: height }, '*');
+        window.parent.postMessage({ type: 'article-visualization:resize', height: height }, window.location.origin);
+        window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, window.location.origin);
+        window.parent.postMessage({ height: height }, window.location.origin);
       }
     });
   }
@@ -2208,5 +2208,6 @@
   document.addEventListener('viz:math-ready', requestHeight);
 }());
 </script>
+  <script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>

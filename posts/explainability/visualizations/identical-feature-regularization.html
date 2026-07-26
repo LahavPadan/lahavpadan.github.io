@@ -3,6 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap"
+  >
   <title>Regularization for identical features</title>
   <style>
   :root {
@@ -41,6 +47,19 @@
     body { padding: 14px 8px; }
   }
 
+  :root[data-theme="dark"] {
+      --page: #171411;
+      --surface: #211d19;
+      --surface-muted: #2a2520;
+      --ink: #f0eae3;
+      --muted: #c5baae;
+      --border: #4b433b;
+      --border-strong: #655b51;
+      --accent: #d784b4;
+      --accent-soft: #35242f;
+      color-scheme: dark;
+    }
+
   @media (prefers-color-scheme: dark) {
     :root {
       --page: #171411;
@@ -55,6 +74,18 @@
       color-scheme: dark;
     }
   }
+    html[data-theme="dark"] {
+      --page: #171411;
+      --surface: #211d19;
+      --surface-muted: #2a2520;
+      --ink: #f0eae3;
+      --muted: #c5baae;
+      --border: #4b433b;
+      --border-strong: #655b51;
+      --accent: #d784b4;
+      --accent-soft: #35242f;
+      color-scheme: dark;
+    }
 </style>
   <style>
   .reg-geometry {
@@ -606,7 +637,7 @@
     }
   };
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
 </head>
 <body>
   <section class="reg-geometry" id="identical-feature-regularization" data-rg-identical>
@@ -1127,5 +1158,6 @@
     }
   })();
 </script>
+  <script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>

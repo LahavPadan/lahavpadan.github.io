@@ -115,6 +115,36 @@
 </head>
 <body>
 <style>
+:root {
+  color-scheme: light;
+  --page: #fbfbf9;
+  --surface: #ffffff;
+  --surface-muted: #f4f5f2;
+  --ink: #1d2330;
+  --muted: #5f6675;
+  --border: #e3e3dd;
+  --border-strong: #c6c7bf;
+  --accent: #5457b8;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0f1310;
+  --surface: #161b17;
+  --surface-muted: #1c231d;
+  --ink: #e8ece8;
+  --muted: #a6b1a8;
+  --border: #333c35;
+  --border-strong: #59685d;
+  --accent: #aeb1f2;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+}
+
 .oblique-bragg {
   --ob-accent: var(--post-accent, var(--accent, #6f73c9));
   --ob-ink: var(--ink, #202431);
@@ -380,7 +410,7 @@
   line-height: 1.55;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 700px) {
   .oblique-bragg__steps {
     grid-template-columns: 1fr;
   }
@@ -608,8 +638,8 @@
         ));
         try { if (window.frameElement) window.frameElement.style.height = height + 'px'; } catch (_) {}
         try {
-          window.parent.postMessage({ type: 'article-visualization:resize', height: height }, '*');
-          window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, '*');
+          window.parent.postMessage({ type: 'article-visualization:resize', height: height }, window.location.origin);
+          window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, window.location.origin);
         } catch (_) {}
       });
     }
@@ -621,5 +651,6 @@
     reportHeight();
   }());
 </script>
+  <script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>

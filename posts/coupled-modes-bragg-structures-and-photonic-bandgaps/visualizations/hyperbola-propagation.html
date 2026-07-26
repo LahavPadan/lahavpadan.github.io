@@ -89,6 +89,23 @@
       --shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
     }
 
+    :root[data-theme="dark"] {
+        --accent: #83b6c8;
+        --accent-strong: #abd0dc;
+        --accent-soft: #18333e;
+        --warm: #dda176;
+        --warm-soft: #3c291f;
+        --violet: #b4a5d5;
+        --violet-soft: #2d283d;
+        --ink: #edf2f4;
+        --muted: #a9b4ba;
+        --line: #455159;
+        --grid: #303a40;
+        --paper: #151a1d;
+        --panel: #1c2327;
+        --shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
+      }
+
     @media (prefers-color-scheme: dark) {
       html:not([data-theme="light"]) {
         --accent: #83b6c8;
@@ -868,5 +885,6 @@
       window.addEventListener('load', fitFrame);
     })();
   </script>
+  <script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>

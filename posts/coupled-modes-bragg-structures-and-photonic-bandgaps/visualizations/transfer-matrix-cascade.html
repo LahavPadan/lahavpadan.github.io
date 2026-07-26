@@ -381,19 +381,15 @@
 
     .proof-flow {
       display: grid;
-      grid-template-columns:
-        minmax(0, 1fr)
-        46px
-        minmax(0, 1fr)
-        46px
-        minmax(0, 1fr);
+      grid-template-columns: 1fr;
+      gap: 20px;
       align-items: stretch;
     }
 
     .proof-step {
       min-width: 0;
-      padding: 5px 16px 0;
-      text-align: center;
+      padding: 0;
+      text-align: left;
     }
 
     .proof-step:first-child {
@@ -408,7 +404,7 @@
       display: grid;
       width: 28px;
       height: 28px;
-      margin: 0 auto 10px;
+      margin: 0 0 10px;
       place-items: center;
       border: 1px solid var(--blue);
       border-radius: 50%;
@@ -433,21 +429,23 @@
 
     .proof-arrow {
       position: relative;
-      align-self: center;
-      height: 1px;
+      align-self: start;
+      width: 1px;
+      height: 28px;
+      margin-left: 13px;
       background: var(--hairline-strong);
     }
 
     .proof-arrow::after {
       position: absolute;
-      top: 50%;
-      right: 0;
+      bottom: 0;
+      left: 50%;
       width: 8px;
       height: 8px;
       border-top: 1.5px solid var(--hairline-strong);
       border-right: 1.5px solid var(--hairline-strong);
       content: "";
-      transform: translateY(-50%) rotate(45deg);
+      transform: translateX(-50%) rotate(135deg);
     }
 
     .cancel-note {
@@ -1107,9 +1105,9 @@
                     <mtd><mi>d</mi></mtd>
                   </mtr>
                 </mtable>
-                <mo>)</mo>.
+                <mo>)</mo>
               </mrow>
-            </math>
+            </math>.
           </div>
 
           <p>
@@ -1205,8 +1203,8 @@
               <mi>T</mi>
               <mo>(</mo><msub><mi>z</mi><mn>0</mn></msub><mo>,</mo><msub><mi>z</mi><mn>0</mn></msub><mo>)</mo>
               <mo>=</mo>
-              <mi>I</mi>,
-            </math>
+              <mi>I</mi>
+            </math>,
             so that constant is one.
           </p>
         </article>
@@ -1333,5 +1331,6 @@
       reportHeight();
     })();
   </script>
+  <script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>

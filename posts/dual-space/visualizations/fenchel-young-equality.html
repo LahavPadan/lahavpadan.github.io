@@ -1258,7 +1258,7 @@
           try {
             window.parent.postMessage({ height: height }, window.location.origin);
           } catch (_error) {
-            window.parent.postMessage({ height: height }, '*');
+            window.parent.postMessage({ height: height }, window.location.origin);
           }
         });
       }
@@ -1277,5 +1277,6 @@
       update();
     }());
   </script>
+  <script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>

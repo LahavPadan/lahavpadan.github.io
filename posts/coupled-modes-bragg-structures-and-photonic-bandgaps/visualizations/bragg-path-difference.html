@@ -97,6 +97,27 @@
       --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
     }
 
+    :root[data-theme="dark"] {
+        --page: #0d1411;
+        --panel: #111b17;
+        --panel-2: #17231e;
+        --ink: #f4f0e7;
+        --muted: #b6c0b8;
+        --line: #314139;
+        --line-strong: #66766e;
+        --accent: #ff8fc4;
+        --accent-soft: #36212d;
+        --ray: #8ab8f1;
+        --ray-soft: #1b2d3d;
+        --path: #ffb36f;
+        --path-soft: #3a2a1d;
+        --success: #79d0ae;
+        --success-soft: #18362c;
+        --warn: #efb577;
+        --warn-soft: #3a2b1d;
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+      }
+
     @media (prefers-color-scheme: dark) {
       html:not([data-theme="light"]) {
         --page: #0d1411;
@@ -1216,7 +1237,7 @@
 
       function reportHeight() {
         try {
-          window.parent.postMessage({ type: "bragg-path-difference-height", height: document.documentElement.scrollHeight }, "*");
+          window.parent.postMessage({ type: "bragg-path-difference-height", height: document.documentElement.scrollHeight }, window.location.origin);
         } catch (_) {}
       }
 
@@ -1225,5 +1246,6 @@
       render();
     })();
   </script>
+  <script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>

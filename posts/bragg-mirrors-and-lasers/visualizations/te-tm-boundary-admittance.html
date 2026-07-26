@@ -2498,8 +2498,8 @@
         ));
         try { if (window.frameElement) window.frameElement.style.height = height + 'px'; } catch (_) {}
         try {
-          window.parent.postMessage({ type: 'article-visualization:resize', height: height }, '*');
-          window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, '*');
+          window.parent.postMessage({ type: 'article-visualization:resize', height: height }, window.location.origin);
+          window.parent.postMessage({ type: 'lahav-visualization-resize', height: height }, window.location.origin);
         } catch (_) {}
       });
     }
@@ -2511,5 +2511,6 @@
     reportHeight();
   }());
 </script>
+  <script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>

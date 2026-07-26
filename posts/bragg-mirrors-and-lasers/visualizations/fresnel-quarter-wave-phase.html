@@ -95,6 +95,26 @@
       --shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
     }
 
+    :root[data-theme="dark"] {
+        --viz-page: #151a1d;
+        --viz-surface: #1c2327;
+        --viz-surface-muted: #222b30;
+        --viz-ink: #edf2f4;
+        --viz-muted: #a9b4ba;
+        --viz-border: #455159;
+        --viz-border-strong: #63727a;
+        --viz-accent: #83b6c8;
+        --viz-accent-soft: #18333e;
+        --viz-accent-border: #315b6c;
+        --viz-accent-ink: #abd0dc;
+        --ray-two: #dda176;
+        --ray-two-soft: #3c291f;
+        --ray-two-border: #704d39;
+        --success: #83c6aa;
+        --success-soft: #1c382f;
+        --shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
+      }
+
     @media (prefers-color-scheme: dark) {
       html:not([data-theme="light"]) {
         --viz-page: #151a1d;
@@ -1223,5 +1243,6 @@
       update();
     }());
   </script>
+  <script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>

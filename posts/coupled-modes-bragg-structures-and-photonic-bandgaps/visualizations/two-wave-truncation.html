@@ -6,6 +6,12 @@
     name="viewport"
     content="width=device-width, initial-scale=1"
   />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap"
+  >
 
   <title>Two-wave truncation from the full Fourier system</title>
 
@@ -886,6 +892,21 @@
        DARK MODE
        ===================================================== */
 
+    :root[data-theme="dark"] {
+        --tw-bg: var(--color-bg, #171411);
+        --tw-surface: var(--color-surface, #211d19);
+        --tw-surface-soft: var(--color-surface-2, #2a2520);
+
+        --tw-text: var(--color-text, #f0eae3);
+        --tw-muted: var(--color-muted, #c5baae);
+        --tw-border: var(--color-border, #4b433b);
+
+        --tw-accent: var(--color-accent, #d784b4);
+        --tw-accent-ink: #f0b7d8;
+
+        --tw-blue: #86b8d8;
+      }
+
     @media (prefers-color-scheme: dark) {
       :root {
         --tw-bg: var(--color-bg, #171411);
@@ -902,6 +923,20 @@
         --tw-blue: #86b8d8;
       }
     }
+    html[data-theme="dark"] {
+        --tw-bg: var(--color-bg, #171411);
+        --tw-surface: var(--color-surface, #211d19);
+        --tw-surface-soft: var(--color-surface-2, #2a2520);
+
+        --tw-text: var(--color-text, #f0eae3);
+        --tw-muted: var(--color-muted, #c5baae);
+        --tw-border: var(--color-border, #4b433b);
+
+        --tw-accent: var(--color-accent, #d784b4);
+        --tw-accent-ink: #f0b7d8;
+
+        --tw-blue: #86b8d8;
+      }
   </style>
 
   <!--
@@ -928,7 +963,7 @@
 
   <script
     defer
-    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js">
   </script>
 </head>
 
@@ -1658,5 +1693,6 @@
       </div>
     </div>
   </section>
+  <script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>
