@@ -590,9 +590,9 @@
 <body>
   <main class="bmp" id="bragg-penetration-viz">
     <header class="bmp-header">
-      <p class="bmp-eyebrow">From an imaginary Bloch wavenumber to a measurable mirror</p>
+      <p class="bmp-eyebrow">From an imaginary wavenumber to a measurable mirror</p>
       <h1>A finite Bragg mirror is a two-boundary problem</h1>
-      <p class="bmp-header__lead">The gap relation explains why a field can decay. It does not, by itself, determine how much is reflected by a grating of length <i>L</i>. That requires the coupled forward and backward envelopes together with the far-end condition: no backward wave is incident from the right.</p>
+      <p class="bmp-header__lead">Equation (⋆), <i>q</i><sup>2</sup> = δ<sup>2</sup> − κ<sup>2</sup>, explains why a field can decay inside the grating. It does not, by itself, determine how much is reflected by a grating of length <i>L</i>. That requires the coupled forward and backward envelopes together with the far-end condition: no backward wave is incident from the right.</p>
     </header>
 
     <div class="bmp-bridge" aria-label="The logical bridge from the stopband to finite reflectivity">
@@ -601,7 +601,7 @@
         <span class="bmp-bridge__math"><i>q</i><sup>2</sup> = δ<sup>2</sup> − κ<sup>2</sup></span>
       </div>
       <div class="bmp-bridge__step">
-        <span class="bmp-bridge__label">Exact Bragg tuning, δ = 0</span>
+        <span class="bmp-bridge__label">Setting δ = 0</span>
         <span class="bmp-bridge__math"><i>q</i> = <i>i</i>κ &nbsp;⇒&nbsp; e<sup><i>iqz</i></sup> = e<sup>−κ<i>z</i></sup></span>
       </div>
       <div class="bmp-bridge__step">
@@ -630,16 +630,16 @@
       <div class="bmp-section-heading">
         <span class="bmp-section-heading__number">1</span>
         <div>
-          <h2 id="bmp-step-one">The periodic modulation continuously converts the two envelopes into one another</h2>
-          <p>At exact Bragg tuning, the phase-mismatch terms vanish. Only the coupling κ remains.</p>
+          <h2 id="bmp-step-one">At δ = 0, the grating couples <i>A</i> and <i>B</i> through κ alone</h2>
+          <p>The phase-mismatch terms vanish; only the coupling κ remains on the right-hand side.</p>
         </div>
       </div>
 
       <div class="bmp-equation-stage">
         <article class="bmp-panel">
-          <p class="bmp-panel__kicker">Local evolution</p>
+          <p class="bmp-panel__kicker">Coupled envelope ODEs</p>
           <h3>Forward amplitude <i>A</i> and backward amplitude <i>B</i></h3>
-          <div class="bmp-coupled-equations" aria-label="Coupled mode equations at exact Bragg tuning">
+          <div class="bmp-coupled-equations" aria-label="Coupled mode equations at δ = 0">
             <div class="bmp-equation-line">d<i>A</i>/d<i>z</i> = <i>i</i>κ<i>B</i></div>
             <div class="bmp-equation-line">d<i>B</i>/d<i>z</i> = −<i>i</i>κ<i>A</i></div>
           </div>
@@ -648,7 +648,7 @@
             <span class="bmp-arrow-proof__arrow" aria-hidden="true">→</span>
             <span class="bmp-arrow-proof__result"><i>A</i>″ = κ<sup>2</sup><i>A</i>, &nbsp;<i>B</i>″ = κ<sup>2</sup><i>B</i></span>
           </div>
-          <p>The positive sign in the second-order equation is the mathematical signature of hyperbolic growth/decay rather than oscillation. The two independent solutions are e<sup>+κz</sup> and e<sup>−κz</sup>.</p>
+          <p>Contrast with the oscillatory second-order equation <i>A</i>″ = −<i>k</i><sup>2</sup><i>A</i>, whose solutions are e<sup>±<i>ikz</i></sup>. Here the right-hand side is +κ<sup>2</sup><i>A</i>, and the two independent solutions are the exponentials e<sup>+κ<i>z</i></sup> and e<sup>−κ<i>z</i></sup> — hyperbolic growth/decay, no oscillation.</p>
         </article>
 
         <article class="bmp-panel bmp-panel--accent">
@@ -676,7 +676,7 @@
         <span class="bmp-section-heading__number">2</span>
         <div>
           <h2 id="bmp-step-two">The far-end boundary condition turns the exponentials into cosh and sinh profiles</h2>
-          <p>Normalize the incident amplitude to <i>A</i>(0)=1. The selected solution is shown for the chosen dimensionless length <i>N</i>=κ<i>L</i>.</p>
+          <p>Set the incident amplitude to <i>A</i>(0)=1. The plots show the specific combination of e<sup>+κz</sup> and e<sup>−κz</sup> picked out by the far-end condition <i>B</i>(<i>L</i>)=0, for the chosen dimensionless length <i>N</i>=κ<i>L</i>.</p>
         </div>
       </div>
 
@@ -863,7 +863,7 @@
         profileSvg.appendChild(svgEl('rect', { x: left, y: fluxY, width, height: Math.max(0, bottom - fluxY), class: 'bmp-svg-flux' }));
         profileSvg.insertBefore(profileSvg.lastChild, profileSvg.querySelector('.bmp-svg-exp'));
         // Flux annotation sits at left instead of right, so the transmitted-amplitude labels near z=L have room.
-        addText(profileSvg, left + 8, Math.min(bottom - 8, fluxY + 14), `net flux |A|² − |B|² = T = ${percent(flux)}`, 'bmp-svg-text', 'start');
+        addText(profileSvg, left + 8, Math.min(bottom - 8, fluxY + 14), `|A|² − |B|² = T = ${percent(flux)}`, 'bmp-svg-text', 'start');
       }
 
       function drawReflectivity(N) {

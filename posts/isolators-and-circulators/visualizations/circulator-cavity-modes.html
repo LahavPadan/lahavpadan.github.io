@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,6 +35,83 @@
   </script>
   <script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
 
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const variableNames = [
+        '--page', '--surface', '--surface-muted', '--ink', '--muted',
+        '--border', '--border-strong', '--accent', '--accent-soft',
+        '--accent-border', '--accent-ink',
+        '--post-accent', '--post-accent-soft', '--post-accent-border',
+        '--post-accent-ink', '--color-bg', '--color-surface',
+        '--color-surface-muted', '--color-text', '--color-text-muted',
+        '--color-border', '--color-border-strong'
+      ];
+
+      function syncFromParent() {
+        try {
+          if (window.parent === window) return;
+
+          const parentRoot = window.parent.document.documentElement;
+          const article = window.parent.document.querySelector('article, main') || parentRoot;
+          const rootStyle = window.parent.getComputedStyle(parentRoot);
+          const articleStyle = window.parent.getComputedStyle(article);
+          const explicit = parentRoot.getAttribute('data-theme') ||
+            (parentRoot.classList.contains('dark') ? 'dark' : '') ||
+            (parentRoot.classList.contains('light') ? 'light' : '');
+
+          if (explicit) root.setAttribute('data-theme', explicit);
+          else root.removeAttribute('data-theme');
+
+          root.classList.toggle('dark', explicit === 'dark');
+          root.classList.toggle('light', explicit === 'light');
+
+          for (const name of variableNames) {
+            const value = articleStyle.getPropertyValue(name).trim() ||
+              rootStyle.getPropertyValue(name).trim();
+            if (value) root.style.setProperty(name, value);
+          }
+
+          const aliases = {
+            '--page': '--color-bg',
+            '--surface': '--color-surface',
+            '--surface-muted': '--color-surface-muted',
+            '--ink': '--color-text',
+            '--muted': '--color-text-muted',
+            '--border': '--color-border',
+            '--border-strong': '--color-border-strong',
+            '--accent': '--post-accent',
+            '--accent-soft': '--post-accent-soft',
+            '--accent-border': '--post-accent-border',
+            '--accent-ink': '--post-accent-ink'
+          };
+
+          for (const [alias, source] of Object.entries(aliases)) {
+            if (!root.style.getPropertyValue(alias)) {
+              const value = root.style.getPropertyValue(source);
+              if (value) root.style.setProperty(alias, value);
+            }
+          }
+        } catch (_) {
+          // Standalone rendering keeps the fallback palette.
+        }
+      }
+
+      syncFromParent();
+      window.addEventListener('DOMContentLoaded', syncFromParent, { once: true });
+
+      try {
+        if (window.parent !== window) {
+          const parentRoot = window.parent.document.documentElement;
+          new MutationObserver(syncFromParent).observe(parentRoot, {
+            attributes: true,
+            attributeFilter: ['class', 'data-theme', 'data-color-mode']
+          });
+        }
+      } catch (_) {}
+    }());
+  </script>
+
   <style>
 
     /* Adopt reference viz typography for all headings; per-class rules
@@ -69,6 +146,21 @@
       --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       --math-font: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --page: var(--viz-page, #101511);
+      --surface: var(--viz-surface, #171e19);
+      --surface-muted: var(--viz-surface-muted, #1d2720);
+      --ink: var(--viz-ink, #e9efeb);
+      --muted: var(--viz-muted, #a7b5aa);
+      --border: var(--viz-border, #344138);
+      --border-strong: var(--viz-border-strong, #617168);
+      --accent: var(--viz-accent, #ffb9df);
+      --accent-soft: var(--viz-accent-soft, #3f2033);
+      --accent-border: var(--viz-accent-border, #914f75);
+      --accent-ink: var(--viz-accent-ink, #ffb9df);
     }
 
     * { box-sizing: border-box; }

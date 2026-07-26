@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
@@ -11,6 +11,82 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap"
   >
 <title>Y-junction circulator: 30-degree null placement</title>
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const variableNames = [
+        '--page', '--surface', '--surface-muted', '--ink', '--muted',
+        '--border', '--border-strong', '--accent', '--accent-soft',
+        '--accent-border', '--accent-ink',
+        '--post-accent', '--post-accent-soft', '--post-accent-border',
+        '--post-accent-ink', '--color-bg', '--color-surface',
+        '--color-surface-muted', '--color-text', '--color-text-muted',
+        '--color-border', '--color-border-strong'
+      ];
+
+      function syncFromParent() {
+        try {
+          if (window.parent === window) return;
+
+          const parentRoot = window.parent.document.documentElement;
+          const article = window.parent.document.querySelector('article, main') || parentRoot;
+          const rootStyle = window.parent.getComputedStyle(parentRoot);
+          const articleStyle = window.parent.getComputedStyle(article);
+          const explicit = parentRoot.getAttribute('data-theme') ||
+            (parentRoot.classList.contains('dark') ? 'dark' : '') ||
+            (parentRoot.classList.contains('light') ? 'light' : '');
+
+          if (explicit) root.setAttribute('data-theme', explicit);
+          else root.removeAttribute('data-theme');
+
+          root.classList.toggle('dark', explicit === 'dark');
+          root.classList.toggle('light', explicit === 'light');
+
+          for (const name of variableNames) {
+            const value = articleStyle.getPropertyValue(name).trim() ||
+              rootStyle.getPropertyValue(name).trim();
+            if (value) root.style.setProperty(name, value);
+          }
+
+          const aliases = {
+            '--page': '--color-bg',
+            '--surface': '--color-surface',
+            '--surface-muted': '--color-surface-muted',
+            '--ink': '--color-text',
+            '--muted': '--color-text-muted',
+            '--border': '--color-border',
+            '--border-strong': '--color-border-strong',
+            '--accent': '--post-accent',
+            '--accent-soft': '--post-accent-soft',
+            '--accent-border': '--post-accent-border',
+            '--accent-ink': '--post-accent-ink'
+          };
+
+          for (const [alias, source] of Object.entries(aliases)) {
+            if (!root.style.getPropertyValue(alias)) {
+              const value = root.style.getPropertyValue(source);
+              if (value) root.style.setProperty(alias, value);
+            }
+          }
+        } catch (_) {
+          // Standalone rendering keeps the fallback palette.
+        }
+      }
+
+      syncFromParent();
+      window.addEventListener('DOMContentLoaded', syncFromParent, { once: true });
+
+      try {
+        if (window.parent !== window) {
+          const parentRoot = window.parent.document.documentElement;
+          new MutationObserver(syncFromParent).observe(parentRoot, {
+            attributes: true,
+            attributeFilter: ['class', 'data-theme', 'data-color-mode']
+          });
+        }
+      } catch (_) {}
+    }());
+  </script>
 <style>
 
     /* Adopt reference viz typography for all headings; per-class rules
