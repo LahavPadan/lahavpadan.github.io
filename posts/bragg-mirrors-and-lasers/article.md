@@ -4,16 +4,16 @@ The previous post, [Coupled Modes, Bragg Structures, and Photonic Bandgaps](/pos
 
 Two devices sit at the center of what follows:
 
-- A **distributed Bragg reflector**{:#defn-dbr} (DBR) is a grating used as a wavelength-selective element. Most commonly it is a mirror that reflects strongly in a narrow band and transmits outside it, but the same object also serves as the reflecting boundary of a photonic-bandgap waveguide, as a wavelength-drop filter in a wavelength-multiplexed link, and as the resonator against which a [gain](#defn-gain) medium is placed to make a laser.
+- A **distributed Bragg reflector**{:#defn-dbr} (DBR) is a grating used as a wavelength-selective element. It reflects strongly in a narrow band around its design wavelength and transmits outside it. The same object also serves as one of the two mirrors of the laser [cavity](#defn-cavity) built in [§ 4](#sec-4).
 - A **distributed-feedback laser**{:#defn-dfb} (DFB) puts the same grating *inside* a [gain](#defn-gain) medium and uses Bragg reflection in place of end mirrors, so the wavelength of the laser is set by the grating rather than by the gain's emission peak.
 
-Everything else developed here — apodization, chirp, long-period [coupling](#defn-coupling), quasi-phase matching — is a variation on the same physics with the grating shaped or repurposed.
+Everything else developed here — apodization ([§ 5.1](#sec-5-1)), chirp ([§ 5.2](#sec-5-2)), long-period [coupling](#defn-coupling) ([§ 5.3](#sec-5-3)), and quasi-phase matching ([§ 5.4](#sec-5-4)) — is a variation on the same physics with the grating shaped or repurposed.
 
 The results we use from the previous post, all justified in [§ 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4):
 
 - A grating with **Bragg period**{:#defn-bragg-period} $\Lambda$ singles out the **Bragg wavenumber**{:#defn-bragg-wavenumber} $k_B = \pi/\Lambda$. Its defining property: a round trip through one period at $k_B$ accumulates $2\pi$, or equivalently, the grating's fundamental spatial harmonic $2 k_B$ is exactly the momentum kick that takes a forward wave at $+k_B$ into a backward wave at $-k_B$. The **Bragg wavelength**{:#defn-bragg-wavelength} — the vacuum wavelength that satisfies this first-order condition — is $\lambda_B = 2 n_\text{avg}\, \Lambda$, and the corresponding **Bragg frequency**{:#defn-bragg-frequency} is $\omega_B = 2\pi c/\lambda_B$, where $n_\text{avg}$ is the spatial average of the refractive index.
 
-- Near this reference wavenumber, two Fourier components of the field dominate — the forward wave at $k \approx k_B$ and the wave it Bragg-backscatters into at $k - 2k_B \approx -k_B$. All others are suppressed by $\Delta n / n_\text{avg}$, where $\Delta n$ is the amplitude of the refractive-index modulation (if $n(z) = n_\text{avg} + \Delta n \cos(2 k_B z)$, then $\Delta n$ is the maximum deviation from the average). Throughout, we write the field as
+- Near this reference wavenumber, two Fourier components of the field dominate — the forward wave at $k \approx k_B$ and the wave it Bragg-backscatters into at $k - 2k_B \approx -k_B$. All others are suppressed by $\Delta n / n_\text{avg}$, where $\Delta n$ is the amplitude of the refractive-index modulation (if $n(z) = n_\text{avg} + \Delta n \cos(2 k_B z)$, then $\Delta n$ is the maximum deviation from the average). The field decomposes as
 
   $$E(z) = A(z)\, e^{i k_B z} + B(z)\, e^{-i k_B z},$$
 
@@ -21,9 +21,9 @@ The results we use from the previous post, all justified in [§ 4 of the previou
 
 - The two envelopes are governed by a **detuning**{:#defn-detuning} $\delta$ and a **coupling**{:#defn-coupling} $\kappa$,
 
-  $$\delta = k - k_B, \qquad \kappa = \frac{\pi\, \Delta n}{\lambda_B}.$$
+  $$\delta = k - k_B, \qquad \kappa = \frac{\Delta n}{2\, n_\text{avg}}\, k_B.$$
 
-  [Detuning](#defn-detuning) measures how far the driving wavenumber sits from $k_B$; [coupling](#defn-coupling) measures how strongly the grating mixes the forward and backward waves.
+  Both are wavenumbers, comparable to $k_B$ directly. $\delta$ is how far the driving wavenumber sits from $k_B$; $\kappa$ is set by the fractional index contrast $\Delta n / n_\text{avg}$ — a fixed fraction of $k_B$ that measures how strongly the grating mixes the forward and backward waves.
 
 - The two envelopes obey the dispersion relation
 
@@ -31,9 +31,9 @@ The results we use from the previous post, all justified in [§ 4 of the previou
 
   where $q$ is how far the mode's actual wavenumber inside the grating sits from $k_B$. Outside $\vert\delta\vert > \kappa$, $q$ is real and the field propagates. Inside $\vert\delta\vert < \kappa$, $q = i\alpha$ with $\alpha = \sqrt{\kappa^2 - \delta^2}$, and the field decays exponentially. The range $\vert\delta\vert < \kappa$ is the **stopband**{:#defn-stopband}.
 
-- The [stopband](#defn-stopband) is bounded on both sides at $\delta = \pm\kappa$, where $q = 0$: the forward and backward waves combine into a standing wave and the group velocity $v_g = d\omega/dq$ vanishes. Write $\omega_-$ and $\omega_+$ for the two boundary frequencies. Both are physically accessible in the Bragg problem — a feature that separates it from the one-sided cutoffs (waveguide, plasma, relativistic massive field) treated in the [cutoff phenomena post](/posts/cutoff-phenomena/).
+- The [stopband](#defn-stopband) is bounded on both sides at $\delta = \pm\kappa$, where $q = 0$: the forward and backward waves combine into a standing wave and the group velocity $v_g = d\omega/dq$ vanishes. Write $\omega_-$ and $\omega_+$ for the two boundary frequencies. Both are physically accessible in the Bragg problem, unlike the one-sided cutoffs (waveguide, plasma, relativistic massive field) of the [cutoff phenomena post](/posts/cutoff-phenomena/).
 
-[§ 1](#sec-1) and [§ 2](#sec-2) read \eqref{eq:hyperbola} at four distinct $(\delta, q)$ operating points:
+[§ 1](#sec-1) and [§ 2](#sec-2) apply \eqref{eq:hyperbola} at four values of $(\delta, q)$:
 
 - $\delta = \pm\kappa$ (both stopband edges, $q = 0$): the two standing waves at $\omega_\pm$ — [§ 1](#sec-1).
 - $\delta = 0$ in a semi-infinite grating: exact-Bragg decay at rate $\kappa$ — [§ 2.1](#sec-2-1).
@@ -50,11 +50,11 @@ The remaining sections build on that base:
 
 ## § 1. The two ends of the stopband, $\omega_-$ and $\omega_+$ {#sec-1}
 
-Inside the stopband ($|\delta| < \kappa$) \eqref{eq:hyperbola} gives $q^2 < 0$: the field decays exponentially and no wave propagates. The stopband is bounded above and below in $\omega$ by $\omega_-$ (lower) and $\omega_+$ (upper). Two independent derivations pin these down; the phase geometry of the interfaces then gives the [stopband](#defn-stopband) width.
+Inside the stopband ($|\delta| < \kappa$) \eqref{eq:hyperbola} gives $q^2 < 0$: the field decays exponentially and no wave propagates. The stopband is bounded above and below in $\omega$ by $\omega_-$ (lower) and $\omega_+$ (upper). We find these two frequencies twice, from complementary starting points: the coupled-mode framework ([§ 1.1](#sec-1-1), [§ 1.2](#sec-1-2)) and the multilayer stack ([§ 1.3](#sec-1-3)).
 
 ### § 1.1. Equal-mixture standing waves {#sec-1-1}
 
-Set the driving spatial wavenumber to the Bragg value $k = k_B$, i.e. $\delta = 0$. The two-mode [coupling](#defn-coupling) matrix has zero diagonal and only the off-diagonal $\pm\kappa$ left. Its eigenvalues are $\pm\kappa$ — the two boundary frequencies $\omega_\pm = \omega_B \pm \kappa$ of the stopband, above and below the reference — and its eigenvectors are the equal mixtures
+Set the driving spatial wavenumber to the Bragg value $k = k_B$, i.e. $\delta = 0$ — the case of **exact Bragg tuning**{:#defn-bragg-tuning}. The two-mode [coupling](#defn-coupling) matrix has zero diagonal and only the off-diagonal $\pm\kappa$ left. Its eigenvalues are $\pm\kappa$ — the two boundary frequencies $\omega_\pm = \omega_B \pm \kappa$ of the stopband, above and below the reference — and its eigenvectors are the equal mixtures
 
 $$(A, B) = \frac{1}{\sqrt 2}(1, 1) \quad\text{and}\quad (A, B) = \frac{1}{\sqrt 2}(1, -1).$$
 
@@ -69,7 +69,7 @@ Where the intensities sit relative to the modulation is what will matter for [§
 
 ### § 1.2. Which of $\omega_-$, $\omega_+$ lies lower {#sec-1-2}
 
-The real-space shapes alone do not say which of the two standing waves has the lower frequency. To settle that, we extract $\omega^2$ directly from the wave equation.
+Both standing waves live at the same wavenumber $k_B$; dispersion sends that single wavenumber to two frequencies, one at each [stopband](#defn-stopband) edge. The real-space shapes alone do not say which shape goes with which frequency — the map from shape to $\omega$ is what the wave equation supplies. Extract $\omega^2$ from it directly.
 
 <div class="guided-fold-start" data-label="Extract ω² from the wave equation" data-tone="derivation"></div>
 
@@ -100,11 +100,11 @@ Apply \eqref{eq:rayleigh} to the two edge modes. Both are pure sinusoids at the 
 - The **cosine mode** concentrates its intensity in the high-index parts of the modulation, so $\int \varepsilon \vert E \vert^2\, dz$ is large. Larger denominator, smaller $\omega^2$.
 - The **sine mode** concentrates its intensity in the low-index parts, so $\int \varepsilon \vert E \vert^2\, dz$ is small. Smaller denominator, larger $\omega^2$.
 
-So $\omega_-$ is the cosine standing wave, concentrated in the high-index material, and $\omega_+$ is the sine standing wave, concentrated in the low-index material. Shifting the origin of coordinates by half a [Bragg period](#defn-bragg-period) swaps cosine and sine, but the rule — the mode concentrated in the high-index material lies at the lower frequency — holds regardless.
+So $\omega_-$ is the cosine standing wave, concentrated in the high-index material, and $\omega_+$ is the sine standing wave, concentrated in the low-index material — the mode concentrated in the high-index material lies at the lower frequency.
 
 ### § 1.3. Constructive interface reflection at the Bragg wavelength {#sec-1-3}
 
-The same $\omega_\pm$ come out of a different picture. Instead of the two-Fourier-component truncation of [§ 1.1](#sec-1-1), take the grating as a stack of layers of piecewise-constant index — the multilayer we will build as a [DBR](#defn-dbr) in [§ 3](#sec-3) — and follow the phase of the individual interface reflections. [§ 1.4](#sec-1-4) will use the same per-layer phase to derive the [stopband](#defn-stopband) width.
+The same $\omega_\pm$ come out of a different picture. Instead of the two-Fourier-component truncation of [§ 1.1](#sec-1-1), take the grating as a stack of layers of piecewise-constant index — the multilayer we will build as a [DBR](#defn-dbr) in [§ 3](#sec-3) — and follow the phase of the individual interface reflections. [§ 1.4](#sec-1-4) then repeats the same phase argument at $\delta \neq 0$ to get the stopband width.
 
 At normal incidence, an interface from refractive index $n_1$ into refractive index $n_2$ has amplitude reflection coefficient
 
@@ -113,137 +113,137 @@ $$r_{12} = \frac{n_1 - n_2}{n_1 + n_2}. \tag{2}\label{eq:fresnel}$$
 Two properties of $r_{12}$ matter for what follows:
 
 - **Sign.** Going from low to high index gives $r_{12} < 0$: the reflected amplitude is phase-shifted by $\pi$ relative to the incident amplitude. Going from high to low gives $r_{12} > 0$: no phase shift.
-- **Magnitude.** For typical dielectric index differences (a few percent up to about 50%), $\vert r_{12} \vert$ is small — at most $\sim 0.2$.
+- **Magnitude.** For dielectric index differences from a few percent up to about 50%, $\vert r_{12} \vert$ is small — at most $\sim 0.2$.
 
-Consider now a stack of alternating high-index and low-index layers. The one-way phase a wave picks up crossing layer $i$ at wavelength $\lambda$ is $(2\pi n_i / \lambda)\, d_i$: it depends on the product $n_i d_i$, which we call the **optical thickness**{:#defn-optical-thickness} of the layer. Pick
+Take the grating as a stack of alternating high-index and low-index layers. In each layer, the field's in-medium wavenumber at frequency $\omega$ is $k_i = n_i\, \omega/c$, and the one-way phase picked up crossing a layer of thickness $d_i$ is $k_i d_i$. At fabrication, the layer thicknesses are chosen so that
 
-$$n_i d_i = \frac{\lambda_B}{4}$$
+$$k_{i,B}\, d_i = \pi/2 \quad\Longleftrightarrow\quad n_i d_i = \lambda_B/4,$$
 
-for both layer types. At $\lambda = \lambda_B$, the one-way phase is then $\pi/2$ and the round trip is $\pi$.
+for both layer types (where $k_{i,B} = n_i\, \omega_B/c$ is the in-medium wavenumber at the Bragg frequency, and $\lambda_B$ is the vacuum Bragg wavelength). The product $n_i d_i$ is the **optical thickness**{:#defn-optical-thickness} of the layer, and each layer is *quarter-wave* by construction: at $\omega = \omega_B$, the one-way phase is $\pi/2$ and the round trip is $\pi$.
 
-Compare two reflected amplitudes arriving back at the input plane just outside the stack:
+Compare two reflected amplitudes arriving back at the input plane:
 
-- Reflection off the first air–high interface: phase $\pi$ from the reflection itself, no propagation.
-- Reflection off the next interface (high to low): a round trip through the high layer contributes $\pi$, and the high-to-low reflection contributes no additional phase.
+- Reflection off the first air–high interface: $\pi$ from the reflection itself.
+- Reflection off the next interface (high–low): $\pi$ from the round trip through the high layer, plus $0$ from the reflection.
 
 Both arrive at the input plane with total phase $\pi$. They combine constructively. The next pair of interfaces adds two more contributions with the same total phase, and so on down the stack.
 
 {% include visualization.html src="fresnel-quarter-wave-phase.html" title="Reflection phase and quarter-wave propagation phase compared at one return plane" %}
 
-Off the [Bragg wavelength](#defn-bragg-wavelength) $\lambda_B$, the round-trip phase per layer is no longer exactly $\pi$, and reflections from deeper and shallower layers begin to disagree in phase. The rate at which the disagreement accumulates is what sets the [stopband](#defn-stopband) width — made quantitative in [§ 1.4](#sec-1-4).
+Off Bragg ($\delta \neq 0$), the round-trip phase per layer is no longer exactly $\pi$, and deeper and shallower reflections start to disagree in phase. The rate at which they lose coherence is what sets the stopband width. [§ 1.4](#sec-1-4) works it out.
 
 ### § 1.4. The stopband width, from phase-error accumulation {#sec-1-4}
 
-Combining the two boundaries $\delta = \pm\kappa$ of \eqref{eq:hyperbola} with the definition of $\kappa$ gives the stopband width in wavenumber, $\Delta k = 2\kappa$, and in frequency, $\Delta\omega = 2\kappa v_g$. [§ 1.3](#sec-1-3)'s stack-of-interfaces gives the same $\Delta k$ from a completely different starting point — the phase mismatch that accumulates as $\lambda$ moves off $\lambda_B$.
+At $\omega = \omega_B$ (i.e. $\delta = 0$), each layer's round-trip phase is exactly $\pi$ and reflections from all interfaces combine constructively.
 
-At $\lambda = \lambda_B$, each layer's round-trip phase is exactly $\pi$ and reflections from all interfaces combine constructively.
+Off Bragg the round-trip phase drifts away from $\pi$ per layer; the accumulated drift across the stack sets the stopband width.
 
 <div class="guided-fold-start" data-label="Follow the phase error through a concrete 1% detuning" data-tone="derivation"></div>
 
-Illuminate the same stack with a wavelength $\lambda = 0.99\, \lambda_B$ — off by 1%. The round-trip phase per layer is
+Illuminate the same stack at frequency $\omega = 1.01\, \omega_B$ — off by 1%. The round-trip phase per layer is
 
-$$\phi_\text{RT} = 2 k d = 2 \left(\frac{2\pi n}{\lambda}\right) \left(\frac{\lambda_B}{4 n}\right) = \pi\, \frac{\lambda_B}{\lambda} \approx 1.01\, \pi.$$
+$$\phi_\text{RT} = 2 k_i d_i = 2\, (n_i\, \omega / c)\, d_i = \pi\, (\omega/\omega_B) \approx 1.01\, \pi,$$
 
-Each layer contributes a phase *error* of $0.01\, \pi \approx 2°$ relative to the design condition. Small at one layer — the interface reflects nearly as well as it would at $\lambda_B$ — but the error accumulates as the wave works deeper:
+using $n_i d_i = \lambda_B/4 = \pi c/(2\omega_B)$ from § 1.3. Each layer contributes a phase *error* of $0.01\,\pi \approx 2°$. Small at one layer, but the errors accumulate as the wave works deeper:
 
 - After 10 layers: accumulated error $\approx 18°$. Deep and shallow reflections still add roughly in phase.
 - After 50 layers: accumulated error $\approx 90°$. Deep-layer reflections are orthogonal in phase to shallow ones — neither reinforcing nor cancelling.
 - After 100 layers: accumulated error $\approx 180°$. Deep-layer reflections are opposed to shallow ones, and further layers subtract from the total instead of adding to it.
 
-For this 1% [detuning](#defn-detuning), the useful reflecting depth is $\sim 100$ layers, about $30\,\mu\text{m}$ in a typical stack.
+For this 1% [detuning](#defn-detuning), the useful reflecting depth is $\sim 100$ layers, about $30\,\mu\text{m}$ of physical depth.
 
 <div class="guided-fold-end"></div>
 
-The two [stopband](#defn-stopband) boundaries $\delta = \pm\kappa$ are where \eqref{eq:hyperbola} gives $q^2 = 0$: for $|\delta| > \kappa$ the wave propagates, for $|\delta| < \kappa$ it decays. The same $\kappa$ measures the largest per-layer phase error the grating can still turn into net constructive reflection.
+\eqref{eq:hyperbola} gives the same picture from the algebra:
 
-Two quantities, one condition:
+- The two boundaries $\delta = \pm\kappa$ are where $q^2 = 0$.
+- The stopband is the interval $|\delta| < \kappa$ — a wavenumber range of width $\Delta k = 2\kappa$, symmetric about $k_B$.
 
-- The **stopband width** $\Delta k = 2\kappa$ is the range of detunings $\delta$ for which $q^2 < 0$ in \eqref{eq:hyperbola}.
-- The **penetration depth** $1/\kappa$ is the length over which $e^{-\kappa z}$ falls by $e$: the field at $\delta = 0$ decays over $1/\kappa$, since $q^2 = -\kappa^2$ there.
+Two roles of the same $\kappa$ come out of the coupled-mode dispersion:
 
-They are reciprocals because $\kappa$ appears in \eqref{eq:hyperbola} in two distinct roles: as the boundary of the [detuning](#defn-detuning) $\delta$ (a wavenumber that sets the stopband width) and as $|q|$ at $\delta = 0$ (an inverse length that sets the decay scale).
+- $\kappa$ as the *boundary* of $\delta$. The stopband width in wavenumber is $\Delta k = 2\kappa$; converting via $v_g$, the stopband width in frequency is $\Delta \omega = 2 \kappa v_g$.
+- $\kappa$ as $|q|$ *at* $\delta = 0$. At [exact Bragg tuning](#defn-bragg-tuning) $q = i\kappa$, and the field decays as $e^{-\kappa z}$ over a length $1/\kappa$.
+
+Both are set by the same fraction of $k_B$: from the coupling definition, $\kappa/k_B = \Delta n / (2 n_\text{avg})$. Half the fractional index contrast $\Delta n / n_\text{avg}$ sets the fractional stopband width $2\kappa/k_B$ and the reciprocal of the decay length in units of $1/k_B$.
 
 *§ 1's derivations both describe an infinite grating. A real grating has finite length, so whatever enters at $z = 0$ has to eventually exit at $z = L$ or come back out. What sets how much of the incident amplitude actually comes back?*
 
 ---
 
-## § 2. Finite gratings: decay scale and reflectivity {#sec-2}
+## § 2. Finite gratings: decay length and reflectivity {#sec-2}
 
-### § 2.1. Semi-infinite grating: the decay scale $1/\kappa$ {#sec-2-1}
+### § 2.1. Semi-infinite grating: the decay length $1/\kappa$ {#sec-2-1}
 
-At $\delta = 0$ the dispersion \eqref{eq:hyperbola} gives $q^2 = -\kappa^2$, so $q = \pm i\kappa$ and the two spatial factors are $e^{+\kappa z}$ and $e^{-\kappa z}$. Take the grating to fill the half-space $z > 0$; the $e^{+\kappa z}$ branch blows up at infinity and is dropped. The field decays as $e^{-\kappa z}$: amplitude falls by $e$ over $1/\kappa$. This decay scale is a property of the *medium*, not of any particular device. Cut the grating off at $z = L$ instead, and both branches must be kept — the second boundary is what selects the specific combination.
+At $\delta = 0$ the dispersion \eqref{eq:hyperbola} gives $q^2 = -\kappa^2$, so $q = \pm i\kappa$ and the two spatial factors are $e^{+\kappa z}$ and $e^{-\kappa z}$. Extend the grating to fill the half-space $z > 0$; the $e^{+\kappa z}$ branch blows up at infinity and is dropped. The field decays as $e^{-\kappa z}$: amplitude falls by $e$ over $1/\kappa$. This decay length is a property of the *medium*. Cut the grating off at $z = L$ instead, and both branches must be kept — the second boundary is what selects the specific combination.
 
 ### § 2.2. Finite grating: the reflectivity {#sec-2-2}
 
-The coupled-mode equations for the envelopes $A(z)$ (forward wave, right-going) and $B(z)$ (backward wave, left-going), derived at [§ 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4) from the two-Fourier-component truncation, read $dA/dz = i\delta A + i\kappa B$ and $dB/dz = -i\delta B - i\kappa A$. At $\delta = 0$ the diagonal terms vanish and only the off-diagonal [coupling](#defn-coupling) remains:
+Solve the two-boundary problem at $\delta = 0$ first — the [Bragg wavelength](#defn-bragg-wavelength) is where the reflection is strongest and where both envelopes evolve with the same single rate $\kappa$. Nonzero $\delta$ (still inside the stopband) replaces $\kappa$ with $\alpha = \sqrt{\kappa^2 - \delta^2}$ throughout, but does not change the structure of the answer.
+
+Before any calculation, two properties are guaranteed:
+
+- **Energy conservation.** The coupled-mode matrix at $\delta = 0$ (below) is Hermitian, so $|A|^2 - |B|^2$ stays constant along $z$. Combined with the boundary conditions, that will force $R + T = 1$ once we solve the two-boundary problem.
+- **A single dimensionless knob.** The coupled-mode equations at $\delta = 0$ carry only one parameter, $\kappa$; the grating carries one length, $L$. The only scale-free combination is $\kappa L$, which will control everything.
+
+<div class="guided-fold-start" data-label="Reduce the coupled-mode equations to a two-boundary transfer matrix" data-tone="derivation"></div>
+
+The coupled-mode equations for the envelopes $A(z)$ (forward, right-going) and $B(z)$ (backward, left-going), derived at [§ 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4), are $dA/dz = i\delta A + i\kappa B$ and $dB/dz = -i\delta B - i\kappa A$. At $\delta = 0$ the diagonal terms drop and only the off-diagonal coupling remains,
 
 $$\frac{d}{dz} \begin{pmatrix} A \\ B \end{pmatrix} = \begin{pmatrix} 0 & i\kappa \\ -i\kappa & 0 \end{pmatrix} \begin{pmatrix} A \\ B \end{pmatrix}. \tag{3}\label{eq:cme}$$
 
-The off-diagonal has the same $\kappa$ as before; the factor $i$ is a phase convention, and will affect only the phase (not the power) of the reflected wave.
+The matrix is Hermitian: $|A|^2 - |B|^2$ stays constant along $z$ (differentiate; the cross terms cancel).
 
-Differentiating either component of \eqref{eq:cme} and substituting the other back in decouples the pair,
+Differentiate either component of \eqref{eq:cme} and substitute the other:
 
 $$\frac{d^2 A}{dz^2} = \kappa^2\, A, \qquad \frac{d^2 B}{dz^2} = \kappa^2\, B.$$
 
-Both envelopes satisfy the same scalar equation; both are combinations of $\cosh(\kappa z)$ and $\sinh(\kappa z)$. Integrating out the two constants for each envelope, the pair $(A, B)$ at a general $z$ is a linear combination of its values at $z = 0$:
+Both envelopes satisfy the same second-order equation $X'' = \kappa^2 X$, so both are combinations of $\cosh(\kappa z)$ and $\sinh(\kappa z)$. Applying the coupled equations to fix the coefficients relates $(A, B)$ at any two points by a transfer matrix:
+
+<div class="guided-fold-end"></div>
 
 $$\begin{pmatrix} A(L) \\ B(L) \end{pmatrix} = \begin{pmatrix} \cosh(\kappa L) & i\, \sinh(\kappa L) \\ -i\, \sinh(\kappa L) & \cosh(\kappa L) \end{pmatrix} \begin{pmatrix} A(0) \\ B(0) \end{pmatrix}. \tag{4}\label{eq:propag}$$
 
-*This is a two-boundary problem.* The physical scenario is: a wave comes in from the left, some fraction reflects, and the remainder transmits out the far end. In envelope variables:
+*This is a two-boundary problem.* A wave incident from the left with nothing entering from the right fixes two of the four amplitudes: $A(0)$ is the input (rescale to $1$) and $B(L) = 0$ (nothing propagating leftward at $z = L$). The remaining two, $B(0)$ (reflected) and $A(L)$ (transmitted), fall out row by row:
 
-- **Entrance** ($z = 0$): $A(0) = A_\text{in}$ is the given input amplitude, and $B(0) = A_\text{ref}$ is the *unknown* reflected amplitude we want to find.
-- **Far end** ($z = L$): $A(L) = A_\text{tra}$ is the *unknown* transmitted amplitude, and $B(L) = 0$ because nothing is illuminating the grating from behind.
+| Row of \eqref{eq:propag} | Condition | Solve for | Modulus² |
+|:---|:---|:---|:---|
+| 2, with $B(L) = 0$ | $0 = -i\sinh(\kappa L) + \cosh(\kappa L)\, B(0)$ | $B(0) = i\tanh(\kappa L)$ | $R = \tanh^2(\kappa L)$ |
+| 1, with $B(0) = i\tanh(\kappa L)$ | $A(L) = \cosh(\kappa L) + i\sinh(\kappa L) \cdot i\tanh(\kappa L)$ | $A(L) = \operatorname{sech}(\kappa L)$ | $T = \operatorname{sech}^2(\kappa L)$ |
 
-The two unknowns $A_\text{ref}$ and $A_\text{tra}$ are fixed by the two rows of \eqref{eq:propag}. From the second row with $B(L) = 0$:
+The identity $\tanh^2 + \operatorname{sech}^2 = 1$ then gives
 
-$$0 = -i\sinh(\kappa L)\, A_\text{in} + \cosh(\kappa L)\, A_\text{ref} \quad\Longrightarrow\quad \frac{A_\text{ref}}{A_\text{in}} = i \tanh(\kappa L).$$
+$$\boxed{\ R = \tanh^2(\kappa L), \qquad T = \operatorname{sech}^2(\kappa L), \qquad R + T = 1.\ } \tag{5}\label{eq:tanh-refl}$$
 
-The power reflection coefficient — the fraction of incident power reflected — is the modulus squared of the amplitude ratio:
+The envelopes throughout the grating, expressed as functions of $z$ rather than just their end values, are
 
-$$\boxed{\, R = \left|\frac{A_\text{ref}}{A_\text{in}}\right|^2 = \tanh^2(\kappa L). \,} \tag{5}\label{eq:tanh-refl}$$
+$$A(z) = A(0)\, \frac{\cosh[\kappa (L - z)]}{\cosh(\kappa L)}, \qquad B(z) = i\, A(0)\, \frac{\sinh[\kappa (L - z)]}{\cosh(\kappa L)}. \tag{6}\label{eq:envelopes}$$
 
-The transmitted amplitude comes from the first row of \eqref{eq:propag}, now with $B(L) = 0$ already fixed and $B(0) = A_\text{ref}$ known:
+Compare with the semi-infinite case of [§ 2.1](#sec-2-1):
 
-$$A_\text{tra} = \cosh(\kappa L)\, A_\text{in} + i\sinh(\kappa L)\, A_\text{ref}.$$
-
-Substituting $A_\text{ref}/A_\text{in} = i \tanh(\kappa L)$ collapses this to $A_\text{tra}/A_\text{in} = \operatorname{sech}(\kappa L)$, so the power transmission is
-
-$$T = \left|\frac{A_\text{tra}}{A_\text{in}}\right|^2 = \operatorname{sech}^2(\kappa L).$$
-
-Since $\tanh^2 + \operatorname{sech}^2 = 1$, we have $R + T = 1$: energy is conserved, as it must be in a lossless grating.
-
-The envelopes that satisfy both boundary conditions — solved as functions of $z$ throughout the grating rather than just at its ends — are
-
-$$A(z) = A_\text{in}\, \frac{\cosh[\kappa (L - z)]}{\cosh(\kappa L)}, \qquad B(z) = i\, A_\text{in}\, \frac{\sinh[\kappa (L - z)]}{\cosh(\kappa L)}. \tag{6}\label{eq:envelopes}$$
-
-This solution matches the boundary values at both ends: at the entrance, $A(0) = A_\text{in}$ and $B(0) = i A_\text{in} \tanh(\kappa L) = A_\text{ref}$; at the far end, $A(L) = A_\text{in} \operatorname{sech}(\kappa L) = A_\text{tra}$ and $B(L) = 0$.
-
-They are worth comparing side by side with the semi-infinite decay of [§ 2.1](#sec-2-1):
-
-- **Semi-infinite grating.** The field decays purely as $e^{-\kappa z}$: one exponential mode, forced by boundedness at $z = \infty$.
-- **Finite grating.** Both branches $\cosh$ and $\sinh$ are allowed; the far-end condition $B(L) = 0$ picks the specific combination in \eqref{eq:envelopes}. As $\kappa L$ grows, the far end retreats and the envelope near the entrance approaches the semi-infinite decay.
+- **Semi-infinite.** Field decays purely as $e^{-\kappa z}$: one exponential mode, forced by boundedness at $z = \infty$.
+- **Finite.** Both $\cosh$ and $\sinh$ branches are allowed; the far-end condition $B(L) = 0$ picks the specific combination \eqref{eq:envelopes}. As $\kappa L \to \infty$, the far end retreats to infinity and \eqref{eq:envelopes} reduces to $A(z) \to A(0)\, e^{-\kappa z}$ near the entrance — the semi-infinite decay recovers as a limit.
 
 {% include visualization.html src="bragg-mirror-penetration.html" title="Infinite-medium decay, finite-boundary envelopes, and Bragg-mirror reflectivity" %}
 
-The dimensionless product $\kappa L$ compares the grating's physical length to $1/\kappa$. It controls everything: reflectivity, transmission, and the shape of the internal envelope.
+$\kappa L$ is the only knob. Reading it dimensionally: $\kappa$ is an inverse length (the field's own decay length, from § 1.4), $L$ is a length, so $\kappa L$ measures the grating's physical length in units of $1/\kappa$. Setting $R > 0.99$,
 
-Setting a target reflectivity of $R > 0.99$ and solving \eqref{eq:tanh-refl},
+$$\kappa L > \operatorname{arctanh}(\sqrt{0.99}) \approx 2.99,$$
 
-$$\kappa L > \operatorname{arctanh}(\sqrt{0.99}) \approx 2.99.$$
+so a grating at [exact Bragg tuning](#defn-bragg-tuning) needs about $3/\kappa$ of physical length to exceed 99% power reflectivity.
 
-So a grating tuned to $\delta = 0$ needs a physical length of about $3/\kappa$ to exceed 99% power reflectivity.
-
-*The reflectivity formula $R = \tanh^2(\kappa L)$ tells us $\kappa$ and $L$ jointly control the mirror. What sets $\kappa$ in a stack we actually build, and how many layers of what index difference do we need?*
+*$R = \tanh^2(\kappa L)$ says $\kappa$ and $L$ jointly set the mirror. What sets $\kappa$ in a stack we actually build?*
 
 ---
 
 ## § 3. The DBR: a Bragg grating in fabricated hardware {#sec-3}
 
-We now build the [DBR](#defn-dbr) as a physical multilayer in terms of the parameters an engineer picks: layer indices, layer thicknesses, and number of periods.
+We take the sinusoidal grating of § 1–§ 2 and replace it with what a real deposition tool produces: a stack of alternating high-index and low-index layers, $N$ pairs total — an *$N$-period stack*. The physics is the same, but three questions need concrete answers when the modulation is a square wave rather than a cosine:
 
-- Both quantities [§ 2](#sec-2) asked for — $\kappa$ and the number of layers — come out set by one number, the **index contrast** $\Delta n = n_H - n_L$.
-- [§ 3.1](#sec-3-1) derives the exact one-period transfer matrix from the layer wave equation, and reads off how quickly reflectivity saturates with the number of periods $N$.
-- [§ 3.2](#sec-3-2) shows the same $\Delta n$ fixes $\kappa = 2\Delta n / \lambda_B$, and with it the [stopband](#defn-stopband) width.
+- **How much reflection does an $N$-period stack deliver?** [§ 3.1](#sec-3-1) computes it exactly from the layer wave equation and reads off how quickly $R$ saturates with $N$.
+- **What is $\kappa$ for a square-wave grating?** [§ 3.2](#sec-3-2) Fourier-expands the square wave; the lowest cosine harmonic — the one at wavenumber $2 k_B$ — is what drives the Bragg reflection, and it sets $\kappa$ as a fraction of $k_B$ through the index contrast $\Delta n = n_H - n_L$.
+- **What do the higher Fourier components do?** [§ 3.3](#sec-3-3) shows they open additional stopbands at every odd multiple $m k_B$, each with a coupling $\kappa/m$ and correspondingly narrower, and lays out how to suppress or engineer them.
+
+The last subsection [§ 3.4](#sec-3-4) adds one more variable — angle of incidence — and shows how off-normal illumination reshapes the geometry and splits the polarizations.
 
 ### § 3.1. The quarter-wave stack: reflectivity of an $N$-period mirror {#sec-3-1}
 
@@ -270,69 +270,64 @@ How quickly $R$ approaches 1 as we add periods depends on the ratio $n_H / n_L$:
 - **Large ratio** — $n_H / n_L$ well above 1. The factor $(n_H / n_L)^{2N}$ dominates the denominator quickly, and $R$ saturates near unity for $N \sim 10$. Dielectric stacks with Ta$_2$O$_5$ over SiO$_2$ have $n_H / n_L \approx 1.5$, and 10–15 periods reach $R > 99\%$.
 - **Small ratio** — $n_H / n_L$ close to 1. Saturation is slower. Semiconductor DBRs based on GaAs/AlAs have $n_H / n_L \approx 1.15$ and need 25–30 periods.
 
-The same $|\text{tr}(T_L T_H)|$ gives the field's decay rate inside the stack, this time expressed as a rate per period $\alpha$: solving $\cosh(\alpha\Lambda) = |\text{tr}(T_L T_H)|/2$. For $n_H/n_L = 1.15$ (typical semiconductor), $|\text{tr}|/2 \approx 1.083$, giving $\alpha\Lambda \approx 0.408$; twenty periods deliver $\alpha N \Lambda \approx 8.2$, so $R = \tanh^2(8.2) \approx 1 - 10^{-7}$: essentially perfect. Real DBRs use 20–40 periods for this reason.
+The same $|\text{tr}(T_L T_H)|$ gives the field's decay rate inside the stack, this time expressed as a rate per period $\alpha$: solving $\cosh(\alpha\Lambda) = |\text{tr}(T_L T_H)|/2$. For $n_H/n_L = 1.15$ (GaAs/AlAs, for instance), $|\text{tr}|/2 \approx 1.083$, giving $\alpha\Lambda \approx 0.408$; twenty periods deliver $\alpha N \Lambda \approx 8.2$, so $R = \tanh^2(8.2) \approx 1 - 10^{-7}$: essentially perfect. Real DBRs use 20–40 periods for this reason.
 
 For large enough $N$, \eqref{eq:dbr-refl} agrees with the coupled-mode formula $R = \tanh^2(\kappa L)$ of [§ 2.2](#sec-2-2). They apply in complementary limits: \eqref{eq:dbr-refl} holds for the piecewise-constant profile at any $n_H/n_L$, while $\tanh^2(\kappa L)$ assumes $\vert r_{12} \vert \ll 1$ so the two envelopes vary slowly across a single layer. Both formulas agree in the overlap regime — long stacks with modest index contrast.
 
-### § 3.2. Bandwidth from the index difference {#sec-3-2}
+*So $\kappa$ and $L$ can be traded. But $\kappa$ itself came from the sinusoidal coupled-mode formula. What does it look like when the modulation is a piecewise-constant DBR?*
 
-The formula $\kappa = \pi\, \Delta n / \lambda_B$, [equation (9) of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#eq:kappa-bragg), is for a sinusoidal index modulation. A DBR is instead *piecewise-constant* — the refractive index takes only two values, $n_H$ and $n_L$. Its Fourier expansion has a fundamental cosine coefficient of $4/\pi$ times the peak-to-average amplitude of the square wave, so the [coupling](#defn-coupling) seen at the fundamental [Bragg wavelength](#defn-bragg-wavelength) is
+### § 3.2. The coupling of a piecewise-constant stack {#sec-3-2}
 
-$$\kappa_\text{DBR} = \frac{2\, \Delta n}{\lambda_B}, \qquad \Delta n \equiv n_H - n_L.$$
+The formula $\kappa = (\Delta n / 2 n_\text{avg})\, k_B$, [equation (9) of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#eq:kappa-bragg), was for a sinusoidal index modulation. A DBR is instead *piecewise-constant* — the refractive index takes only two values, $n_H$ and $n_L$. Expand this square-wave modulation as a Fourier series; only the fundamental cosine drives the first Bragg reflection, and its coefficient is $(4/\pi)$ times the peak-to-average amplitude of the square wave. The effective sinusoidal amplitude is therefore $(2/\pi)\Delta n$, and
 
-The [stopband](#defn-stopband) width in frequency, $\Delta\omega = 2 \kappa v_g$, then translates into a ratio between the stopband width and the [Bragg frequency](#defn-bragg-frequency) $\omega_B = 2\pi c/\lambda_B$:
+$$\kappa_\text{DBR} = \frac{1}{\pi}\, \frac{\Delta n}{n_\text{avg}}\, k_B, \qquad \Delta n \equiv n_H - n_L. \tag{8}\label{eq:dbr-kappa}$$
 
-$$\frac{\Delta \omega}{\omega_B} = \frac{4}{\pi}\, \frac{\Delta n}{n_\text{avg}}. \tag{8}\label{eq:dbr-bw}$$
+Reading the units: $\kappa_\text{DBR}/k_B = (1/\pi)(\Delta n/n_\text{avg})$ — a dimensionless number set purely by the fractional index contrast. Both design axes are downstream of this ratio: the stopband width $\Delta k = 2\kappa$ and the reflectivity $R = \tanh^2(\kappa L)$ share the same $\kappa$, so for a fixed $\Delta n$ a shorter mirror (smaller $L$) needs a wider stopband to keep the same reflectivity. Bandwidth and physical length trade off through $\kappa$; the [DBR](#defn-dbr) designer picks the balance.
 
-The left-hand side — the stopband width $\Delta\omega$ divided by $\omega_B$ — is what specifies the **fractional bandwidth** of the mirror. Two working numbers:
-
-- **High-index difference dielectric stack** — $\Delta n / n_\text{avg} \approx 0.5$. Fractional bandwidth $\approx 60\%$: broadband, covers most of the visible or a wide near-infrared window.
-- **Semiconductor DBR** — $\Delta n / n_\text{avg} \sim 0.05$. Fractional bandwidth $\approx 6\%$: narrow enough for single-mode laser use ([§ 4](#sec-4)), too narrow for broadband applications.
-
-The same $\kappa$ appears in the decay scale $1/\kappa$ and, via \eqref{eq:tanh-refl}, in the reflectivity $R = \tanh^2(\kappa L)$ of a physical grating.
-
-That ties the two design axes together. For a fixed index difference $\Delta n$, a shorter mirror (smaller $L$) needs a larger $\kappa$ to hit the same reflectivity — but a larger $\kappa$ also widens the [stopband](#defn-stopband). Bandwidth and physical length trade off through the shared $\kappa$, and the [DBR](#defn-dbr) designer picks the balance for the application.
+*The DBR sits at the fundamental Bragg wavelength. Does the same square-wave stack reflect at any other wavelengths?*
 
 ### § 3.3. Higher-order stopbands and the structure factor {#sec-3-3}
 
-A square-wave DBR has stopbands not just at $\lambda_B$, but also at odd sub-multiples $\lambda_B / 3, \lambda_B / 5, \ldots$ At those shorter wavelengths, the same quarter-wave layer is also a $3\lambda/4, 5\lambda/4, \ldots$ layer, satisfying the Bragg condition at higher order.
+The Fourier series of the square-wave modulation only used its fundamental component. But a square wave contains more than that: expanding $n(z) - n_\text{avg}$ as
 
-The strength of the $m$-th stopband is set by the corresponding Fourier coefficient $\varepsilon_m$ of the modulation profile — the modulation's **structure factor**. The [Bragg-condition background in the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-3) develops this for a general periodic $\varepsilon(z)$. The rule: a purely sinusoidal modulation has only the fundamental $\varepsilon_{\pm 1}$ nonzero and produces only the first-order [stopband](#defn-stopband), while a square-wave modulation has $\varepsilon_m \propto 1/m$ for odd $m$ (and zero for even $m$), producing weaker higher-order stopbands at each odd $m$.
+$$n(z) - n_\text{avg} = \frac{\Delta n}{2}\, \text{sgn}[\cos(2 k_B z)] = \frac{2\Delta n}{\pi}\sum_{m=1,3,5,\ldots} \frac{(-1)^{(m-1)/2}}{m}\, \cos(2 m k_B z),$$
+
+we see cosine harmonics at wavenumber $2 m k_B$ for every odd $m$, with amplitude $\propto 1/m$. Each of these harmonics is itself a periodic index modulation, so each drives its own Bragg reflection: the $m$-th harmonic scatters a wave at wavenumber $m k_B$ into the wave at $m k_B - 2m k_B = -m k_B$, satisfying the Bragg condition at *its* own resonance $k = m k_B$. In vacuum wavelength, that's $\lambda_B / m$.
+
+The coupling for the $m$-th stopband is $\kappa_m = \kappa_\text{DBR}/m$, and the stopband width scales the same way — the third-order stopband is $1/3$ as wide as the first, the fifth $1/5$, and so on. Even orders are absent because the square wave has no even Fourier components.
 
 Two engineering consequences:
 
-- To *suppress* the higher-order stopbands, shape the modulation to look more sinusoidal — only $\varepsilon_{\pm 1}$ nonzero. In fiber Bragg gratings, a smooth amplitude envelope (apodization, [§ 5.1](#sec-5-1)) does this approximately.
-- To *engineer* multiple simultaneous stopbands at prescribed wavelengths, choose a modulation whose Fourier spectrum has content at the desired periods. [§ 5](#sec-5) develops this for sampled gratings, which support multi-wavelength lasing.
+- To *suppress* the higher-order stopbands (spurious reflections at shorter wavelengths), reshape the modulation profile so its Fourier expansion is closer to a pure fundamental — a graded or smoothed profile within a period. Fiber Bragg gratings, written by two-beam interference, are naturally sinusoidal and have very weak higher-order structure.
+- To *engineer* stopbands at prescribed wavelengths, choose a modulation whose Fourier spectrum has content at the desired periods. Sampled gratings ([§ 5](#sec-5)) put multiple stopbands in prescribed places, supporting multi-wavelength lasing.
+
+*The stopband positions and widths so far are set by normal-incidence Bragg. Off-normal, the geometry changes both. What is left of the stopband when the wave hits the stack at an angle?*
 
 ### § 3.4. Off-normal incidence and Brewster's angle {#sec-3-4}
 
 Every calculation so far has assumed the wave hits the stack perpendicular to the layers. In many devices the wave arrives at an angle instead — the in-plane mode of a planar waveguide, for instance, strikes an integrated [DBR](#defn-dbr) at whatever internal angle the waveguide geometry sets. At off-normal incidence, three things change at once:
 
-- **The one-way phase per layer picks up a $\cos\theta_i$.** With the wave at angle $\theta_i$ inside a layer of physical thickness $d_i$ (set by Snell's law), the phase accumulated in one traversal is $(2\pi n_i / \lambda_B)\, d_i\, \cos\theta_i$ instead of $(2\pi n_i / \lambda_B)\, d_i$: the wavevector component perpendicular to the layers, $k_{\perp,i} = k_i \cos\theta_i$, is what advances the stack coordinate. This is the same physics as the [Bragg condition of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-3), $m\lambda_B = 2 n_\text{avg} \Lambda \sin\theta$: at off-normal incidence, the round-trip phase per period equals $\pi$ at a shorter vacuum wavelength
+- **The one-way phase per layer picks up a $\cos\theta_i$.** With the wave at angle $\theta_i$ inside a layer of physical thickness $d_i$ (set by Snell's law), only the wavevector component perpendicular to the layers advances the stack coordinate: $k_{\perp,i} = k_i \cos\theta_i$, so the one-way phase is $k_{\perp,i}\, d_i = k_i d_i\, \cos\theta_i$ instead of $k_i d_i$. To restore the Bragg round-trip-of-$\pi$ per period at off-normal incidence, the operating frequency must move *up*:
 
-  $$\lambda_B(\theta_0) = 2\left[n_H d_H \cos\theta_H + n_L d_L \cos\theta_L\right],$$
+  $$\omega_B(\theta_0)\, \big[n_H d_H \cos\theta_H + n_L d_L \cos\theta_L\big] = \pi c,$$
 
-  smaller than the normal-incidence value $\lambda_B(0) = 2(n_H d_H + n_L d_L)$.
-- **The two polarizations acquire different interface reflectivities.** TE (electric field perpendicular to the plane of incidence) and TM (electric field in the plane of incidence, with a component along the layer normal) see the boundary conditions differently.
+  larger than the normal-incidence value $\omega_B(0)\, (n_H d_H + n_L d_L) = \pi c$. Equivalently the in-medium Bragg wavenumber $k_B(\theta_0) = n_\text{avg}\, \omega_B(\theta_0)/c$ grows as the incidence angle grows.
+- **The two polarizations acquire different interface reflectivities.** TE ($E$ perpendicular to the plane of incidence) and TM ($E$ in the plane of incidence, with a component along the layer normal) see the boundary-condition matching differently.
 - **Polarization sensitivity of $\kappa$.** Since $\kappa$ is built from the interface reflections, it inherits their polarization dependence, and TE and TM acquire distinct stopbands.
 
 {% include visualization.html src="oblique-bragg-phase.html" title="Why off-normal incidence shifts the Bragg wavelength through the normal wavevector component" %}
 
-The polarization split has a concrete origin. The reflection coefficient at an interface is set by matching the *tangential* components of $E$ and $H$ across the boundary. For TE, the electric field lies entirely in the plane of the interface, so the matching involves the full $E$ and the tangential component of $H$, which picks up a $\cos\theta$. For TM, the electric field has a component along the interface normal, so the matching involves the tangential component of $E$ (which itself picks up a $\cos\theta$) and the full $H$. The two conditions therefore trade which side of the interface carries the cosine, giving
+Matching tangential $E$ and tangential $H$ across the interface gives, for the two polarizations,
 
 $$r_\text{TE} = \frac{n_1 \cos\theta_1 - n_2 \cos\theta_2}{n_1 \cos\theta_1 + n_2 \cos\theta_2}, \qquad r_\text{TM} = \frac{n_2 \cos\theta_1 - n_1 \cos\theta_2}{n_2 \cos\theta_1 + n_1 \cos\theta_2}. \tag{9}\label{eq:fresnel-full}$$
 
-In TE the cosines multiply the $n$ on the same side of the interface; in TM they multiply the $n$ on the *opposite* side. That switch is what lets the TM numerator vanish at a non-normal angle, while the TE numerator never does. At $\theta_1 = 0$ both reduce to \eqref{eq:fresnel}. Away from zero, the two split — and TM does something dramatic:
+At $\theta_1 = 0$ both reduce to \eqref{eq:fresnel}. Off-normal, they split. Combining $r_\text{TM} = 0$ with Snell's law gives **Brewster's angle**{:#defn-brewster}, at which the TM reflection vanishes:
 
-$$r_\text{TM} = 0 \quad\text{when}\quad \tan\theta_1 = \frac{n_2}{n_1}. \tag{10}\label{eq:brewster}$$
+$$\tan\theta_1 = \frac{n_2}{n_1}. \tag{10}\label{eq:brewster}$$
 
-The angle $\theta_1$ satisfying this is called **Brewster's angle**. At it, TM light passes through the interface with zero reflected amplitude.
+The mechanism has a clean physical picture. The transmitted electric field polarizes the electrons of medium 2 into oscillating dipoles along its own direction, and the reflected wave is their re-radiation. A dipole cannot radiate along its own axis of oscillation — the null of its $\sin\theta$ pattern. At Brewster's angle Snell's law makes the reflected direction (in medium 1) coincide with the dipole axis (which points along the transmitted $E$ in medium 2), so the reflection has to vanish. TE has no analogue: its dipoles point out of the plane of incidence, and every in-plane direction — including every possible reflected direction — is broadside to them.
 
-The mechanism deserves a moment. An incident electric field drives the electrons in the second medium into oscillation along the direction of the transmitted field. Those oscillating charges are electric dipoles, and it is *their* re-radiation that produces the reflected wave. An oscillating dipole radiates *transverse* electromagnetic waves — the radiated $E$-field is the component of the charge's acceleration perpendicular to the line of sight from the charge to the observer. Charges oscillate along the dipole axis, so along the axis the acceleration has no perpendicular component and the radiated field is zero; broadside to the axis, the entire acceleration is perpendicular to the line of sight and the radiation is maximum. This gives the familiar $\sin\theta$ radiation pattern, with a node exactly along the axis.
-
-For TM polarization at Brewster's angle, Snell's law places the reflected ray precisely along the direction in which the induced dipoles point — the very direction they cannot radiate into. There is no reflected wave. TE polarization has no analogous angle: its $E$-field is perpendicular to the plane of incidence by construction, so its induced dipoles point perpendicular to that plane too, while the reflected ray always sits *inside* the plane of incidence — the dipole axis and the reflected direction are perpendicular to each other at every angle, never coincident.
-
-{% include visualization.html src="te-tm-boundary-admittance.html" title="How off-normal incidence distinguishes TE and TM boundary admittances" %}
+{% include visualization.html src="te-tm-boundary-admittance.html" title="How TE and TM see different reflectivities off-normal: the dipole-radiation mechanism at Brewster's angle" %}
 
 The consequence for a [DBR](#defn-dbr): as the in-medium angle approaches Brewster's angle,
 
@@ -357,27 +352,27 @@ A laser combines a **gain medium**{:#defn-gain}, which amplifies the field, with
 - The [DFB](#defn-dfb) laser writes the grating into the same stretch of waveguide that carries the [gain](#defn-gain) — [coupling](#defn-coupling) $\kappa$ and [gain](#defn-gain) $\gamma$ act at every $z$.
 - The DBR laser puts the grating in a separate stretch of waveguide from the [gain](#defn-gain) — $\gamma$ acts only where the [gain](#defn-gain) sits, $\kappa$ only where the grating sits, and the two stretches can be tuned independently.
 
-Before either can be understood as a fix, though: what exactly does a flat-mirror [cavity](#defn-cavity) do, and why does it fail to pick a wavelength?
+First, though: what does a flat-mirror [cavity](#defn-cavity) do, and why does it fail to pick a wavelength?
 
 ### § 4.1. Why flat mirrors do not pick a wavelength {#sec-4-1}
 
-The problem the [DBR](#defn-dbr) and [DFB](#defn-dfb) solve is easiest to see against the reference case: a gain-carrying dielectric of length $L$ and effective index $n_\text{eff}$, bounded by two flat interfaces at which the index steps back to air. For a representative $n_\text{eff} \approx 3.5$ (a common value in semiconductor gain media), \eqref{eq:fresnel} with $n_1 = n_\text{eff}$, $n_2 = 1$ gives
+Take the simplest cavity: a gain-carrying dielectric of length $L$ and effective index $n_\text{eff}$, bounded by two flat interfaces at which the index steps back to air. Two features of this setup decide what the laser does.
 
-$$R = \left(\frac{n_\text{eff} - 1}{n_\text{eff} + 1}\right)^2 \approx 0.3,$$
+**A comb of resonant modes.** A round trip picks up phase $2 k L = 2\, n_\text{eff}\, \omega L/c$; the round-trip-of-$2\pi$ condition selects a discrete comb of frequencies
 
-and — crucially — this expression carries no dependence on $\omega$.
+$$\nu_n = n \cdot \frac{c}{2 n_\text{eff} L}, \qquad \Delta\nu_\text{FSR} = \frac{c}{2 n_\text{eff} L},$$
 
-That single property is what makes the flat-mirror laser a poor wavelength-selective element. The [cavity](#defn-cavity) supports a comb of resonant modes at frequencies
+where $\Delta\nu_\text{FSR}$ is the **free spectral range**. Each $\nu_n$ is a standing wave fitting an integer number of half-wavelengths between the mirrors.
 
-$$\nu_n = n \cdot \frac{c}{2 n_\text{eff} L}, \qquad \Delta\nu_\text{FSR} = \frac{c}{2 n_\text{eff} L}$$
+**A mirror with no wavelength selectivity.** Each end is a single dielectric interface, so its reflection is the Fresnel formula \eqref{eq:fresnel} — a function only of the two refractive indices at the boundary. Refractive indices vary slowly with frequency (dispersion is a small effect over a laser's gain bandwidth), so $R$ is nearly constant across the entire comb. A single interface has no periodicity for the wavelength to match against.
 
-(each is a standing wave fitting an integer number of half-wavelengths between the mirrors; $\Delta\nu_\text{FSR}$ is the **free spectral range**). The [gain](#defn-gain) profile $\gamma(\nu)$ is nonzero across a range typically many THz wide — thousands of $\Delta\nu_\text{FSR}$ fit inside — so many thousands of modes sit in the amplifying window. Because $R$ carries no $\omega$-dependence, the mirror loss $-\ln R^2 / (2L)$ is the same constant for every mode in the comb; the only quantity that discriminates between them is $\gamma(\nu_n)$ itself. Whichever mode has the highest $\gamma$ at the moment wins, and since $\gamma$ shifts with drive current and temperature, the winning mode drifts and hops as those conditions change.
+Put together, the flat-mirror cavity supplies many modes and offers no way to prefer one over another *at the mirror level*. The only remaining source of frequency selectivity is the gain profile $\gamma(\nu)$. But $\gamma$ is broad — of order THz, so thousands of $\Delta\nu_\text{FSR}$ sit inside it — and its peak is not fixed: the drive current and the chip temperature move it during operation, and neither can be held steady enough to pin the winning mode. Whichever mode sits at the peak of $\gamma$ wins in that instant; when $\gamma$ shifts, the winning mode hops.
 
-The physical target is one mode with a narrow, temperature-stable frequency. The fix is to make $R$ depend on $\omega$ — a wavelength-selective mirror. Where the grating sits relative to the [gain](#defn-gain) then decides what device we get.
+The target is one mode at a temperature-stable frequency, so the mirror itself has to become wavelength-selective — the lock needs to be built into the reflector, not left to the gain profile. A periodic structure does exactly this: interference across periods reinforces the wavelength that hits the Bragg condition and cancels its neighbors. Where that periodic structure sits relative to the [gain](#defn-gain) — interleaved with it, or in a separate stretch of waveguide — then decides which device we get.
 
 ### § 4.2. DFB: the grating co-located with the gain {#sec-4-2}
 
-In a [DFB](#defn-dfb), the grating is interleaved with the [gain](#defn-gain) along the same stretch of waveguide: [coupling](#defn-coupling) $\kappa$ and [gain](#defn-gain) $\gamma$ act at every $z$. There are no separate end mirrors — the mirror is spread over the whole length. Two facts follow from that, and together they set the [DFB](#defn-dfb)'s selectivity.
+In a [DFB](#defn-dfb), the grating is interleaved with the [gain](#defn-gain) along the same stretch of waveguide: [coupling](#defn-coupling) $\kappa$ and [gain](#defn-gain) $\gamma$ act at every $z$. There are no separate end mirrors — the mirror is spread over the whole length. Two consequences of that colocation set the [DFB](#defn-dfb)'s selectivity.
 
 **The grating is itself a [cavity](#defn-cavity).** In a flat-mirror laser the round trip is between two planes at fixed $z$: a wave leaves one, reflects at the other, and returns, and the lasing condition is that the round-trip field come back to itself in amplitude and phase — $R_1 R_2\, e^{2\gamma L}\, e^{i 2 k L} = 1$ at the mode frequency. In a grating there is no localized planar reflector, but the same accounting still runs. A wave at frequency close to a [stopband](#defn-stopband) boundary $\omega_\pm$ propagates with group velocity $v_g = q/\delta \to 0$ ([§ 0.7](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-0-7) of the previous post) — the slope $d\omega/dq$ of the dispersion curve goes to zero at the stopband boundary. Effectively slow light accumulates the same round-trip phase over one or two of its decay lengths $1/\kappa$ that a fast wave would need the full flat-mirror $2L$ for. The modes are the specific $\omega$ inside the [stopband](#defn-stopband) whose accumulated forward-plus-backward-envelope phase across the grating returns to itself: a discrete comb of standing solutions of the coupled envelope equations, with the grating simultaneously providing both mirrors and filling.
 
@@ -387,9 +382,9 @@ In a [DFB](#defn-dfb), the grating is interleaved with the [gain](#defn-gain) al
 
 #### Which mode wins: density of states and field–gain overlap {#sec-4-2-1}
 
-Two physical enhancements push the emitters toward the two $\omega_\pm$ standing modes of [§ 1](#sec-1) — both at $q = 0$, the two stopband edges. Together they decide which of the discrete lasing candidates gets to lase.
+Two effects push the emitters toward the two $\omega_\pm$ standing modes of [§ 1](#sec-1) — both at $q = 0$, the two stopband edges. Together they decide which of the discrete lasing candidates gets to lase.
 
-**Density of states enhancement at $\omega_\pm$.**
+**More available modes per frequency at $\omega_\pm$.** By Fermi's golden rule, the rate at which an excited carrier in the [gain](#defn-gain) medium deposits energy into modes at frequency $\omega$ scales with the **density of states**{:#defn-dos} $\rho(\omega)$ — the count of modes per unit frequency per unit length. That density diverges at the two stopband boundaries, and we work out why below.
 
 <div class="guided-fold-start" data-label="Derive the 1D density of states and its edge divergence" data-tone="derivation"></div>
 
@@ -411,19 +406,19 @@ $$\rho(\omega) = \frac{1}{\pi\, v_g}.$$
 
 <div class="guided-fold-end"></div>
 
-The rate at which the [gain](#defn-gain) medium's excited carriers deposit energy into a given mode is proportional to $\rho$ at that mode's frequency. Modes at $\omega_\pm$ are therefore populated faster than modes deeper inside the [stopband](#defn-stopband), where $\rho$ is finite.
+The DFB's lasing candidates are the discrete cavity modes sitting inside the [stopband](#defn-stopband) ([§ 4.2](#sec-4-2)). Among them, the two closest to $\omega_\pm$ inherit the divergent $\rho$; the ones farther in see a finite (much smaller) $\rho$. So by Fermi's golden rule the emission rate is largest for the two edge modes — the first of two effects favouring them.
 
-**Field–gain spatial overlap.** The $\omega_-$ and $\omega_+$ standing waves peak in complementary halves of one [Bragg period](#defn-bragg-period) ([§ 1.1](#sec-1-1)) — $\omega_-$ (the cosine mode) in the high-index material, $\omega_+$ (the sine mode) in the low-index material. If the [gain](#defn-gain) $\gamma(z)$ is concentrated where one standing wave's intensity peaks, the effective per-unit-length gain that mode sees is
+**Field–gain spatial overlap.** The $\omega_-$ and $\omega_+$ standing waves peak in complementary halves of one [Bragg period](#defn-bragg-period) ([§ 1.1](#sec-1-1)) — $\omega_-$ (the cosine mode) in the high-index material, $\omega_+$ (the sine mode) in the low-index material. The effective per-unit-length gain a given mode sees is its intensity-weighted average of $\gamma(z)$,
 
-$$\gamma_\text{eff} = \frac{\int \gamma(z)\, \vert E(z) \vert^2\, dz}{\int \vert E(z) \vert^2\, dz},$$
+$$\gamma_\text{eff} = \frac{\int \gamma(z)\, \vert E(z) \vert^2\, dz}{\int \vert E(z) \vert^2\, dz}.$$
 
-which is a larger fraction of the peak $\gamma$ for the mode whose intensity overlaps the [gain](#defn-gain) region than for the mode whose intensity sits in the other half of the period. The standard [DFB](#defn-dfb) fabrication places the [gain](#defn-gain) region in the high-index material of the grating; that overlaps the $\omega_-$ mode's intensity peaks, and $\omega_-$ sees the larger $\gamma_\text{eff}$.
+If $\gamma(z)$ is concentrated in one half of the period, one mode overlaps the peaks and picks up a $\gamma_\text{eff}$ close to peak $\gamma$; the mode peaked in the complementary half sees the troughs. Standard [DFB](#defn-dfb) fabrication places the [gain](#defn-gain) region in the high-index material, so $\omega_-$ (peaked there) sees the larger $\gamma_\text{eff}$.
 
-Both enhancements favour $\omega_-$ over $\omega_+$. Neither, on its own, is enough to force single-mode operation.
+Both effects favour $\omega_-$ over $\omega_+$. Neither, on its own, is enough to force single-mode operation.
 
 #### The two-mode problem and the quarter-wave defect {#sec-4-2-2}
 
-A grating with purely real (index) modulation has $\omega_-$ and $\omega_+$ with almost the same net gain: both edges have $v_g \to 0$ symmetrically, so the density-of-states enhancement is the same at both, and only the field–gain overlap of [§ 4.2.1](#sec-4-2-1) separates them. That separation is small enough that any bias in the fabrication — layer thicknesses off by a few nm, index inhomogeneity, one grating end slightly stronger than the other — can flip which mode wins on a given device, and the laser will hop between $\omega_-$ and $\omega_+$ as it operates.
+In a grating with purely real (index-only) modulation, $\omega_-$ and $\omega_+$ end up with almost the same round-trip gain. Both edges have $v_g \to 0$ by the same amount, so the density-of-states boost of [§ 4.2.1](#sec-4-2-1) helps both equally; the field–gain overlap is the only discriminator left. That overlap is thin — thin enough to lose to fabrication noise: a few-nanometer layer-thickness error, an index inhomogeneity, or an asymmetry between the two grating ends can flip which mode wins on a given device, and the laser can hop between $\omega_-$ and $\omega_+$ during operation.
 
 Two ways to break the tie by construction:
 
@@ -483,7 +478,7 @@ For a single-mode laser, the linewidth $\Delta\nu$ is the frequency-domain width
 
   $$\alpha_H = -\frac{d \Delta\varepsilon' / dN}{d \Delta\varepsilon'' / dN},$$
 
-  where $N$ is carrier density; typical values are 2 to 5. Because both the "direct" spontaneous-emission phase kick and the amplitude-mediated phase kick add coherently in the linewidth, the noise contribution is multiplied by $(1 + \alpha_H^2)$.
+  where $N$ is carrier density; measured values run 2 to 5. Because both the "direct" spontaneous-emission phase kick and the amplitude-mediated phase kick add coherently in the linewidth, the noise contribution is multiplied by $(1 + \alpha_H^2)$.
 
 Combining these gives
 
@@ -491,13 +486,13 @@ $$\Delta\nu = \frac{h\nu\, n_{sp}}{4\pi\, \tau_p^2\, P_\text{out}}\, (1 + \alpha
 
 with $P_\text{out}$ the output power and $n_{sp} \geq 1$ counting spontaneous emissions per stimulated emission event. Two shapes of dependence to read off: $\Delta\nu \propto 1/P_\text{out}$ (higher output power narrows the line, because more coherent photons dilute each spontaneous kick) and $\Delta\nu \propto 1/\tau_p^2$ (longer photon lifetime narrows the line quadratically).
 
-That leaves one operational question about the [DFB](#defn-dfb): $\lambda_B = 2 n_\text{avg}\, \Lambda$ is fixed at fabrication. Can it be moved after the fact, and by how much?
+That leaves one operational question about the [DFB](#defn-dfb): the lithography step fixes $\Lambda$ (and with it $k_B = \pi/\Lambda$) at fabrication. Can the emission frequency $\omega_B = \pi c/(n_\text{avg}\, \Lambda)$ be moved after the fact, and by how much?
 
 ### § 4.5. Tuning a DFB {#sec-4-5}
 
-Tuning a [DFB](#defn-dfb) requires shifting its [Bragg wavelength](#defn-bragg-wavelength) $\lambda_B = 2 n_\text{avg}\, \Lambda$. The physical period $\Lambda$ is fixed by lithography, so tuning must change $n_\text{avg}$. Two mechanisms are practical:
+Tuning a [DFB](#defn-dfb) requires shifting its emission frequency $\omega_B = \pi c/(n_\text{avg}\, \Lambda)$. The physical period $\Lambda$ is fixed by lithography, so tuning must change $n_\text{avg}$. Two mechanisms are practical:
 
-- **Temperature.** The thermo-optic effect and thermal expansion give a temperature dependence to the effective index — of order $0.1$ nm of wavelength shift per K in typical semiconductor gain media. Total tuning range around 5 nm; response time in milliseconds (set by thermal diffusion in the chip).
+- **Temperature.** The thermo-optic effect and thermal expansion give a temperature dependence to the effective index — of order $0.1$ nm of wavelength shift per K in semiconductor gain media. Total tuning range around 5 nm; response time in milliseconds (set by thermal diffusion in the chip).
 - **Current injection.** Injected carriers change the refractive index directly (free-carrier plasma effect and band-filling). Fast — nanoseconds — but only about $0.01$ nm per mA, and with unwanted [coupling](#defn-coupling) to output power (more current means more [gain](#defn-gain)).
 
 Both act on the whole device at once: because the grating and the [gain](#defn-gain) share the same $n_\text{avg}$, moving one drags the other. The tuning range is capped at a few nm. Wider tuning requires making $\kappa$ and $\gamma$ act in physically distinct stretches of waveguide, so their indices can move independently.
@@ -508,9 +503,9 @@ A **DBR laser** places the [coupling](#defn-coupling) and the [gain](#defn-gain)
 
 Three tuning strategies follow from that independence:
 
-- **Grating-only tune.** Change the index of the [DBR](#defn-dbr) stretch while leaving the [gain](#defn-gain) stretch fixed. $\lambda_B$ moves, but the total round-trip length and the mode spacing are essentially unchanged. As $\lambda_B$ moves across successive [cavity](#defn-cavity) modes, the laser hops from one to the next.
+- **Grating-only tune.** Change the index of the [DBR](#defn-dbr) stretch while leaving the [gain](#defn-gain) stretch fixed. $\omega_B$ moves, but the total round-trip length and the mode spacing are essentially unchanged. As $\omega_B$ moves across successive [cavity](#defn-cavity) modes, the laser hops from one to the next.
 
-- **Cavity-only tune.** Insert a passive phase-shift stretch between the grating and the [gain](#defn-gain), and change its index. This shifts the [cavity](#defn-cavity) mode frequencies without moving $\lambda_B$. Continuous tuning over one free spectral range is possible without a mode hop.
+- **Cavity-only tune.** Insert a passive phase-shift stretch between the grating and the [gain](#defn-gain), and change its index. This shifts the [cavity](#defn-cavity) mode frequencies without moving $\omega_B$. Continuous tuning over one free spectral range is possible without a mode hop.
 
 - **Combined.** Tune both stretches together, keeping the selected [cavity](#defn-cavity) mode centered inside the [stopband](#defn-stopband) as the stopband slides. This is the widest continuous-tuning strategy with a single grating.
 

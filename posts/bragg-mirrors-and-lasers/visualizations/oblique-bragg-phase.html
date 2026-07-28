@@ -478,7 +478,7 @@ body {
       <div class="oblique-bragg__step-head">
         <span class="oblique-bragg__step-index">1 · Geometry &amp; phase</span>
         <h5 class="oblique-bragg__step-title" id="oblique-geometry-title">Diagonal ray, but only the normal component advances the stack coordinate</h5>
-        <p class="oblique-bragg__step-note">The physical layer thickness is fixed. The ray crosses diagonally; the wavevector decomposes along <i>z</i> (normal, the periodicity axis) and along <i>x</i> (tangential). Only <i>k</i><sub>z,i</sub> accumulates phase between one interface plane and the next.</p>
+        <p class="oblique-bragg__step-note">Bragg interference is between reflections from parallel interface planes normal to <i>z</i>. Only the wave's phase advance along <i>z</i> — <i>k</i><sub>z,i</sub><i>d</i><sub>i</sub> = <i>k</i><sub>i</sub><i>d</i><sub>i</sub> cos θ<sub>i</sub> — reads the periodicity; the tangential motion is a translation the periodicity is blind to.</p>
       </div>
 
       <svg class="oblique-bragg__drawing" viewBox="0 0 320 220" role="img" aria-labelledby="oblique-geometry-svg-title oblique-geometry-svg-desc">
@@ -532,7 +532,7 @@ body {
           <span class="oblique-bragg__equation-line">φ<sub>i</sub> = k<sub>⊥,i</sub>d<sub>i</sub> = (2π/λ)n<sub>i</sub>d<sub>i</sub>cos&nbsp;θ<sub>i</sub></span>
         </span>
       </div>
-      <p class="oblique-bragg__reading">The two are compatible, not competing: the ray traverses a longer diagonal distance, but the phase accumulated across the layer at the given wavelength is set by <i>k</i><sub>⊥,i</sub><i>d</i><sub>i</sub>, and this phase carries a factor of cos&nbsp;θ<sub>i</sub>. Increasing the angle therefore reduces the phase accumulated between adjacent interface planes at fixed λ.</p>
+      <p class="oblique-bragg__reading">Tilting the wave leaves <i>k</i><sub>i</sub> unchanged but shrinks its projection <i>k</i><sub>z,i</sub> = <i>k</i><sub>i</sub> cos θ<sub>i</sub>. Each layer contributes less phase to the round trip; restoring round-trip-π needs a shorter vacuum wavelength to compensate — the shift of the Bragg wavelength with angle.</p>
     </section>
 
     <section class="oblique-bragg__step" aria-labelledby="oblique-shift-title">

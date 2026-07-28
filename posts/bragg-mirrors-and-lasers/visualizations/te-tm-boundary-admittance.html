@@ -1409,99 +1409,161 @@
   <section class="paviz__brewster" aria-labelledby="paviz-brewster-title">
     <div class="paviz__brewster-head">
       <h4 class="paviz__panel-title" id="paviz-brewster-title">
-        Why the TM zero exists: dipole radiation along the reflected ray
+        TM vs TE at Brewster: what the induced dipoles radiate
       </h4>
       <p class="paviz__brewster-lead">
-        At Brewster's angle, Snell's law puts the reflected and transmitted rays exactly 90° apart. The induced dipoles in medium&nbsp;2 oscillate along the transmitted electric field, and a dipole cannot radiate along its own axis. Whether the reflected direction coincides with that axis is what separates TM (yes &rarr; no reflection) from TE (never &rarr; reflection at every angle).
+        The transmitted <i>E</i> polarizes the electrons of medium&nbsp;2, driving them into oscillation along its direction. Those oscillating charges are the dipoles that produce the reflected wave. Both panels below show the same ray geometry at Brewster's angle (reflected and transmitted 90° apart); only the dipole orientation, dictated by the polarization, is different.
       </p>
     </div>
 
     <div class="paviz__brewster-panels">
+
+      <!-- ============================================================
+           TM PANEL: dipole in the plane of incidence, along E_transmitted.
+           Its axis is parallel to the reflected direction — the null of
+           the figure-eight radiation pattern.
+           ============================================================ -->
       <figure class="paviz__brewster-panel">
         <figcaption class="paviz__brewster-caption">
-          <strong>TM.</strong> The dipole axis lies in the plane of the page, along the direction the reflected ray would travel. Its figure-eight pattern has a null exactly along that axis &mdash; the reflected direction sits at the null.
+          <strong>TM.</strong> <i>E</i> is in the plane of the page. Each dipole is a bar oscillating along the transmitted <i>E</i>. Its figure-eight radiation pattern has a null exactly along that axis — and at Brewster the reflected direction is that same axis.
         </figcaption>
         <svg class="paviz__brewster-svg" viewBox="0 0 340 260" role="img" aria-labelledby="paviz-tm-fig-title paviz-tm-fig-desc">
-          <title id="paviz-tm-fig-title">TM dipole radiation pattern at Brewster's angle</title>
-          <desc id="paviz-tm-fig-desc">A dipole oscillates in the plane of the page, along the direction the reflected ray would travel. Its figure-eight radiation lobes point perpendicular to that direction, and the null of the pattern lies exactly along it. The reflected amplitude is zero.</desc>
+          <title id="paviz-tm-fig-title">TM polarization at Brewster's angle</title>
+          <desc id="paviz-tm-fig-desc">An incident ray in medium 1 strikes the interface at Brewster's angle. The reflected direction (up-right) and the transmitted direction (down-right) are exactly 90° apart. A dipole antenna in medium 2, oscillating along the transmitted E, is drawn as a red bar with a plus at one end and a minus at the other. Its axis is parallel to the reflected direction, and its figure-eight radiation pattern (two lobes) has its null along that axis. The reflected direction sits at the null, so the reflected amplitude vanishes.</desc>
           <defs>
-            <marker id="paviz-tm-null-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <marker id="paviz-tm-ray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
               <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
             </marker>
           </defs>
 
-          <!-- Figure-eight radiation pattern: two circles tangent at the dipole origin (170,130).
-               Dipole axis unit direction: (0.833, -0.555). Perpendicular: (0.555, 0.833).
-               Centers at origin ± 40*perpendicular = (192,163) and (148,97). -->
-          <circle cx="192" cy="163" r="40" fill="#c62b4d" fill-opacity="0.09" stroke="#c62b4d" stroke-opacity="0.6" stroke-width="1.4"/>
-          <circle cx="148" cy="97" r="40" fill="#c62b4d" fill-opacity="0.09" stroke="#c62b4d" stroke-opacity="0.6" stroke-width="1.4"/>
+          <!-- Media backgrounds -->
+          <rect x="16" y="14" width="308" height="80" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-dasharray="3 4"/>
+          <rect x="16" y="94" width="308" height="150" fill="currentColor" fill-opacity="0.055"/>
+          <!-- Interface line -->
+          <line x1="16" y1="94" x2="324" y2="94" stroke="currentColor" stroke-opacity="0.9"/>
+          <!-- Media labels -->
+          <text x="22" y="28" font-size="9.5" fill="currentColor" fill-opacity="0.75">medium 1 · <tspan font-style="italic">n</tspan><tspan baseline-shift="sub" font-size="7.5">1</tspan></text>
+          <text x="22" y="110" font-size="9.5" fill="currentColor" fill-opacity="0.75">medium 2 · <tspan font-style="italic">n</tspan><tspan baseline-shift="sub" font-size="7.5">2</tspan></text>
 
-          <!-- Dipole (thick segment, ± 25 units along the axis from the origin) -->
-          <line x1="149" y1="144" x2="191" y2="116" stroke="#c62b4d" stroke-width="3.4" stroke-linecap="round"/>
-          <circle cx="170" cy="130" r="2.6" fill="#c62b4d"/>
+          <!-- Normal at x=170 -->
+          <line x1="170" y1="14" x2="170" y2="244" stroke="currentColor" stroke-opacity="0.28" stroke-dasharray="2 3"/>
 
-          <!-- Reflected direction (dashed, extending the same line beyond the dipole endpoint) -->
-          <line x1="191" y1="116" x2="256" y2="72" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#paviz-tm-null-arrow)" opacity="0.72"/>
+          <!-- Incident ray (140,55) to (170,94) - direction into interface -->
+          <!-- Brewster: reflected dir (0.832,-0.555), so incident dir (0.832,0.555) from up-left -->
+          <line x1="123" y1="63" x2="170" y2="94" stroke="currentColor" stroke-width="1.7" marker-end="url(#paviz-tm-ray)"/>
+          <text x="102" y="58" font-size="9.5" fill="currentColor" fill-opacity="0.85">incident</text>
 
-          <!-- Dipole label -->
-          <text x="128" y="152" font-size="10.5" fill="#c62b4d" text-anchor="end" font-style="italic">dipole axis</text>
-          <text x="128" y="164" font-size="9.5" fill="#c62b4d" text-anchor="end" opacity="0.85">oscillates along <tspan font-style="italic">E</tspan><tspan baseline-shift="sub" font-size="7.5">trans</tspan></text>
+          <!-- Reflected ray: (170,94) to (217,63). DASHED THIN because amplitude = 0 for TM at Brewster -->
+          <line x1="170" y1="94" x2="217" y2="63" stroke="currentColor" stroke-width="1.3" stroke-dasharray="4 3" opacity="0.45" marker-end="url(#paviz-tm-ray)"/>
+          <text x="238" y="58" font-size="9.5" fill="currentColor" fill-opacity="0.55" text-anchor="middle">reflected = 0</text>
 
-          <!-- Reflected direction label -->
-          <text x="252" y="55" font-size="10.5" fill="currentColor" text-anchor="end" opacity="0.9">reflected direction</text>
-          <text x="252" y="67" font-size="10.5" fill="currentColor" text-anchor="end" opacity="0.9" font-weight="600">amplitude = 0</text>
+          <!-- Transmitted ray: (170,94) toward (233,188) with dir (0.555,0.832) -->
+          <line x1="170" y1="94" x2="233" y2="188" stroke="currentColor" stroke-width="1.7" marker-end="url(#paviz-tm-ray)"/>
+          <text x="242" y="192" font-size="9.5" fill="currentColor" fill-opacity="0.85">transmitted</text>
+
+          <!-- 90° angle indicator between reflected and transmitted at (170,94) -->
+          <!-- Corners at (170+9*0.832, 94-9*0.555)=(177.5,89) and (170+9*0.555, 94+9*0.832)=(175,101.5) -->
+          <path d="M 177.5 89 L 183 96 L 175 101.5" fill="none" stroke="currentColor" stroke-opacity="0.6" stroke-width="1"/>
+          <text x="187" y="102" font-size="8.5" fill="currentColor" fill-opacity="0.7">90°</text>
+
+          <!-- =============== DIPOLE + RADIATION PATTERN =============== -->
+          <!-- Dipole center (200,175). Axis unit (0.832,-0.555), same as reflected direction. -->
+          <!-- Radiation lobes (figure-eight) perpendicular to axis, along (0.555,0.832): -->
+          <!-- Lobe centers at (200+22*0.555,175+22*0.832)=(212,193) and (200-22*0.555,175-22*0.832)=(188,157), radius 22 -->
+          <circle cx="212" cy="193" r="22" fill="#c62b4d" fill-opacity="0.09" stroke="#c62b4d" stroke-opacity="0.55" stroke-width="1.3"/>
+          <circle cx="188" cy="157" r="22" fill="#c62b4d" fill-opacity="0.09" stroke="#c62b4d" stroke-opacity="0.55" stroke-width="1.3"/>
+
+          <!-- Dipole axis extended (thin dashed line through the pattern, marking the null direction) -->
+          <line x1="163" y1="200" x2="237" y2="150" stroke="#c62b4d" stroke-opacity="0.55" stroke-width="1" stroke-dasharray="4 3"/>
+
+          <!-- Dipole antenna: thick red bar, endpoints ±10 units along (0.832,-0.555) from (200,175) -->
+          <!-- Endpoints: (200-10*0.832,175+10*0.555)=(191.7,180.5) and (200+10*0.832,175-10*0.555)=(208.3,169.5) -->
+          <line x1="192" y1="180" x2="208" y2="170" stroke="#c62b4d" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- Charge labels -->
+          <text x="212" y="167" font-size="11" fill="#c62b4d" font-weight="700">+</text>
+          <text x="184" y="188" font-size="12" fill="#c62b4d" font-weight="700">−</text>
+
+          <!-- Dipole callout with leader -->
+          <line x1="256" y1="220" x2="215" y2="185" stroke="#c62b4d" stroke-opacity="0.5" stroke-width="0.9"/>
+          <text x="258" y="222" font-size="9.5" fill="#c62b4d" font-style="italic">dipole ‖ <tspan font-style="italic">E</tspan><tspan baseline-shift="sub" font-size="7.5">trans</tspan></text>
+          <text x="258" y="234" font-size="9" fill="#c62b4d" fill-opacity="0.8">axis ‖ reflected dir.</text>
 
           <!-- Bottom conclusion -->
-          <text x="170" y="230" font-size="10.5" fill="currentColor" text-anchor="middle" font-weight="600">Dipole axis and reflected direction coincide</text>
-          <text x="170" y="243" font-size="10.5" fill="currentColor" text-anchor="middle" font-weight="600">&mdash; the reflected ray sits at the null.</text>
+          <text x="170" y="253" font-size="9.5" fill="currentColor" text-anchor="middle" font-style="italic" fill-opacity="0.9">Reflected direction is a null of the pattern → no reflected wave.</text>
         </svg>
       </figure>
 
+      <!-- ============================================================
+           TE PANEL: dipole oscillates perpendicular to the page.
+           In-page radiation is uniform → reflected direction is at
+           the max of the pattern.
+           ============================================================ -->
       <figure class="paviz__brewster-panel">
         <figcaption class="paviz__brewster-caption">
-          <strong>TE.</strong> The dipole axis points out of the page. Every in-page direction &mdash; including the reflected one &mdash; is broadside to the dipole and sits at the pattern's maximum.
+          <strong>TE.</strong> <i>E</i> is perpendicular to the page. Each dipole oscillates out of the page (⊙). Its radiation pattern is a donut around that axis, and every direction in the plane of the page — including the reflected one — sits on the donut's equator, at maximum.
         </figcaption>
         <svg class="paviz__brewster-svg" viewBox="0 0 340 260" role="img" aria-labelledby="paviz-te-fig-title paviz-te-fig-desc">
-          <title id="paviz-te-fig-title">TE dipole radiation pattern at Brewster's angle</title>
-          <desc id="paviz-te-fig-desc">A dipole oscillates perpendicular to the page (denoted by the circle-with-dot symbol). Its radiation pattern is a torus whose equator lies in the page, so every in-page direction &mdash; including the reflected direction &mdash; sits at the maximum amplitude.</desc>
+          <title id="paviz-te-fig-title">TE polarization at Brewster's angle</title>
+          <desc id="paviz-te-fig-desc">Same ray geometry as the TM panel — Brewster incidence, reflected and transmitted 90° apart — but the induced dipole in medium 2 oscillates perpendicular to the page. Its radiation pattern is a torus whose equator lies in the page, so the reflected direction sits at the pattern maximum. The reflected wave survives.</desc>
           <defs>
-            <marker id="paviz-te-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <marker id="paviz-te-ray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
               <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
             </marker>
           </defs>
 
-          <!-- Uniform in-page radiation pattern: dashed disk with soft fill -->
-          <circle cx="170" cy="130" r="58" fill="#c62b4d" fill-opacity="0.12" stroke="#c62b4d" stroke-opacity="0.55" stroke-width="1.3" stroke-dasharray="3 3"/>
+          <!-- Media backgrounds (identical layout to TM panel) -->
+          <rect x="16" y="14" width="308" height="80" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-dasharray="3 4"/>
+          <rect x="16" y="94" width="308" height="150" fill="currentColor" fill-opacity="0.055"/>
+          <line x1="16" y1="94" x2="324" y2="94" stroke="currentColor" stroke-opacity="0.9"/>
+          <text x="22" y="28" font-size="9.5" fill="currentColor" fill-opacity="0.75">medium 1 · <tspan font-style="italic">n</tspan><tspan baseline-shift="sub" font-size="7.5">1</tspan></text>
+          <text x="22" y="110" font-size="9.5" fill="currentColor" fill-opacity="0.75">medium 2 · <tspan font-style="italic">n</tspan><tspan baseline-shift="sub" font-size="7.5">2</tspan></text>
 
-          <!-- Sample radial arrows: "radiation goes everywhere in the page" -->
-          <g stroke="#c62b4d" stroke-width="1" opacity="0.55">
-            <line x1="170" y1="130" x2="170" y2="76"/>
-            <line x1="170" y1="130" x2="208" y2="92"/>
-            <line x1="170" y1="130" x2="222" y2="130"/>
-            <line x1="170" y1="130" x2="208" y2="168"/>
-            <line x1="170" y1="130" x2="170" y2="184"/>
-            <line x1="170" y1="130" x2="132" y2="168"/>
-            <line x1="170" y1="130" x2="118" y2="130"/>
-            <line x1="170" y1="130" x2="132" y2="92"/>
+          <!-- Normal -->
+          <line x1="170" y1="14" x2="170" y2="244" stroke="currentColor" stroke-opacity="0.28" stroke-dasharray="2 3"/>
+
+          <!-- Incident ray -->
+          <line x1="123" y1="63" x2="170" y2="94" stroke="currentColor" stroke-width="1.7" marker-end="url(#paviz-te-ray)"/>
+          <text x="102" y="58" font-size="9.5" fill="currentColor" fill-opacity="0.85">incident</text>
+
+          <!-- Reflected ray: SOLID because amplitude ≠ 0 for TE -->
+          <line x1="170" y1="94" x2="217" y2="63" stroke="currentColor" stroke-width="1.7" marker-end="url(#paviz-te-ray)"/>
+          <text x="238" y="58" font-size="9.5" fill="currentColor" fill-opacity="0.85" text-anchor="middle">reflected ≠ 0</text>
+
+          <!-- Transmitted ray -->
+          <line x1="170" y1="94" x2="233" y2="188" stroke="currentColor" stroke-width="1.7" marker-end="url(#paviz-te-ray)"/>
+          <text x="242" y="192" font-size="9.5" fill="currentColor" fill-opacity="0.85">transmitted</text>
+
+          <!-- 90° angle indicator -->
+          <path d="M 177.5 89 L 183 96 L 175 101.5" fill="none" stroke="currentColor" stroke-opacity="0.6" stroke-width="1"/>
+          <text x="187" y="102" font-size="8.5" fill="currentColor" fill-opacity="0.7">90°</text>
+
+          <!-- =============== DIPOLE + RADIATION PATTERN =============== -->
+          <!-- Uniform disk (equator of the toroidal pattern) centered at dipole (200,175) -->
+          <circle cx="200" cy="175" r="30" fill="#c62b4d" fill-opacity="0.11" stroke="#c62b4d" stroke-opacity="0.5" stroke-width="1.3" stroke-dasharray="3 3"/>
+
+          <!-- Sample radial arrows: "radiation goes everywhere in-plane" -->
+          <g stroke="#c62b4d" stroke-width="0.9" opacity="0.5">
+            <line x1="200" y1="175" x2="200" y2="149"/>
+            <line x1="200" y1="175" x2="219" y2="157"/>
+            <line x1="200" y1="175" x2="226" y2="175"/>
+            <line x1="200" y1="175" x2="219" y2="193"/>
+            <line x1="200" y1="175" x2="200" y2="201"/>
+            <line x1="200" y1="175" x2="181" y2="193"/>
+            <line x1="200" y1="175" x2="174" y2="175"/>
+            <line x1="200" y1="175" x2="181" y2="157"/>
           </g>
 
-          <!-- Dipole symbol: circle with dot (out of page) -->
-          <circle cx="170" cy="130" r="9" fill="var(--pa-surface, #ffffff)" stroke="#c62b4d" stroke-width="2"/>
-          <circle cx="170" cy="130" r="2.6" fill="#c62b4d"/>
+          <!-- Dipole symbol: ⊙ (out of page) -->
+          <circle cx="200" cy="175" r="8" fill="var(--pa-surface, #ffffff)" stroke="#c62b4d" stroke-width="2"/>
+          <circle cx="200" cy="175" r="2.5" fill="#c62b4d"/>
 
-          <!-- Dipole label -->
-          <text x="128" y="152" font-size="10.5" fill="#c62b4d" text-anchor="end" font-style="italic">dipole axis</text>
-          <text x="128" y="164" font-size="9.5" fill="#c62b4d" text-anchor="end" opacity="0.85">out of the page</text>
-
-          <!-- Reflected direction arrow (solid, into the max) -->
-          <line x1="170" y1="130" x2="256" y2="72" stroke="currentColor" stroke-width="1.5" marker-end="url(#paviz-te-arrow)" opacity="0.85"/>
-
-          <text x="252" y="55" font-size="10.5" fill="currentColor" text-anchor="end" opacity="0.9">reflected direction</text>
-          <text x="252" y="67" font-size="10.5" fill="currentColor" text-anchor="end" opacity="0.9" font-weight="600">amplitude &ne; 0</text>
+          <!-- Dipole callout with leader -->
+          <line x1="256" y1="220" x2="211" y2="180" stroke="#c62b4d" stroke-opacity="0.5" stroke-width="0.9"/>
+          <text x="258" y="222" font-size="9.5" fill="#c62b4d" font-style="italic">dipole ⊥ page</text>
+          <text x="258" y="234" font-size="9" fill="#c62b4d" fill-opacity="0.8">in-page radiation uniform</text>
 
           <!-- Bottom conclusion -->
-          <text x="170" y="230" font-size="10.5" fill="currentColor" text-anchor="middle" font-weight="600">Every in-page direction is broadside to</text>
-          <text x="170" y="243" font-size="10.5" fill="currentColor" text-anchor="middle" font-weight="600">the dipole &mdash; reflection at every angle.</text>
+          <text x="170" y="253" font-size="9.5" fill="currentColor" text-anchor="middle" font-style="italic" fill-opacity="0.9">Reflected direction hits the pattern max → reflection at every angle.</text>
         </svg>
       </figure>
     </div>
