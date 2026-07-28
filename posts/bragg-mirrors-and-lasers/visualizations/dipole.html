@@ -1,0 +1,994 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap"
+  >
+  <title>Brewster reflection as a dipole-radiation null</title>
+
+  <script>
+  (() => {
+    try {
+      const root = window.parent.document.documentElement;
+      const body = window.parent.document.body;
+      const raw = `${root.dataset.theme || ""} ${root.className || ""} ${body?.dataset?.theme || ""} ${body?.className || ""}`.toLowerCase();
+      document.documentElement.dataset.theme = raw.includes("dark") ? "dark" : raw.includes("light") ? "light" : "";
+    } catch (_) {}
+  })();
+  </script>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --page: var(--viz-page, #fbfbf8);
+      --surface: var(--viz-surface, #ffffff);
+      --surface-muted: var(--viz-surface-muted, #f4f5f1);
+      --ink: var(--viz-ink, #1b2420);
+      --muted: var(--viz-muted, #68736c);
+      --border: var(--viz-border, #d6ddd7);
+      --border-strong: var(--viz-border-strong, #a7b3aa);
+      --accent: var(--viz-accent, #0d7659);
+      --accent-ink: var(--viz-accent-ink, #095f48);
+      --accent-soft: var(--viz-accent-soft, #dcefe7);
+      --accent-border: var(--viz-accent-border, #91c7b6);
+      --field: #315fae;
+      --field-soft: rgba(49, 95, 174, .11);
+      --zero: #b64242;
+      --zero-soft: rgba(182, 66, 66, .09);
+      --shadow: rgba(20, 31, 25, .06);
+      --font-display: "Lora", Georgia, "Times New Roman", serif;
+      --font-reading: "Lora", Georgia, "Times New Roman", serif;
+      --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --math-font: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --page: var(--viz-page, #101511);
+      --surface: var(--viz-surface, #171e19);
+      --surface-muted: var(--viz-surface-muted, #1d2720);
+      --ink: var(--viz-ink, #e9efeb);
+      --muted: var(--viz-muted, #a7b5aa);
+      --border: var(--viz-border, #344138);
+      --border-strong: var(--viz-border-strong, #617168);
+      --accent: var(--viz-accent, #63d2aa);
+      --accent-ink: var(--viz-accent-ink, #8ee7c6);
+      --accent-soft: var(--viz-accent-soft, #16362c);
+      --accent-border: var(--viz-accent-border, #3c7964);
+      --field: #8bb2ff;
+      --field-soft: rgba(139, 178, 255, .12);
+      --zero: #ff8d8d;
+      --zero-soft: rgba(255, 141, 141, .1);
+      --shadow: rgba(0, 0, 0, .2);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      min-width: 280px;
+      overflow-x: hidden;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    body {
+      padding: clamp(6px, 1.6vw, 16px);
+      font-family: var(--font-reading);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input { font: inherit; }
+
+    button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .viz {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--accent);
+      background: var(--surface);
+      box-shadow: 0 18px 48px var(--shadow);
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(270px, .48fr);
+      gap: 22px;
+      align-items: center;
+      padding: clamp(16px, 2.7vw, 26px);
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, var(--accent-soft), var(--surface) 77%);
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--accent-ink);
+      font: 760 .69rem/1 var(--font-mono);
+      letter-spacing: .075em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(1.35rem, 3vw, 2.05rem);
+      font-weight: 560;
+      line-height: 1.14;
+      letter-spacing: -.026em;
+    }
+
+    .lede {
+      max-width: 700px;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: clamp(.91rem, 1.55vw, 1.02rem);
+      line-height: 1.45;
+    }
+
+    .controls {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .control-card {
+      min-width: 0;
+      padding: 10px 11px 11px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface) 96%, transparent);
+    }
+
+    .control-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font: 720 .68rem/1.15 var(--font-mono);
+      letter-spacing: .035em;
+      text-transform: uppercase;
+    }
+
+    .control-label strong {
+      color: var(--accent-ink);
+      font-weight: 760;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+
+    .segmented button {
+      min-height: 34px;
+      padding: 7px 10px;
+      border: 1px solid var(--border-strong);
+      border-radius: 0;
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      font: 760 .76rem/1 var(--font-ui);
+      transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
+    }
+
+    .segmented button:hover {
+      border-color: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    .segmented button[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--page);
+    }
+
+    .segmented button:active { transform: translateY(1px); }
+
+    .ratio-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    .ratio-value {
+      min-width: 46px;
+      color: var(--accent-ink);
+      font: 760 .78rem/1 var(--font-mono);
+      text-align: right;
+    }
+
+    .figure {
+      margin: 0;
+      padding: clamp(10px, 2vw, 20px);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.58fr) minmax(245px, .72fr);
+      align-items: stretch;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .diagram-panel {
+      min-width: 0;
+      padding: clamp(7px, 1.4vw, 13px);
+      border-right: 1px solid var(--border);
+      background: var(--surface-muted);
+    }
+
+    #scene {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .mechanism-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      min-width: 0;
+      padding: clamp(13px, 2.1vw, 20px);
+      background: var(--surface);
+    }
+
+    .mechanism-kicker {
+      margin: 0;
+      color: var(--accent-ink);
+      font: 760 .66rem/1.15 var(--font-mono);
+      letter-spacing: .065em;
+      text-transform: uppercase;
+    }
+
+    .mechanism-title {
+      margin: 5px 0 0;
+      font-family: var(--font-display);
+      font-size: clamp(1.03rem, 1.8vw, 1.28rem);
+      font-weight: 560;
+      line-height: 1.2;
+      letter-spacing: -.018em;
+    }
+
+    #pattern {
+      display: block;
+      width: 100%;
+      max-width: 310px;
+      height: auto;
+      margin: 8px auto 5px;
+      overflow: visible;
+    }
+
+    .equation {
+      min-height: 52px;
+      padding: 10px 10px 9px;
+      border: 1px solid var(--border);
+      background: var(--surface-muted);
+      color: var(--ink);
+      font-size: clamp(.83rem, 1.35vw, .98rem);
+      line-height: 1.25;
+      text-align: center;
+    }
+
+    .equation mjx-container { margin: 0 !important; }
+
+    .result-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border: 1px solid var(--border);
+      border-top: 0;
+      background: var(--surface);
+    }
+
+    .result-item {
+      min-width: 0;
+      padding: 10px 10px 11px;
+      text-align: center;
+    }
+
+    .result-item + .result-item { border-left: 1px solid var(--border); }
+
+    .result-key {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font: 740 .63rem/1.1 var(--font-mono);
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
+
+    .result-value {
+      display: block;
+      color: var(--ink);
+      font-size: clamp(.79rem, 1.25vw, .94rem);
+      line-height: 1.25;
+    }
+
+    .result-value.accent { color: var(--accent-ink); }
+    .result-value.zero { color: var(--zero); }
+    .result-value mjx-container { margin: 0 !important; }
+
+    .scene-bg { fill: var(--surface-muted); }
+    .medium-fill { fill: color-mix(in srgb, var(--accent-soft) 33%, transparent); }
+    .interface { stroke: var(--ink); stroke-width: 2.2; }
+    .normal { stroke: var(--border-strong); stroke-width: 1.45; stroke-dasharray: 6 6; }
+    .ray { fill: none; stroke: var(--ink); stroke-width: 2.55; stroke-linecap: round; }
+    .reflected-suppressed { stroke: var(--zero); stroke-dasharray: 7 6; opacity: .66; }
+    .field-vector { fill: none; stroke: var(--field); stroke-width: 2.55; stroke-linecap: round; }
+    .field-guide { fill: none; stroke: var(--field); stroke-width: 1.35; stroke-dasharray: 5 5; opacity: .75; }
+    .angle-arc { fill: none; stroke: var(--border-strong); stroke-width: 1.45; }
+    .right-angle { fill: none; stroke: var(--accent); stroke-width: 1.8; }
+    .origin { fill: var(--surface); stroke: var(--ink); stroke-width: 1.8; }
+    .out-symbol-ring { fill: var(--surface); stroke: var(--field); stroke-width: 2.1; }
+    .out-symbol-dot { fill: var(--field); }
+    .scene-label,
+    .scene-small,
+    .scene-math {
+      paint-order: stroke;
+      stroke: var(--surface-muted);
+      stroke-width: 5px;
+      stroke-linejoin: round;
+    }
+    .scene-label { fill: var(--ink); font: 680 15px/1 var(--font-ui); }
+    .scene-small { fill: var(--muted); font: 570 13px/1 var(--font-ui); }
+    .scene-math { fill: var(--ink); font: italic 650 18px/1 var(--math-font); }
+    .field-label { fill: var(--field); }
+    .accent-label { fill: var(--accent-ink); }
+    .zero-label { fill: var(--zero); }
+
+    .pattern-bg { fill: transparent; }
+    .pattern-axis { stroke: var(--border); stroke-width: 1.2; }
+    .pattern-guide { fill: none; stroke: var(--border-strong); stroke-width: 1.2; stroke-dasharray: 5 5; }
+    .pattern-lobe,
+    .pattern-circle {
+      fill: none;
+      stroke: var(--field);
+      stroke-width: 1.8;
+      opacity: .9;
+    }
+    .pattern-spoke {
+      fill: none;
+      stroke: var(--field);
+      stroke-width: 1.35;
+      stroke-linecap: round;
+      opacity: .5;
+    }
+    .pattern-spoke-tip { fill: var(--field); opacity: .68; }
+    .pattern-ray { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+    .pattern-ray-zero { stroke: var(--zero); stroke-dasharray: 6 5; }
+    .pattern-center { fill: var(--surface); stroke: var(--field); stroke-width: 2; }
+    .pattern-dot { fill: var(--field); }
+    .pattern-hit { fill: var(--accent); stroke: var(--surface); stroke-width: 2.2; }
+    .pattern-zero-ring { fill: var(--surface); stroke: var(--zero); stroke-width: 2; }
+    .pattern-zero-slash { stroke: var(--zero); stroke-width: 2.1; stroke-linecap: round; }
+    .pattern-label {
+      fill: var(--muted);
+      font: 650 12px/1 var(--font-ui);
+      paint-order: stroke;
+      stroke: var(--surface);
+      stroke-width: 4px;
+      stroke-linejoin: round;
+    }
+    .pattern-label.strong { fill: var(--ink); font-size: 13px; }
+    .pattern-label.field { fill: var(--field); }
+    .pattern-label.zero { fill: var(--zero); }
+    .pattern-label.explain {
+      fill: var(--muted);
+      font-size: 11px;
+      font-weight: 570;
+    }
+    .pattern-label.dipole {
+      fill: var(--field);
+      font-family: var(--math-font);
+      font-size: 14px;
+      font-style: italic;
+      font-weight: 650;
+    }
+
+    @media (max-width: 790px) {
+      .topbar { grid-template-columns: 1fr; }
+      .controls { grid-template-columns: 1fr 1fr; }
+      .main-grid { grid-template-columns: 1fr; }
+      .diagram-panel { border-right: 0; border-bottom: 1px solid var(--border); }
+      .mechanism-panel { grid-template-columns: minmax(0, .78fr) minmax(220px, 1fr); grid-template-rows: auto auto; column-gap: 16px; align-items: center; }
+      .mechanism-heading { align-self: end; }
+      #pattern { grid-row: 1 / 3; grid-column: 2; }
+      .equation { align-self: start; }
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 5px; }
+      .topbar { padding: 14px; gap: 14px; }
+      .controls { grid-template-columns: 1fr; }
+      .figure { padding: 7px; }
+      .mechanism-panel { display: block; padding: 14px; }
+      #pattern { max-width: 270px; }
+      .result-strip { grid-template-columns: 1fr; }
+      .result-item + .result-item { border-left: 0; border-top: 1px solid var(--border); }
+      .scene-label { font-size: 13px; }
+      .scene-small { font-size: 11.5px; }
+      .scene-math { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="viz">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Brewster angle</p>
+        <h1>The reflected direction either is — or is not — a dipole null</h1>
+        <p class="lede">The ray geometry stays fixed. Switching polarization rotates only the induced dipole axis in medium 2.</p>
+      </div>
+
+      <div class="controls">
+        <div class="control-card">
+          <div class="control-label"><span>polarization</span><strong id="modeName">TM</strong></div>
+          <div class="segmented" role="group" aria-label="Choose polarization">
+            <button type="button" data-mode="tm" aria-pressed="true">TM</button>
+            <button type="button" data-mode="te" aria-pressed="false">TE</button>
+          </div>
+        </div>
+
+        <label class="control-card" for="ratio">
+          <span class="control-label"><span>index ratio</span><strong>n₂ / n₁</strong></span>
+          <span class="ratio-row">
+            <input id="ratio" type="range" min="1.10" max="2.20" step="0.01" value="1.50" aria-label="Refractive-index ratio n2 over n1">
+            <output id="ratioValue" class="ratio-value">1.50</output>
+          </span>
+        </label>
+      </div>
+    </header>
+
+    <figure class="figure">
+      <div class="main-grid">
+        <section class="diagram-panel" aria-label="Brewster-angle ray geometry and induced dipoles">
+          <svg id="scene" viewBox="0 0 760 510" role="img" aria-labelledby="sceneTitle sceneDescription" preserveAspectRatio="xMidYMid meet">
+            <title id="sceneTitle">Brewster-angle ray geometry</title>
+            <desc id="sceneDescription">Incident, reflected, and transmitted rays at Brewster angle. The induced dipoles in medium two change orientation between TM and TE polarization.</desc>
+
+            <defs>
+              <marker id="arrowInk" viewBox="0 0 10 10" refX="8.7" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--ink)"></path>
+              </marker>
+              <marker id="arrowField" viewBox="0 0 10 10" refX="8.7" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--field)"></path>
+              </marker>
+              <marker id="arrowZero" viewBox="0 0 10 10" refX="8.7" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--zero)"></path>
+              </marker>
+            </defs>
+
+            <rect class="scene-bg" x="0" y="0" width="760" height="510"></rect>
+            <rect class="medium-fill" x="36" y="248" width="688" height="226"></rect>
+
+            <line class="interface" x1="36" y1="248" x2="724" y2="248"></line>
+            <line class="normal" x1="382" y1="48" x2="382" y2="466"></line>
+
+            <line id="incidentRay" class="ray" marker-end="url(#arrowInk)"></line>
+            <line id="reflectedRay" class="ray" marker-end="url(#arrowInk)"></line>
+            <line id="transmittedRay" class="ray" marker-end="url(#arrowInk)"></line>
+
+            <path id="incidentArc" class="angle-arc"></path>
+            <path id="transmittedArc" class="angle-arc"></path>
+            <path id="rightAngle" class="right-angle"></path>
+
+            <circle class="origin" cx="382" cy="248" r="4.5"></circle>
+
+            <g id="tmDipoles">
+              <line id="tmVector0" class="field-vector" marker-end="url(#arrowField)"></line>
+              <line id="tmVector1" class="field-vector" marker-end="url(#arrowField)"></line>
+              <line id="tmVector2" class="field-vector" marker-end="url(#arrowField)"></line>
+              <line id="tmAxisGuide" class="field-guide"></line>
+            </g>
+
+            <g id="teDipoles" visibility="hidden">
+              <g id="teSymbol0"><circle class="out-symbol-ring" r="10"></circle><circle class="out-symbol-dot" r="3.2"></circle></g>
+              <g id="teSymbol1"><circle class="out-symbol-ring" r="10"></circle><circle class="out-symbol-dot" r="3.2"></circle></g>
+              <g id="teSymbol2"><circle class="out-symbol-ring" r="10"></circle><circle class="out-symbol-dot" r="3.2"></circle></g>
+            </g>
+
+            <text class="scene-small" x="53" y="221">medium 1 · n₁</text>
+            <text class="scene-small" x="53" y="276">medium 2 · n₂</text>
+
+            <text id="incidentLabel" class="scene-label">incident</text>
+            <text id="reflectedLabel" class="scene-label">reflected</text>
+            <text id="transmittedLabel" class="scene-label">transmitted</text>
+            <text id="thetaBLabel" class="scene-math">θ<tspan baseline-shift="sub" font-size="12">B</tspan></text>
+            <text id="thetaTLabel" class="scene-math">θ<tspan baseline-shift="sub" font-size="12">t</tspan></text>
+
+            <text id="orthogonalLabel" class="scene-small accent-label" text-anchor="middle">
+              <tspan x="0" dy="0">kᵣ ⟂ kₜ</tspan>
+              <tspan x="0" dy="17">at θ<tspan baseline-shift="sub" font-size="10">B</tspan></tspan>
+            </text>
+
+            <text id="dipoleLabel" class="scene-label field-label">
+              <tspan id="dipoleLine1" x="0" dy="0">induced p(t) ∥ Eₜ</tspan>
+              <tspan id="dipoleLine2" x="0" dy="18">in the plane of incidence</tspan>
+            </text>
+
+            <text id="relationLabel" class="scene-small field-label" text-anchor="middle">
+              <tspan id="relationLine1" x="0" dy="0">p ∥ kᵣ</tspan>
+              <tspan id="relationLine2" x="0" dy="17">reflected direction is the dipole axis</tspan>
+            </text>
+
+            <g id="zeroBadge">
+              <circle id="zeroBadgeCircle" cx="0" cy="0" r="13" fill="var(--surface-muted)" stroke="var(--zero)" stroke-width="2"></circle>
+              <line id="zeroBadgeSlash" x1="-8" y1="-8" x2="8" y2="8" stroke="var(--zero)" stroke-width="2.2" stroke-linecap="round"></line>
+            </g>
+            <text id="reflectionResult" class="scene-label zero-label" text-anchor="middle">r<tspan baseline-shift="sub" font-size="11">TM</tspan> = 0</text>
+          </svg>
+        </section>
+
+        <aside class="mechanism-panel" aria-label="Dipole-radiation cross-section">
+          <div class="mechanism-heading">
+            <p class="mechanism-kicker">in the plane of incidence</p>
+            <h2 class="mechanism-title" id="mechanismTitle">The reflected ray runs through the axial null</h2>
+          </div>
+
+          <svg id="pattern" viewBox="0 0 300 270" role="img" aria-labelledby="patternTitle patternDescription">
+            <title id="patternTitle">Dipole-radiation pattern</title>
+            <desc id="patternDescription">A cross-section through the radiation pattern shows whether the reflected direction coincides with the dipole axis.</desc>
+            <defs>
+              <marker id="patternArrowInk" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--ink)"></path>
+              </marker>
+              <marker id="patternArrowZero" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--zero)"></path>
+              </marker>
+              <marker id="patternArrowField" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M0 0L10 5L0 10Z" fill="var(--field)"></path>
+              </marker>
+            </defs>
+
+            <rect class="pattern-bg" x="0" y="0" width="300" height="270"></rect>
+            <line class="pattern-axis" x1="32" y1="137" x2="268" y2="137"></line>
+            <line class="pattern-axis" x1="150" y1="28" x2="150" y2="246"></line>
+            <g id="patternSpokes" aria-hidden="true"></g>
+            <path id="patternShape" class="pattern-lobe"></path>
+            <line id="patternDipoleAxis" class="pattern-guide"></line>
+            <line id="patternReflectedRay" class="pattern-ray pattern-ray-zero" marker-end="url(#patternArrowZero)"></line>
+
+            <g id="patternCenterTm">
+              <line id="patternPVector" class="field-vector" marker-start="url(#patternArrowField)" marker-end="url(#patternArrowField)"></line>
+              <circle class="pattern-center" cx="150" cy="137" r="3.5"></circle>
+            </g>
+
+            <g id="patternCenterTe" visibility="hidden">
+              <circle class="pattern-center" cx="150" cy="137" r="13"></circle>
+              <circle class="pattern-dot" cx="150" cy="137" r="4"></circle>
+            </g>
+
+            <circle id="patternHit" class="pattern-hit" r="5" visibility="hidden"></circle>
+            <g id="patternZeroBadge">
+              <circle class="pattern-zero-ring" cx="0" cy="0" r="11"></circle>
+              <line class="pattern-zero-slash" x1="-7" y1="-7" x2="7" y2="7"></line>
+            </g>
+
+            <text id="patternMeaningLabel" class="pattern-label explain" x="150" y="18" text-anchor="middle">spoke length = radiated intensity in that direction</text>
+            <text id="patternRayLabel" class="pattern-label strong" text-anchor="middle">reflected direction</text>
+            <text id="patternAxisLabel" class="pattern-label field" text-anchor="middle">dipole axis</text>
+            <text id="patternDipoleLabel" class="pattern-label dipole" text-anchor="middle">p(t)</text>
+            <text id="patternOutcomeLabel" class="pattern-label zero" text-anchor="middle">axial null</text>
+          </svg>
+
+          <div id="equation" class="equation">\(I_r\propto\sin^2\!\angle(\mathbf p,\mathbf k_r)=\sin^2 0=0\)</div>
+        </aside>
+      </div>
+
+      <div class="result-strip" aria-label="Visual summary">
+        <div class="result-item">
+          <span class="result-key">Brewster geometry</span>
+          <span class="result-value">\(\theta_B+\theta_t=90^\circ\)</span>
+        </div>
+        <div class="result-item">
+          <span class="result-key">dipole versus reflected ray</span>
+          <span id="relationSummary" class="result-value accent">\(\mathbf p\parallel\mathbf k_r\)</span>
+        </div>
+        <div class="result-item">
+          <span class="result-key">reflected amplitude</span>
+          <span id="amplitudeSummary" class="result-value zero">\(r_{\mathrm{TM}}=0\)</span>
+        </div>
+      </div>
+    </figure>
+  </main>
+
+  <script>
+  (() => {
+    "use strict";
+
+    const NS = "http://www.w3.org/2000/svg";
+    const scene = document.getElementById("scene");
+    const ratioInput = document.getElementById("ratio");
+    const ratioValue = document.getElementById("ratioValue");
+    const modeButtons = [...document.querySelectorAll("[data-mode]")];
+
+    const O = { x: 382, y: 248 };
+    const sceneBounds = { x0: 36, x1: 724, y0: 34, y1: 474 };
+    const patternCenter = { x: 150, y: 137 };
+    let mode = "tm";
+    let mathReady = false;
+
+    const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
+    const add = (a, b) => ({ x: a.x + b.x, y: a.y + b.y });
+    const scale = (v, factor) => ({ x: v.x * factor, y: v.y * factor });
+
+    function setLine(id, first, second) {
+      const line = document.getElementById(id);
+      line.setAttribute("x1", first.x.toFixed(2));
+      line.setAttribute("y1", first.y.toFixed(2));
+      line.setAttribute("x2", second.x.toFixed(2));
+      line.setAttribute("y2", second.y.toFixed(2));
+    }
+
+    function setTranslate(id, point) {
+      document.getElementById(id).setAttribute("transform", `translate(${point.x.toFixed(2)} ${point.y.toFixed(2)})`);
+    }
+
+    function setTextPosition(id, point, anchor = null) {
+      const element = document.getElementById(id);
+      element.setAttribute("x", point.x.toFixed(2));
+      element.setAttribute("y", point.y.toFixed(2));
+      if (anchor) element.setAttribute("text-anchor", anchor);
+      [...element.querySelectorAll(":scope > tspan")].forEach(tspan => { if (tspan.hasAttribute("x")) tspan.setAttribute("x", point.x.toFixed(2)); });
+    }
+
+    function polarPoint(center, radius, angle) {
+      return {
+        x: center.x + radius * Math.cos(angle),
+        y: center.y + radius * Math.sin(angle)
+      };
+    }
+
+    function arcPath(center, radius, startAngle, endAngle) {
+      const start = polarPoint(center, radius, startAngle);
+      const end = polarPoint(center, radius, endAngle);
+      const delta = Math.abs(endAngle - startAngle);
+      const large = delta > Math.PI ? 1 : 0;
+      const sweep = endAngle > startAngle ? 1 : 0;
+      return `M${start.x.toFixed(2)} ${start.y.toFixed(2)}A${radius} ${radius} 0 ${large} ${sweep} ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+    }
+
+    function rightAnglePath(origin, firstDirection, secondDirection, size) {
+      const a = add(origin, scale(firstDirection, size));
+      const b = add(a, scale(secondDirection, size));
+      const c = add(origin, scale(secondDirection, size));
+      return `M${a.x.toFixed(2)} ${a.y.toFixed(2)}L${b.x.toFixed(2)} ${b.y.toFixed(2)}L${c.x.toFixed(2)} ${c.y.toFixed(2)}`;
+    }
+
+    function lineToBounds(origin, direction, bounds, backward = false) {
+      const d = backward ? scale(direction, -1) : direction;
+      const candidates = [];
+      if (Math.abs(d.x) > 1e-8) {
+        [bounds.x0, bounds.x1].forEach(x => {
+          const t = (x - origin.x) / d.x;
+          const y = origin.y + t * d.y;
+          if (t > 0 && y >= bounds.y0 && y <= bounds.y1) candidates.push({ t, point: { x, y } });
+        });
+      }
+      if (Math.abs(d.y) > 1e-8) {
+        [bounds.y0, bounds.y1].forEach(y => {
+          const t = (y - origin.y) / d.y;
+          const x = origin.x + t * d.x;
+          if (t > 0 && x >= bounds.x0 && x <= bounds.x1) candidates.push({ t, point: { x, y } });
+        });
+      }
+      candidates.sort((a, b) => a.t - b.t);
+      return candidates[0]?.point || origin;
+    }
+
+    function lobePath(axisAngle) {
+      const points = [];
+      const radius = 92;
+      for (let i = 0; i <= 360; i += 1) {
+        const angle = i * Math.PI / 180;
+        const r = radius * Math.abs(Math.sin(angle - axisAngle));
+        points.push({
+          x: patternCenter.x + r * Math.cos(angle),
+          y: patternCenter.y + r * Math.sin(angle)
+        });
+      }
+      return points.map((point, index) => `${index ? "L" : "M"}${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join("") + "Z";
+    }
+
+    function circlePath(radius) {
+      return `M${patternCenter.x + radius} ${patternCenter.y}A${radius} ${radius} 0 1 1 ${patternCenter.x - radius} ${patternCenter.y}A${radius} ${radius} 0 1 1 ${patternCenter.x + radius} ${patternCenter.y}Z`;
+    }
+
+    function renderRadiationSpokes(axisAngle) {
+      const group = document.getElementById("patternSpokes");
+      group.replaceChildren();
+      const NS = "http://www.w3.org/2000/svg";
+      const spokeCount = 28;
+      const innerRadius = 18;
+      const maximumLength = mode === "tm" ? 70 : 65;
+
+      for (let index = 0; index < spokeCount; index += 1) {
+        const angle = 2 * Math.PI * index / spokeCount;
+        const intensity = mode === "tm"
+          ? Math.sin(angle - axisAngle) ** 2
+          : 1;
+        if (intensity < .025) continue;
+
+        const outerRadius = innerRadius + maximumLength * intensity;
+        const start = polarPoint(patternCenter, innerRadius, angle);
+        const end = polarPoint(patternCenter, outerRadius, angle);
+        const line = document.createElementNS(NS, "line");
+        line.setAttribute("class", "pattern-spoke");
+        line.setAttribute("x1", start.x.toFixed(2));
+        line.setAttribute("y1", start.y.toFixed(2));
+        line.setAttribute("x2", end.x.toFixed(2));
+        line.setAttribute("y2", end.y.toFixed(2));
+        group.appendChild(line);
+
+        if (index % 2 === 0 && intensity > .18) {
+          const tip = document.createElementNS(NS, "circle");
+          tip.setAttribute("class", "pattern-spoke-tip");
+          tip.setAttribute("cx", end.x.toFixed(2));
+          tip.setAttribute("cy", end.y.toFixed(2));
+          tip.setAttribute("r", "1.8");
+          group.appendChild(tip);
+        }
+      }
+    }
+
+    function updateMath() {
+      if (!mathReady || !window.MathJax?.typesetPromise) return;
+      MathJax.typesetClear?.([
+        document.getElementById("equation"),
+        document.getElementById("relationSummary"),
+        document.getElementById("amplitudeSummary")
+      ]);
+      MathJax.typesetPromise([
+        document.getElementById("equation"),
+        document.getElementById("relationSummary"),
+        document.getElementById("amplitudeSummary")
+      ]).then(reportHeight).catch(() => {});
+    }
+
+    function render() {
+      const ratio = Number(ratioInput.value);
+      const thetaB = Math.atan(ratio);
+      const thetaT = Math.PI / 2 - thetaB;
+
+      ratioValue.value = ratio.toFixed(2);
+      ratioValue.textContent = ratio.toFixed(2);
+
+      const incidentOutward = { x: -Math.sin(thetaB), y: -Math.cos(thetaB) };
+      const reflected = { x: Math.sin(thetaB), y: -Math.cos(thetaB) };
+      const transmitted = { x: Math.sin(thetaT), y: Math.cos(thetaT) };
+      const dipoleTm = reflected;
+
+      const incidentStart = lineToBounds(O, incidentOutward, sceneBounds);
+      const reflectedEnd = lineToBounds(O, reflected, sceneBounds);
+      const transmittedEnd = lineToBounds(O, transmitted, sceneBounds);
+
+      setLine("incidentRay", incidentStart, O);
+      setLine("reflectedRay", add(O, scale(reflected, 7)), reflectedEnd);
+      setLine("transmittedRay", add(O, scale(transmitted, 7)), transmittedEnd);
+
+      const reflectedRay = document.getElementById("reflectedRay");
+      reflectedRay.classList.toggle("reflected-suppressed", mode === "tm");
+      reflectedRay.setAttribute("marker-end", mode === "tm" ? "url(#arrowZero)" : "url(#arrowInk)");
+
+      document.getElementById("incidentArc").setAttribute("d", arcPath(O, 48, -Math.PI / 2, -Math.PI / 2 - thetaB));
+      document.getElementById("transmittedArc").setAttribute("d", arcPath(O, 42, Math.PI / 2 - thetaT, Math.PI / 2));
+      document.getElementById("rightAngle").setAttribute("d", rightAnglePath(O, reflected, transmitted, 23));
+
+      setTextPosition("incidentLabel", { x: incidentStart.x + 6, y: incidentStart.y - 12 }, "start");
+      setTextPosition("reflectedLabel", { x: reflectedEnd.x - 5, y: reflectedEnd.y - 12 }, "end");
+      setTextPosition("transmittedLabel", { x: transmittedEnd.x - 4, y: transmittedEnd.y + 23 }, "end");
+      setTextPosition("thetaBLabel", polarPoint(O, 73, -Math.PI / 2 - thetaB / 2), "middle");
+      setTextPosition("thetaTLabel", polarPoint(O, 67, Math.PI / 2 - thetaT / 2), "middle");
+
+      const orthogonalPoint = add(O, add(scale(reflected, 56), scale(transmitted, 64)));
+      setTextPosition("orthogonalLabel", { x: orthogonalPoint.x + 18, y: orthogonalPoint.y + 2 }, "middle");
+
+      const dipolePoints = [94, 156, 218].map(distance => add(O, scale(transmitted, distance)));
+      dipolePoints.forEach((point, index) => {
+        const length = index === 1 ? 26 : 21;
+        setLine(`tmVector${index}`, add(point, scale(dipoleTm, -length)), add(point, scale(dipoleTm, length)));
+        setTranslate(`teSymbol${index}`, point);
+      });
+
+      const guideCenter = dipolePoints[1];
+      setLine("tmAxisGuide", add(guideCenter, scale(dipoleTm, -78)), add(guideCenter, scale(dipoleTm, 92)));
+
+      document.getElementById("tmDipoles").setAttribute("visibility", mode === "tm" ? "visible" : "hidden");
+      document.getElementById("teDipoles").setAttribute("visibility", mode === "te" ? "visible" : "hidden");
+
+      const labelBase = add(dipolePoints[1], scale({ x: -transmitted.y, y: transmitted.x }, mode === "tm" ? 66 : 72));
+      setTextPosition("dipoleLabel", { x: clamp(labelBase.x - 8, 90, 605), y: clamp(labelBase.y + 5, 320, 430) }, "start");
+
+      const relationPoint = add(O, scale(reflected, 150));
+      setTextPosition("relationLabel", { x: relationPoint.x + 12, y: relationPoint.y + (mode === "tm" ? 38 : 48) }, "middle");
+
+      const reflectedMid = add(O, scale(reflected, 175));
+      setTranslate("zeroBadge", { x: reflectedMid.x + 2, y: reflectedMid.y - 1 });
+      setTextPosition("reflectionResult", { x: reflectedMid.x, y: reflectedMid.y - 27 }, "middle");
+      document.getElementById("zeroBadge").setAttribute("visibility", mode === "tm" ? "visible" : "hidden");
+
+      const modeName = document.getElementById("modeName");
+      modeName.textContent = mode.toUpperCase();
+
+      if (mode === "tm") {
+        document.getElementById("dipoleLine1").textContent = "induced p(t) ∥ Eₜ";
+        document.getElementById("dipoleLine2").textContent = "in the plane of incidence";
+        document.getElementById("relationLine1").textContent = "p ∥ kᵣ";
+        document.getElementById("relationLine2").textContent = "";
+        document.getElementById("reflectionResult").innerHTML = "r<tspan baseline-shift=\"sub\" font-size=\"11\">TM</tspan> = 0";
+        document.getElementById("mechanismTitle").textContent = "The reflected ray runs through the axial null";
+        document.getElementById("equation").textContent = "\\(I_r\\propto\\sin^2\\!\\angle(\\mathbf p,\\mathbf k_r)=\\sin^2 0=0\\)";
+        document.getElementById("relationSummary").textContent = "\\(\\mathbf p\\parallel\\mathbf k_r\\)";
+        document.getElementById("amplitudeSummary").textContent = "\\(r_{\\mathrm{TM}}=0\\)";
+        document.getElementById("amplitudeSummary").className = "result-value zero";
+      } else {
+        document.getElementById("dipoleLine1").textContent = "induced p(t) ∥ Eₜ";
+        document.getElementById("dipoleLine2").textContent = "perpendicular to the page";
+        document.getElementById("relationLine1").textContent = "p ⟂ kᵣ";
+        document.getElementById("relationLine2").textContent = "";
+        document.getElementById("reflectionResult").innerHTML = "r<tspan baseline-shift=\"sub\" font-size=\"11\">TE</tspan> ≠ 0";
+        document.getElementById("mechanismTitle").textContent = "An out-of-page dipole has no null in this plane";
+        document.getElementById("equation").textContent = "\\(I_r\\propto\\sin^2\\!\\angle(\\mathbf p,\\mathbf k_r)=\\sin^2 90^\\circ\\neq0\\)";
+        document.getElementById("relationSummary").textContent = "\\(\\mathbf p\\perp\\mathbf k_r\\)";
+        document.getElementById("amplitudeSummary").textContent = "\\(r_{\\mathrm{TE}}\\neq0\\)";
+        document.getElementById("amplitudeSummary").className = "result-value accent";
+      }
+
+      document.getElementById("reflectionResult").classList.toggle("zero-label", mode === "tm");
+      document.getElementById("reflectionResult").classList.toggle("accent-label", mode === "te");
+
+      renderPattern(reflected);
+      updateMath();
+      reportHeight();
+    }
+
+    function renderPattern(reflectedDirection) {
+      const axisAngle = Math.atan2(reflectedDirection.y, reflectedDirection.x);
+      const patternShape = document.getElementById("patternShape");
+      const axisA = polarPoint(patternCenter, 110, axisAngle + Math.PI);
+      const axisB = polarPoint(patternCenter, 110, axisAngle);
+      const reflectedEnd = polarPoint(patternCenter, 107, axisAngle);
+      const reflectedStart = polarPoint(patternCenter, 10, axisAngle);
+      const labelPoint = polarPoint(patternCenter, 119, axisAngle);
+
+      setLine("patternDipoleAxis", axisA, axisB);
+      setLine("patternReflectedRay", reflectedStart, reflectedEnd);
+      renderRadiationSpokes(axisAngle);
+      setTextPosition("patternRayLabel", { x: 224, y: 61 }, "middle");
+
+      if (mode === "tm") {
+        patternShape.setAttribute("d", lobePath(axisAngle));
+        patternShape.setAttribute("class", "pattern-lobe");
+        setLine("patternPVector", polarPoint(patternCenter, 25, axisAngle + Math.PI), polarPoint(patternCenter, 25, axisAngle));
+        document.getElementById("patternCenterTm").setAttribute("visibility", "visible");
+        document.getElementById("patternCenterTe").setAttribute("visibility", "hidden");
+        document.getElementById("patternReflectedRay").setAttribute("class", "pattern-ray pattern-ray-zero");
+        document.getElementById("patternReflectedRay").setAttribute("marker-end", "url(#patternArrowZero)");
+        document.getElementById("patternHit").setAttribute("visibility", "hidden");
+        setTranslate("patternZeroBadge", polarPoint(patternCenter, 82, axisAngle));
+        document.getElementById("patternZeroBadge").setAttribute("visibility", "visible");
+        setTextPosition("patternAxisLabel", { x: 82, y: 219 }, "middle");
+        setTextPosition("patternDipoleLabel", polarPoint(patternCenter, 43, axisAngle + Math.PI / 2), "middle");
+        setTextPosition("patternOutcomeLabel", { x: 236, y: 111 }, "middle");
+        document.getElementById("patternAxisLabel").textContent = "axis of p(t)";
+        document.getElementById("patternDipoleLabel").textContent = "p(t)";
+        document.getElementById("patternOutcomeLabel").textContent = "axial null";
+        document.getElementById("patternOutcomeLabel").setAttribute("class", "pattern-label zero");
+      } else {
+        const radius = 83;
+        patternShape.setAttribute("d", circlePath(radius));
+        patternShape.setAttribute("class", "pattern-circle");
+        document.getElementById("patternCenterTm").setAttribute("visibility", "hidden");
+        document.getElementById("patternCenterTe").setAttribute("visibility", "visible");
+        document.getElementById("patternReflectedRay").setAttribute("class", "pattern-ray");
+        document.getElementById("patternReflectedRay").setAttribute("marker-end", "url(#patternArrowInk)");
+        const hit = polarPoint(patternCenter, radius, axisAngle);
+        document.getElementById("patternHit").setAttribute("cx", hit.x.toFixed(2));
+        document.getElementById("patternHit").setAttribute("cy", hit.y.toFixed(2));
+        document.getElementById("patternHit").setAttribute("visibility", "visible");
+        document.getElementById("patternZeroBadge").setAttribute("visibility", "hidden");
+        setTextPosition("patternAxisLabel", { x: patternCenter.x, y: patternCenter.y + 35 }, "middle");
+        setTextPosition("patternDipoleLabel", { x: patternCenter.x + 35, y: patternCenter.y - 18 }, "middle");
+        setTextPosition("patternOutcomeLabel", { x: 232, y: 99 }, "middle");
+        document.getElementById("patternAxisLabel").textContent = "axis of p(t): out of page";
+        document.getElementById("patternDipoleLabel").textContent = "p(t)";
+        document.getElementById("patternOutcomeLabel").textContent = "radiation allowed";
+        document.getElementById("patternOutcomeLabel").setAttribute("class", "pattern-label field");
+      }
+    }
+
+    modeButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        mode = button.dataset.mode;
+        modeButtons.forEach(candidate => candidate.setAttribute("aria-pressed", String(candidate === button)));
+        render();
+      });
+    });
+
+    ratioInput.addEventListener("input", render);
+
+    let lastReportedHeight = 0;
+    function reportHeight() {
+      if (window.parent === window) return;
+      const target = document.querySelector(".viz") || document.body;
+      const bodyStyle = window.getComputedStyle(document.body);
+      const paddingBottom = Number.parseFloat(bodyStyle.paddingBottom) || 0;
+      const height = Math.max(1, Math.ceil(target.getBoundingClientRect().bottom + paddingBottom));
+      if (Math.abs(height - lastReportedHeight) < 2) return;
+      lastReportedHeight = height;
+      try {
+        const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+        window.parent.postMessage({ visualizationHeight: height }, targetOrigin);
+      } catch (_) {}
+    }
+
+    function loadMathJax() {
+      window.MathJax = {
+        tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+        svg: { fontCache: "local" },
+        startup: {
+          typeset: false,
+          ready() {
+            MathJax.startup.defaultReady();
+            MathJax.startup.promise
+              .then(() => MathJax.typesetPromise([document.body]))
+              .then(() => {
+                mathReady = true;
+                reportHeight();
+              })
+              .catch(() => {});
+          }
+        }
+      };
+
+      let source = "";
+      try {
+        source = [...window.parent.document.scripts]
+          .map(script => script.src)
+          .find(value => value && /mathjax/i.test(value)) || "";
+      } catch (_) {}
+
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = source || "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js";
+      document.head.appendChild(script);
+    }
+
+    render();
+    loadMathJax();
+
+    if ("ResizeObserver" in window) {
+      const observer = new ResizeObserver(reportHeight);
+      observer.observe(document.querySelector(".viz") || document.body);
+    }
+    window.addEventListener("load", reportHeight);
+    window.addEventListener("resize", reportHeight);
+  })();
+  </script>
+  <script src="/assets/js/visualization-frame.js"></script>
+</body>
+</html>

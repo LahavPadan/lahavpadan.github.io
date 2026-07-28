@@ -870,13 +870,16 @@
         } catch (_) {}
       }
 
+      function measuredContentHeight() {
+        const bodyStyle = window.getComputedStyle(document.body);
+        const paddingBottom = Number.parseFloat(bodyStyle.paddingBottom) || 0;
+        return Math.max(1, Math.ceil(root.getBoundingClientRect().bottom + paddingBottom));
+      }
+
       function fitFrame() {
-        const height = Math.ceil(document.documentElement.scrollHeight + 4);
+        const height = measuredContentHeight();
         try {
-          if (window.frameElement) window.frameElement.style.height = `${height}px`;
-        } catch (_) {}
-        try {
-          window.parent.postMessage({ type: 'article-visualization:resize', height }, window.location.origin);
+          window.parent.postMessage({ visualizationHeight: height }, window.location.origin);
         } catch (_) {}
       }
 
@@ -886,7 +889,7 @@
       draw();
       document.addEventListener('viz:math-ready', fitFrame);
       new ResizeObserver(scheduleDraw).observe(root);
-      new ResizeObserver(fitFrame).observe(document.body);
+      new ResizeObserver(fitFrame).observe(root);
       window.addEventListener('load', fitFrame, { once: true });
     })();
   </script>

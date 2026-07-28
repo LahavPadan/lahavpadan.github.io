@@ -128,7 +128,7 @@ Compare two reflected amplitudes arriving back at the input plane:
 
 Both arrive at the input plane with total phase $\pi$. They combine constructively. The next pair of interfaces adds two more contributions with the same total phase, and so on down the stack.
 
-{% include visualization.html src="fresnel-quarter-wave-phase.html" title="Reflection phase and quarter-wave propagation phase compared at one return plane" %}
+{% include visualization.html src="frensel.html" title="Fresnel reflection and quarter-wave propagation phase at one return plane" %}
 
 Off Bragg ($\delta \neq 0$), the round-trip phase per layer is no longer exactly $\pi$, and deeper and shallower reflections start to disagree in phase. The rate at which they lose coherence is what sets the stopband width. [§ 1.4](#sec-1-4) works it out.
 
@@ -315,7 +315,7 @@ Every calculation so far has assumed the wave hits the stack perpendicular to th
 - **The two polarizations acquire different interface reflectivities.** TE ($E$ perpendicular to the plane of incidence) and TM ($E$ in the plane of incidence, with a component along the layer normal) see the boundary-condition matching differently.
 - **Polarization sensitivity of $\kappa$.** Since $\kappa$ is built from the interface reflections, it inherits their polarization dependence, and TE and TM acquire distinct stopbands.
 
-{% include visualization.html src="oblique-bragg-phase.html" title="Why off-normal incidence shifts the Bragg wavelength through the normal wavevector component" %}
+{% include visualization.html src="bragg-phase.html" title="How oblique incidence changes the Bragg phase through the normal wavevector component" %}
 
 Matching tangential $E$ and tangential $H$ across the interface gives, for the two polarizations,
 
@@ -325,9 +325,11 @@ At $\theta_1 = 0$ both reduce to \eqref{eq:fresnel}. Off-normal, they split. Com
 
 $$\tan\theta_1 = \frac{n_2}{n_1}. \tag{10}\label{eq:brewster}$$
 
+{% include visualization.html src="brewster.html" title="How the TE and TM Fresnel responses separate at Brewster incidence" %}
+
 The mechanism has a clean physical picture. The transmitted electric field polarizes the electrons of medium 2 into oscillating dipoles along its own direction, and the reflected wave is their re-radiation. A dipole cannot radiate along its own axis of oscillation — the null of its $\sin\theta$ pattern. At Brewster's angle Snell's law makes the reflected direction (in medium 1) coincide with the dipole axis (which points along the transmitted $E$ in medium 2), so the reflection has to vanish. TE has no analogue: its dipoles point out of the plane of incidence, and every in-plane direction — including every possible reflected direction — is broadside to them.
 
-{% include visualization.html src="te-tm-boundary-admittance.html" title="How TE and TM see different reflectivities off-normal: the dipole-radiation mechanism at Brewster's angle" %}
+{% include visualization.html src="dipole.html" title="Why Brewster reflection vanishes as a dipole-radiation null for TM polarization" %}
 
 The consequence for a [DBR](#defn-dbr): as the in-medium angle approaches Brewster's angle,
 

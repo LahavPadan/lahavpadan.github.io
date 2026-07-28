@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap">
+<title>Transverse modes and cutoff</title>
+<script>
+(() => {
+  try {
+    const root = window.parent.document.documentElement;
+    const body = window.parent.document.body;
+    const raw = `${root.dataset.theme || ""} ${root.className || ""} ${body?.dataset?.theme || ""} ${body?.className || ""}`.toLowerCase();
+    document.documentElement.dataset.theme = raw.includes("dark") ? "dark" : raw.includes("light") ? "light" : "";
+  } catch (_) {}
+})();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --surface: var(--viz-surface, #ffffff);
+  --surface-muted: var(--viz-surface-muted, #f5f6f2);
+  --ink: var(--viz-ink, #1b2420);
+  --muted: var(--viz-muted, #68736c);
+  --border: var(--viz-border, #d6ddd7);
+  --border-strong: var(--viz-border-strong, #a7b3aa);
+  --accent: var(--viz-accent, #0d7659);
+  --accent-ink: var(--viz-accent-ink, #095f48);
+  --accent-soft: var(--viz-accent-soft, #dcefe7);
+  --accent-border: var(--viz-accent-border, #91c7b6);
+  --pair: #315fae;
+  --pair-soft: rgba(49, 95, 174, .13);
+  --warm: #a35f16;
+  --warm-soft: rgba(163, 95, 22, .12);
+  --negative: #a04655;
+  --negative-soft: rgba(160, 70, 85, .12);
+  --shadow: rgba(20, 31, 25, .06);
+  --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --display: Lora, Georgia, "Times New Roman", serif;
+  --math: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
+  --mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: var(--viz-surface, #171e19);
+  --surface-muted: var(--viz-surface-muted, #1d2720);
+  --ink: var(--viz-ink, #e9efeb);
+  --muted: var(--viz-muted, #a7b5aa);
+  --border: var(--viz-border, #344138);
+  --border-strong: var(--viz-border-strong, #617168);
+  --accent: var(--viz-accent, #63d2aa);
+  --accent-ink: var(--viz-accent-ink, #8ee7c6);
+  --accent-soft: var(--viz-accent-soft, #16362c);
+  --accent-border: var(--viz-accent-border, #3c7964);
+  --pair: #8bb2ff;
+  --pair-soft: rgba(139, 178, 255, .15);
+  --warm: #e0a666;
+  --warm-soft: rgba(224, 166, 102, .14);
+  --negative: #ee9aa9;
+  --negative-soft: rgba(238, 154, 169, .13);
+  --shadow: rgba(0, 0, 0, .18);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-width: 0; overflow-x: hidden; background: transparent; color: var(--ink); }
+body { padding: clamp(7px, 1.8vw, 18px); font-family: var(--sans); text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; }
+.viz {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 18px 48px var(--shadow);
+}
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(310px, .48fr);
+  gap: 22px;
+  align-items: center;
+  padding: clamp(16px, 2.6vw, 25px);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 76%);
+}
+.heading-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 18px; }
+.eyebrow {
+  margin: 0;
+  color: var(--accent-ink);
+  font: 760 .68rem/1 var(--sans);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(1.25rem, 2.7vw, 1.9rem);
+  font-weight: 560;
+  line-height: 1.14;
+  letter-spacing: -.026em;
+}
+.lede {
+  max-width: 720px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: clamp(.89rem, 1.55vw, 1rem);
+  line-height: 1.42;
+}
+.controls { display: grid; gap: 9px; min-width: 0; }
+.control-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; }
+.control-row + .control-row { padding-top: 9px; border-top: 1px solid color-mix(in srgb, var(--border) 82%, transparent); }
+.control-name {
+  color: var(--muted);
+  font-size: .69rem;
+  font-weight: 780;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.mode-buttons { display: grid; grid-template-columns: repeat(4, minmax(38px, 1fr)); gap: 5px; }
+.mode-button {
+  min-height: 31px;
+  padding: 5px 7px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 760;
+}
+.mode-button:hover { border-color: var(--accent); color: var(--accent-ink); }
+.mode-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mode-button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--surface); }
+.frequency-control { min-width: 0; }
+.frequency-line { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.frequency-value { color: var(--accent-ink); font-size: .78rem; font-weight: 700; white-space: nowrap; }
+.frequency-value mjx-container { margin: 0 !important; }
+input[type="range"] { display: block; width: 100%; margin: 7px 0 0; accent-color: var(--accent); }
+.figure { margin: 0; padding: clamp(10px, 2vw, 18px); }
+.main-grid {
+  display: grid;
+  grid-template-columns: minmax(225px, .48fr) minmax(0, 1.52fr);
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+.panel { min-width: 0; padding: clamp(10px, 1.55vw, 15px); }
+.panel + .panel { border-left: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 63%, var(--surface-muted)); }
+.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 9px; margin-bottom: 6px; }
+.panel-title { margin: 0; font-family: var(--display); font-size: clamp(.88rem, 1.35vw, 1.03rem); font-weight: 560; line-height: 1.15; letter-spacing: -.018em; }
+.panel-kicker { color: var(--muted); font-size: .62rem; font-weight: 720; line-height: 1.2; white-space: nowrap; }
+.math { font-family: var(--math); }
+mjx-container { margin: 0 !important; }
+.mode-panel { align-self: start; padding: 8px; }
+.mode-panel .panel-head { margin-bottom: 4px; }
+.mode-panel .panel-title { font-family: var(--sans); font-size: clamp(.76rem, 1vw, .84rem); font-weight: 780; line-height: 1.15; letter-spacing: -.006em; }
+.mode-panel .panel-kicker { font-size: .57rem; }
+.mode-stage { position: relative; height: clamp(166px, 15vw, 184px); overflow: hidden; border: 1px solid var(--border); background: var(--surface); }
+#modeSvg, #dispersionSvg { display: block; width: 100%; height: 100%; }
+.mode-wall { fill: none; stroke: var(--border-strong); stroke-width: 2; }
+.mode-node { stroke: var(--border-strong); stroke-width: 1; stroke-dasharray: 4 5; opacity: .76; }
+.mode-center { stroke: var(--accent-border); stroke-width: 1.15; stroke-dasharray: 5 5; }
+.mode-curve { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.mode-midline { stroke: var(--border); stroke-width: 1; }
+.dimension { stroke: var(--muted); stroke-width: 1.2; }
+.svg-label { fill: var(--muted); font-family: var(--sans); font-size: 12px; }
+.svg-label.strong { fill: var(--ink); font-weight: 700; }
+.svg-math { fill: var(--ink); font-family: var(--math); font-size: 15px; font-style: italic; }
+.svg-math.accent { fill: var(--accent-ink); }
+.mode-formulas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--border);
+  border-top: 0;
+  background: var(--surface);
+}
+.formula-cell { min-width: 0; padding: 5px 6px; text-align: center; font-size: clamp(.63rem, .82vw, .73rem); }
+.formula-cell + .formula-cell { border-left: 1px solid var(--border); }
+.formula-cell strong { color: var(--accent-ink); font-weight: 650; }
+.dispersion-wrap { position: relative; height: clamp(220px, 22vw, 248px); overflow: hidden; border: 1px solid var(--border); background: var(--surface); }
+.plot-bg { fill: var(--surface); }
+.plot-evanescent { fill: var(--warm-soft); }
+.plot-grid { stroke: var(--border); stroke-width: 1; }
+.plot-axis { stroke: var(--border-strong); stroke-width: 1.3; }
+.vacuum-line { fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-dasharray: 7 6; opacity: .78; }
+.branch { fill: none; stroke: var(--border-strong); stroke-width: 1.65; opacity: .58; }
+.branch.selected { stroke: var(--accent); stroke-width: 3.2; opacity: 1; }
+.current-line { stroke: var(--pair); stroke-width: 1.7; stroke-dasharray: 5 5; }
+.current-drop { stroke: var(--pair); stroke-width: 1.4; stroke-dasharray: 4 5; opacity: .8; }
+.current-point-halo { fill: var(--surface); stroke: var(--pair); stroke-width: 2.2; }
+.current-point { fill: var(--pair); }
+.cutoff-tick { stroke: var(--accent); stroke-width: 2.2; }
+.cutoff-dot { fill: var(--accent); }
+.plot-label {
+  fill: var(--muted);
+  font-family: var(--sans);
+  font-size: 11px;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.plot-label.selected { fill: var(--accent-ink); font-weight: 760; }
+.plot-math {
+  fill: var(--ink);
+  font-family: var(--math);
+  font-size: 14px;
+  font-style: italic;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.plot-math.pair { fill: var(--pair); }
+.plot-math.warm { fill: var(--warm); }
+.regime-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-top: 0;
+  background: var(--surface);
+}
+.regime-copy { min-width: 0; color: var(--muted); font-size: clamp(.66rem, .95vw, .75rem); line-height: 1.28; }
+.regime-copy strong { color: var(--ink); font-weight: 740; }
+.regime-value { color: var(--pair); font-size: clamp(.7rem, 1.18vw, .82rem); font-weight: 720; line-height: 1.25; text-align: right; white-space: nowrap; }
+.regime-value mjx-container { margin: 0 !important; }
+.plot-html-math {
+  position: absolute;
+  z-index: 5;
+  color: var(--ink);
+  font-size: clamp(.66rem, 1.05vw, .78rem);
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.plot-html-math mjx-container { margin: 0 !important; }
+.plot-x-math { right: 5.9%; bottom: 2.1%; }
+.plot-y-math { left: 1.15%; top: 4.3%; }
+.plot-regime-math {
+  top: 8.8%;
+  color: var(--warm);
+  transform: translateX(-50%);
+}
+.plot-regime-math mjx-container { color: inherit; }
+.field-section { border: 1px solid var(--border); border-bottom: 0; background: var(--surface); }
+.field-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: baseline;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.field-title { margin: 0; font-family: var(--display); font-size: clamp(.94rem, 1.7vw, 1.08rem); font-weight: 560; letter-spacing: -.018em; }
+.field-status { color: var(--accent-ink); font-size: .71rem; font-weight: 760; white-space: nowrap; }
+.field-canvas-wrap { position: relative; height: clamp(140px, 20vw, 190px); overflow: hidden; background: var(--surface-muted); }
+#fieldCanvas { display: block; width: 100%; height: 100%; }
+.field-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.guide-wall { stroke: var(--border-strong); stroke-width: 2; }
+.guide-axis { stroke: var(--muted); stroke-width: 1.2; marker-end: url(#arrowMuted); }
+.guide-label { fill: var(--muted); font-family: var(--math); font-size: 14px; font-style: italic; }
+.field-note {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  max-width: min(340px, 46%);
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: var(--muted);
+  box-shadow: 0 2px 8px var(--shadow);
+  font-size: clamp(.64rem, 1.05vw, .75rem);
+  line-height: 1.3;
+  pointer-events: none;
+}
+.field-note strong { color: var(--ink); font-weight: 760; }
+.key-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--border); border-top: 0; background: var(--surface); }
+.key-item { min-width: 0; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 8px; color: var(--muted); font-size: clamp(.66rem, 1.05vw, .76rem); line-height: 1.24; text-align: center; }
+.key-item + .key-item { border-left: 1px solid var(--border); }
+.swatch { flex: 0 0 auto; width: 20px; height: 0; border-top: 3px solid var(--accent); }
+.swatch.vacuum { border-top: 2px dashed var(--muted); }
+.swatch.current { border-top-color: var(--pair); border-top-style: dashed; }
+.swatch.fade { width: 20px; height: 9px; border: 1px solid color-mix(in srgb, var(--warm) 45%, var(--border)); background: var(--warm-soft); }
+@media (max-width: 960px) and (min-width: 801px) {
+  .main-grid { grid-template-columns: minmax(215px, .56fr) minmax(0, 1.44fr); }
+  .panel-kicker { display: none; }
+}
+@media (max-width: 800px) {
+  .topbar { grid-template-columns: 1fr; gap: 15px; }
+  .main-grid { grid-template-columns: 1fr; }
+  .panel + .panel { border-left: 0; border-top: 1px solid var(--border); }
+  .key-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .key-item:nth-child(3) { border-left: 0; border-top: 1px solid var(--border); }
+  .key-item:nth-child(4) { border-top: 1px solid var(--border); }
+}
+@media (max-width: 520px) {
+  body { padding: 5px; }
+  .topbar { padding: 14px; }
+  .figure { padding: 7px; }
+  .control-row { grid-template-columns: 1fr; gap: 6px; }
+  .mode-stage { height: 188px; }
+  .dispersion-wrap { height: 230px; }
+  .mode-formulas { grid-template-columns: 1fr; }
+  .formula-cell + .formula-cell { border-left: 0; border-top: 1px solid var(--border); }
+  .regime-strip { grid-template-columns: 1fr; }
+  .regime-value { text-align: left; }
+  .field-note { max-width: calc(100% - 24px); }
+  .key-strip { grid-template-columns: 1fr; }
+  .key-item + .key-item, .key-item:nth-child(3), .key-item:nth-child(4) { border-left: 0; border-top: 1px solid var(--border); }
+}
+</style>
+</head>
+<body>
+<main class="viz">
+  <header class="topbar">
+    <div>
+      <div class="heading-row">
+        <p class="eyebrow">rectangular waveguide</p>
+        <h1>The walls quantize the transverse shape</h1>
+      </div>
+      <p class="lede">Choose a transverse mode and a frequency. Its node count fixes the cutoff; only the wavenumber left over after satisfying the walls can produce variation along the guide.</p>
+    </div>
+
+    <div class="controls" aria-label="Visualization controls">
+      <div class="control-row">
+        <span class="control-name">mode</span>
+        <div class="mode-buttons" role="group" aria-label="Choose transverse mode">
+          <button class="mode-button" type="button" data-mode="1" aria-pressed="true">1</button>
+          <button class="mode-button" type="button" data-mode="2" aria-pressed="false">2</button>
+          <button class="mode-button" type="button" data-mode="3" aria-pressed="false">3</button>
+          <button class="mode-button" type="button" data-mode="4" aria-pressed="false">4</button>
+        </div>
+      </div>
+      <label class="control-row" for="frequency">
+        <span class="control-name">frequency</span>
+        <span class="frequency-control">
+          <span class="frequency-line">
+            <span class="frequency-value" id="frequencyValue">\(\frac{\omega}{\omega_c}=1.35\)</span>
+            <span class="frequency-value" id="cutoffValue">\(\frac{\omega_{c,n}}{\omega_c}=1.00\)</span>
+          </span>
+          <input id="frequency" type="range" min="0.35" max="4.50" step="0.01" value="1.35" aria-label="Normalized angular frequency omega over the lowest cutoff frequency">
+        </span>
+      </label>
+    </div>
+  </header>
+
+  <figure class="figure">
+    <section class="field-section" aria-labelledby="fieldHeading">
+      <div class="field-head">
+        <h2 class="field-title" id="fieldHeading">The same mode inside the guide</h2>
+        <span class="field-status" id="fieldStatus">standing across x · traveling along z</span>
+      </div>
+      <div class="field-canvas-wrap" id="fieldWrap">
+        <canvas id="fieldCanvas" aria-label="Field pattern inside the guide"></canvas>
+        <svg class="field-overlay" viewBox="0 0 1000 190" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <marker id="arrowMuted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted)"></path>
+            </marker>
+          </defs>
+          <line class="guide-wall" x1="64" y1="28" x2="952" y2="28"></line>
+          <line class="guide-wall" x1="64" y1="162" x2="952" y2="162"></line>
+          <line class="guide-axis" x1="64" y1="176" x2="948" y2="176"></line>
+          <text class="guide-label" x="958" y="181">z</text>
+          <line class="guide-axis" x1="47" y1="162" x2="47" y2="31"></line>
+          <text class="guide-label" x="31" y="32">x</text>
+        </svg>
+        <div class="field-note" id="fieldNote"><strong>Real \(k_z\).</strong> The transverse profile repeats while phase accumulates along the guide.</div>
+      </div>
+    </section>
+
+    <div class="main-grid">
+      <section class="panel mode-panel" aria-labelledby="modeHeading">
+        <div class="panel-head">
+          <h2 class="panel-title" id="modeHeading">Allowed transverse shape</h2>
+          <span class="panel-kicker" id="halfWaveLabel">one half-wave across a</span>
+        </div>
+        <div class="mode-stage">
+          <svg id="modeSvg" viewBox="48 42 414 285" role="img" aria-labelledby="modeTitle modeDescription" preserveAspectRatio="xMidYMid meet">
+            <title id="modeTitle">Selected transverse waveguide mode</title>
+            <desc id="modeDescription">A rectangular cross-section whose field varies sinusoidally across a and is uniform across b.</desc>
+            <defs>
+              <linearGradient id="positiveFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="var(--accent)" stop-opacity=".33"></stop>
+                <stop offset="1" stop-color="var(--accent)" stop-opacity=".12"></stop>
+              </linearGradient>
+              <linearGradient id="negativeFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="var(--negative)" stop-opacity=".30"></stop>
+                <stop offset="1" stop-color="var(--negative)" stop-opacity=".11"></stop>
+              </linearGradient>
+              <clipPath id="crossSectionClip"><rect x="78" y="58" width="315" height="178"></rect></clipPath>
+            </defs>
+            <rect x="78" y="58" width="315" height="178" fill="var(--surface-muted)"></rect>
+            <g id="modeBands" clip-path="url(#crossSectionClip)"></g>
+            <line class="mode-midline" x1="78" y1="147" x2="393" y2="147"></line>
+            <g id="modeNodes"></g>
+            <path id="modeCurve" class="mode-curve"></path>
+            <rect class="mode-wall" x="78" y="58" width="315" height="178"></rect>
+
+            <line class="dimension" x1="78" y1="267" x2="393" y2="267"></line>
+            <line class="dimension" x1="78" y1="260" x2="78" y2="274"></line>
+            <line class="dimension" x1="393" y1="260" x2="393" y2="274"></line>
+            <text class="svg-math" x="235.5" y="291" text-anchor="middle">a</text>
+            <text class="svg-label" x="78" y="253" text-anchor="middle">0</text>
+            <text class="svg-label" x="393" y="253" text-anchor="middle">a</text>
+            <text id="centerXLabel" class="svg-label strong" x="235.5" y="253" text-anchor="middle">a/2</text>
+
+            <line class="dimension" x1="422" y1="58" x2="422" y2="236"></line>
+            <line class="dimension" x1="415" y1="58" x2="429" y2="58"></line>
+            <line class="dimension" x1="415" y1="236" x2="429" y2="236"></line>
+            <text class="svg-math" x="438" y="152">b</text>
+
+            <text class="svg-label" x="235.5" y="318" text-anchor="middle">field is uniform in the vertical direction</text>
+          </svg>
+        </div>
+        <div class="mode-formulas">
+          <div class="formula-cell">\(X_n(x)=\sin\!\left(\dfrac{n\pi x}{a}\right)\)</div>
+          <div class="formula-cell"><strong id="kPerpFormula">\(k_{\perp}=\dfrac{\pi}{a}\)</strong></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="dispersionHeading">
+        <div class="panel-head">
+          <h2 class="panel-title" id="dispersionHeading">What remains for the axial direction</h2>
+          <span class="panel-kicker">normalized by \(\omega_c=\pi c/a\)</span>
+        </div>
+        <div class="dispersion-wrap">
+          <svg id="dispersionSvg" viewBox="0 0 610 410" role="img" aria-labelledby="dispersionTitle dispersionDescription" preserveAspectRatio="xMidYMid meet">
+            <title id="dispersionTitle">Waveguide dispersion and cutoff</title>
+            <desc id="dispersionDescription">The selected branch begins at its cutoff. Below cutoff the axial wavenumber is imaginary; above cutoff the branch remains below the free-space line.</desc>
+            <defs>
+              <clipPath id="plotClip"><rect x="65" y="34" width="505" height="320"></rect></clipPath>
+            </defs>
+            <rect class="plot-bg" x="65" y="34" width="505" height="320"></rect>
+            <rect id="evanescentRegion" class="plot-evanescent" x="65" y="34" width="0" height="320"></rect>
+            <g id="plotGrid"></g>
+            <g clip-path="url(#plotClip)">
+              <path id="vacuumLine" class="vacuum-line"></path>
+              <g id="branches"></g>
+              <line id="currentLine" class="current-line"></line>
+              <line id="currentDrop" class="current-drop"></line>
+              <circle id="currentPointHalo" class="current-point-halo" r="8"></circle>
+              <circle id="currentPoint" class="current-point" r="4.2"></circle>
+            </g>
+            <line class="plot-axis" x1="65" y1="354" x2="570" y2="354"></line>
+            <line class="plot-axis" x1="65" y1="34" x2="65" y2="354"></line>
+            <line id="cutoffTick" class="cutoff-tick" y1="348" y2="360"></line>
+            <circle id="cutoffDot" class="cutoff-dot" cy="354" r="4.1"></circle>
+            <g id="plotLabels"></g>
+            <text class="plot-label" x="556" y="67" text-anchor="end">free-space line</text>
+          </svg>
+          <div class="plot-html-math plot-x-math">\(\frac{\omega}{\omega_c}\)</div>
+          <div class="plot-html-math plot-y-math">\(\frac{k_z}{\pi/a}\)</div>
+          <div id="regimePlotLabel" class="plot-html-math plot-regime-math">\(k_z=i\kappa\)</div>
+        </div>
+        <div class="regime-strip">
+          <div class="regime-copy" id="regimeCopy"><strong>Propagating.</strong> The transverse mode has been paid for; the remainder becomes a real axial wavenumber.</div>
+          <div class="regime-value" id="regimeValue">\(\frac{k_z}{\pi/a}=0.907\)</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="key-strip" aria-label="Visual key">
+      <div class="key-item"><i class="swatch"></i><span>selected transverse mode and dispersion branch</span></div>
+      <div class="key-item"><i class="swatch vacuum"></i><span>free-space wavenumber \(\omega/c\)</span></div>
+      <div class="key-item"><i class="swatch current"></i><span>chosen frequency and resulting \(k_z\)</span></div>
+      <div class="key-item"><i class="swatch fade"></i><span>below cutoff: exponential decay along \(z\)</span></div>
+    </div>
+  </figure>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  const modeButtons = [...document.querySelectorAll(".mode-button")];
+  const frequencyInput = document.getElementById("frequency");
+  const frequencyValue = document.getElementById("frequencyValue");
+  const cutoffValue = document.getElementById("cutoffValue");
+  const halfWaveLabel = document.getElementById("halfWaveLabel");
+  const modeBands = document.getElementById("modeBands");
+  const modeNodes = document.getElementById("modeNodes");
+  const modeCurve = document.getElementById("modeCurve");
+  const centerXLabel = document.getElementById("centerXLabel");
+  const kPerpFormula = document.getElementById("kPerpFormula");
+  const plotGrid = document.getElementById("plotGrid");
+  const branches = document.getElementById("branches");
+  const plotLabels = document.getElementById("plotLabels");
+  const vacuumLine = document.getElementById("vacuumLine");
+  const evanescentRegion = document.getElementById("evanescentRegion");
+  const currentLine = document.getElementById("currentLine");
+  const currentDrop = document.getElementById("currentDrop");
+  const currentPointHalo = document.getElementById("currentPointHalo");
+  const currentPoint = document.getElementById("currentPoint");
+  const cutoffTick = document.getElementById("cutoffTick");
+  const cutoffDot = document.getElementById("cutoffDot");
+  const regimePlotLabel = document.getElementById("regimePlotLabel");
+  const regimeCopy = document.getElementById("regimeCopy");
+  const regimeValue = document.getElementById("regimeValue");
+  const fieldCanvas = document.getElementById("fieldCanvas");
+  const fieldWrap = document.getElementById("fieldWrap");
+  const fieldStatus = document.getElementById("fieldStatus");
+  const fieldNote = document.getElementById("fieldNote");
+
+  const plot = { x0: 65, x1: 570, y0: 34, y1: 354, xMax: 4.5, yMax: 4.55 };
+  const modeBox = { x0: 78, x1: 393, y0: 58, y1: 236, mid: 147 };
+  let selectedMode = 1;
+
+  const sx = value => plot.x0 + value / plot.xMax * (plot.x1 - plot.x0);
+  const sy = value => plot.y1 - value / plot.yMax * (plot.y1 - plot.y0);
+  const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
+
+  function makeSvg(tag, attributes = {}) {
+    const element = document.createElementNS(NS, tag);
+    Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
+    return element;
+  }
+
+  function renderMode() {
+    modeBands.replaceChildren();
+    modeNodes.replaceChildren();
+
+    const width = modeBox.x1 - modeBox.x0;
+    const height = modeBox.y1 - modeBox.y0;
+    const bandWidth = width / selectedMode;
+
+    for (let index = 0; index < selectedMode; index += 1) {
+      const rect = makeSvg("rect", {
+        x: modeBox.x0 + index * bandWidth,
+        y: modeBox.y0,
+        width: bandWidth + .5,
+        height,
+        fill: index % 2 === 0 ? "url(#positiveFill)" : "url(#negativeFill)"
+      });
+      modeBands.appendChild(rect);
+    }
+
+    for (let index = 1; index < selectedMode; index += 1) {
+      const x = modeBox.x0 + index * bandWidth;
+      modeNodes.appendChild(makeSvg("line", { x1: x, x2: x, y1: modeBox.y0, y2: modeBox.y1, class: "mode-node" }));
+    }
+
+    if (selectedMode === 1) {
+      modeNodes.appendChild(makeSvg("line", { x1: (modeBox.x0 + modeBox.x1) / 2, x2: (modeBox.x0 + modeBox.x1) / 2, y1: modeBox.y0, y2: modeBox.y1, class: "mode-center" }));
+    }
+
+    let path = "";
+    const amplitude = 65;
+    for (let index = 0; index <= 260; index += 1) {
+      const t = index / 260;
+      const x = modeBox.x0 + t * width;
+      const y = modeBox.mid - amplitude * Math.sin(selectedMode * Math.PI * t);
+      path += `${index ? "L" : "M"}${x.toFixed(2)} ${y.toFixed(2)} `;
+    }
+    modeCurve.setAttribute("d", path);
+
+    halfWaveLabel.textContent = selectedMode === 1 ? "one half-wave across a" : `${selectedMode} half-waves across a`;
+    centerXLabel.textContent = selectedMode === 1 ? "a/2" : `nodes at j a/${selectedMode}`;
+    kPerpFormula.innerHTML = selectedMode === 1
+      ? "\\(k_{\\perp}=\\dfrac{\\pi}{a}\\)"
+      : `\\(k_{\\perp,${selectedMode}}=\\dfrac{${selectedMode}\\pi}{a}\\)`;
+  }
+
+  function renderPlotScaffold() {
+    plotGrid.replaceChildren();
+
+    for (let value = 1; value <= 4; value += 1) {
+      const x = sx(value);
+      const y = sy(value);
+      plotGrid.appendChild(makeSvg("line", { x1: x, x2: x, y1: plot.y0, y2: plot.y1, class: "plot-grid" }));
+      plotGrid.appendChild(makeSvg("line", { x1: plot.x0, x2: plot.x1, y1: y, y2: y, class: "plot-grid" }));
+      const xLabel = makeSvg("text", { x, y: 374, "text-anchor": "middle", class: "plot-label" });
+      xLabel.textContent = value;
+      plotGrid.appendChild(xLabel);
+      const yLabel = makeSvg("text", { x: 55, y: y + 4, "text-anchor": "end", class: "plot-label" });
+      yLabel.textContent = value;
+      plotGrid.appendChild(yLabel);
+    }
+
+    let path = "";
+    const max = Math.min(plot.xMax, plot.yMax);
+    for (let index = 0; index <= 180; index += 1) {
+      const value = max * index / 180;
+      path += `${index ? "L" : "M"}${sx(value).toFixed(2)} ${sy(value).toFixed(2)} `;
+    }
+    vacuumLine.setAttribute("d", path);
+  }
+
+  function renderBranches() {
+    branches.replaceChildren();
+    plotLabels.replaceChildren();
+
+    for (let mode = 1; mode <= 4; mode += 1) {
+      if (mode >= plot.xMax) continue;
+      let path = "";
+      const steps = 220;
+      for (let index = 0; index <= steps; index += 1) {
+        const r = mode + (plot.xMax - mode) * index / steps;
+        const q = Math.sqrt(Math.max(0, r * r - mode * mode));
+        path += `${index ? "L" : "M"}${sx(r).toFixed(2)} ${sy(q).toFixed(2)} `;
+      }
+      const curve = makeSvg("path", { d: path, class: mode === selectedMode ? "branch selected" : "branch" });
+      branches.appendChild(curve);
+
+      const labelR = 4.36;
+      const labelQ = Math.sqrt(Math.max(0, labelR * labelR - mode * mode));
+      if (labelQ <= plot.yMax) {
+        const label = makeSvg("text", {
+          x: sx(labelR) - 3,
+          y: sy(labelQ) - (mode === 1 ? 7 : 4),
+          "text-anchor": "end",
+          class: mode === selectedMode ? "plot-label selected" : "plot-label"
+        });
+        label.textContent = `n = ${mode}`;
+        plotLabels.appendChild(label);
+      }
+    }
+
+    const cutoffX = sx(selectedMode);
+    cutoffTick.setAttribute("x1", cutoffX);
+    cutoffTick.setAttribute("x2", cutoffX);
+    cutoffDot.setAttribute("cx", cutoffX);
+    evanescentRegion.setAttribute("width", Math.max(0, cutoffX - plot.x0));
+
+    const cutoffLabel = makeSvg("text", {
+      x: cutoffX,
+      y: 394,
+      "text-anchor": "middle",
+      class: "plot-math selected"
+    });
+    cutoffLabel.textContent = selectedMode === 1 ? "ωc" : `${selectedMode}ωc`;
+    plotLabels.appendChild(cutoffLabel);
+  }
+
+  function renderCurrentState() {
+    const r = Number(frequencyInput.value);
+    const cutoff = selectedMode;
+    const propagating = r > cutoff + 1e-9;
+    const atCutoff = Math.abs(r - cutoff) <= .015;
+    const x = sx(r);
+
+    frequencyValue.innerHTML = `\\(\\frac{\\omega}{\\omega_c}=${r.toFixed(2)}\\)`;
+    cutoffValue.innerHTML = `\\(\\frac{\\omega_{c,n}}{\\omega_c}=${cutoff.toFixed(2)}\\)`;
+
+    currentLine.setAttribute("x1", x);
+    currentLine.setAttribute("x2", x);
+    currentLine.setAttribute("y1", plot.y0);
+    currentLine.setAttribute("y2", plot.y1);
+
+    if (propagating) {
+      const q = Math.sqrt(r * r - cutoff * cutoff);
+      const y = sy(q);
+      currentDrop.setAttribute("x1", plot.x0);
+      currentDrop.setAttribute("x2", x);
+      currentDrop.setAttribute("y1", y);
+      currentDrop.setAttribute("y2", y);
+      [currentPointHalo, currentPoint].forEach(point => {
+        point.setAttribute("cx", x);
+        point.setAttribute("cy", y);
+        point.style.display = "";
+      });
+      currentDrop.style.display = "";
+      regimePlotLabel.innerHTML = `\\(k_z=i\\kappa\\)`;
+      regimePlotLabel.style.left = `${100 * clamp((plot.x0 + sx(cutoff)) / 2, 82, 242) / 610}%`;
+      regimeCopy.innerHTML = `<strong>Propagating.</strong> The transverse mode has been paid for; the remainder becomes a real axial wavenumber.`;
+      regimeValue.innerHTML = `\\(\\frac{k_z}{\\pi/a}=${q.toFixed(3)}\\)`;
+      fieldStatus.textContent = "standing across x · traveling along z";
+      fieldNote.innerHTML = `<strong>Real \\(k_z\\).</strong> The transverse profile repeats while phase accumulates along the guide.`;
+    } else {
+      const kappa = Math.sqrt(Math.max(0, cutoff * cutoff - r * r));
+      currentDrop.style.display = "none";
+      [currentPointHalo, currentPoint].forEach(point => { point.style.display = "none"; });
+      regimePlotLabel.innerHTML = atCutoff ? `\\(k_z=0\\)` : `\\(k_z=i\\kappa\\)`;
+      regimePlotLabel.style.left = `${100 * clamp((plot.x0 + sx(cutoff)) / 2, 82, 242) / 610}%`;
+      regimeCopy.innerHTML = atCutoff
+        ? `<strong>At cutoff.</strong> The axial wavelength diverges: the mode is just at the boundary between decay and propagation.`
+        : `<strong>Evanescent.</strong> The wall-compatible transverse shape still exists, but there is no real axial wavenumber.`;
+      regimeValue.innerHTML = atCutoff
+        ? `\\(k_z=0\\)`
+        : `\\(\\frac{\\kappa}{\\pi/a}=${kappa.toFixed(3)}\\)`;
+      fieldStatus.textContent = atCutoff ? "standing across x · no axial phase advance" : "standing across x · decaying along z";
+      fieldNote.innerHTML = atCutoff
+        ? `<strong>At cutoff.</strong> The axial oscillation has stretched to infinite wavelength.`
+        : `<strong>Imaginary \\(k_z=i\\kappa\\).</strong> The same transverse profile survives, but its amplitude fades exponentially along the guide.`;
+    }
+
+    drawField();
+    queueDynamicMath();
+    reportHeight();
+  }
+
+  function cssColor(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function parseColor(color) {
+    const probe = document.createElement("canvas").getContext("2d");
+    probe.fillStyle = color;
+    const normalized = probe.fillStyle;
+    if (normalized.startsWith("#")) {
+      const hex = normalized.slice(1);
+      const full = hex.length === 3 ? [...hex].map(character => character + character).join("") : hex;
+      return [parseInt(full.slice(0, 2), 16), parseInt(full.slice(2, 4), 16), parseInt(full.slice(4, 6), 16)];
+    }
+    const values = normalized.match(/[\d.]+/g)?.slice(0, 3).map(Number);
+    return values || [13, 118, 89];
+  }
+
+  function mix(base, target, amount) {
+    return base.map((value, index) => Math.round(value + (target[index] - value) * amount));
+  }
+
+  function drawField() {
+    const rectangle = fieldWrap.getBoundingClientRect();
+    if (!rectangle.width || !rectangle.height) return;
+
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.round(rectangle.width * ratio));
+    const height = Math.max(1, Math.round(rectangle.height * ratio));
+    if (fieldCanvas.width !== width || fieldCanvas.height !== height) {
+      fieldCanvas.width = width;
+      fieldCanvas.height = height;
+    }
+
+    const context = fieldCanvas.getContext("2d");
+    context.clearRect(0, 0, width, height);
+
+    const surface = parseColor(cssColor("--surface-muted"));
+    const positive = parseColor(cssColor("--accent"));
+    const negative = parseColor(cssColor("--negative"));
+    const r = Number(frequencyInput.value);
+    const cutoff = selectedMode;
+    const propagating = r > cutoff + 1e-9;
+    const q = propagating ? Math.sqrt(r * r - cutoff * cutoff) : 0;
+    const kappa = propagating ? 0 : Math.sqrt(Math.max(0, cutoff * cutoff - r * r));
+
+    const left = Math.round(width * .064);
+    const right = Math.round(width * .952);
+    const top = Math.round(height * 28 / 190);
+    const bottom = Math.round(height * 162 / 190);
+    const guideWidth = right - left;
+    const guideHeight = bottom - top;
+    const image = context.createImageData(guideWidth, guideHeight);
+
+    const phaseCycles = 1.25 * q;
+    const decayStrength = 1.55 * kappa;
+
+    for (let py = 0; py < guideHeight; py += 1) {
+      const xNorm = 1 - py / Math.max(1, guideHeight - 1);
+      const transverse = Math.sin(selectedMode * Math.PI * xNorm);
+      for (let px = 0; px < guideWidth; px += 1) {
+        const zNorm = px / Math.max(1, guideWidth - 1);
+        const axial = propagating
+          ? Math.cos(2 * Math.PI * phaseCycles * zNorm)
+          : Math.exp(-decayStrength * 2.15 * zNorm);
+        const value = transverse * axial;
+        const intensity = Math.min(.72, .08 + .64 * Math.abs(value));
+        const color = mix(surface, value >= 0 ? positive : negative, intensity);
+        const offset = (py * guideWidth + px) * 4;
+        image.data[offset] = color[0];
+        image.data[offset + 1] = color[1];
+        image.data[offset + 2] = color[2];
+        image.data[offset + 3] = 255;
+      }
+    }
+    context.putImageData(image, left, top);
+
+    if (!propagating) {
+      const gradient = context.createLinearGradient(left, 0, right, 0);
+      gradient.addColorStop(0, "rgba(0,0,0,0)");
+      gradient.addColorStop(1, cssColor("--surface-muted"));
+      context.fillStyle = gradient;
+      context.globalAlpha = clamp(.25 + kappa * .18, .28, .72);
+      context.fillRect(left, top, guideWidth, guideHeight);
+      context.globalAlpha = 1;
+    }
+  }
+
+  function setMode(mode) {
+    selectedMode = mode;
+    modeButtons.forEach(button => button.setAttribute("aria-pressed", String(Number(button.dataset.mode) === mode)));
+    renderMode();
+    renderBranches();
+    renderCurrentState();
+    typesetDynamicMath();
+  }
+
+  let mathTypesetting = false;
+  let mathDirty = false;
+
+  function queueDynamicMath() {
+    if (!window.MathJax?.typesetPromise) return;
+    mathDirty = true;
+    if (mathTypesetting) return;
+
+    const run = () => {
+      if (!mathDirty) {
+        mathTypesetting = false;
+        return;
+      }
+
+      mathDirty = false;
+      mathTypesetting = true;
+
+      const targets = [
+        kPerpFormula,
+        frequencyValue,
+        cutoffValue,
+        regimeValue,
+        regimePlotLabel,
+        fieldNote
+      ];
+
+      MathJax.typesetClear?.(targets);
+      MathJax.typesetPromise(targets)
+        .then(() => {
+          reportHeight();
+          run();
+        })
+        .catch(() => {
+          mathTypesetting = false;
+        });
+    };
+
+    requestAnimationFrame(run);
+  }
+
+  function typesetDynamicMath() {
+    queueDynamicMath();
+  }
+
+  modeButtons.forEach(button => button.addEventListener("click", () => setMode(Number(button.dataset.mode))));
+  frequencyInput.addEventListener("input", renderCurrentState);
+
+  let lastReportedHeight = 0;
+  function reportHeight() {
+    if (window.parent === window) return;
+    const target = document.querySelector(".viz") || document.body;
+    const rectangle = target.getBoundingClientRect();
+    const height = Math.max(1, Math.ceil(rectangle.bottom + window.scrollY));
+    if (Math.abs(height - lastReportedHeight) < 2) return;
+    lastReportedHeight = height;
+    try {
+      const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+      window.parent.postMessage({ type: "article-visualization-height", height }, targetOrigin);
+    } catch (_) {}
+  }
+
+  function loadMathJax() {
+    window.MathJax = {
+      tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+      svg: { fontCache: "local" },
+      startup: {
+        typeset: false,
+        ready() {
+          MathJax.startup.defaultReady();
+          MathJax.startup.promise
+            .then(() => MathJax.typesetPromise([document.body]))
+            .then(() => { renderCurrentState(); reportHeight(); })
+            .catch(() => {});
+        }
+      }
+    };
+
+    let source = "";
+    try {
+      source = [...window.parent.document.scripts]
+        .map(script => script.src)
+        .find(value => value && /mathjax/i.test(value)) || "";
+    } catch (_) {}
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = source || "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js";
+    document.head.appendChild(script);
+  }
+
+  renderPlotScaffold();
+  renderMode();
+  renderBranches();
+  renderCurrentState();
+  loadMathJax();
+
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(() => { drawField(); reportHeight(); });
+    observer.observe(document.querySelector(".viz") || document.body);
+  }
+  window.addEventListener("resize", () => { drawField(); reportHeight(); });
+  window.addEventListener("load", () => { drawField(); reportHeight(); });
+})();
+</script>
+<script src="/assets/js/visualization-frame.js"></script>
+</body>
+</html>

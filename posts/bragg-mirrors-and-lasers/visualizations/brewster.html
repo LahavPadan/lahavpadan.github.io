@@ -1,0 +1,963 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TE and TM angular Fresnel responses</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&display=swap">
+
+  <style>
+    :root {
+      color-scheme: light dark;
+      --font-display: "Lora", Georgia, "Times New Roman", serif;
+      --font-reading: "Lora", Georgia, "Times New Roman", serif;
+      --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    html,
+    body {
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0;
+      margin: 0;
+      overflow-x: clip;
+      background: transparent !important;
+    }
+
+    body {
+      padding: clamp(4px, 1.2vw, 12px);
+      font-family: var(--font-reading);
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .fresnel-angular {
+      --fa-accent: var(--post-accent, var(--accent, #85295e));
+      --fa-accent-soft: var(--post-accent-soft, var(--accent-soft, #fdeef6));
+      --fa-accent-border: var(--post-accent-border, var(--border-strong, #b88aa6));
+      --fa-ink: var(--ink, #1c2420);
+      --fa-muted: var(--muted, #667169);
+      --fa-surface: var(--surface, #ffffff);
+      --fa-surface-muted: var(--surface-muted, #f4f5f1);
+      --fa-border: var(--border, #d6ddd7);
+      --fa-te: var(--fa-accent);
+      --fa-tm: #527fa4;
+
+      width: 100%;
+      margin: 2rem 0;
+      overflow: hidden;
+      border: 1px solid var(--fa-border);
+      border-top: 3px solid var(--fa-accent);
+      background: var(--fa-surface);
+      color: var(--fa-ink);
+      font-family: inherit;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fresnel-angular,
+    .fresnel-angular * {
+      box-sizing: border-box;
+    }
+
+    .fresnel-angular__control {
+      padding: 0.86rem clamp(0.9rem, 2.5vw, 1.35rem) 0.9rem;
+      border-bottom: 1px solid var(--fa-border);
+      background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--fa-accent-soft) 58%, var(--fa-surface)),
+        var(--fa-surface) 72%
+      );
+    }
+
+    .fresnel-angular__control-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.46rem;
+    }
+
+    .fresnel-angular__control-label,
+    .fresnel-angular__angle,
+    .fresnel-angular__legend,
+    .fresnel-angular__subtitle,
+    .fresnel-angular__plot text {
+      font-family: var(--font-ui);
+    }
+
+    .fresnel-angular__control-label {
+      color: var(--fa-muted);
+      font-size: 0.74rem;
+      font-weight: 760;
+    }
+
+    .fresnel-angular__control-label i {
+      color: var(--fa-ink);
+      font-family: var(--font-display);
+      font-weight: 600;
+    }
+
+    .fresnel-angular__angle {
+      min-width: 4.35rem;
+      color: var(--fa-ink);
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .fresnel-angular__range {
+      display: block;
+      width: 100%;
+      height: 1.15rem;
+      margin: 0;
+      accent-color: var(--fa-accent);
+      cursor: pointer;
+    }
+
+    .fresnel-angular__plot-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.65rem 1rem;
+      align-items: center;
+      padding: 0.76rem clamp(0.9rem, 2.5vw, 1.35rem);
+      border-bottom: 1px solid var(--fa-border);
+      background: var(--fa-surface-muted);
+    }
+
+    .fresnel-angular__title {
+      margin: 0;
+      color: var(--fa-ink);
+      font-family: var(--font-display);
+      font-size: clamp(0.98rem, 2.2vw, 1.12rem);
+      font-weight: 600;
+      letter-spacing: -0.022em;
+      line-height: 1.25;
+    }
+
+    .fresnel-angular__subtitle {
+      display: block;
+      margin-top: 0.14rem;
+      color: var(--fa-muted);
+      font-size: 0.67rem;
+      font-weight: 650;
+      line-height: 1.35;
+    }
+
+    .fresnel-angular__legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 0.38rem 0.8rem;
+      color: var(--fa-muted);
+      font-size: 0.68rem;
+      font-weight: 750;
+    }
+
+    .fresnel-angular__legend-item {
+      display: inline-grid;
+      grid-template-columns: auto auto auto;
+      gap: 0.28rem;
+      align-items: baseline;
+      white-space: nowrap;
+    }
+
+    .fresnel-angular__swatch {
+      width: 1rem;
+      height: 0.16rem;
+      align-self: center;
+      background: var(--fa-te);
+    }
+
+    .fresnel-angular__swatch--tm {
+      background: var(--fa-tm);
+    }
+
+    .fresnel-angular__legend-value {
+      min-width: 2.75rem;
+      color: var(--fa-ink);
+      text-align: right;
+    }
+
+    .fresnel-angular__plot-shell {
+      padding: 0.2rem 0.35rem 0.15rem;
+      background: var(--fa-surface);
+    }
+
+    .fresnel-angular__plot {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 12rem;
+      aspect-ratio: 3.55 / 1;
+      overflow: visible;
+    }
+
+    .fresnel-angular__plot text {
+      fill: var(--fa-muted);
+    }
+
+    .fresnel-angular__plot .fa-curve-label,
+    .fresnel-angular__plot .fa-active-label {
+      font-weight: 800;
+      paint-order: stroke;
+      stroke: var(--fa-surface);
+      stroke-width: 5px;
+      stroke-linejoin: round;
+    }
+
+    .fresnel-angular__plot .fa-curve-label {
+      font-size: 12px;
+    }
+
+    .fresnel-angular__plot .fa-active-label {
+      fill: var(--fa-ink);
+      font-size: 11px;
+    }
+
+    .fresnel-angular__plot .fa-curve-label--te {
+      fill: var(--fa-te);
+    }
+
+    .fresnel-angular__plot .fa-curve-label--tm {
+      fill: var(--fa-tm);
+    }
+
+    @media (max-width: 760px) {
+      .fresnel-angular__plot-head {
+        grid-template-columns: 1fr;
+      }
+
+      .fresnel-angular__legend {
+        justify-content: flex-start;
+      }
+
+      .fresnel-angular__plot {
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .fresnel-angular {
+        margin: 1.5rem 0;
+      }
+
+      .fresnel-angular__plot-shell {
+        padding-inline: 0;
+      }
+
+      .fresnel-angular__plot-y-label,
+      .fresnel-angular__plot-y-tick {
+        display: none;
+      }
+
+      .fresnel-angular__plot text,
+      .fresnel-angular__plot .fa-curve-label,
+      .fresnel-angular__plot .fa-active-label {
+        font-size: 23px;
+      }
+    }
+  </style>
+
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const names = [
+        '--page', '--surface', '--surface-muted', '--ink', '--muted',
+        '--border', '--border-strong', '--accent', '--accent-soft',
+        '--post-accent', '--post-accent-soft', '--post-accent-border',
+        '--post-accent-ink', '--color-bg', '--color-surface',
+        '--color-surface-muted', '--color-text', '--color-text-muted',
+        '--color-border', '--color-border-strong'
+      ];
+
+      function syncTheme() {
+        try {
+          if (window.parent === window) return;
+
+          const parentRoot = window.parent.document.documentElement;
+          const article =
+            window.parent.document.querySelector('article, main') ||
+            parentRoot;
+
+          const rootStyle =
+            window.parent.getComputedStyle(parentRoot);
+
+          const articleStyle =
+            window.parent.getComputedStyle(article);
+
+          const theme =
+            parentRoot.getAttribute('data-theme') ||
+            (parentRoot.classList.contains('dark') ? 'dark' : '') ||
+            (parentRoot.classList.contains('light') ? 'light' : '');
+
+          if (theme) {
+            root.setAttribute('data-theme', theme);
+          } else {
+            root.removeAttribute('data-theme');
+          }
+
+          root.classList.toggle('dark', theme === 'dark');
+          root.classList.toggle('light', theme === 'light');
+
+          names.forEach((name) => {
+            const value =
+              articleStyle.getPropertyValue(name).trim() ||
+              rootStyle.getPropertyValue(name).trim();
+
+            if (value) {
+              root.style.setProperty(name, value);
+            }
+          });
+
+          const aliases = {
+            '--page': '--color-bg',
+            '--surface': '--color-surface',
+            '--surface-muted': '--color-surface-muted',
+            '--ink': '--color-text',
+            '--muted': '--color-text-muted',
+            '--border': '--color-border',
+            '--border-strong': '--color-border-strong',
+            '--accent': '--post-accent',
+            '--accent-soft': '--post-accent-soft'
+          };
+
+          Object.entries(aliases).forEach(([alias, source]) => {
+            if (!root.style.getPropertyValue(alias)) {
+              const value =
+                root.style.getPropertyValue(source);
+
+              if (value) {
+                root.style.setProperty(alias, value);
+              }
+            }
+          });
+        } catch (_) {}
+      }
+
+      syncTheme();
+
+      window.addEventListener(
+        'DOMContentLoaded',
+        syncTheme,
+        { once: true }
+      );
+
+      try {
+        if (window.parent !== window) {
+          new MutationObserver(syncTheme).observe(
+            window.parent.document.documentElement,
+            {
+              attributes: true,
+              attributeFilter: [
+                'class',
+                'data-theme',
+                'data-color-mode'
+              ]
+            }
+          );
+        }
+      } catch (_) {}
+    }());
+  </script>
+</head>
+
+<body>
+  <section
+    class="fresnel-angular"
+    data-fresnel-angular
+    aria-labelledby="fresnel-angular-title"
+  >
+    <div class="fresnel-angular__control">
+      <label>
+        <span class="fresnel-angular__control-head">
+          <span class="fresnel-angular__control-label">
+            incident angle <i>θ</i><sub>1</sub>
+          </span>
+
+          <output
+            class="fresnel-angular__angle"
+            data-angle-output
+          >
+            45.0°
+          </output>
+        </span>
+
+        <input
+          class="fresnel-angular__range"
+          data-angle
+          type="range"
+          min="0"
+          max="78"
+          step="0.1"
+          value="45"
+          aria-label="Incident angle theta one in degrees"
+        >
+      </label>
+    </div>
+
+    <div class="fresnel-angular__plot-head">
+      <div>
+        <h4
+          class="fresnel-angular__title"
+          id="fresnel-angular-title"
+        >
+          The same interface develops two angular responses
+        </h4>
+
+        <span class="fresnel-angular__subtitle">
+          <i>n</i><sub>1</sub> = 1.00
+          →
+          <i>n</i><sub>2</sub> = 1.50
+          · the curves coincide only at normal incidence
+        </span>
+      </div>
+
+      <div
+        class="fresnel-angular__legend"
+        aria-label="Current reflection strengths"
+      >
+        <span class="fresnel-angular__legend-item">
+          <span class="fresnel-angular__swatch"></span>
+          <span>TE</span>
+          <span
+            class="fresnel-angular__legend-value"
+            data-legend-rte
+          >
+            0.303
+          </span>
+        </span>
+
+        <span class="fresnel-angular__legend-item">
+          <span
+            class="fresnel-angular__swatch
+                   fresnel-angular__swatch--tm"
+          ></span>
+          <span>TM</span>
+          <span
+            class="fresnel-angular__legend-value"
+            data-legend-rtm
+          >
+            0.092
+          </span>
+        </span>
+      </div>
+    </div>
+
+    <div class="fresnel-angular__plot-shell">
+      <svg
+        class="fresnel-angular__plot"
+        data-plot
+        viewBox="0 0 960 280"
+        role="img"
+        aria-label="TE and TM reflection amplitude magnitudes versus incident angle"
+      >
+        <g data-grid></g>
+
+        <path
+          data-te-curve
+          fill="none"
+          stroke="var(--fa-te)"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></path>
+
+        <path
+          data-tm-curve
+          fill="none"
+          stroke="var(--fa-tm)"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></path>
+
+        <line
+          data-brewster-line
+          y1="32"
+          y2="222"
+          stroke="var(--fa-accent-border)"
+          stroke-width="1.3"
+          stroke-dasharray="5 5"
+        ></line>
+
+        <text
+          data-brewster-label
+          y="22"
+          text-anchor="middle"
+          font-size="11"
+          font-weight="800"
+        >
+          Brewster 56.3°
+        </text>
+
+        <line
+          data-angle-line
+          y1="32"
+          y2="222"
+          stroke="var(--fa-ink)"
+          stroke-width="1"
+          opacity="0.34"
+        ></line>
+
+        <circle
+          data-te-point
+          r="5"
+          fill="var(--fa-te)"
+          stroke="var(--fa-surface)"
+          stroke-width="2.2"
+        ></circle>
+
+        <circle
+          data-tm-point
+          r="5"
+          fill="var(--fa-tm)"
+          stroke="var(--fa-surface)"
+          stroke-width="2.2"
+        ></circle>
+
+        <text
+          class="fa-curve-label fa-curve-label--te"
+          data-te-label
+          text-anchor="start"
+        >
+          TE
+        </text>
+
+        <text
+          class="fa-curve-label fa-curve-label--tm"
+          data-tm-label
+          text-anchor="start"
+        >
+          TM
+        </text>
+
+        <text
+          class="fa-active-label"
+          data-active-label
+          text-anchor="middle"
+        >
+          θ₁ = 45.0°
+        </text>
+
+        <text
+          x="490"
+          y="269"
+          text-anchor="middle"
+          font-size="12"
+        >
+          incident angle θ₁
+        </text>
+
+        <text
+          class="fresnel-angular__plot-y-label"
+          x="18"
+          y="127"
+          transform="rotate(-90 18 127)"
+          text-anchor="middle"
+          font-size="12"
+        >
+          reflection strength |r|
+        </text>
+      </svg>
+    </div>
+  </section>
+
+  <script>
+    (() => {
+      document
+        .querySelectorAll(
+          '[data-fresnel-angular]:not([data-fresnel-angular-ready])'
+        )
+        .forEach((root) => {
+          root.setAttribute(
+            'data-fresnel-angular-ready',
+            ''
+          );
+
+          const n1 = 1.0;
+          const n2 = 1.5;
+          const deg = Math.PI / 180;
+          const brewsterDeg =
+            Math.atan(n2 / n1) / deg;
+
+          const q = (selector) =>
+            root.querySelector(selector);
+
+          const angle = q('[data-angle]');
+          const angleOutput =
+            q('[data-angle-output]');
+
+          const bounds = {
+            left: 68,
+            right: 914,
+            top: 32,
+            bottom: 222
+          };
+
+          const plotWidth =
+            bounds.right - bounds.left;
+
+          const plotHeight =
+            bounds.bottom - bounds.top;
+
+          const maxAngle = 78;
+          const maxR = 0.75;
+
+          function opticalState(theta1Deg) {
+            const theta1 = theta1Deg * deg;
+
+            const theta2 = Math.asin(
+              Math.min(
+                1,
+                (n1 / n2) * Math.sin(theta1)
+              )
+            );
+
+            const c1 = Math.cos(theta1);
+            const c2 = Math.cos(theta2);
+
+            const yTe1 = n1 * c1;
+            const yTe2 = n2 * c2;
+            const yTm1 = n1 / c1;
+            const yTm2 = n2 / c2;
+
+            return {
+              theta1Deg,
+
+              rTe: Math.abs(
+                (yTe1 - yTe2) /
+                (yTe1 + yTe2)
+              ),
+
+              rTm: Math.abs(
+                (yTm1 - yTm2) /
+                (yTm1 + yTm2)
+              )
+            };
+          }
+
+          const plotX = (thetaDeg) =>
+            bounds.left +
+            (thetaDeg / maxAngle) *
+            plotWidth;
+
+          const plotY = (reflection) =>
+            bounds.bottom -
+            (
+              Math.min(maxR, reflection) /
+              maxR
+            ) *
+            plotHeight;
+
+          function position(node, x, y) {
+            node.setAttribute(
+              'x',
+              x.toFixed(2)
+            );
+
+            node.setAttribute(
+              'y',
+              y.toFixed(2)
+            );
+          }
+
+          function buildPlot() {
+            const parts = [];
+
+            [0, 20, 40, 60, 78].forEach(
+              (tick) => {
+                const x = plotX(tick);
+
+                parts.push(
+                  `<line
+                    x1="${x}"
+                    x2="${x}"
+                    y1="${bounds.top}"
+                    y2="${bounds.bottom}"
+                    stroke="var(--fa-border)"
+                    stroke-width="1"
+                    opacity="0.58"
+                  ></line>`
+                );
+
+                parts.push(
+                  `<text
+                    x="${x}"
+                    y="245"
+                    text-anchor="middle"
+                    font-size="11"
+                  >${tick}°</text>`
+                );
+              }
+            );
+
+            [0, 0.2, 0.4, 0.6].forEach(
+              (tick) => {
+                const y = plotY(tick);
+
+                parts.push(
+                  `<line
+                    x1="${bounds.left}"
+                    x2="${bounds.right}"
+                    y1="${y}"
+                    y2="${y}"
+                    stroke="var(--fa-border)"
+                    stroke-width="1"
+                    opacity="0.58"
+                  ></line>`
+                );
+
+                parts.push(
+                  `<text
+                    class="fresnel-angular__plot-y-tick"
+                    x="56"
+                    y="${y + 4}"
+                    text-anchor="end"
+                    font-size="11"
+                  >${tick.toFixed(1)}</text>`
+                );
+              }
+            );
+
+            parts.push(
+              `<line
+                x1="${bounds.left}"
+                x2="${bounds.right}"
+                y1="${bounds.bottom}"
+                y2="${bounds.bottom}"
+                stroke="var(--fa-ink)"
+                stroke-width="1.3"
+              ></line>`
+            );
+
+            parts.push(
+              `<line
+                x1="${bounds.left}"
+                x2="${bounds.left}"
+                y1="${bounds.top}"
+                y2="${bounds.bottom}"
+                stroke="var(--fa-ink)"
+                stroke-width="1.3"
+              ></line>`
+            );
+
+            q('[data-grid]').innerHTML =
+              parts.join('');
+
+            const tePath = [];
+            const tmPath = [];
+
+            for (
+              let current = 0;
+              current <= maxAngle;
+              current += 0.25
+            ) {
+              const state =
+                opticalState(current);
+
+              tePath.push(
+                `${tePath.length ? 'L' : 'M'} ` +
+                `${plotX(current).toFixed(2)} ` +
+                `${plotY(state.rTe).toFixed(2)}`
+              );
+
+              tmPath.push(
+                `${tmPath.length ? 'L' : 'M'} ` +
+                `${plotX(current).toFixed(2)} ` +
+                `${plotY(state.rTm).toFixed(2)}`
+              );
+            }
+
+            q('[data-te-curve]').setAttribute(
+              'd',
+              tePath.join(' ')
+            );
+
+            q('[data-tm-curve]').setAttribute(
+              'd',
+              tmPath.join(' ')
+            );
+
+            const brewsterX =
+              plotX(brewsterDeg);
+
+            q('[data-brewster-line]').setAttribute(
+              'x1',
+              brewsterX.toFixed(2)
+            );
+
+            q('[data-brewster-line]').setAttribute(
+              'x2',
+              brewsterX.toFixed(2)
+            );
+
+            q('[data-brewster-label]').setAttribute(
+              'x',
+              brewsterX.toFixed(2)
+            );
+
+            const labelAngle = 72.5;
+            const labelState =
+              opticalState(labelAngle);
+
+            position(
+              q('[data-te-label]'),
+              plotX(labelAngle) + 10,
+              plotY(labelState.rTe) - 5
+            );
+
+            position(
+              q('[data-tm-label]'),
+              plotX(labelAngle) + 10,
+              plotY(labelState.rTm) + 15
+            );
+          }
+
+          function update() {
+            const state = opticalState(
+              Number(angle.value)
+            );
+
+            const x =
+              plotX(state.theta1Deg);
+
+            angleOutput.textContent =
+              `${state.theta1Deg.toFixed(1)}°`;
+
+            q('[data-legend-rte]').textContent =
+              state.rTe.toFixed(3);
+
+            q('[data-legend-rtm]').textContent =
+              state.rTm.toFixed(3);
+
+            q('[data-angle-line]').setAttribute(
+              'x1',
+              x.toFixed(2)
+            );
+
+            q('[data-angle-line]').setAttribute(
+              'x2',
+              x.toFixed(2)
+            );
+
+            q('[data-te-point]').setAttribute(
+              'cx',
+              x.toFixed(2)
+            );
+
+            q('[data-te-point]').setAttribute(
+              'cy',
+              plotY(state.rTe).toFixed(2)
+            );
+
+            q('[data-tm-point]').setAttribute(
+              'cx',
+              x.toFixed(2)
+            );
+
+            q('[data-tm-point]').setAttribute(
+              'cy',
+              plotY(state.rTm).toFixed(2)
+            );
+
+            const activeLabel =
+              q('[data-active-label]');
+
+            activeLabel.textContent =
+              `θ₁ = ${state.theta1Deg.toFixed(1)}°`;
+
+            position(
+              activeLabel,
+              Math.max(
+                112,
+                Math.min(866, x)
+              ),
+              bounds.top + 15
+            );
+
+            q(
+              '[data-brewster-label]'
+            ).style.opacity =
+              Math.abs(
+                state.theta1Deg -
+                brewsterDeg
+              ) < 4
+                ? '0'
+                : '1';
+          }
+
+          buildPlot();
+          update();
+
+          angle.addEventListener(
+            'input',
+            update
+          );
+        });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      let frame = 0;
+
+      function reportHeight() {
+        if (frame) {
+          cancelAnimationFrame(frame);
+        }
+
+        frame = requestAnimationFrame(
+          function () {
+            frame = 0;
+            const target = document.querySelector('.fresnel-angular') || document.body;
+            const bodyStyle = window.getComputedStyle(document.body);
+            const paddingBottom = Number.parseFloat(bodyStyle.paddingBottom) || 0;
+            const height = Math.max(1, Math.ceil(target.getBoundingClientRect().bottom + paddingBottom));
+            const targetOrigin = window.location.origin === 'null' ? '*' : window.location.origin;
+
+            try {
+              window.parent.postMessage(
+                { visualizationHeight: height },
+                targetOrigin
+              );
+            } catch (_) {}
+          }
+        );
+      }
+
+      window.addEventListener(
+        'load',
+        reportHeight
+      );
+
+      window.addEventListener(
+        'resize',
+        reportHeight,
+        { passive: true }
+      );
+
+      document.addEventListener(
+        'input',
+        reportHeight,
+        { passive: true }
+      );
+
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(
+          reportHeight
+        ).observe(
+          document.querySelector('.fresnel-angular') || document.body
+        );
+      }
+
+      reportHeight();
+    }());
+  </script>
+
+  <script src="/assets/js/visualization-frame.js"></script>
+</body>
+</html>

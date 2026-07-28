@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap">
+<title>Plasma frequency</title>
+<script>
+(() => {
+  try {
+    const root = window.parent.document.documentElement;
+    const body = window.parent.document.body;
+    const raw = `${root.dataset.theme || ""} ${root.className || ""} ${body?.dataset?.theme || ""} ${body?.className || ""}`.toLowerCase();
+    document.documentElement.dataset.theme = raw.includes("dark") ? "dark" : raw.includes("light") ? "light" : "";
+  } catch (_) {}
+})();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --surface: var(--viz-surface, #fff);
+  --surface-muted: var(--viz-surface-muted, #f5f6f2);
+  --ink: var(--viz-ink, #1b2420);
+  --muted: var(--viz-muted, #68736c);
+  --border: var(--viz-border, #d6ddd7);
+  --border-strong: var(--viz-border-strong, #a7b3aa);
+  --accent: var(--viz-accent, #0d7659);
+  --accent-ink: var(--viz-accent-ink, #095f48);
+  --accent-soft: var(--viz-accent-soft, #dcefe7);
+  --accent-border: var(--viz-accent-border, #91c7b6);
+  --wave: #315fae;
+  --wave-soft: rgba(49, 95, 174, .12);
+  --positive: #9b631b;
+  --negative: #315fae;
+  --danger: #9a4b44;
+  --shadow: rgba(20, 31, 25, .06);
+  --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono: "Roboto Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+  --math-font: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: var(--viz-surface, #171e19);
+  --surface-muted: var(--viz-surface-muted, #1d2720);
+  --ink: var(--viz-ink, #e9efeb);
+  --muted: var(--viz-muted, #a7b5aa);
+  --border: var(--viz-border, #344138);
+  --border-strong: var(--viz-border-strong, #617168);
+  --accent: var(--viz-accent, #63d2aa);
+  --accent-ink: var(--viz-accent-ink, #8ee7c6);
+  --accent-soft: var(--viz-accent-soft, #16362c);
+  --accent-border: var(--viz-accent-border, #3c7964);
+  --wave: #8bb2ff;
+  --wave-soft: rgba(139, 178, 255, .12);
+  --positive: #e0a666;
+  --negative: #8bb2ff;
+  --danger: #e59a91;
+  --shadow: rgba(0, 0, 0, .18);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; overflow-x: hidden; background: transparent; color: var(--ink); }
+body { padding: clamp(7px, 1.8vw, 18px); font-family: var(--sans); }
+button, input { font: inherit; }
+.viz {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 18px 48px var(--shadow);
+}
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(238px, .31fr);
+  gap: 18px;
+  align-items: center;
+  padding: clamp(15px, 2.4vw, 24px);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 76%);
+}
+.heading-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 18px; }
+.eyebrow {
+  margin: 0;
+  color: var(--accent-ink);
+  font: 760 .68rem/1 var(--sans);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(1.22rem, 2.55vw, 1.86rem);
+  font-weight: 560;
+  line-height: 1.14;
+  letter-spacing: -.026em;
+}
+.definition {
+  max-width: 730px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: clamp(.88rem, 1.55vw, 1.01rem);
+  line-height: 1.4;
+}
+.definition mjx-container { margin: 0 !important; }
+.control { min-width: 0; padding: 10px 12px 11px; border: 1px solid var(--border); background: var(--surface); }
+.control-label { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: .74rem; }
+.control-label strong { color: var(--accent-ink); font-weight: 760; }
+.control input[type="range"] { width: 100%; margin: 9px 0 0; accent-color: var(--accent); }
+.control-scale { display: flex; justify-content: space-between; margin-top: 3px; color: var(--muted); font: 620 .61rem/1 var(--mono); }
+.figure { margin: 0; padding: clamp(10px, 2.15vw, 21px); }
+.upper-grid { display: grid; grid-template-columns: minmax(0, 1.82fr) minmax(235px, .68fr); gap: 12px; align-items: start; }
+.panel { min-width: 0; border: 1px solid var(--border); background: var(--surface-muted); }
+.panel-head {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 11px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+}
+.panel-title { margin: 0; color: var(--ink); font-size: clamp(.8rem, 1.28vw, .94rem); font-weight: 720; letter-spacing: -.01em; }
+.panel-note { color: var(--muted); font-size: clamp(.64rem, .95vw, .73rem); line-height: 1.22; text-align: right; }
+.regime {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border: 1px solid var(--accent-border);
+  border-radius: 3px;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  font: 760 .64rem/1 var(--sans);
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+.regime.evanescent { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 48%, var(--border)); background: color-mix(in srgb, var(--danger) 10%, var(--surface)); }
+#wavePlot, #epsilonPlot, #cloudPlot { display: block; width: 100%; height: auto; }
+#epsilonPlot { max-width: 330px; margin-inline: auto; }
+.plot-wrap { position: relative; min-width: 0; }
+.wave-math-label, .math-overlay {
+  position: absolute;
+  z-index: 4;
+  color: var(--ink);
+  line-height: 1;
+  pointer-events: none;
+}
+.wave-math-label mjx-container, .math-overlay mjx-container { margin: 0 !important; }
+.wave-math-label {
+  left: 5.55%;
+  transform: translateY(-50%);
+  font-size: clamp(.72rem, 1.25vw, .92rem);
+  font-weight: 650;
+}
+.wave-math-label.field { top: 24.1%; }
+.wave-math-label.response { top: 69.2%; }
+.relation-equation {
+  left: 64.74%;
+  top: 52.45%;
+  transform: translate(-50%, -50%);
+  min-width: 258px;
+  padding: 7px 12px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  text-align: center;
+  font-size: clamp(.74rem, 1.28vw, .94rem);
+}
+.epsilon-canvas {
+  position: relative;
+  width: min(330px, 100%);
+  margin-inline: auto;
+}
+.epsilon-formula {
+  left: 53.64%;
+  top: 18.37%;
+  transform: translate(-50%, -50%);
+  color: var(--accent-ink);
+  font-size: clamp(.67rem, 1.16vw, .88rem);
+  white-space: nowrap;
+}
+.epsilon-marker-label {
+  transform: translate(0, -50%);
+  color: var(--wave);
+  font-size: clamp(.66rem, 1.08vw, .82rem);
+  white-space: nowrap;
+}
+.epsilon-marker-label.align-end { transform: translate(-100%, -50%); }
+mjx-container[jax="SVG"] > svg { width: auto !important; height: auto !important; max-width: 100%; }
+.plot-bg { fill: var(--surface-muted); }
+.vacuum-bg { fill: color-mix(in srgb, var(--surface) 78%, var(--surface-muted)); }
+.plasma-bg { fill: color-mix(in srgb, var(--accent-soft) 40%, var(--surface-muted)); }
+.boundary { stroke: var(--border-strong); stroke-width: 1.45; }
+.grid-line { stroke: var(--border); stroke-width: 1; }
+.axis-line { stroke: var(--border-strong); stroke-width: 1.2; }
+.cutoff-line { stroke: var(--accent); stroke-width: 1.45; stroke-dasharray: 6 6; }
+.tick-label, .svg-label { fill: var(--muted); font-family: var(--sans); }
+.tick-label { font-size: 10.5px; }
+.svg-label { font-size: 11.5px; font-weight: 650; }
+.svg-label.strong { fill: var(--ink); font-weight: 760; }
+.svg-label.accent { fill: var(--accent-ink); }
+.svg-label.wave { fill: var(--wave); }
+.svg-label.positive { fill: var(--positive); }
+.svg-label.negative { fill: var(--negative); }
+.wave-line { fill: none; stroke: var(--wave); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.wave-envelope { fill: none; stroke: var(--wave); stroke-width: 1.05; stroke-dasharray: 5 5; opacity: .58; }
+.response-envelope { fill: none; stroke: var(--wave); stroke-width: .95; stroke-dasharray: 4 5; opacity: .48; }
+.field-zero, .response-zero { stroke: var(--border-strong); stroke-width: 1; stroke-dasharray: 4 5; }
+.response-guide { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 5; }
+.field-sample { fill: var(--wave); stroke: var(--surface); stroke-width: 1.6; }
+.ion-mark { fill: var(--muted); font: 600 15px/1 var(--sans); opacity: .54; }
+.equilibrium { fill: var(--surface); stroke: var(--wave); stroke-width: 1.25; stroke-dasharray: 3 3; opacity: .74; }
+.response-electron { fill: var(--wave); stroke: var(--surface); stroke-width: 1.8; }
+.perm-zone-negative { fill: color-mix(in srgb, var(--danger) 6%, transparent); }
+.perm-zone-positive { fill: color-mix(in srgb, var(--accent) 6%, transparent); }
+.perm-curve { fill: none; stroke: var(--accent); stroke-width: 2.8; stroke-linecap: round; }
+.marker-guide { stroke: var(--wave); stroke-width: 1.15; stroke-dasharray: 4 5; }
+.marker-dot { fill: var(--wave); stroke: var(--surface); stroke-width: 2.2; }
+.plot-label {
+  fill: var(--accent-ink);
+  font-family: var(--math-font);
+  font-size: 13.5px;
+  font-style: italic;
+  paint-order: stroke;
+  stroke: var(--surface-muted);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.curve-readout { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); background: var(--surface); }
+.readout-cell { min-width: 0; padding: 8px 8px; text-align: center; }
+.readout-cell + .readout-cell { border-left: 1px solid var(--border); }
+.readout-name { display: block; margin-bottom: 3px; color: var(--muted); font: 730 .59rem/1.1 var(--sans); letter-spacing: .07em; text-transform: uppercase; }
+.readout-value { display: block; color: var(--ink); font-size: clamp(.68rem, 1.05vw, .82rem); line-height: 1.2; white-space: nowrap; }
+.readout-value mjx-container, .dynamic-math mjx-container { margin: 0 !important; }
+.collective { margin-top: 12px; }
+.collective .panel-head { min-height: 47px; }
+.collective-body { display: grid; grid-template-columns: minmax(0, 1.78fr) minmax(220px, .66fr); align-items: stretch; }
+.collective-canvas { position: relative; min-width: 0; border-right: 1px solid var(--border); }
+.cloud-frame { fill: color-mix(in srgb, var(--surface) 68%, transparent); stroke: var(--border-strong); stroke-width: 1.3; stroke-dasharray: 6 5; }
+.cloud { fill: var(--wave-soft); stroke: var(--wave); stroke-width: 1.6; }
+.edge-positive { fill: color-mix(in srgb, var(--positive) 24%, transparent); }
+.edge-negative { fill: color-mix(in srgb, var(--negative) 22%, transparent); }
+.cloud-ion { fill: var(--muted); font: 500 18px/1 var(--sans); opacity: .57; }
+.cloud-electron { fill: var(--wave); stroke: var(--surface); stroke-width: 2; }
+.restoring-field { stroke: var(--accent-ink); stroke-width: 2.3; marker-end: url(#arrowAccent); }
+.cloud-displacement { stroke: var(--wave); stroke-width: 1.7; marker-end: url(#arrowCloud); }
+.drag-surface { fill: transparent; cursor: ew-resize; touch-action: none; }
+.collective-notes { display: grid; grid-template-rows: 1fr 1fr; background: var(--surface); }
+.note-block { min-width: 0; padding: 11px 12px; display: flex; flex-direction: column; justify-content: center; }
+.note-block + .note-block { border-top: 1px solid var(--border); }
+.note-kicker { margin-bottom: 4px; color: var(--accent-ink); font: 760 .61rem/1 var(--sans); letter-spacing: .07em; text-transform: uppercase; }
+.note-math { color: var(--ink); font-size: clamp(.74rem, 1.1vw, .9rem); line-height: 1.22; }
+.note-math mjx-container { margin: 0 !important; }
+.note-copy { margin-top: 4px; color: var(--muted); font-size: clamp(.63rem, .9vw, .72rem); line-height: 1.3; }
+.key-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 12px; border: 1px solid var(--border); background: var(--surface); }
+.key-item { min-width: 0; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 7px; color: var(--muted); font-size: clamp(.64rem, 1vw, .74rem); line-height: 1.22; text-align: center; }
+.key-item + .key-item { border-left: 1px solid var(--border); }
+.swatch { flex: 0 0 auto; width: 19px; height: 0; border-top: 3px solid var(--wave); }
+.swatch.guide { border-top-width: 1px; border-top-style: dashed; border-top-color: var(--border-strong); }
+.swatch.cloud { height: 10px; border: 1px solid var(--wave); background: var(--wave-soft); }
+.swatch.charge { height: 10px; border: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--positive) 70%, transparent), color-mix(in srgb, var(--negative) 70%, transparent)); }
+@media (max-width: 680px) {
+  .topbar { grid-template-columns: 1fr; }
+  .upper-grid { grid-template-columns: 1fr; }
+  .epsilon-panel { display: grid; grid-template-columns: minmax(215px, 300px) minmax(170px, 1fr); }
+  .epsilon-panel .panel-head { grid-column: 1 / -1; }
+  .epsilon-panel .curve-readout { grid-template-columns: 1fr; border-top: 0; border-left: 1px solid var(--border); }
+  .epsilon-panel .readout-cell { display: flex; flex-direction: column; justify-content: center; }
+  .epsilon-panel .readout-cell + .readout-cell { border-left: 0; border-top: 1px solid var(--border); }
+  .collective-body { grid-template-columns: 1fr; }
+  .collective-canvas { border-right: 0; border-bottom: 1px solid var(--border); }
+  .collective-notes { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+  .note-block + .note-block { border-top: 0; border-left: 1px solid var(--border); }
+}
+@media (max-width: 500px) {
+  body { padding: 5px; }
+  .topbar { padding: 14px; }
+  .figure { padding: 8px; }
+  .panel-head { padding: 8px 9px; }
+  .panel-note { display: none; }
+  .epsilon-panel { grid-template-columns: 1fr; }
+  .epsilon-panel .panel-head { grid-column: auto; }
+  .epsilon-panel .curve-readout { grid-template-columns: 1fr 1fr; border-left: 0; border-top: 1px solid var(--border); }
+  .epsilon-panel .readout-cell + .readout-cell { border-top: 0; border-left: 1px solid var(--border); }
+  .collective-notes { grid-template-columns: 1fr; }
+  .note-block + .note-block { border-left: 0; border-top: 1px solid var(--border); }
+  .key-strip { grid-template-columns: 1fr 1fr; }
+  .key-item:nth-child(3) { border-left: 0; border-top: 1px solid var(--border); }
+  .key-item:nth-child(4) { border-top: 1px solid var(--border); }
+}
+</style>
+</head>
+<body>
+<main class="viz">
+  <header class="topbar">
+    <div>
+      <div class="heading-row">
+        <p class="eyebrow">cold plasma</p>
+        <h1>One frequency scale, two physical roles</h1>
+      </div>
+      <p class="definition">
+        Move the drive through \(\omega_p\). The driven electron response determines whether the field penetrates the plasma; the same \(\omega_p\) is the natural frequency of the electron sea.
+      </p>
+    </div>
+
+    <label class="control" for="frequency">
+      <span class="control-label">
+        <span>drive frequency</span>
+        <strong id="frequencyValue">\(\omega=0.78\,\omega_p\)</strong>
+      </span>
+      <input id="frequency" type="range" min="0.45" max="2.20" step="0.01" value="0.78" aria-label="Drive frequency in units of plasma frequency">
+      <span class="control-scale"><span>below cutoff</span><span>\(\omega_p\)</span><span>above cutoff</span></span>
+    </label>
+  </header>
+
+  <figure class="figure">
+    <div class="upper-grid">
+      <section class="panel wave-panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">The local field and the electron at the same depth</h2>
+          </div>
+          <span id="regime" class="regime evanescent">evanescent</span>
+        </div>
+
+        <div class="plot-wrap wave-canvas">
+        <svg id="wavePlot" viewBox="0 0 760 390" role="img" aria-labelledby="waveTitle waveDescription" preserveAspectRatio="xMidYMid meet">
+          <title id="waveTitle">Local field and driven electron response inside a cold plasma</title>
+          <desc id="waveDescription">At several aligned depths, the electron displacement is shown directly below the local electric field. Below plasma frequency both decay together with depth.</desc>
+          <defs>
+            <clipPath id="waveClip"><rect x="25" y="38" width="710" height="318"></rect></clipPath>
+          </defs>
+
+          <rect class="vacuum-bg" x="25" y="38" width="210" height="318"></rect>
+          <rect class="plasma-bg" x="235" y="38" width="500" height="318"></rect>
+          <line class="boundary" x1="235" y1="38" x2="235" y2="356"></line>
+          <text class="svg-label strong" x="39" y="58">vacuum</text>
+          <text class="svg-label strong" x="251" y="58">electron plasma</text>
+          <text class="svg-label" x="235" y="374" text-anchor="middle">interface</text>
+          <text class="svg-label" x="721" y="374" text-anchor="end">z</text>
+
+          <g clip-path="url(#waveClip)">
+            <line class="field-zero" x1="35" y1="126" x2="722" y2="126"></line>
+            <line class="response-zero" x1="250" y1="294" x2="722" y2="294"></line>
+            <path id="incomingWave" class="wave-line"></path>
+            <path id="insideWave" class="wave-line"></path>
+            <path id="upperEnvelope" class="wave-envelope"></path>
+            <path id="lowerEnvelope" class="wave-envelope"></path>
+            <path id="responseUpperEnvelope" class="response-envelope"></path>
+            <path id="responseLowerEnvelope" class="response-envelope"></path>
+            <g id="responseGuides"></g>
+            <g id="responseSites"></g>
+          </g>
+
+          <text id="insideLabel" class="svg-label wave" x="489" y="82" text-anchor="middle">field amplitude decays with depth</text>
+        </svg>
+        <div class="wave-math-label field">\(E(z,t)\)</div>
+        <div class="wave-math-label response">\(x_e(z,t)\)</div>
+        <div class="relation-equation math-overlay">\(x_e(z,t)=\dfrac{e}{m_e\omega^2}E(z,t)\)</div>
+        </div>
+      </section>
+
+      <section class="panel epsilon-panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Why \(\omega_p\) is the propagation cutoff</h2>
+          </div>
+        </div>
+
+        <div id="epsilonCanvas" class="epsilon-canvas">
+        <svg id="epsilonPlot" viewBox="0 0 330 245" role="img" aria-labelledby="epsilonTitle epsilonDescription" preserveAspectRatio="xMidYMid meet">
+          <title id="epsilonTitle">Frequency-dependent plasma permittivity</title>
+          <desc id="epsilonDescription">The marker lies below the zero axis when permittivity is negative and above it when permittivity is positive.</desc>
+          <rect class="plot-bg" x="0" y="0" width="330" height="245"></rect>
+          <rect id="negativeZone" class="perm-zone-negative"></rect>
+          <rect id="positiveZone" class="perm-zone-positive"></rect>
+          <line id="epsilonXAxis" class="axis-line" x1="42" x2="313"></line>
+          <line class="axis-line" x1="42" y1="24" x2="42" y2="211"></line>
+          <line id="epsilonOneLine" class="grid-line" x1="42" x2="313"></line>
+          <line id="epsilonMinusOneLine" class="grid-line" x1="42" x2="313"></line>
+          <line id="cutoffLine" class="cutoff-line" y1="24" y2="211"></line>
+          <path id="epsilonCurve" class="perm-curve"></path>
+          <line id="epsilonGuideX" class="marker-guide"></line>
+          <line id="epsilonGuideY" class="marker-guide"></line>
+          <circle id="epsilonMarker" class="marker-dot" r="5.2"></circle>
+          <text id="tickOne" class="tick-label" x="35" text-anchor="end">1</text>
+          <text id="tickZero" class="tick-label" x="35" text-anchor="end">0</text>
+          <text id="tickMinusOne" class="tick-label" x="35" text-anchor="end">−1</text>
+          <text id="cutoffTick" class="tick-label" y="228" text-anchor="middle">ωₚ</text>
+          <text class="svg-label" x="313" y="228" text-anchor="end">ω</text>
+          <text class="svg-label" x="18" y="18" text-anchor="middle">ε</text>
+        </svg>
+        <div class="epsilon-formula math-overlay">\(\varepsilon(\omega)=1-\dfrac{\omega_p^2}{\omega^2}\)</div>
+        <div id="epsilonMarkerLabel" class="epsilon-marker-label math-overlay dynamic-math">\(\varepsilon=-0.64\)</div>
+        </div>
+
+        <div class="curve-readout">
+          <div class="readout-cell">
+            <span class="readout-name">permittivity</span>
+            <span id="epsilonReadout" class="readout-value dynamic-math">\(\varepsilon=-0.64\)</span>
+          </div>
+          <div class="readout-cell">
+            <span class="readout-name">wave number</span>
+            <span id="kReadout" class="readout-value dynamic-math">\(k=i\,0.63\,\omega_p/c\)</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel collective">
+      <div class="panel-head">
+        <div>
+          <h2 class="panel-title">Remove the drive: the electron sea itself oscillates</h2>
+          <div class="panel-note">Drag the blue cloud and release it.</div>
+        </div>
+        <span id="cloudStatus" class="regime"><span id="cloudStatusDrag" hidden>release to oscillate</span><span id="cloudStatusMode">collective oscillation at \(\omega_p\)</span></span>
+      </div>
+
+      <div class="collective-body">
+        <div class="collective-canvas">
+          <svg id="cloudPlot" viewBox="0 0 760 238" role="img" aria-labelledby="cloudTitle cloudDescription" preserveAspectRatio="xMidYMid meet">
+            <title id="cloudTitle">Collective plasma oscillation</title>
+            <desc id="cloudDescription">A displaced electron cloud uncovers opposite surface charges and creates a restoring electric field.</desc>
+            <defs>
+              <marker id="arrowAccent" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0 0L10 5L0 10z" fill="var(--accent-ink)"></path>
+              </marker>
+              <marker id="arrowCloud" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="5.8" markerHeight="5.8" orient="auto">
+                <path d="M0 0L10 5L0 10z" fill="var(--wave)"></path>
+              </marker>
+            </defs>
+            <rect class="cloud-frame" x="92" y="52" width="560" height="122" rx="4"></rect>
+            <g id="cloudIons"></g>
+            <rect id="positiveSheet" class="edge-positive" x="92" y="52" width="0" height="122"></rect>
+            <rect id="negativeSheet" class="edge-negative" x="652" y="52" width="0" height="122"></rect>
+            <rect id="electronCloud" class="cloud" x="92" y="52" width="560" height="122" rx="4"></rect>
+            <g id="cloudElectrons"></g>
+            <line id="restoringField" class="restoring-field" x1="332" y1="113" x2="412" y2="113"></line>
+            <text id="fieldLabel" class="svg-label accent" x="372" y="96" text-anchor="middle">restoring E</text>
+            <text id="positiveLabel" class="svg-label positive" x="100" y="39">+nₑex</text>
+            <text id="negativeLabel" class="svg-label negative" x="644" y="39" text-anchor="end">−nₑex</text>
+            <line class="marker-guide" x1="372" y1="197" x2="372" y2="219"></line>
+            <line id="cloudDisplacement" class="cloud-displacement" x1="372" y1="208" x2="420" y2="208"></line>
+            <text id="cloudXLabel" class="svg-label wave" x="396" y="231" text-anchor="middle">x</text>
+            <rect id="dragSurface" class="drag-surface" x="74" y="32" width="596" height="164" aria-label="Drag the electron cloud horizontally"></rect>
+          </svg>
+        </div>
+
+        <div class="collective-notes">
+          <div class="note-block">
+            <span class="note-kicker">edge imbalance</span>
+            <div class="note-math">\[E=\frac{n_e e}{\varepsilon_0}\,x\]</div>
+            <div class="note-copy">The exposed edge sheets create a uniform field through the displaced cloud.</div>
+          </div>
+          <div class="note-block">
+            <span class="note-kicker">restoring motion</span>
+            <div class="note-math">\[\ddot{x}+\omega_p^2x=0\]</div>
+            <div class="note-copy">Its natural frequency is the same cutoff scale used above.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="key-strip" aria-label="Visual key">
+      <div class="key-item"><i class="swatch"></i><span>local field \(E(z,t)\)</span></div>
+      <div class="key-item"><i class="swatch guide"></i><span>same depth \(z\) in both rows</span></div>
+      <div class="key-item"><i class="swatch cloud"></i><span>electron cloud relative to fixed ions</span></div>
+      <div class="key-item"><i class="swatch charge"></i><span>edge sheets produce the restoring field</span></div>
+    </div>
+  </figure>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  const frequencyInput = document.getElementById("frequency");
+  const cloudPlot = document.getElementById("cloudPlot");
+  const dragSurface = document.getElementById("dragSurface");
+
+  const responseXs = [284, 350, 416, 482, 548, 614, 680];
+  const responseElements = [];
+
+  const epsilonView = {
+    x0: 42,
+    x1: 313,
+    y0: 24,
+    y1: 211,
+    ratioMin: .42,
+    ratioMax: 2.4,
+    epsilonMin: -1.5,
+    epsilonMax: 1.12
+  };
+
+  const state = {
+    phase: -Math.PI / 2,
+    cloudX: 38,
+    cloudAmplitude: 38,
+    cloudPhase: 0,
+    dragging: false,
+    lastTime: performance.now()
+  };
+
+  function createSvg(name, attributes = {}) {
+    const element = document.createElementNS(NS, name);
+    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+    return element;
+  }
+
+  function clamp(value, minimum, maximum) {
+    return Math.max(minimum, Math.min(maximum, value));
+  }
+
+  function pathFromPoints(points) {
+    return points.map((point, index) => `${index ? "L" : "M"}${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join("");
+  }
+
+  function localFieldAt(x, ratio, propagation) {
+    const distance = Math.max(0, x - 235);
+    if (x < 235) return Math.sin((x - 235) * .047 * ratio - state.phase);
+    if (propagation) {
+      const normalizedK = Math.sqrt(ratio * ratio - 1);
+      return Math.sin(distance * .052 * normalizedK - state.phase);
+    }
+    const normalizedKappa = Math.sqrt(Math.max(0, 1 - ratio * ratio));
+    return Math.exp(-distance * .0115 * normalizedKappa) * Math.sin(-state.phase);
+  }
+
+  function initializeResponseSites() {
+    const guides = document.getElementById("responseGuides");
+    const sites = document.getElementById("responseSites");
+
+    responseXs.forEach((x, index) => {
+      const guide = createSvg("line", { class: "response-guide", x1: x, x2: x, y1: 126, y2: 294 });
+      const fieldDot = createSvg("circle", { class: "field-sample", cx: x, cy: 126, r: 3.3 });
+      const ion = createSvg("text", { class: "ion-mark", x: x - 12, y: 299, "text-anchor": "middle" });
+      ion.textContent = "+";
+      const equilibrium = createSvg("circle", { class: "equilibrium", cx: x, cy: 294, r: 6 });
+      const electron = createSvg("circle", { class: "response-electron", cx: x, cy: 294, r: 4.6 });
+
+      guides.appendChild(guide);
+      sites.appendChild(fieldDot);
+      sites.appendChild(ion);
+      sites.appendChild(equilibrium);
+      sites.appendChild(electron);
+
+      responseElements.push({ x, index, guide, fieldDot, equilibrium, electron });
+    });
+  }
+
+  function initializeCloudParticles() {
+    const cloudIons = document.getElementById("cloudIons");
+    const cloudElectrons = document.getElementById("cloudElectrons");
+
+    for (let row = 0; row < 3; row += 1) {
+      for (let column = 0; column < 11; column += 1) {
+        const x = 117 + column * 50;
+        const y = 82 + row * 37;
+
+        const ion = createSvg("text", { class: "cloud-ion", x, y, "text-anchor": "middle" });
+        ion.textContent = "+";
+        cloudIons.appendChild(ion);
+
+        const electron = createSvg("circle", {
+          class: "cloud-electron",
+          cx: x + 18,
+          cy: y - 5,
+          r: 4.1,
+          "data-base-x": x + 18
+        });
+        cloudElectrons.appendChild(electron);
+      }
+    }
+  }
+
+  function epsilonCoordinates(ratio) {
+    const v = epsilonView;
+    const epsilon = 1 - 1 / (ratio * ratio);
+    return {
+      x: v.x0 + (ratio - v.ratioMin) / (v.ratioMax - v.ratioMin) * (v.x1 - v.x0),
+      y: v.y1 - (clamp(epsilon, v.epsilonMin, v.epsilonMax) - v.epsilonMin) / (v.epsilonMax - v.epsilonMin) * (v.y1 - v.y0),
+      epsilon
+    };
+  }
+
+  function epsilonY(value) {
+    const v = epsilonView;
+    return v.y1 - (value - v.epsilonMin) / (v.epsilonMax - v.epsilonMin) * (v.y1 - v.y0);
+  }
+
+  function initializeEpsilonPlot() {
+    const curvePoints = [];
+    for (let ratio = .42; ratio <= 2.4; ratio += .01) {
+      const point = epsilonCoordinates(ratio);
+      curvePoints.push({ x: point.x, y: point.y });
+    }
+    document.getElementById("epsilonCurve").setAttribute("d", pathFromPoints(curvePoints));
+
+    const yZero = epsilonY(0);
+    const yOne = epsilonY(1);
+    const yMinusOne = epsilonY(-1);
+    const cutoffX = epsilonCoordinates(1).x;
+
+    const setHorizontal = (id, y) => {
+      const line = document.getElementById(id);
+      line.setAttribute("y1", y);
+      line.setAttribute("y2", y);
+    };
+
+    setHorizontal("epsilonXAxis", yZero);
+    setHorizontal("epsilonOneLine", yOne);
+    setHorizontal("epsilonMinusOneLine", yMinusOne);
+
+    document.getElementById("tickZero").setAttribute("y", yZero + 4);
+    document.getElementById("tickOne").setAttribute("y", yOne + 4);
+    document.getElementById("tickMinusOne").setAttribute("y", yMinusOne + 4);
+
+    const cutoff = document.getElementById("cutoffLine");
+    cutoff.setAttribute("x1", cutoffX);
+    cutoff.setAttribute("x2", cutoffX);
+    document.getElementById("cutoffTick").setAttribute("x", cutoffX);
+
+    const negativeZone = document.getElementById("negativeZone");
+    negativeZone.setAttribute("x", epsilonView.x0);
+    negativeZone.setAttribute("y", yZero);
+    negativeZone.setAttribute("width", cutoffX - epsilonView.x0);
+    negativeZone.setAttribute("height", epsilonView.y1 - yZero);
+
+    const positiveZone = document.getElementById("positiveZone");
+    positiveZone.setAttribute("x", cutoffX);
+    positiveZone.setAttribute("y", epsilonView.y0);
+    positiveZone.setAttribute("width", epsilonView.x1 - cutoffX);
+    positiveZone.setAttribute("height", yZero - epsilonView.y0);
+  }
+
+  const pendingMath = new Set();
+  let mathFlushScheduled = false;
+  let mathTypesetChain = Promise.resolve();
+
+  function flushMath() {
+    mathFlushScheduled = false;
+    if (!window.MathJax?.typesetPromise || pendingMath.size === 0) return;
+
+    const elements = [...pendingMath];
+    pendingMath.clear();
+
+    mathTypesetChain = mathTypesetChain
+      .then(() => MathJax.typesetPromise(elements))
+      .then(reportHeight)
+      .catch(() => {});
+  }
+
+  function setMath(id, latex) {
+    const element = document.getElementById(id);
+    if (!element || element.dataset.latex === latex) return;
+
+    if (window.MathJax?.typesetClear) {
+      try { MathJax.typesetClear([element]); } catch (_) {}
+    }
+
+    element.dataset.latex = latex;
+    element.textContent = `\\(${latex}\\)`;
+
+    if (window.MathJax?.typesetPromise) {
+      pendingMath.add(element);
+      if (!mathFlushScheduled) {
+        mathFlushScheduled = true;
+        requestAnimationFrame(flushMath);
+      }
+    }
+  }
+
+  function renderFrequencyText(ratio, epsilon, propagation) {
+    const regime = document.getElementById("regime");
+    setMath("frequencyValue", `\\omega=${ratio.toFixed(2)}\\,\\omega_p`);
+    setMath("epsilonReadout", `\\varepsilon=${epsilon.toFixed(2)}`);
+
+    if (propagation) {
+      const k = Math.sqrt(ratio * ratio - 1);
+      regime.textContent = "propagates";
+      regime.classList.remove("evanescent");
+      setMath("kReadout", `k=${k.toFixed(2)}\\,\\omega_p/c`);
+      document.getElementById("insideLabel").textContent = "field and electron response travel through the plasma";
+    } else {
+      const kappa = Math.sqrt(Math.max(0, 1 - ratio * ratio));
+      regime.textContent = ratio > .985 ? "at cutoff" : "evanescent";
+      regime.classList.add("evanescent");
+      setMath("kReadout", ratio > .985 ? "k=0" : `k=i\\,${kappa.toFixed(2)}\\,\\omega_p/c`);
+      document.getElementById("insideLabel").textContent = ratio > .985 ? "the spatial scale diverges at cutoff" : "field and electron displacement decay together";
+    }
+  }
+
+  function renderWave() {
+    const ratio = Number(frequencyInput.value);
+    const propagation = ratio > 1.005;
+    const epsilon = 1 - 1 / (ratio * ratio);
+    const boundary = 235;
+    const fieldCenter = 126;
+    const fieldAmplitude = 46;
+    const responseCenter = 294;
+    const responseScale = 18 / Math.max(.72, ratio * ratio);
+
+    const incoming = [];
+    const inside = [];
+    const upperEnvelope = [];
+    const lowerEnvelope = [];
+    const responseUpperEnvelope = [];
+    const responseLowerEnvelope = [];
+
+    for (let x = 35; x <= boundary; x += 3) {
+      const field = localFieldAt(x, ratio, propagation);
+      incoming.push({ x, y: fieldCenter - fieldAmplitude * field });
+    }
+
+    for (let x = boundary; x <= 722; x += 3) {
+      const field = localFieldAt(x, ratio, propagation);
+      const distance = x - boundary;
+      const envelope = propagation ? 1 : Math.exp(-distance * .0115 * Math.sqrt(Math.max(0, 1 - ratio * ratio)));
+      inside.push({ x, y: fieldCenter - fieldAmplitude * field });
+      upperEnvelope.push({ x, y: fieldCenter - fieldAmplitude * envelope });
+      lowerEnvelope.push({ x, y: fieldCenter + fieldAmplitude * envelope });
+      responseUpperEnvelope.push({ x, y: responseCenter - responseScale * envelope });
+      responseLowerEnvelope.push({ x, y: responseCenter + responseScale * envelope });
+    }
+
+    document.getElementById("incomingWave").setAttribute("d", pathFromPoints(incoming));
+    document.getElementById("insideWave").setAttribute("d", pathFromPoints(inside));
+    document.getElementById("upperEnvelope").setAttribute("d", propagation ? "" : pathFromPoints(upperEnvelope));
+    document.getElementById("lowerEnvelope").setAttribute("d", propagation ? "" : pathFromPoints(lowerEnvelope));
+    document.getElementById("responseUpperEnvelope").setAttribute("d", propagation ? "" : pathFromPoints(responseUpperEnvelope));
+    document.getElementById("responseLowerEnvelope").setAttribute("d", propagation ? "" : pathFromPoints(responseLowerEnvelope));
+
+    responseElements.forEach(site => {
+      const field = localFieldAt(site.x, ratio, propagation);
+      const fieldY = fieldCenter - fieldAmplitude * field;
+      const electronY = responseCenter - responseScale * field;
+
+      site.guide.setAttribute("y1", fieldY);
+      site.guide.setAttribute("y2", responseCenter);
+      site.fieldDot.setAttribute("cy", fieldY);
+      site.electron.setAttribute("cy", electronY);
+    });
+
+    const marker = epsilonCoordinates(ratio);
+    const zeroY = epsilonY(0);
+    const markerElement = document.getElementById("epsilonMarker");
+    markerElement.setAttribute("cx", marker.x);
+    markerElement.setAttribute("cy", marker.y);
+
+    const guideX = document.getElementById("epsilonGuideX");
+    guideX.setAttribute("x1", marker.x);
+    guideX.setAttribute("y1", marker.y);
+    guideX.setAttribute("x2", marker.x);
+    guideX.setAttribute("y2", zeroY);
+
+    const guideY = document.getElementById("epsilonGuideY");
+    guideY.setAttribute("x1", epsilonView.x0);
+    guideY.setAttribute("y1", marker.y);
+    guideY.setAttribute("x2", marker.x);
+    guideY.setAttribute("y2", marker.y);
+
+    const markerLabel = document.getElementById("epsilonMarkerLabel");
+    const labelX = marker.x > 232 ? marker.x - 8 : marker.x + 8;
+    const labelY = clamp(marker.y + (marker.epsilon < 0 ? -10 : 17), 35, 203);
+    markerLabel.style.left = `${labelX / 330 * 100}%`;
+    markerLabel.style.top = `${labelY / 245 * 100}%`;
+    markerLabel.classList.toggle("align-end", marker.x > 232);
+    setMath("epsilonMarkerLabel", `\\varepsilon=${marker.epsilon.toFixed(2)}`);
+
+    renderFrequencyText(ratio, epsilon, propagation);
+  }
+
+  function renderCloud() {
+    const x = state.cloudX;
+    const absolute = Math.abs(x);
+    document.getElementById("electronCloud").setAttribute("x", 92 + x);
+
+    document.querySelectorAll("#cloudElectrons .cloud-electron").forEach(electron => {
+      electron.setAttribute("cx", Number(electron.dataset.baseX) + x);
+    });
+
+    const positiveSheet = document.getElementById("positiveSheet");
+    const negativeSheet = document.getElementById("negativeSheet");
+    if (x >= 0) {
+      positiveSheet.setAttribute("x", 92);
+      positiveSheet.setAttribute("width", absolute);
+      negativeSheet.setAttribute("x", 652);
+      negativeSheet.setAttribute("width", absolute);
+    } else {
+      positiveSheet.setAttribute("x", 652 - absolute);
+      positiveSheet.setAttribute("width", absolute);
+      negativeSheet.setAttribute("x", 92 - absolute);
+      negativeSheet.setAttribute("width", absolute);
+    }
+
+    const field = document.getElementById("restoringField");
+    const fieldCenter = 372;
+    const fieldLength = 42 + absolute * .55;
+    if (x >= 0) {
+      field.setAttribute("x1", fieldCenter - fieldLength / 2);
+      field.setAttribute("x2", fieldCenter + fieldLength / 2);
+    } else {
+      field.setAttribute("x1", fieldCenter + fieldLength / 2);
+      field.setAttribute("x2", fieldCenter - fieldLength / 2);
+    }
+
+    document.getElementById("fieldLabel").textContent = absolute < 2 ? "E = 0" : "restoring E";
+    const positiveLabel = document.getElementById("positiveLabel");
+    const negativeLabel = document.getElementById("negativeLabel");
+    positiveLabel.textContent = x >= 0 ? "+nₑex" : "−nₑe|x|";
+    negativeLabel.textContent = x >= 0 ? "−nₑex" : "+nₑe|x|";
+    positiveLabel.setAttribute("x", x >= 0 ? 96 + absolute / 2 : 96 - absolute / 2);
+    negativeLabel.setAttribute("x", x >= 0 ? 656 + absolute / 2 : 648 - absolute / 2);
+
+    const displacement = document.getElementById("cloudDisplacement");
+    displacement.setAttribute("x1", 372);
+    displacement.setAttribute("x2", 372 + x);
+    document.getElementById("cloudXLabel").setAttribute("x", 372 + x / 2);
+    document.getElementById("cloudStatusDrag").hidden = !state.dragging;
+    document.getElementById("cloudStatusMode").hidden = state.dragging;
+  }
+
+  function pointerToCloudX(event) {
+    const rectangle = cloudPlot.getBoundingClientRect();
+    const svgX = (event.clientX - rectangle.left) * 760 / rectangle.width;
+    return clamp(svgX - 372, -58, 58);
+  }
+
+  dragSurface.addEventListener("pointerdown", event => {
+    state.dragging = true;
+    dragSurface.setPointerCapture(event.pointerId);
+    state.cloudX = pointerToCloudX(event);
+    state.cloudAmplitude = Math.abs(state.cloudX);
+    state.cloudPhase = state.cloudX >= 0 ? 0 : Math.PI;
+    renderCloud();
+  });
+
+  dragSurface.addEventListener("pointermove", event => {
+    if (!state.dragging) return;
+    state.cloudX = pointerToCloudX(event);
+    state.cloudAmplitude = Math.abs(state.cloudX);
+    state.cloudPhase = state.cloudX >= 0 ? 0 : Math.PI;
+    renderCloud();
+  });
+
+  function releaseCloud(event) {
+    if (!state.dragging) return;
+    state.dragging = false;
+    state.cloudAmplitude = Math.max(6, Math.abs(state.cloudX));
+    state.cloudPhase = state.cloudX >= 0 ? 0 : Math.PI;
+    if (event && dragSurface.hasPointerCapture(event.pointerId)) dragSurface.releasePointerCapture(event.pointerId);
+    renderCloud();
+  }
+
+  dragSurface.addEventListener("pointerup", releaseCloud);
+  dragSurface.addEventListener("pointercancel", releaseCloud);
+  frequencyInput.addEventListener("input", () => { renderWave(); reportHeight(); });
+
+  function animate(time) {
+    const dt = Math.min(.05, (time - state.lastTime) / 1000);
+    state.lastTime = time;
+    state.phase += dt * 3.1;
+    if (!state.dragging) {
+      state.cloudPhase += dt * 2.15;
+      state.cloudX = state.cloudAmplitude * Math.cos(state.cloudPhase);
+    }
+    renderWave();
+    renderCloud();
+    requestAnimationFrame(animate);
+  }
+
+  let lastReportedHeight = 0;
+
+  function reportHeight() {
+    if (window.parent === window) return;
+    const target = document.querySelector(".viz") || document.body;
+    const rectangle = target.getBoundingClientRect();
+    const height = Math.max(1, Math.ceil(rectangle.bottom + window.scrollY));
+    if (Math.abs(height - lastReportedHeight) < 2) return;
+    lastReportedHeight = height;
+    try {
+      const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+      window.parent.postMessage({ type: "article-visualization-height", height }, targetOrigin);
+    } catch (_) {}
+  }
+
+  function loadMathJax() {
+    window.MathJax = {
+      tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+      svg: { fontCache: "local" },
+      startup: {
+        typeset: false,
+        ready() {
+          MathJax.startup.defaultReady();
+          MathJax.startup.promise
+            .then(() => MathJax.typesetPromise([document.body]))
+            .then(reportHeight)
+            .catch(() => {});
+        }
+      }
+    };
+
+    let source = "";
+    try {
+      source = [...window.parent.document.scripts]
+        .map(script => script.src)
+        .find(value => value && /mathjax/i.test(value)) || "";
+    } catch (_) {}
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = source || "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js";
+    document.head.appendChild(script);
+  }
+
+  initializeResponseSites();
+  initializeCloudParticles();
+  initializeEpsilonPlot();
+  renderWave();
+  renderCloud();
+  loadMathJax();
+  requestAnimationFrame(animate);
+
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(reportHeight);
+    observer.observe(document.querySelector(".viz") || document.body);
+  }
+  window.addEventListener("load", reportHeight);
+  window.addEventListener("resize", reportHeight);
+})();
+</script>
+<script src="/assets/js/visualization-frame.js"></script>
+</body>
+</html>

@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oblique-incidence Bragg phase</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=STIX+Two+Math&display=swap">
+
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['\\[', '\\]']]
+  },
+  svg: { fontCache: 'global' },
+  options: {
+    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  startup: {
+    pageReady: function () {
+      return MathJax.startup.defaultPageReady().then(function () {
+        document.documentElement.dataset.mathReady = 'true';
+        document.dispatchEvent(new CustomEvent('viz:math-ready'));
+      });
+    }
+  }
+};
+</script>
+<script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+
+<script>
+(function () {
+  const root = document.documentElement;
+  const names = [
+    '--viz-surface', '--viz-surface-muted', '--viz-ink', '--viz-muted',
+    '--viz-border', '--viz-border-strong', '--viz-accent', '--viz-accent-ink',
+    '--viz-accent-soft', '--viz-accent-border',
+    '--page', '--surface', '--surface-muted', '--ink', '--muted', '--border',
+    '--border-strong', '--accent', '--accent-soft', '--post-accent',
+    '--post-accent-soft', '--post-accent-border', '--post-accent-ink'
+  ];
+
+  function syncTheme() {
+    try {
+      if (window.parent === window) return;
+      const parentRoot = window.parent.document.documentElement;
+      const article = window.parent.document.querySelector('article, main') || parentRoot;
+      const rootStyle = window.parent.getComputedStyle(parentRoot);
+      const articleStyle = window.parent.getComputedStyle(article);
+      const raw = `${parentRoot.dataset.theme || ''} ${parentRoot.className || ''}`.toLowerCase();
+      const theme = raw.includes('dark') ? 'dark' : raw.includes('light') ? 'light' : '';
+      if (theme) root.dataset.theme = theme;
+      else delete root.dataset.theme;
+
+      names.forEach(function (name) {
+        const value = articleStyle.getPropertyValue(name).trim() || rootStyle.getPropertyValue(name).trim();
+        if (value) root.style.setProperty(name, value);
+      });
+    } catch (_) {}
+  }
+
+  syncTheme();
+  window.addEventListener('DOMContentLoaded', syncTheme, { once: true });
+  try {
+    if (window.parent !== window) {
+      new MutationObserver(syncTheme).observe(window.parent.document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'data-theme', 'data-color-mode']
+      });
+    }
+  } catch (_) {}
+}());
+</script>
+
+<style>
+:root {
+  color-scheme: light;
+  --surface: var(--viz-surface, #ffffff);
+  --surface-muted: var(--viz-surface-muted, #f5f6f2);
+  --ink: var(--viz-ink, #1b2420);
+  --muted: var(--viz-muted, #68736c);
+  --border: var(--viz-border, #d6ddd7);
+  --border-strong: var(--viz-border-strong, #a7b3aa);
+  --accent: var(--viz-accent, var(--post-accent, #5457b8));
+  --accent-ink: var(--viz-accent-ink, var(--post-accent-ink, var(--accent)));
+  --accent-soft: var(--viz-accent-soft, var(--post-accent-soft, #ececff));
+  --accent-border: var(--viz-accent-border, var(--post-accent-border, #b9bbed));
+  --shadow: rgba(20, 31, 25, 0.06);
+  --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --math: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: var(--viz-surface, #171e19);
+  --surface-muted: var(--viz-surface-muted, #1d2720);
+  --ink: var(--viz-ink, #e9efeb);
+  --muted: var(--viz-muted, #a7b5aa);
+  --border: var(--viz-border, #344138);
+  --border-strong: var(--viz-border-strong, #617168);
+  --accent: var(--viz-accent, var(--post-accent, #aeb1f2));
+  --accent-ink: var(--viz-accent-ink, var(--post-accent-ink, var(--accent)));
+  --accent-soft: var(--viz-accent-soft, var(--post-accent-soft, #25284b));
+  --accent-border: var(--viz-accent-border, var(--post-accent-border, #5e6299));
+  --shadow: rgba(0, 0, 0, 0.18);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; overflow-x: hidden; background: transparent; color: var(--ink); }
+body { padding: clamp(7px, 1.8vw, 18px); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; }
+
+.viz {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 18px 48px var(--shadow);
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(230px, .31fr);
+  gap: 20px;
+  align-items: center;
+  padding: clamp(15px, 2.4vw, 24px);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 76%);
+}
+
+.heading-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 9px 17px; }
+.eyebrow {
+  margin: 0;
+  color: var(--accent-ink);
+  font: 760 .67rem/1 var(--sans);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.22rem, 2.65vw, 1.86rem);
+  font-weight: 560;
+  line-height: 1.13;
+  letter-spacing: -.027em;
+}
+
+.definition {
+  max-width: 760px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: clamp(.87rem, 1.45vw, 1rem);
+  line-height: 1.42;
+}
+
+.definition mjx-container,
+.control mjx-container,
+.scene-math mjx-container,
+.logic-value mjx-container { margin: 0 !important; }
+
+.control {
+  min-width: 0;
+  padding: 10px 12px 11px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+}
+
+.control-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: .73rem;
+  line-height: 1.2;
+}
+
+.control-label strong { color: var(--accent-ink); font-weight: 760; white-space: nowrap; }
+.control input[type="range"] { width: 100%; margin: 9px 0 0; accent-color: var(--accent); }
+.control-scale { display: flex; justify-content: space-between; margin-top: 2px; color: var(--muted); font-size: .61rem; }
+
+.figure { margin: 0; padding: clamp(10px, 2.15vw, 21px); }
+.canvas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.scene {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: 56px 250px 58px;
+  background: var(--surface-muted);
+}
+
+.scene + .scene { border-left: 1px solid var(--border); }
+.scene-head { min-width: 0; padding: 10px 12px 8px; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 72%, transparent); }
+.scene-index { display: block; margin-bottom: 4px; color: var(--accent-ink); font-size: .62rem; font-weight: 780; letter-spacing: .085em; line-height: 1; text-transform: uppercase; }
+.scene-title { margin: 0; color: var(--ink); font-size: clamp(.77rem, 1.13vw, .9rem); font-weight: 700; line-height: 1.25; letter-spacing: -.008em; }
+.scene-plot { position: relative; min-width: 0; overflow: hidden; }
+.scene-svg { display: block; width: 100%; height: 100%; }
+
+.scene-math {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 11px 9px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.scene-math-label { display: block; margin-bottom: 4px; color: var(--muted); font-size: .59rem; font-weight: 760; letter-spacing: .07em; line-height: 1; text-transform: uppercase; }
+.scene-math-line { min-width: 0; color: var(--ink); font-size: clamp(.69rem, 1.03vw, .83rem); line-height: 1.28; }
+.scene-math-line.accent { color: var(--accent-ink); }
+.scene-math mjx-container { max-width: 100%; font-size: 94% !important; }
+
+.scene-svg text { fill: var(--ink); font-family: var(--sans); font-size: 12px; }
+.scene-svg .small { font-size: 10.5px; }
+.scene-svg .tiny { font-size: 9.4px; }
+.scene-svg .muted { fill: var(--muted); }
+.scene-svg .accent-text { fill: var(--accent-ink); font-weight: 720; }
+.scene-svg .math-text { font-family: var(--math); font-size: 14px; }
+.scene-svg .layer { fill: color-mix(in srgb, var(--accent-soft) 48%, var(--surface-muted)); }
+.scene-svg .layer-alt { fill: color-mix(in srgb, var(--surface) 57%, var(--surface-muted)); }
+.scene-svg .interface { stroke: var(--border-strong); stroke-width: 1.65; }
+.scene-svg .grid-line { stroke: var(--border); stroke-width: 1; }
+.scene-svg .axis-line { stroke: var(--border-strong); stroke-width: 1.2; }
+.scene-svg .guide { fill: none; stroke: var(--border-strong); stroke-width: 1.05; stroke-dasharray: 4 5; }
+.scene-svg .ray { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.scene-svg .accent-line { fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.scene-svg .accent-thin { fill: none; stroke: var(--accent); stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; }
+.scene-svg .curve-area { fill: color-mix(in srgb, var(--accent) 11%, transparent); }
+.scene-svg .curve { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.scene-svg .point-halo { fill: var(--surface); stroke: var(--accent); stroke-width: 2.1; }
+.scene-svg .point { fill: var(--accent); }
+.scene-svg .chip { fill: color-mix(in srgb, var(--surface) 95%, transparent); stroke: var(--border); stroke-width: 1; }
+.scene-svg .accent-chip { fill: color-mix(in srgb, var(--accent-soft) 72%, var(--surface)); stroke: var(--accent-border); stroke-width: 1; }
+
+.logic-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--border);
+  border-top: 0;
+  background: var(--surface);
+}
+
+.logic-item {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 10px 10px;
+  text-align: center;
+}
+.logic-item + .logic-item { border-left: 1px solid var(--border); }
+.logic-item:not(:last-child)::after {
+  content: "→";
+  position: absolute;
+  z-index: 2;
+  right: -8px;
+  top: 50%;
+  width: 16px;
+  transform: translateY(-50%);
+  background: var(--surface);
+  color: var(--accent-ink);
+  font-size: .86rem;
+  font-weight: 760;
+  line-height: 1;
+}
+.logic-label { display: block; color: var(--muted); font-size: clamp(.59rem, .9vw, .69rem); line-height: 1.22; }
+.logic-value { display: block; flex: 0 0 auto; color: var(--accent-ink); font-size: clamp(.7rem, 1vw, .82rem); font-weight: 720; white-space: nowrap; }
+
+.model-note { margin: 7px 1px 0; color: var(--muted); font-size: .66rem; line-height: 1.35; text-align: right; }
+
+@media (max-width: 820px) {
+  .topbar { grid-template-columns: 1fr; }
+  .control { max-width: 35rem; }
+  .canvas { grid-template-columns: 1fr; }
+  .scene { grid-template-rows: auto 260px auto; }
+  .scene + .scene { border-left: 0; border-top: 1px solid var(--border); }
+  .scene-head { min-height: 0; }
+  .logic-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .logic-item:nth-child(3) { border-left: 0; border-top: 1px solid var(--border); }
+  .logic-item:nth-child(4) { border-top: 1px solid var(--border); }
+  .logic-item::after { display: none; }
+}
+
+@media (max-width: 520px) {
+  body { padding: 5px; }
+  .topbar { padding: 13px; }
+  .figure { padding: 8px; }
+  .scene { grid-template-rows: auto 238px auto; }
+  .logic-strip { grid-template-columns: 1fr; }
+  .logic-item + .logic-item { border-left: 0; border-top: 1px solid var(--border); }
+  .model-note { text-align: left; }
+}
+</style>
+</head>
+<body>
+<main class="viz" aria-labelledby="viz-title">
+  <header class="topbar">
+    <div>
+      <div class="heading-row">
+        <p class="eyebrow">Off-normal Bragg condition</p>
+        <h1 id="viz-title">The stack phase follows the normal wavevector component</h1>
+      </div>
+      <p class="definition">
+        A multilayer repeats along its normal coordinate, so a layer contributes the phase
+        \(k_{z,i}d_i=k_i d_i\cos\theta_i\). Tilting the ray reduces that normal phase and moves the Bragg centre to a shorter wavelength.
+      </p>
+    </div>
+
+    <label class="control" for="angle-control">
+      <span class="control-label">
+        <span>External incidence angle</span>
+        <strong>\(\theta_0\) = <span id="angle-readout">42.0°</span></strong>
+      </span>
+      <input id="angle-control" type="range" min="0" max="75" step="0.5" value="42" aria-label="External incidence angle">
+      <span class="control-scale" aria-hidden="true"><span>normal</span><span>glancing</span></span>
+    </label>
+  </header>
+
+  <figure class="figure">
+    <div class="canvas">
+      <section class="scene" aria-labelledby="scene-one-title">
+        <header class="scene-head">
+          <span class="scene-index">1 · Projection</span>
+          <h2 class="scene-title" id="scene-one-title">The layer phase uses the wavevector projection normal to the interfaces</h2>
+        </header>
+        <div class="scene-plot">
+          <svg class="scene-svg" viewBox="0 0 340 250" role="img" aria-labelledby="projection-title projection-desc">
+            <title id="projection-title">Wavevector decomposition inside one dielectric layer</title>
+            <desc id="projection-desc">An oblique wavevector is decomposed into normal and tangential parts. The normal component controls the phase advance between the two parallel interfaces.</desc>
+            <defs>
+              <marker id="p-ray-arrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,5 L0,10 z" fill="var(--ink)"></path>
+              </marker>
+              <marker id="p-accent-arrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+              </marker>
+              <marker id="p-dim-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                <path d="M0,5 L10,0 L10,10 z" fill="var(--accent)"></path>
+              </marker>
+            </defs>
+
+            <rect class="layer" x="35" y="34" width="270" height="172"></rect>
+            <line class="interface" x1="35" y1="34" x2="305" y2="34"></line>
+            <line class="interface" x1="35" y1="206" x2="305" y2="206"></line>
+            <line class="guide" x1="105" y1="15" x2="105" y2="224"></line>
+            <text class="small muted" x="105" y="12" text-anchor="middle">layer normal</text>
+            <text class="small muted" x="170" y="239" text-anchor="middle">parallel interface planes</text>
+
+            <line id="p-ray" class="ray" x1="105" y1="34" x2="196" y2="206" marker-end="url(#p-ray-arrow)"></line>
+            <path id="p-angle-arc" class="accent-thin" d=""></path>
+            <text id="p-angle-label" class="math-text accent-text" x="130" y="71">θ<tspan baseline-shift="sub" font-size="9">H</tspan></text>
+
+            <line class="accent-line" x1="67" y1="42" x2="67" y2="198" marker-start="url(#p-dim-arrow)" marker-end="url(#p-dim-arrow)"></line>
+            <text class="math-text accent-text" x="57" y="123" text-anchor="end">d<tspan baseline-shift="sub" font-size="9">H</tspan></text>
+
+            <line id="p-k" class="accent-line" x1="158" y1="103" x2="184" y2="153" marker-end="url(#p-accent-arrow)"></line>
+            <line id="p-kz" class="accent-line" x1="158" y1="103" x2="158" y2="153" marker-end="url(#p-accent-arrow)"></line>
+            <line id="p-k-guide" class="guide" x1="158" y1="153" x2="184" y2="153"></line>
+            <text id="p-k-label" class="math-text accent-text" x="193" y="153">k<tspan baseline-shift="sub" font-size="9">H</tspan></text>
+            <text id="p-kz-label" class="math-text accent-text" x="149" y="150" text-anchor="end">k<tspan baseline-shift="sub" font-size="9">z,H</tspan></text>
+
+            <rect class="accent-chip" x="202" y="51" width="86" height="38" rx="4"></rect>
+            <text class="tiny muted" x="245" y="65" text-anchor="middle">normal fraction</text>
+            <text class="small accent-text" x="245" y="81" text-anchor="middle">cos θ<tspan baseline-shift="sub" font-size="7">H</tspan> = <tspan id="projection-value">0.948</tspan></text>
+
+            <text id="p-path-label" class="small muted" x="177" y="184">diagonal path ℓ<tspan baseline-shift="sub" font-size="7">H</tspan></text>
+          </svg>
+        </div>
+        <div class="scene-math">
+          <span class="scene-math-label">Between adjacent interface planes</span>
+          <span class="scene-math-line accent">\(\phi_i=k_{z,i}d_i=k_i d_i\cos\theta_i\)</span>
+        </div>
+      </section>
+
+      <section class="scene" aria-labelledby="scene-two-title">
+        <header class="scene-head">
+          <span class="scene-index">2 · Snell coupling</span>
+          <h2 class="scene-title" id="scene-two-title">Snell’s law links the external and internal angles</h2>
+        </header>
+        <div class="scene-plot">
+          <svg class="scene-svg" viewBox="0 0 340 250" role="img" aria-labelledby="snell-title snell-desc">
+            <title id="snell-title">Refraction through the incident medium and two layer materials</title>
+            <desc id="snell-desc">The external angle and the angles inside the high-index and low-index layers change together according to Snell's law.</desc>
+            <defs>
+              <marker id="s-ray-arrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,5 L0,10 z" fill="var(--ink)"></path>
+              </marker>
+            </defs>
+
+            <rect class="layer-alt" x="18" y="23" width="304" height="45"></rect>
+            <rect class="layer" x="18" y="68" width="304" height="70"></rect>
+            <rect class="layer-alt" x="18" y="138" width="304" height="70"></rect>
+            <line class="interface" x1="18" y1="68" x2="322" y2="68"></line>
+            <line class="interface" x1="18" y1="138" x2="322" y2="138"></line>
+            <line class="interface" x1="18" y1="208" x2="322" y2="208"></line>
+
+            <text class="small muted" x="26" y="40">incident medium · n<tspan baseline-shift="sub" font-size="7">0</tspan></text>
+            <text class="small muted" x="26" y="91">high-index layer · n<tspan baseline-shift="sub" font-size="7">H</tspan></text>
+            <text class="small muted" x="26" y="161">low-index layer · n<tspan baseline-shift="sub" font-size="7">L</tspan></text>
+
+            <line class="guide" x1="150" y1="17" x2="150" y2="138"></line>
+            <line id="s-second-normal" class="guide" x1="184" y1="115" x2="184" y2="226"></line>
+            <text class="tiny muted" x="150" y="13" text-anchor="middle">normal</text>
+
+            <polyline id="s-ray" class="ray" points="115,31 150,68 184,138 245,208" marker-end="url(#s-ray-arrow)"></polyline>
+            <path id="s-arc-0" class="accent-thin" d=""></path>
+            <path id="s-arc-h" class="accent-thin" d=""></path>
+            <path id="s-arc-l" class="accent-thin" d=""></path>
+
+            <text id="s-label-0" class="math-text accent-text" x="128" y="48">θ<tspan baseline-shift="sub" font-size="9">0</tspan></text>
+            <text id="s-label-h" class="math-text accent-text" x="168" y="93">θ<tspan baseline-shift="sub" font-size="9">H</tspan></text>
+            <text id="s-label-l" class="math-text accent-text" x="207" y="164">θ<tspan baseline-shift="sub" font-size="9">L</tspan></text>
+
+            <circle cx="150" cy="68" r="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.45"></circle>
+            <circle id="s-second-point" cx="184" cy="138" r="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.45"></circle>
+
+            <g aria-label="Current angles">
+              <rect class="chip" x="202" y="31" width="101" height="69" rx="4"></rect>
+              <text class="tiny muted" x="213" y="47">current angles</text>
+              <text class="small accent-text" x="213" y="63">θ<tspan baseline-shift="sub" font-size="7">0</tspan> = <tspan id="s-value-0">42.0°</tspan></text>
+              <text class="small accent-text" x="213" y="79">θ<tspan baseline-shift="sub" font-size="7">H</tspan> = <tspan id="s-value-h">18.6°</tspan></text>
+              <text class="small accent-text" x="213" y="95">θ<tspan baseline-shift="sub" font-size="7">L</tspan> = <tspan id="s-value-l">27.5°</tspan></text>
+            </g>
+
+            <text class="small muted" x="170" y="239" text-anchor="middle">the tangential wavevector is continuous at every interface</text>
+          </svg>
+        </div>
+        <div class="scene-math">
+          <span class="scene-math-label">Snell’s law</span>
+          <span class="scene-math-line accent">\(n_0\sin\theta_0=n_H\sin\theta_H=n_L\sin\theta_L\)</span>
+        </div>
+      </section>
+
+      <section class="scene" aria-labelledby="scene-three-title">
+        <header class="scene-head">
+          <span class="scene-index">3 · Bragg shift</span>
+          <h2 class="scene-title" id="scene-three-title">The Bragg centre moves to a shorter wavelength</h2>
+        </header>
+        <div class="scene-plot">
+          <svg class="scene-svg" viewBox="0 0 340 250" role="img" aria-labelledby="curve-title curve-desc">
+            <title id="curve-title">Normalized Bragg wavelength as a function of incidence angle</title>
+            <desc id="curve-desc">A decreasing curve shows that the Bragg wavelength shifts downward as the external incidence angle increases.</desc>
+
+            <line class="grid-line" x1="49" y1="31" x2="315" y2="31"></line>
+            <line class="grid-line" x1="49" y1="72" x2="315" y2="72"></line>
+            <line class="grid-line" x1="49" y1="113" x2="315" y2="113"></line>
+            <line class="grid-line" x1="49" y1="154" x2="315" y2="154"></line>
+            <line class="grid-line" x1="49" y1="195" x2="315" y2="195"></line>
+            <line class="axis-line" x1="49" y1="23" x2="49" y2="195"></line>
+            <line class="axis-line" x1="49" y1="195" x2="318" y2="195"></line>
+
+            <text class="small muted" x="42" y="35" text-anchor="end">1.00</text>
+            <text class="small muted" x="42" y="76" text-anchor="end">0.95</text>
+            <text class="small muted" x="42" y="117" text-anchor="end">0.90</text>
+            <text class="small muted" x="42" y="158" text-anchor="end">0.85</text>
+            <text class="small muted" x="42" y="199" text-anchor="end">0.80</text>
+
+            <text class="small muted" x="49" y="212" text-anchor="middle">0°</text>
+            <text class="small muted" x="102.2" y="212" text-anchor="middle">15°</text>
+            <text class="small muted" x="155.4" y="212" text-anchor="middle">30°</text>
+            <text class="small muted" x="208.6" y="212" text-anchor="middle">45°</text>
+            <text class="small muted" x="261.8" y="212" text-anchor="middle">60°</text>
+            <text class="small muted" x="315" y="212" text-anchor="middle">75°</text>
+
+            <text class="small muted" x="182" y="233" text-anchor="middle">external incidence angle θ<tspan baseline-shift="sub" font-size="7">0</tspan></text>
+            <text class="small muted" x="14" y="110" text-anchor="middle" transform="rotate(-90 14 110)">λ<tspan baseline-shift="sub" font-size="7">B</tspan>(θ<tspan baseline-shift="sub" font-size="7">0</tspan>)/λ<tspan baseline-shift="sub" font-size="7">B</tspan>(0)</text>
+
+            <path id="b-area" class="curve-area" d=""></path>
+            <path id="b-curve" class="curve" d=""></path>
+            <line id="b-guide" class="guide" x1="198" y1="195" x2="198" y2="95"></line>
+            <circle id="b-halo" class="point-halo" cx="198" cy="95" r="5.5"></circle>
+            <circle id="b-point" class="point" cx="198" cy="95" r="2.5"></circle>
+
+            <rect id="b-chip" class="accent-chip" x="217" y="54" width="88" height="42" rx="4"></rect>
+            <text class="tiny muted" id="b-chip-label" x="261" y="69" text-anchor="middle">Bragg centre</text>
+            <text class="small accent-text" id="b-chip-value" x="261" y="86" text-anchor="middle"><tspan id="b-ratio">0.918</tspan> × λ<tspan baseline-shift="sub" font-size="7">B</tspan>(0)</text>
+          </svg>
+        </div>
+        <div class="scene-math">
+          <span class="scene-math-label">One H–L period</span>
+          <span class="scene-math-line accent">\(\lambda_B(\theta_0)=2\!\sum_{i=H,L}n_i d_i\cos\theta_i\)</span>
+        </div>
+      </section>
+    </div>
+
+    <div class="logic-strip" aria-label="Causal chain of the angular Bragg shift">
+      <div class="logic-item"><span class="logic-label">increase the external angle</span><span class="logic-value">\(\theta_0\uparrow\)</span></div>
+      <div class="logic-item"><span class="logic-label">Snell-linked internal angles grow</span><span class="logic-value">\(\theta_H,\theta_L\uparrow\)</span></div>
+      <div class="logic-item"><span class="logic-label">normal phase factors shrink</span><span class="logic-value">\(\cos\theta_H,\cos\theta_L\downarrow\)</span></div>
+      <div class="logic-item"><span class="logic-label">the reflection band moves blue</span><span class="logic-value">\(\lambda_B\downarrow\)</span></div>
+    </div>
+
+    <p class="model-note">Curve shown for an illustrative normal-incidence quarter-wave stack with \(n_0=1\), \(n_H=2.10\), and \(n_L=1.45\).</p>
+  </figure>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  const n0 = 1.00;
+  const nH = 2.10;
+  const nL = 1.45;
+  const deg = Math.PI / 180;
+
+  const slider = document.getElementById('angle-control');
+  const angleReadout = document.getElementById('angle-readout');
+  const projectionValue = document.getElementById('projection-value');
+
+  const pRay = document.getElementById('p-ray');
+  const pAngleArc = document.getElementById('p-angle-arc');
+  const pAngleLabel = document.getElementById('p-angle-label');
+  const pK = document.getElementById('p-k');
+  const pKz = document.getElementById('p-kz');
+  const pKGuide = document.getElementById('p-k-guide');
+  const pKLabel = document.getElementById('p-k-label');
+  const pKzLabel = document.getElementById('p-kz-label');
+  const pPathLabel = document.getElementById('p-path-label');
+
+  const sRay = document.getElementById('s-ray');
+  const sSecondNormal = document.getElementById('s-second-normal');
+  const sSecondPoint = document.getElementById('s-second-point');
+  const sArc0 = document.getElementById('s-arc-0');
+  const sArcH = document.getElementById('s-arc-h');
+  const sArcL = document.getElementById('s-arc-l');
+  const sLabel0 = document.getElementById('s-label-0');
+  const sLabelH = document.getElementById('s-label-h');
+  const sLabelL = document.getElementById('s-label-l');
+  const sValue0 = document.getElementById('s-value-0');
+  const sValueH = document.getElementById('s-value-h');
+  const sValueL = document.getElementById('s-value-l');
+
+  const bArea = document.getElementById('b-area');
+  const bCurve = document.getElementById('b-curve');
+  const bGuide = document.getElementById('b-guide');
+  const bHalo = document.getElementById('b-halo');
+  const bPoint = document.getElementById('b-point');
+  const bChip = document.getElementById('b-chip');
+  const bChipLabel = document.getElementById('b-chip-label');
+  const bChipValue = document.getElementById('b-chip-value');
+  const bRatio = document.getElementById('b-ratio');
+
+  function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+
+  function internalAngle(theta0, index) {
+    return Math.asin(clamp((n0 / index) * Math.sin(theta0), -1, 1));
+  }
+
+  function ratioAt(theta0) {
+    const thetaH = internalAngle(theta0, nH);
+    const thetaL = internalAngle(theta0, nL);
+    return 0.5 * (Math.cos(thetaH) + Math.cos(thetaL));
+  }
+
+  function setLine(line, x1, y1, x2, y2) {
+    line.setAttribute('x1', x1.toFixed(2));
+    line.setAttribute('y1', y1.toFixed(2));
+    line.setAttribute('x2', x2.toFixed(2));
+    line.setAttribute('y2', y2.toFixed(2));
+  }
+
+  function downwardArc(cx, cy, radius, angle) {
+    const ex = cx + radius * Math.sin(angle);
+    const ey = cy + radius * Math.cos(angle);
+    return `M ${cx.toFixed(2)} ${(cy + radius).toFixed(2)} A ${radius} ${radius} 0 0 0 ${ex.toFixed(2)} ${ey.toFixed(2)}`;
+  }
+
+  function upwardArc(cx, cy, radius, angle) {
+    const ex = cx - radius * Math.sin(angle);
+    const ey = cy - radius * Math.cos(angle);
+    return `M ${cx.toFixed(2)} ${(cy - radius).toFixed(2)} A ${radius} ${radius} 0 0 0 ${ex.toFixed(2)} ${ey.toFixed(2)}`;
+  }
+
+  const plot = { left: 49, right: 315, top: 31, bottom: 195, thetaMax: 75, yMin: 0.80, yMax: 1.00 };
+  function plotX(thetaDeg) { return plot.left + (thetaDeg / plot.thetaMax) * (plot.right - plot.left); }
+  function plotY(value) { return plot.bottom - ((value - plot.yMin) / (plot.yMax - plot.yMin)) * (plot.bottom - plot.top); }
+
+  function buildCurve() {
+    const points = [];
+    for (let thetaDeg = 0; thetaDeg <= plot.thetaMax; thetaDeg += 0.5) {
+      points.push([plotX(thetaDeg), plotY(ratioAt(thetaDeg * deg))]);
+    }
+    const curve = points.map(function (point, index) {
+      return `${index ? 'L' : 'M'} ${point[0].toFixed(2)} ${point[1].toFixed(2)}`;
+    }).join(' ');
+    bCurve.setAttribute('d', curve);
+    bArea.setAttribute('d', `${curve} L ${plot.right} ${plot.bottom} L ${plot.left} ${plot.bottom} Z`);
+  }
+
+  function updateProjection(thetaH) {
+    const topX = 105;
+    const topY = 34;
+    const bottomY = 206;
+    const bottomX = topX + (bottomY - topY) * Math.tan(thetaH);
+    setLine(pRay, topX, topY, bottomX, bottomY);
+
+    pAngleArc.setAttribute('d', downwardArc(topX, topY, 32, thetaH));
+    pAngleLabel.setAttribute('x', (topX + 39 * Math.sin(thetaH * 0.56) + 9).toFixed(2));
+    pAngleLabel.setAttribute('y', (topY + 39 * Math.cos(thetaH * 0.56) + 4).toFixed(2));
+
+    const ox = topX + (bottomX - topX) * 0.47;
+    const oy = topY + (bottomY - topY) * 0.47;
+    const length = 58;
+    const kx = ox + length * Math.sin(thetaH);
+    const ky = oy + length * Math.cos(thetaH);
+    setLine(pK, ox, oy, kx, ky);
+    setLine(pKz, ox, oy, ox, ky);
+    setLine(pKGuide, ox, ky, kx, ky);
+
+    pKLabel.setAttribute('x', (kx + 8).toFixed(2));
+    pKLabel.setAttribute('y', (ky + 2).toFixed(2));
+    pKzLabel.setAttribute('x', (ox - 8).toFixed(2));
+    pKzLabel.setAttribute('y', (ky - 2).toFixed(2));
+
+    const pathX = topX + (bottomX - topX) * 0.72 + 9;
+    const pathY = topY + (bottomY - topY) * 0.72 + 5;
+    pPathLabel.setAttribute('x', pathX.toFixed(2));
+    pPathLabel.setAttribute('y', pathY.toFixed(2));
+    projectionValue.textContent = Math.cos(thetaH).toFixed(3);
+  }
+
+  function updateSnell(theta0, thetaH, thetaL) {
+    const yTop = 38;
+    const yH = 68;
+    const yL = 138;
+    const yBottom = 208;
+    const xH = 150;
+    const xTop = xH - (yH - yTop) * Math.tan(theta0);
+    const xL = xH + (yL - yH) * Math.tan(thetaH);
+    const xBottom = xL + (yBottom - yL) * Math.tan(thetaL);
+
+    sRay.setAttribute('points', `${xTop.toFixed(2)},${yTop} ${xH},${yH} ${xL.toFixed(2)},${yL} ${xBottom.toFixed(2)},${yBottom}`);
+    sSecondNormal.setAttribute('x1', xL.toFixed(2));
+    sSecondNormal.setAttribute('x2', xL.toFixed(2));
+    sSecondPoint.setAttribute('cx', xL.toFixed(2));
+
+    sArc0.setAttribute('d', upwardArc(xH, yH, 18, theta0));
+    sArcH.setAttribute('d', downwardArc(xH, yH, 20, thetaH));
+    sArcL.setAttribute('d', downwardArc(xL, yL, 20, thetaL));
+
+    sLabel0.setAttribute('x', (xH - 25 * Math.sin(theta0 * 0.55) - 10).toFixed(2));
+    sLabel0.setAttribute('y', (yH - 25 * Math.cos(theta0 * 0.55) - 3).toFixed(2));
+    sLabelH.setAttribute('x', (xH + 26 * Math.sin(thetaH * 0.55) + 8).toFixed(2));
+    sLabelH.setAttribute('y', (yH + 26 * Math.cos(thetaH * 0.55) + 5).toFixed(2));
+    sLabelL.setAttribute('x', (xL + 27 * Math.sin(thetaL * 0.55) + 8).toFixed(2));
+    sLabelL.setAttribute('y', (yL + 27 * Math.cos(thetaL * 0.55) + 5).toFixed(2));
+  }
+
+  function updatePlot(thetaDeg, ratio) {
+    const x = plotX(thetaDeg);
+    const y = plotY(ratio);
+    setLine(bGuide, x, plot.bottom, x, y);
+    bHalo.setAttribute('cx', x.toFixed(2));
+    bHalo.setAttribute('cy', y.toFixed(2));
+    bPoint.setAttribute('cx', x.toFixed(2));
+    bPoint.setAttribute('cy', y.toFixed(2));
+
+    const width = 90;
+    const height = 42;
+    const chipX = clamp(x + 12, 56, plot.right - width - 3);
+    const chipY = clamp(y - height - 12, 28, plot.bottom - height - 8);
+    bChip.setAttribute('x', chipX.toFixed(2));
+    bChip.setAttribute('y', chipY.toFixed(2));
+    bChipLabel.setAttribute('x', (chipX + width / 2).toFixed(2));
+    bChipLabel.setAttribute('y', (chipY + 15).toFixed(2));
+    bChipValue.setAttribute('x', (chipX + width / 2).toFixed(2));
+    bChipValue.setAttribute('y', (chipY + 32).toFixed(2));
+    bRatio.textContent = ratio.toFixed(3);
+  }
+
+  function update() {
+    const theta0Deg = Number(slider.value);
+    const theta0 = theta0Deg * deg;
+    const thetaH = internalAngle(theta0, nH);
+    const thetaL = internalAngle(theta0, nL);
+    const ratio = 0.5 * (Math.cos(thetaH) + Math.cos(thetaL));
+
+    angleReadout.textContent = `${theta0Deg.toFixed(1)}°`;
+    sValue0.textContent = `${theta0Deg.toFixed(1)}°`;
+    sValueH.textContent = `${(thetaH / deg).toFixed(1)}°`;
+    sValueL.textContent = `${(thetaL / deg).toFixed(1)}°`;
+
+    updateProjection(thetaH);
+    updateSnell(theta0, thetaH, thetaL);
+    updatePlot(theta0Deg, ratio);
+    reportHeight();
+  }
+
+  let frame = 0;
+  function reportHeight() {
+    if (frame) cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(function () {
+      frame = 0;
+      const target = document.querySelector('.viz') || document.body;
+      const bodyStyle = window.getComputedStyle(document.body);
+      const paddingBottom = Number.parseFloat(bodyStyle.paddingBottom) || 0;
+      const height = Math.max(1, Math.ceil(target.getBoundingClientRect().bottom + paddingBottom));
+      const targetOrigin = window.location.origin === 'null' ? '*' : window.location.origin;
+      try {
+        window.parent.postMessage({ visualizationHeight: height }, targetOrigin);
+      } catch (_) {}
+    });
+  }
+
+  buildCurve();
+  slider.addEventListener('input', update, { passive: true });
+  window.addEventListener('load', function () { update(); reportHeight(); });
+  window.addEventListener('resize', reportHeight, { passive: true });
+  document.addEventListener('viz:math-ready', reportHeight, { once: true });
+  if ('ResizeObserver' in window) new ResizeObserver(reportHeight).observe(document.querySelector('.viz') || document.body);
+  update();
+  reportHeight();
+}());
+</script>
+<script src="/assets/js/visualization-frame.js"></script>
+</body>
+</html>

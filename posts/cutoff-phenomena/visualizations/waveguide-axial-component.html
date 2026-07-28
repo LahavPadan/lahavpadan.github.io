@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap">
+<title>Waveguide cutoff geometry — compact verified</title>
+<script>
+(() => {
+  try {
+    const root = window.parent.document.documentElement;
+    const body = window.parent.document.body;
+    const raw = `${root.dataset.theme || ""} ${root.className || ""} ${body?.dataset?.theme || ""} ${body?.className || ""}`.toLowerCase();
+    document.documentElement.dataset.theme = raw.includes("dark") ? "dark" : raw.includes("light") ? "light" : "";
+  } catch (_) {}
+})();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --surface: var(--viz-surface, #fff);
+  --surface-muted: var(--viz-surface-muted, #f5f6f2);
+  --ink: var(--viz-ink, #1b2420);
+  --muted: var(--viz-muted, #68736c);
+  --border: var(--viz-border, #d6ddd7);
+  --border-strong: var(--viz-border-strong, #a7b3aa);
+  --accent: var(--viz-accent, #0d7659);
+  --accent-ink: var(--viz-accent-ink, #095f48);
+  --accent-soft: var(--viz-accent-soft, #dcefe7);
+  --accent-border: var(--viz-accent-border, #91c7b6);
+  --component-a: #315fae;
+  --component-b: #a86720;
+  --warning: #a74334;
+  --warning-soft: #f5e3df;
+  --field-positive: #0d7659;
+  --field-negative: #315fae;
+  --shadow: rgba(20, 31, 25, .06);
+  --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --serif: Lora, Georgia, serif;
+  --mono: "Roboto Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+  --math-font: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: var(--viz-surface, #171e19);
+  --surface-muted: var(--viz-surface-muted, #1d2720);
+  --ink: var(--viz-ink, #e9efeb);
+  --muted: var(--viz-muted, #a7b5aa);
+  --border: var(--viz-border, #344138);
+  --border-strong: var(--viz-border-strong, #617168);
+  --accent: var(--viz-accent, #63d2aa);
+  --accent-ink: var(--viz-accent-ink, #8ee7c6);
+  --accent-soft: var(--viz-accent-soft, #16362c);
+  --accent-border: var(--viz-accent-border, #3c7964);
+  --component-a: #8bb2ff;
+  --component-b: #e0a666;
+  --warning: #ff9b8b;
+  --warning-soft: #3a211e;
+  --field-positive: #63d2aa;
+  --field-negative: #8bb2ff;
+  --shadow: rgba(0, 0, 0, .18);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; overflow-x: hidden; background: transparent; color: var(--ink); }
+body { padding: clamp(7px, 1.8vw, 18px); font-family: var(--sans); }
+button, input { font: inherit; }
+.viz {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 18px 48px var(--shadow);
+}
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(235px, .34fr);
+  gap: 20px;
+  align-items: center;
+  padding: clamp(16px, 2.6vw, 25px);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 76%);
+}
+.heading-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 18px; }
+.eyebrow {
+  margin: 0;
+  color: var(--accent-ink);
+  font: 760 .68rem/1 var(--sans);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.7vw, 1.9rem);
+  font-weight: 560;
+  line-height: 1.14;
+  letter-spacing: -.026em;
+}
+.definition {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: clamp(.9rem, 1.65vw, 1.04rem);
+  line-height: 1.42;
+}
+.definition mjx-container { margin: 0 !important; }
+.control {
+  min-width: 0;
+  padding: 10px 12px 9px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.control-label { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: .74rem; }
+.control-label strong { color: var(--accent-ink); font-weight: 760; }
+.control-label strong mjx-container { margin: 0 !important; }
+.control input[type="range"] { width: 100%; margin: 9px 0 4px; accent-color: var(--accent); }
+.control-scale { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; color: var(--muted); font-size: .63rem; }
+.control-scale span:last-child { text-align: right; }
+.control-scale b { color: var(--ink); font-weight: 720; }
+.figure { margin: 0; padding: clamp(10px, 2.1vw, 20px); }
+.figure-grid { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 11px; align-items: start; }
+.k-panel { width: 240px; max-width: 240px; justify-self: center; align-self: start; }
+.panel { min-width: 0; border: 1px solid var(--border); background: var(--surface-muted); overflow: hidden; }
+.panel-head {
+  min-height: 49px;
+  padding: 10px 12px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+}
+.panel-kicker { margin: 0 0 3px; color: var(--accent-ink); font: 760 .62rem/1 var(--sans); letter-spacing: .085em; text-transform: uppercase; }
+.panel-title { margin: 0; color: var(--ink); font-size: clamp(.79rem, 1.28vw, .94rem); font-weight: 650; line-height: 1.2; }
+.state-pill {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font: 760 .62rem/1 var(--sans);
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+.state-pill.cutoff { border-color: var(--component-b); color: var(--component-b); background: color-mix(in srgb, var(--component-b) 10%, var(--surface)); }
+.state-pill.evanescent { border-color: var(--warning); color: var(--warning); background: var(--warning-soft); }
+.plot-wrap { position: relative; overflow: hidden; }
+#realPlot { display: block; width: 100%; height: auto; }
+#kPlot {
+  display: block;
+  width: 238px !important;
+  max-width: 100% !important;
+  height: 172px !important;
+  max-height: 172px !important;
+  margin: 0 auto;
+}
+.guide-wall { fill: var(--border-strong); }
+.guide-edge { stroke: var(--ink); stroke-width: 1.25; opacity: .74; }
+.guide-midline { stroke: var(--border-strong); stroke-width: 1; stroke-dasharray: 5 7; }
+.axis-line { stroke: var(--border-strong); stroke-width: 1.25; }
+.axis-arrow { fill: var(--border-strong); }
+.field-positive { fill: var(--field-positive); }
+.field-negative { fill: var(--field-negative); }
+.ray-a { fill: none; stroke: var(--component-a); stroke-width: 2.7; stroke-linecap: round; stroke-linejoin: round; }
+.ray-b { fill: none; stroke: var(--component-b); stroke-width: 2.7; stroke-linecap: round; stroke-linejoin: round; }
+.ray-ghost { fill: none; stroke: var(--border-strong); stroke-width: 1.4; stroke-dasharray: 6 6; opacity: .7; }
+.component-arrow-a { stroke: var(--component-a); stroke-width: 2.9; stroke-linecap: round; }
+.component-arrow-b { stroke: var(--component-b); stroke-width: 2.9; stroke-linecap: round; }
+.envelope { fill: none; stroke: var(--warning); stroke-width: 1.7; stroke-dasharray: 6 5; }
+.wavefront { stroke-width: 1; opacity: .38; }
+.wavefront.a { stroke: var(--component-a); }
+.wavefront.b { stroke: var(--component-b); }
+.k-axis { stroke: var(--border-strong); stroke-width: 1.3; }
+.k-circle { fill: none; stroke: var(--component-a); stroke-width: 2.6; }
+.k-fixed { stroke: var(--component-b); stroke-width: 2.2; stroke-dasharray: 7 5; }
+.k-vector { stroke: var(--accent); stroke-width: 3.1; stroke-linecap: round; }
+.k-projection { stroke: var(--border-strong); stroke-width: 1.35; stroke-dasharray: 5 5; }
+.k-point-halo { fill: var(--surface-muted); stroke: var(--accent); stroke-width: 2.1; }
+.k-point { fill: var(--accent); }
+.no-intersection { stroke: var(--warning); stroke-width: 2.2; stroke-linecap: round; }
+.angle-arc { fill: none; stroke: var(--accent-ink); stroke-width: 1.55; }
+.svg-label {
+  fill: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 630;
+  paint-order: stroke;
+  stroke: var(--surface-muted);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+.svg-label.muted { fill: var(--muted); font-size: 12px; font-weight: 560; }
+.svg-label.math { font-family: var(--serif); font-size: 17px; font-style: italic; font-weight: 600; }
+.math-fo { overflow: visible; pointer-events: none; }
+.math-html {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.math-html.small { font-size: 15px; }
+.math-html.a { color: var(--component-a); }
+.math-html.b { color: var(--component-b); }
+.math-html.accent { color: var(--accent-ink); }
+.math-html.warning { color: var(--warning); }
+.math-html mjx-container { margin: 0 !important; }
+.k-panel .math-html { font-size: 21px; }
+.k-panel .math-html.small { font-size: 18px; }
+.math-readout { color: var(--accent-ink); white-space: nowrap; }
+.math-readout mjx-container { margin: 0 !important; }
+.readout-math { justify-content: flex-end; color: var(--muted); font-size: 16px; }
+.svg-label.a { fill: var(--component-a); }
+.svg-label.b { fill: var(--component-b); }
+.svg-label.accent { fill: var(--accent-ink); }
+.svg-label.warning { fill: var(--warning); }
+.plot-note {
+  position: static;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  max-width: none;
+  padding: 7px 9px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: none;
+  color: var(--muted);
+  font-size: clamp(.61rem, .94vw, .72rem);
+  line-height: 1.2;
+  pointer-events: none;
+}
+.note-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.swatch { display: inline-block; width: 19px; height: 0; border-top: 3px solid var(--accent); }
+.swatch.a { border-top-color: var(--component-a); }
+.swatch.b { border-top-color: var(--component-b); }
+.swatch.fixed { border-top-color: var(--component-b); border-top-style: dashed; }
+.swatch.circle { border-top-color: var(--component-a); }
+.equation-strip { display: grid; grid-template-columns: .9fr 1.06fr 1.35fr; margin-top: 11px; border: 1px solid var(--border); background: var(--surface); }
+.equation-item { min-width: 0; padding: 10px 12px 11px; }
+.equation-item + .equation-item { border-left: 1px solid var(--border); }
+.equation-label { display: block; margin-bottom: 5px; color: var(--muted); font: 760 .6rem/1 var(--sans); letter-spacing: .075em; text-transform: uppercase; }
+.equation-value { color: var(--ink); font-size: clamp(.78rem, 1.25vw, .95rem); line-height: 1.2; }
+.equation-value mjx-container { margin: 0 !important; }
+.equation-item.dynamic .equation-value { color: var(--accent-ink); }
+.equation-item.dynamic.evanescent .equation-value { color: var(--warning); }
+.readout { font-family: var(--sans); font-size: .72rem; fill: var(--muted); }
+@media (max-width: 680px) {
+  .topbar { grid-template-columns: 1fr; }
+  .figure-grid { grid-template-columns: 1fr; }
+  .k-panel { width: 240px; max-width: 240px; }
+  .k-panel .plot-wrap { width: 238px; max-width: 238px; margin: 0 auto; }
+}
+@media (max-width: 600px) {
+  body { padding: 5px; }
+  .topbar { padding: 14px; }
+  .figure { padding: 7px; }
+  .panel-head { min-height: 45px; padding: 8px 9px; }
+  .equation-strip { grid-template-columns: 1fr; }
+  .equation-item + .equation-item { border-left: 0; border-top: 1px solid var(--border); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<main class="viz">
+  <header class="topbar">
+    <div>
+      <div class="heading-row">
+        <p class="eyebrow">parallel-wall guide</p>
+        <h1>Cutoff as the loss of a real axial component</h1>
+      </div>
+      <p class="definition">
+        The walls fix \(k_\perp\). Move \(k_0=\omega/c\) through that fixed value; the real-space mode and the \(k\)-space construction change together.
+      </p>
+    </div>
+
+    <label class="control" for="ratio">
+      <span class="control-label">
+        <span>frequency relative to cutoff</span>
+        <strong id="ratioReadout" class="math-readout">\(\omega/\omega_c=1.45\)</strong>
+      </span>
+      <input id="ratio" type="range" min="0.55" max="2.20" step="0.01" value="1.45" aria-label="Frequency divided by cutoff frequency">
+      <span class="control-scale"><span>below</span><b>cutoff = 1</b><span>above</span></span>
+    </label>
+  </header>
+
+  <figure class="figure">
+    <div class="figure-grid">
+      <section class="panel real-panel">
+        <header class="panel-head">
+          <div>
+            <p class="panel-kicker">real space</p>
+            <p class="panel-title" id="realTitle">oblique components create axial phase advance</p>
+          </div>
+          <span class="state-pill" id="statePill">propagating</span>
+        </header>
+        <div class="plot-wrap" id="realWrap">
+          <svg id="realPlot" viewBox="0 0 700 445" role="img" aria-labelledby="realTitleSvg realDesc" preserveAspectRatio="xMidYMid meet">
+            <title id="realTitleSvg">Guided mode in real space</title>
+            <desc id="realDesc">Two reflected plane-wave components superpose into a transverse standing pattern with axial propagation above cutoff, no axial phase advance at cutoff, and evanescent decay below cutoff.</desc>
+            <defs>
+              <clipPath id="guideClip"><rect x="54" y="72" width="592" height="284"></rect></clipPath>
+              <marker id="arrowA" viewBox="0 0 10 10" refX="8.7" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--component-a)"></path>
+              </marker>
+              <marker id="arrowB" viewBox="0 0 10 10" refX="8.7" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--component-b)"></path>
+              </marker>
+              <marker id="axisArrow" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--border-strong)"></path>
+              </marker>
+            </defs>
+
+            <g clip-path="url(#guideClip)">
+              <g id="fieldCells"></g>
+              <g id="wavefronts"></g>
+              <line class="guide-midline" x1="54" y1="214" x2="646" y2="214"></line>
+              <path id="rayUp" class="ray-a"></path>
+              <path id="rayDown" class="ray-b"></path>
+              <line id="arrowUp" class="component-arrow-a" marker-end="url(#arrowA)"></line>
+              <line id="arrowDown" class="component-arrow-b" marker-end="url(#arrowB)"></line>
+              <g id="cutoffArrows"></g>
+              <path id="envelopeTop" class="envelope"></path>
+              <path id="envelopeBottom" class="envelope"></path>
+            </g>
+
+            <rect class="guide-wall" x="48" y="61" width="604" height="12"></rect>
+            <line class="guide-edge" x1="48" y1="61" x2="652" y2="61"></line>
+            <rect class="guide-wall" x="48" y="356" width="604" height="12"></rect>
+            <line class="guide-edge" x1="48" y1="368" x2="652" y2="368"></line>
+
+            <line class="axis-line" x1="30" y1="355" x2="30" y2="72" marker-end="url(#axisArrow)"></line>
+            <line class="axis-line" x1="54" y1="388" x2="648" y2="388" marker-end="url(#axisArrow)"></line>
+            <foreignObject class="math-fo" x="4" y="67" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html">\(x\)</div></foreignObject>
+            <foreignObject class="math-fo" x="624" y="390" width="34" height="32"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html">\(z\)</div></foreignObject>
+            <text class="svg-label muted" x="43" y="68" text-anchor="end">+a</text>
+            <text class="svg-label muted" x="43" y="365" text-anchor="end">−a</text>
+            <text class="svg-label muted" x="43" y="219" text-anchor="end">0</text>
+
+            <foreignObject id="componentUpLabel" class="math-fo" x="82" y="92" width="82" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html a">\(+k_\perp\)</div></foreignObject>
+            <foreignObject id="componentDownLabel" class="math-fo" x="82" y="303" width="82" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html b">\(-k_\perp\)</div></foreignObject>
+            <foreignObject id="axialPhaseLabel" class="math-fo" x="425" y="385" width="210" height="38"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html accent small">\(\text{phase advance}\propto k_z\)</div></foreignObject>
+            <foreignObject id="axialZeroLabel" class="math-fo" x="486" y="385" width="92" height="38" style="display:none"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html accent">\(k_z=0\)</div></foreignObject>
+            <foreignObject id="evanescentLabel" class="math-fo" x="442" y="103" width="95" height="38"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html warning">\(e^{-\alpha z}\)</div></foreignObject>
+            <foreignObject class="math-fo" x="392" y="13" width="250" height="30">
+              <div xmlns="http://www.w3.org/1999/xhtml" id="realReadout" class="math-html small readout-math">\(\theta=43.6^\circ\;\cdot\;k_z/k_\perp=1.05\)</div>
+            </foreignObject>
+          </svg>
+          <div class="plot-note" aria-label="Real-space visual key">
+            <span class="note-item" id="componentNoteA"><i class="swatch a"></i><span>component with \(+k_\perp\)</span></span>
+            <span class="note-item" id="componentNoteB"><i class="swatch b"></i><span>component with \(-k_\perp\)</span></span>
+            <span class="note-item"><span id="fieldNote">colour field: their superposed mode</span></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel k-panel">
+        <header class="panel-head">
+          <div>
+            <p class="panel-kicker">wavenumber space</p>
+            <p class="panel-title">the intersection gives \(k_z\)</p>
+          </div>
+        </header>
+        <div class="plot-wrap">
+          <svg id="kPlot" viewBox="0 0 430 310" role="img" aria-labelledby="kTitle kDesc" preserveAspectRatio="xMidYMid meet">
+            <title id="kTitle">Wavenumber-space construction</title>
+            <desc id="kDesc">A quarter circle of radius omega over c intersects the fixed transverse-wavenumber line above cutoff, touches it at cutoff, and misses it below cutoff.</desc>
+            <defs>
+              <marker id="kArrow" viewBox="0 0 10 10" refX="8.7" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--accent)"></path>
+              </marker>
+              <marker id="kAxisArrow" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--border-strong)"></path>
+              </marker>
+            </defs>
+
+            <line class="k-axis" x1="72" y1="258" x2="402" y2="258" marker-end="url(#kAxisArrow)"></line>
+            <line class="k-axis" x1="72" y1="258" x2="72" y2="28" marker-end="url(#kAxisArrow)"></line>
+            <foreignObject class="math-fo" x="365" y="268" width="58" height="32"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html">\(k_z\)</div></foreignObject>
+            <foreignObject class="math-fo" x="18" y="21" width="62" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html">\(k_\perp\)</div></foreignObject>
+
+            <path id="kCircle" class="k-circle"></path>
+            <line id="fixedLine" class="k-fixed" x1="72" y1="146" x2="402" y2="146"></line>
+            <line id="projectionHorizontal" class="k-projection"></line>
+            <line id="projectionVertical" class="k-projection"></line>
+            <line id="kVector" class="k-vector" marker-end="url(#kArrow)"></line>
+            <path id="angleArc" class="angle-arc"></path>
+            <circle id="kPointHalo" class="k-point-halo" r="8"></circle>
+            <circle id="kPoint" class="k-point" r="4.2"></circle>
+            <g id="noIntersectionMark">
+              <line id="crossA" class="no-intersection"></line>
+              <line id="crossB" class="no-intersection"></line>
+            </g>
+
+            <foreignObject id="circleLabel" class="math-fo" x="224" y="52" width="132" height="38"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html a">\(k_0=\omega/c\)</div></foreignObject>
+            <foreignObject class="math-fo" x="292" y="119" width="124" height="36"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html b">\(k_\perp\;\text{fixed}\)</div></foreignObject>
+            <foreignObject id="kzProjectionLabel" class="math-fo" x="160" y="264" width="74" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html accent"><span id="kzMath">\(k_z\)</span><span id="kzZeroMath" hidden>\(k_z=0\)</span></div></foreignObject>
+            <foreignObject id="thetaLabel" class="math-fo" x="88" y="218" width="48" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html accent">\(\theta\)</div></foreignObject>
+            <text id="missLabel" class="svg-label warning" x="235" y="128" text-anchor="middle">no real intersection</text>
+            <foreignObject class="math-fo" x="238" y="5" width="164" height="28">
+              <div xmlns="http://www.w3.org/1999/xhtml" id="kReadout" class="math-html small readout-math">\(k_0/k_\perp=1.45\)</div>
+            </foreignObject>
+          </svg>
+          <div class="plot-note" aria-label="Wavenumber-space visual key">
+            <span class="note-item"><i class="swatch circle"></i><span>radius \(k_0=\omega/c\)</span></span>
+            <span class="note-item"><i class="swatch fixed"></i><span>wall-selected \(k_\perp\)</span></span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="equation-strip" aria-label="Current waveguide relation">
+      <div class="equation-item">
+        <span class="equation-label">walls select</span>
+        <span class="equation-value">\(k_\perp=\dfrac{m\pi}{2a}\)</span>
+      </div>
+      <div class="equation-item">
+        <span class="equation-label">geometric identity</span>
+        <span class="equation-value">\(k_0^2=k_z^2+k_\perp^2\)</span>
+      </div>
+      <div class="equation-item dynamic" id="dynamicEquationItem">
+        <span class="equation-label" id="dynamicLabel">real axial component</span>
+        <span class="equation-value" id="propagatingEquation">\(k_z=\sqrt{k_0^2-k_\perp^2}\in\mathbb R\)</span>
+        <span class="equation-value" id="cutoffEquation" hidden>\(k_z=0\)</span>
+        <span class="equation-value" id="evanescentEquation" hidden>\(k_z=i\alpha,\quad \alpha=\sqrt{k_\perp^2-k_0^2}\)</span>
+      </div>
+    </div>
+  </figure>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  const ratioInput = document.getElementById("ratio");
+  const ratioReadout = document.getElementById("ratioReadout");
+  const statePill = document.getElementById("statePill");
+  const realTitle = document.getElementById("realTitle");
+  const realReadout = document.getElementById("realReadout");
+  const kReadout = document.getElementById("kReadout");
+  const dynamicItem = document.getElementById("dynamicEquationItem");
+  const dynamicLabel = document.getElementById("dynamicLabel");
+  const propagatingEquation = document.getElementById("propagatingEquation");
+  const cutoffEquation = document.getElementById("cutoffEquation");
+  const evanescentEquation = document.getElementById("evanescentEquation");
+
+  const guide = { x0: 54, x1: 646, y0: 73, y1: 356, cy: 214.5 };
+  const kView = { ox: 72, oy: 258, scale: 112, xMax: 402, yMin: 28 };
+  const state = { ratio: Number(ratioInput.value), phase: 0, reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches };
+
+  function createSvg(name, attrs = {}) {
+    const element = document.createElementNS(NS, name);
+    Object.entries(attrs).forEach(([key, value]) => element.setAttribute(key, value));
+    return element;
+  }
+
+  function setLine(id, x1, y1, x2, y2) {
+    const line = document.getElementById(id);
+    line.setAttribute("x1", x1);
+    line.setAttribute("y1", y1);
+    line.setAttribute("x2", x2);
+    line.setAttribute("y2", y2);
+  }
+
+  function setForeignCenter(element, cx, cy) {
+    const width = Number(element.getAttribute("width")) || 0;
+    const height = Number(element.getAttribute("height")) || 0;
+    element.setAttribute("x", cx - width / 2);
+    element.setAttribute("y", cy - height / 2);
+  }
+
+  function show(element, visible) {
+    element.toggleAttribute("hidden", !visible);
+  }
+
+  function setMath(element, tex) {
+    if (!element || element.dataset.tex === tex) return;
+    element.dataset.tex = tex;
+    element.textContent = `\\(${tex}\\)`;
+    if (window.MathJax?.typesetPromise) {
+      try { window.MathJax.typesetClear([element]); } catch (_) {}
+      window.MathJax.typesetPromise([element]).then(reportHeight).catch(() => {});
+    }
+  }
+
+  function classify(ratio) {
+    if (Math.abs(ratio - 1) <= .012) return "cutoff";
+    return ratio > 1 ? "propagating" : "evanescent";
+  }
+
+  function buildFieldCells() {
+    const group = document.getElementById("fieldCells");
+    const columns = 54;
+    const rows = 20;
+    const width = (guide.x1 - guide.x0) / columns;
+    const height = (guide.y1 - guide.y0) / rows;
+    const fragment = document.createDocumentFragment();
+
+    for (let column = 0; column < columns; column += 1) {
+      for (let row = 0; row < rows; row += 1) {
+        const rect = createSvg("rect", {
+          x: guide.x0 + column * width,
+          y: guide.y0 + row * height,
+          width: width + .35,
+          height: height + .35,
+          "data-column": column,
+          "data-row": row
+        });
+        fragment.appendChild(rect);
+      }
+    }
+    group.appendChild(fragment);
+  }
+
+  function buildCutoffArrows() {
+    const group = document.getElementById("cutoffArrows");
+    [145, 275, 405, 535].forEach((x, index) => {
+      const upward = index % 2 === 0;
+      group.appendChild(createSvg("line", {
+        x1: x,
+        y1: upward ? guide.y1 - 18 : guide.y0 + 18,
+        x2: x,
+        y2: upward ? guide.y0 + 18 : guide.y1 - 18,
+        class: upward ? "component-arrow-a" : "component-arrow-b",
+        "marker-end": upward ? "url(#arrowA)" : "url(#arrowB)"
+      }));
+    });
+  }
+
+  function rayPath(startY, firstDirection, kz) {
+    if (kz < .018) return "";
+    const points = [{ x: guide.x0 + 5, y: startY }];
+    let x = guide.x0 + 5;
+    let y = startY;
+    let direction = firstDirection;
+    const fullRun = (guide.y1 - guide.y0) * kz;
+
+    for (let guard = 0; guard < 70 && x < guide.x1; guard += 1) {
+      const wallY = direction < 0 ? guide.y0 + 5 : guide.y1 - 5;
+      const vertical = Math.abs(wallY - y);
+      const horizontal = fullRun * vertical / (guide.y1 - guide.y0);
+      const nextX = Math.min(guide.x1 - 4, x + horizontal);
+      const fraction = horizontal > 0 ? (nextX - x) / horizontal : 0;
+      const nextY = y + (wallY - y) * fraction;
+      points.push({ x: nextX, y: nextY });
+      if (nextX >= guide.x1 - 4) break;
+      x = nextX;
+      y = wallY;
+      direction *= -1;
+    }
+
+    return points.map((point, index) => `${index ? "L" : "M"}${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join(" ");
+  }
+
+  function firstArrow(direction, kz) {
+    const start = { x: guide.x0 + 18, y: guide.cy };
+    const targetY = direction < 0 ? guide.y0 + 5 : guide.y1 - 5;
+    const vertical = Math.abs(targetY - start.y);
+    const horizontal = (guide.y1 - guide.y0) * kz * vertical / (guide.y1 - guide.y0);
+    const length = Math.hypot(horizontal, vertical);
+    if (length < 1) return [start.x, start.y, start.x, targetY];
+    const displayLength = Math.min(92, length * .72);
+    return [
+      start.x,
+      start.y,
+      start.x + displayLength * horizontal / length,
+      start.y + displayLength * (targetY - start.y) / length
+    ];
+  }
+
+  function envelopePath(sign, alpha) {
+    const points = [];
+    for (let index = 0; index <= 80; index += 1) {
+      const t = index / 80;
+      const x = guide.x0 + t * (guide.x1 - guide.x0);
+      const amplitude = 95 * Math.exp(-alpha * 3.25 * t);
+      const y = guide.cy + sign * amplitude;
+      points.push(`${index ? "L" : "M"}${x.toFixed(2)} ${y.toFixed(2)}`);
+    }
+    return points.join(" ");
+  }
+
+  function renderField(regime, kz, alpha) {
+    const cells = document.querySelectorAll("#fieldCells rect");
+    const columns = 54;
+    const rows = 20;
+
+    cells.forEach(cell => {
+      const column = Number(cell.dataset.column);
+      const row = Number(cell.dataset.row);
+      const z = (column + .5) / columns;
+      const x = 1 - 2 * (row + .5) / rows;
+      const transverse = Math.cos(Math.PI * x / 2);
+      let value;
+
+      if (regime === "propagating") {
+        value = transverse * Math.cos(5.1 * kz * z - state.phase);
+      } else if (regime === "cutoff") {
+        value = transverse * Math.cos(state.phase);
+      } else {
+        value = transverse * Math.exp(-3.25 * alpha * z) * Math.cos(state.phase);
+      }
+
+      cell.setAttribute("class", value >= 0 ? "field-positive" : "field-negative");
+      cell.setAttribute("opacity", (.025 + .40 * Math.abs(value)).toFixed(3));
+    });
+  }
+
+  function renderWavefronts(regime, kz) {
+    const group = document.getElementById("wavefronts");
+    group.replaceChildren();
+    if (regime !== "propagating" || kz < .08) return;
+
+    const slope = 1 / kz;
+    const spacing = 84;
+    for (let family = -1; family <= 1; family += 2) {
+      for (let offset = -500; offset < 850; offset += spacing) {
+        const xA = guide.x0 + offset;
+        const yA = guide.cy - family * slope * offset;
+        const xB = guide.x1 + offset;
+        const yB = guide.cy - family * slope * (guide.x1 - guide.x0 + offset);
+        group.appendChild(createSvg("line", {
+          x1: xA,
+          y1: yA,
+          x2: xB,
+          y2: yB,
+          class: family < 0 ? "wavefront a" : "wavefront b"
+        }));
+      }
+    }
+  }
+
+  function renderRealSpace(ratio, regime) {
+    const kz = ratio > 1 ? Math.sqrt(ratio * ratio - 1) : 0;
+    const alpha = ratio < 1 ? Math.sqrt(1 - ratio * ratio) : 0;
+    const theta = ratio >= 1 ? Math.asin(1 / ratio) : null;
+
+    renderField(regime, kz, alpha);
+    renderWavefronts(regime, kz);
+
+    const rayUp = document.getElementById("rayUp");
+    const rayDown = document.getElementById("rayDown");
+    const arrowUp = document.getElementById("arrowUp");
+    const arrowDown = document.getElementById("arrowDown");
+    const cutoffArrows = document.getElementById("cutoffArrows");
+    const envelopeTop = document.getElementById("envelopeTop");
+    const envelopeBottom = document.getElementById("envelopeBottom");
+    const axialPhaseLabel = document.getElementById("axialPhaseLabel");
+    const axialZeroLabel = document.getElementById("axialZeroLabel");
+    const evanescentLabel = document.getElementById("evanescentLabel");
+    const upLabel = document.getElementById("componentUpLabel");
+    const downLabel = document.getElementById("componentDownLabel");
+    const componentNoteA = document.getElementById("componentNoteA");
+    const componentNoteB = document.getElementById("componentNoteB");
+    const fieldNote = document.getElementById("fieldNote");
+
+    const propagating = regime === "propagating";
+    const cutoff = regime === "cutoff";
+    const evanescent = regime === "evanescent";
+
+    rayUp.style.display = propagating ? "" : "none";
+    rayDown.style.display = propagating ? "" : "none";
+    arrowUp.style.display = propagating ? "" : "none";
+    arrowDown.style.display = propagating ? "" : "none";
+    cutoffArrows.style.display = cutoff ? "" : "none";
+    envelopeTop.style.display = evanescent ? "" : "none";
+    envelopeBottom.style.display = evanescent ? "" : "none";
+    evanescentLabel.style.display = evanescent ? "" : "none";
+    axialPhaseLabel.style.display = propagating ? "" : "none";
+    axialZeroLabel.style.display = cutoff ? "" : "none";
+    upLabel.style.display = propagating ? "" : "none";
+    downLabel.style.display = propagating ? "" : "none";
+    componentNoteA.style.display = evanescent ? "none" : "";
+    componentNoteB.style.display = evanescent ? "none" : "";
+    fieldNote.textContent = evanescent ? "standing transverse profile × axial decay" : "colour field: their superposed mode";
+
+    if (propagating) {
+      rayUp.setAttribute("d", rayPath(guide.cy, -1, kz));
+      rayDown.setAttribute("d", rayPath(guide.cy, 1, kz));
+      setLine("arrowUp", ...firstArrow(-1, kz));
+      setLine("arrowDown", ...firstArrow(1, kz));
+      setMath(realReadout, `\\theta=${(theta * 180 / Math.PI).toFixed(1)}^\\circ\\;\\cdot\\;k_z/k_\\perp=${kz.toFixed(2)}`);
+    } else if (cutoff) {
+      setMath(realReadout, "\\theta=90.0^\\circ\\;\\cdot\\;k_z=0");
+    } else {
+      envelopeTop.setAttribute("d", envelopePath(-1, alpha));
+      envelopeBottom.setAttribute("d", envelopePath(1, alpha));
+      setMath(realReadout, `\\text{no real }\\theta\\;\\cdot\\;k_z/k_\\perp=i${alpha.toFixed(2)}`);
+    }
+  }
+
+  function quarterCirclePath(radius) {
+    const r = Math.max(1, radius);
+    return `M${(kView.ox + r).toFixed(2)} ${kView.oy} A${r.toFixed(2)} ${r.toFixed(2)} 0 0 0 ${kView.ox} ${(kView.oy - r).toFixed(2)}`;
+  }
+
+  function renderKSpace(ratio, regime) {
+    const radius = kView.scale * ratio;
+    const fixedY = kView.oy - kView.scale;
+    const kz = ratio > 1 ? Math.sqrt(ratio * ratio - 1) : 0;
+    const px = kView.ox + kView.scale * kz;
+    const py = fixedY;
+
+    document.getElementById("kCircle").setAttribute("d", quarterCirclePath(radius));
+    document.getElementById("fixedLine").setAttribute("y1", fixedY);
+    document.getElementById("fixedLine").setAttribute("y2", fixedY);
+    setMath(kReadout, `k_0/k_\\perp=${ratio.toFixed(2)}`);
+
+    const vector = document.getElementById("kVector");
+    const horizontal = document.getElementById("projectionHorizontal");
+    const vertical = document.getElementById("projectionVertical");
+    const halo = document.getElementById("kPointHalo");
+    const point = document.getElementById("kPoint");
+    const arc = document.getElementById("angleArc");
+    const cross = document.getElementById("noIntersectionMark");
+    const missLabel = document.getElementById("missLabel");
+    const thetaLabel = document.getElementById("thetaLabel");
+    const kzLabel = document.getElementById("kzProjectionLabel");
+    const kzMath = document.getElementById("kzMath");
+    const kzZeroMath = document.getElementById("kzZeroMath");
+
+    const hasRealPoint = regime !== "evanescent";
+    [vector, horizontal, vertical, halo, point, arc, thetaLabel, kzLabel].forEach(element => {
+      element.style.display = hasRealPoint ? "" : "none";
+    });
+    cross.style.display = hasRealPoint ? "none" : "";
+    missLabel.style.display = hasRealPoint ? "none" : "";
+
+    if (hasRealPoint) {
+      setLine("kVector", kView.ox, kView.oy, px, py);
+      setLine("projectionHorizontal", kView.ox, py, px, py);
+      setLine("projectionVertical", px, py, px, kView.oy);
+      halo.setAttribute("cx", px);
+      halo.setAttribute("cy", py);
+      point.setAttribute("cx", px);
+      point.setAttribute("cy", py);
+
+      const theta = Math.atan2(kView.oy - py, px - kView.ox);
+      const arcRadius = 38;
+      const startX = kView.ox + arcRadius;
+      const startY = kView.oy;
+      const endX = kView.ox + arcRadius * Math.cos(theta);
+      const endY = kView.oy - arcRadius * Math.sin(theta);
+      arc.setAttribute("d", `M${startX} ${startY} A${arcRadius} ${arcRadius} 0 0 0 ${endX.toFixed(2)} ${endY.toFixed(2)}`);
+      setForeignCenter(thetaLabel, kView.ox + 42 * Math.cos(theta / 2), kView.oy - 42 * Math.sin(theta / 2) - 2);
+      setForeignCenter(kzLabel, Math.max(kView.ox + 34, (kView.ox + px) / 2), 281);
+
+      const atCutoff = regime === "cutoff";
+      kzMath.toggleAttribute("hidden", atCutoff);
+      kzZeroMath.toggleAttribute("hidden", !atCutoff);
+      if (atCutoff) setForeignCenter(kzLabel, kView.ox + 45, 281);
+    } else {
+      const topOfCircle = kView.oy - radius;
+      const crossY = (fixedY + topOfCircle) / 2;
+      setLine("crossA", kView.ox - 8, crossY - 8, kView.ox + 8, crossY + 8);
+      setLine("crossB", kView.ox - 8, crossY + 8, kView.ox + 8, crossY - 8);
+      missLabel.setAttribute("y", Math.max(60, crossY - 12));
+    }
+
+    const circleLabel = document.getElementById("circleLabel");
+    if (regime === "cutoff") {
+      setForeignCenter(circleLabel, 166, 191);
+    } else {
+      const labelAngle = Math.PI / 3;
+      setForeignCenter(
+        circleLabel,
+        kView.ox + radius * Math.cos(labelAngle) + 16,
+        kView.oy - radius * Math.sin(labelAngle) - 12
+      );
+    }
+  }
+
+  function renderStateText(regime) {
+    statePill.className = `state-pill${regime === "propagating" ? "" : ` ${regime}`}`;
+    statePill.textContent = regime;
+    dynamicItem.classList.toggle("evanescent", regime === "evanescent");
+
+    show(propagatingEquation, regime === "propagating");
+    show(cutoffEquation, regime === "cutoff");
+    show(evanescentEquation, regime === "evanescent");
+
+    if (regime === "propagating") {
+      realTitle.textContent = "oblique components create axial phase advance";
+      dynamicLabel.textContent = "real axial component";
+    } else if (regime === "cutoff") {
+      realTitle.textContent = "the components are purely transverse";
+      dynamicLabel.textContent = "cutoff";
+    } else {
+      realTitle.textContent = "the transverse pattern remains while its amplitude decays";
+      dynamicLabel.textContent = "imaginary axial component";
+    }
+  }
+
+  function render() {
+    state.ratio = Number(ratioInput.value);
+    const regime = classify(state.ratio);
+    setMath(ratioReadout, `\\omega/\\omega_c=${state.ratio.toFixed(2)}`);
+    renderStateText(regime);
+    renderRealSpace(state.ratio, regime);
+    renderKSpace(state.ratio, regime);
+    reportHeight();
+  }
+
+  let lastTime = performance.now();
+  function animate(now) {
+    const elapsed = Math.min(50, now - lastTime);
+    lastTime = now;
+    if (!state.reducedMotion) state.phase = (state.phase + elapsed * .00215) % (2 * Math.PI);
+    const regime = classify(state.ratio);
+    const kz = state.ratio > 1 ? Math.sqrt(state.ratio * state.ratio - 1) : 0;
+    const alpha = state.ratio < 1 ? Math.sqrt(1 - state.ratio * state.ratio) : 0;
+    renderField(regime, kz, alpha);
+    requestAnimationFrame(animate);
+  }
+
+  let lastReportedHeight = 0;
+  function reportHeight() {
+    if (window.parent === window) return;
+    const target = document.querySelector(".viz") || document.body;
+    const rectangle = target.getBoundingClientRect();
+    const height = Math.max(1, Math.ceil(rectangle.bottom + window.scrollY));
+    if (Math.abs(height - lastReportedHeight) < 2) return;
+    lastReportedHeight = height;
+    try {
+      const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+      window.parent.postMessage({ type: "article-visualization-height", height }, targetOrigin);
+    } catch (_) {}
+  }
+
+  function loadMathJax() {
+    window.MathJax = {
+      tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+      svg: { fontCache: "local" },
+      startup: {
+        typeset: false,
+        ready() {
+          MathJax.startup.defaultReady();
+          MathJax.startup.promise
+            .then(() => MathJax.typesetPromise([document.body]))
+            .then(() => { render(); reportHeight(); })
+            .catch(() => {});
+        }
+      }
+    };
+
+    let source = "";
+    try {
+      source = [...window.parent.document.scripts]
+        .map(script => script.src)
+        .find(value => value && /mathjax/i.test(value)) || "";
+    } catch (_) {}
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = source || "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js";
+    document.head.appendChild(script);
+  }
+
+  buildFieldCells();
+  buildCutoffArrows();
+  ratioInput.addEventListener("input", render);
+  window.addEventListener("resize", reportHeight);
+
+  render();
+  loadMathJax();
+  requestAnimationFrame(animate);
+
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(reportHeight);
+    observer.observe(document.querySelector(".viz") || document.body);
+  }
+  window.addEventListener("load", reportHeight);
+})();
+</script>
+<script src="/assets/js/visualization-frame.js"></script>
+</body>
+</html>
