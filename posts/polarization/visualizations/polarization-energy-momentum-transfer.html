@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>From field energy to force and torque</title>
+<title>Why polarized light pushes—and when it twists</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&display=swap">
 <script>
 (() => {
   try {
@@ -29,14 +29,11 @@
   --accent: var(--viz-accent, #0d7659);
   --accent-ink: var(--viz-accent-ink, #095f48);
   --accent-soft: var(--viz-accent-soft, #dcefe7);
-  --accent-border: var(--viz-accent-border, #91c7b6);
   --linear: #315fae;
   --circular: #a25a24;
   --spin: #7a56b1;
-  --shadow: rgba(20, 31, 25, .06);
   --font-reading: "Lora", Georgia, "Times New Roman", serif;
   --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -49,816 +46,389 @@
   --accent: var(--viz-accent, #63d2aa);
   --accent-ink: var(--viz-accent-ink, #8ee7c6);
   --accent-soft: var(--viz-accent-soft, #16362c);
-  --accent-border: var(--viz-accent-border, #3c7964);
   --linear: #8bb2ff;
   --circular: #efa56d;
   --spin: #cba9ff;
-  --shadow: rgba(0, 0, 0, .18);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; overflow-x: hidden; background: transparent; color: var(--ink); }
-body { padding: clamp(7px, 1.8vw, 18px); font-family: var(--font-reading); }
+body { padding: clamp(6px, 1.5vw, 14px); font-family: var(--font-reading); }
 button, input { font-family: var(--font-ui); }
 mjx-container { margin: 0 !important; }
 .viz {
   width: min(1120px, 100%);
   margin: 0 auto;
-  overflow: hidden;
   border: 1px solid var(--border);
   background: var(--surface);
-  box-shadow: 0 18px 48px var(--shadow);
+  overflow: hidden;
 }
 .topbar {
-  display: block;
-  padding: clamp(16px, 2.6vw, 25px);
+  padding: clamp(14px, 2.5vw, 24px);
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 76%);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 78%);
 }
-.heading-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 18px; }
 .eyebrow {
-  margin: 0;
+  margin: 0 0 6px;
   color: var(--accent-ink);
   font-family: var(--font-ui);
-  font-size: .68rem;
-  font-weight: 750;
-  line-height: 1;
-  letter-spacing: .095em;
+  font-size: .67rem;
+  font-weight: 760;
+  letter-spacing: .09em;
   text-transform: uppercase;
 }
 h1 {
   margin: 0;
-  font-family: var(--font-reading);
-  font-size: clamp(1.25rem, 2.7vw, 1.9rem);
+  max-width: 100%;
+  font-size: clamp(1.28rem, 2.7vw, 1.9rem);
   font-weight: 560;
-  line-height: 1.14;
+  line-height: 1.16;
   letter-spacing: -.014em;
+  overflow-wrap: anywhere;
 }
-.definition {
-  max-width: 760px;
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: clamp(.92rem, 1.55vw, 1.03rem);
-  line-height: 1.5;
-}
-.stage-controls {
-  min-width: 0;
-  display: flex;
-  align-items: stretch;
-  justify-content: flex-end;
-  gap: 5px;
-}
+.controls { display: flex; align-items: stretch; gap: 6px; margin-top: 13px; }
 .phase-control {
-  width: 92px;
-  min-width: 92px;
+  width: 124px;
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto auto;
   gap: 3px;
-  align-content: center;
-  padding: 4px 7px 5px;
+  padding: 5px 8px;
   border: 1px solid var(--border);
-  background: var(--surface-muted);
+  background: var(--surface);
 }
-.compact-control-label {
+.control-label {
   display: flex;
-  align-items: baseline;
   justify-content: space-between;
-  gap: 5px;
+  gap: 6px;
   color: var(--muted);
   font-family: var(--font-ui);
-  font-size: .58rem;
+  font-size: .59rem;
   font-weight: 750;
-  letter-spacing: .085em;
-  line-height: 1;
+  letter-spacing: .08em;
   text-transform: uppercase;
 }
-.compact-control-label strong {
-  color: var(--accent-ink);
-  font-family: var(--font-mono);
-  font-size: .64rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  white-space: nowrap;
-}
-input[type="range"] {
-  width: 100%;
-  min-width: 0;
-  height: 12px;
-  margin: 0;
-  accent-color: var(--accent);
-}
-.helicity-tabs {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 3px;
-}
+.control-label strong { color: var(--accent-ink); letter-spacing: 0; }
+input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--accent); }
+.helicity-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
 .helicity-button {
-  min-width: 47px;
-  min-height: 35px;
-  padding: 4px 6px;
+  min-width: 62px;
   border: 1px solid var(--border-strong);
   background: var(--surface);
   color: var(--ink);
-  cursor: pointer;
-  font-family: var(--font-ui);
-  font-size: .64rem;
-  font-weight: 750;
-  letter-spacing: .04em;
-  white-space: nowrap;
-}
-.helicity-button[aria-pressed="true"] {
-  border-color: var(--spin);
-  background: var(--spin);
-  color: var(--surface);
-}
-.helicity-button:focus-visible,
-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-.energy-bridge {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) 34px minmax(0, .82fr) 34px minmax(0, .82fr);
-  align-items: stretch;
-  padding: 11px clamp(11px, 2.2vw, 22px);
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
-.bridge-node {
-  min-width: 0;
-  display: grid;
-  place-content: center;
-  min-height: 66px;
-  padding: 8px 11px;
-  border: 1px solid var(--border);
-  background: var(--surface-muted);
-  text-align: center;
-}
-.bridge-node strong {
-  display: block;
-  margin-bottom: 4px;
-  color: var(--ink);
-  font-family: var(--font-ui);
   font-size: .66rem;
   font-weight: 750;
-  letter-spacing: .085em;
-  line-height: 1.15;
-  text-transform: uppercase;
+  cursor: pointer;
 }
-.bridge-node .formula {
-  color: var(--ink);
-  font-family: var(--font-reading);
-  font-size: clamp(.78rem, 1.25vw, .96rem);
-  line-height: 1.24;
-}
-.bridge-node small {
-  display: block;
-  margin-top: 4px;
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: clamp(.66rem, .95vw, .74rem);
-  line-height: 1.36;
-}
-.bridge-arrow,
-.step-arrow {
-  position: relative;
-  min-width: 0;
-}
-.bridge-arrow::before,
-.step-arrow::before {
-  content: "";
-  position: absolute;
-  left: 5px;
-  right: 8px;
-  top: 50%;
-  border-top: 1.6px solid var(--border-strong);
-}
-.bridge-arrow::after,
-.step-arrow::after {
-  content: "";
-  position: absolute;
-  right: 6px;
-  top: calc(50% - 4px);
-  width: 7px;
-  height: 7px;
-  border-top: 1.6px solid var(--border-strong);
-  border-right: 1.6px solid var(--border-strong);
-  transform: rotate(45deg);
-}
-
-.figure { margin: 0; padding: clamp(10px, 2.1vw, 21px); }
-.main-grid {
-  display: grid;
-  grid-template-columns: minmax(420px, .95fr) minmax(0, 1.35fr);
-  gap: 10px;
-  align-items: stretch;
-}
-.panel {
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: var(--surface-muted);
-}
-.panel-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 42px;
+.helicity-button[aria-pressed="true"] { border-color: var(--spin); background: var(--spin); color: var(--surface); }
+.section-title {
   padding: 10px 12px;
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
-}
-.panel-head strong {
-  color: var(--ink);
   font-family: var(--font-ui);
-  font-size: .70rem;
-  font-weight: 750;
+  font-size: .71rem;
+  font-weight: 760;
   letter-spacing: .085em;
   text-transform: uppercase;
 }
-.panel-head > span,
-.panel-heading-copy > span {
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: .72rem;
-  line-height: 1.25;
-  text-align: right;
-}
-.field-panel-head {
+.comparison { display: grid; grid-template-columns: 1fr 1fr; }
+.column { min-width: 0; }
+.column + .column { border-left: 1px solid var(--border); }
+.field-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    "title controls"
-    "subtitle subtitle";
-  align-items: center;
-  gap: 5px 12px;
-  padding: 8px 10px 7px;
-}
-.panel-heading-copy {
-  min-width: 0;
-  display: contents;
-}
-.panel-heading-copy > strong {
-  grid-area: title;
-  line-height: 1.3;
-}
-.panel-heading-copy > span {
-  grid-area: subtitle;
-  text-align: left;
-  font-style: italic;
-}
-.field-panel-head .stage-controls { grid-area: controls; }
-.field-rows { display: grid; }
-.field-row {
-  display: grid;
-  grid-template-columns: 126px minmax(0, 1fr);
+  grid-template-columns: 128px minmax(0, 1fr);
   gap: 10px;
   align-items: center;
-  min-width: 0;
+  min-height: 154px;
   padding: 11px;
-  background: color-mix(in srgb, var(--surface) 80%, var(--surface-muted));
+  background: var(--surface-muted);
 }
-.field-row + .field-row { border-top: 1px solid var(--border); }
-.field-svg { display: block; width: 126px; height: 126px; }
-.field-copy { min-width: 0; }
-.field-name {
+.field-card.linear { border-top: 3px solid var(--linear); }
+.field-card.circular { border-top: 3px solid var(--circular); }
+.field-svg { display: block; width: 128px; height: 128px; }
+.card-topline {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 5px;
+}
+.card-name {
   font-family: var(--font-ui);
   font-size: .68rem;
-  font-weight: 750;
+  font-weight: 760;
   letter-spacing: .085em;
   text-transform: uppercase;
 }
-.field-row.linear .field-name { color: var(--linear); }
-.field-row.circular .field-name { color: var(--circular); }
-.field-name .power-badge {
+.linear .card-name { color: var(--linear); }
+.circular .card-name { color: var(--circular); }
+.badge {
   padding: 2px 6px;
-  border: 1px solid var(--accent-border);
-  color: var(--accent-ink);
-  font-family: var(--font-mono);
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
+  font-family: var(--font-ui);
   font-size: .60rem;
-  font-weight: 500;
-  letter-spacing: .02em;
-  text-transform: none;
+  font-weight: 700;
+  letter-spacing: .03em;
   white-space: nowrap;
 }
-.field-equation {
-  color: var(--ink);
-  font-family: var(--font-reading);
-  font-size: clamp(.76rem, 1.08vw, .90rem);
-  line-height: 1.28;
-}
-.field-note {
-  margin-top: 5px;
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: clamp(.66rem, .95vw, .75rem);
-  line-height: 1.4;
-}
-.same-power-note {
-  padding: 10px 12px;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: clamp(.7rem, 1vw, .80rem);
-  line-height: 1.42;
-  text-align: center;
-}
-.same-power-note strong {
-  color: var(--accent-ink);
-  font-family: var(--font-reading);
-  font-weight: 600;
-}
-
-.spin-origin {
-  grid-column: 1 / -1;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-}
-.spin-origin-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border);
-}
-.spin-origin-head strong {
-  color: var(--ink);
-  font-family: var(--font-ui);
-  font-size: .66rem;
-  font-weight: 750;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-.spin-origin-head span {
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: .70rem;
-  font-style: italic;
-  text-align: right;
-}
-.spin-origin-grid { display: grid; grid-template-columns: 1fr; }
-.spin-origin-item {
-  min-width: 0;
+.equation { font-size: clamp(.76rem, 1.1vw, .9rem); line-height: 1.32; }
+.note { margin-top: 5px; color: var(--muted); font-size: clamp(.67rem, .94vw, .76rem); line-height: 1.4; }
+.spin-card {
   display: grid;
-  grid-template-columns: 84px minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 14px;
   align-items: center;
-  padding: 10px;
+  min-height: 132px;
+  padding: 12px 14px;
+  background: var(--surface);
 }
-.spin-origin-item + .spin-origin-item { border-top: 1px solid var(--border); }
-.spin-origin-item strong {
+.spin-card strong {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   font-family: var(--font-ui);
   font-size: .66rem;
-  font-weight: 750;
+  font-weight: 760;
   letter-spacing: .075em;
   text-transform: uppercase;
 }
-.linear-origin strong { color: var(--linear); }
-.circular-origin strong { color: var(--circular); }
-.spin-origin-item span {
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: clamp(.66rem, .93vw, .74rem);
-  line-height: 1.4;
-}
-.rotation-pair {
+.linear-spin strong { color: var(--linear); }
+.circular-spin strong { color: var(--circular); }
+.spin-card p { margin: 0; color: var(--muted); font-size: clamp(.67rem, .94vw, .76rem); line-height: 1.42; }
+.spin-visual {
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-}
-.rotation-pair.single { min-height: 50px; }
-.rotation-chip {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 29px;
-  height: 29px;
-  border: 2px solid var(--spin);
-  border-radius: 50%;
+  gap: 7px;
   color: var(--spin);
-  font-family: var(--font-ui);
-  font-size: .82rem;
-  font-weight: 800;
 }
-.rotation-chip::after {
-  content: "";
-  position: absolute;
-  right: -3px;
-  top: 2px;
-  width: 7px;
-  height: 7px;
-  border-top: 2px solid var(--spin);
-  border-right: 2px solid var(--spin);
-  transform: rotate(22deg);
-}
-.rotation-chip.minus { transform: scaleX(-1); }
-.rotation-chip.minus::before {
-  content: "−";
-  transform: scaleX(-1);
-}
-.rotation-chip.minus { color: transparent; }
-.rotation-chip.minus::before { color: var(--spin); }
-.join-sign {
-  color: var(--muted);
-  font-family: var(--font-ui);
-  font-weight: 750;
-}
-.packet-panel { display: grid; grid-template-rows: auto auto 1fr; }
-.packet-intro {
+.spin-component {
   display: grid;
-  grid-template-columns: minmax(0, .86fr) 34px minmax(0, 1fr);
-  align-items: stretch;
-  padding: 10px;
-  border-bottom: 1px solid var(--border);
+  justify-items: center;
+  align-content: center;
+  gap: 3px;
+  min-width: 52px;
 }
-.packet-node {
-  min-width: 0;
-  display: grid;
-  place-content: center;
-  min-height: 70px;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  text-align: center;
-}
-.packet-node strong {
+.spin-glyph {
   display: block;
-  margin-bottom: 4px;
-  color: var(--ink);
-  font-family: var(--font-ui);
-  font-size: .65rem;
-  font-weight: 750;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+  width: 48px;
+  height: 48px;
+  overflow: visible;
 }
-.packet-node .formula {
-  color: var(--ink);
+.spin-glyph .spin-arc {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+}
+.spin-glyph .spin-arrowhead { fill: currentColor; stroke: none; }
+.spin-glyph .spin-glyph-sign {
+  fill: currentColor;
   font-family: var(--font-reading);
-  font-size: clamp(.78rem, 1.2vw, .95rem);
-  line-height: 1.22;
+  font-size: 14px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
 }
-.packet-node small {
-  display: block;
-  margin-top: 4px;
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: .68rem;
-  line-height: 1.34;
-}
-.consequence-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  min-height: 0;
-}
-.consequence {
-  min-width: 0;
-  display: grid;
-  grid-template-rows: auto auto auto 1fr;
-  padding: 10px;
-  background: color-mix(in srgb, var(--surface) 82%, var(--surface-muted));
-}
-.consequence + .consequence { border-left: 1px solid var(--border); }
-.consequence-title {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  padding-bottom: 7px;
-  border-bottom: 1px solid var(--border);
-}
-.consequence-title strong {
-  color: var(--ink);
-  font-family: var(--font-ui);
-  font-size: .68rem;
-  font-weight: 750;
-  letter-spacing: .085em;
-  text-transform: uppercase;
-}
-.consequence-title span {
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: .68rem;
-  font-style: italic;
-  text-align: right;
-}
-.derivation-step {
-  display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  gap: 8px;
-  align-items: center;
-  min-width: 0;
-  padding: 9px 0;
-  border-bottom: 1px solid var(--border);
-}
-.step-label {
-  color: var(--muted);
-  font-family: var(--font-ui);
-  font-size: .60rem;
-  font-weight: 750;
-  letter-spacing: .08em;
-  line-height: 1.2;
-  text-transform: uppercase;
-}
-.step-equation {
-  min-width: 0;
-  color: var(--ink);
-  font-family: var(--font-reading);
-  font-size: clamp(.74rem, 1.05vw, .87rem);
-  line-height: 1.28;
-}
-.step-equation small {
-  display: block;
-  margin-top: 4px;
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: .82em;
-  line-height: 1.36;
-}
-.momentum-step { border-left: 3px solid var(--accent); padding-left: 9px; }
-.spin-step { border-left: 3px solid var(--spin); padding-left: 9px; }
-.token-visual {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 8px;
-  align-items: center;
-  min-height: 98px;
-  padding-top: 9px;
-}
-.token-stack {
-  display: grid;
-  grid-template-columns: repeat(3, 25px);
-  gap: 4px;
-  justify-content: center;
-}
-.token {
+.spin-component-label {
+  min-height: 20px;
   display: grid;
   place-items: center;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
   color: var(--ink);
-  font-family: var(--font-mono);
-  font-size: .68rem;
-  font-weight: 600;
+  font-size: .75rem;
   line-height: 1;
+  white-space: nowrap;
 }
-.token.momentum { border-color: var(--accent-border); color: var(--accent-ink); }
-.token.spin { border-color: color-mix(in srgb, var(--spin) 55%, var(--border)); color: var(--spin); }
-.token-arrow {
+.spin-operator {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: .9rem;
+  font-weight: 700;
+}
+.spin-flow-arrow {
   position: relative;
-  width: 34px;
-  height: 18px;
+  flex: 0 0 23px;
+  width: 23px;
+  height: 12px;
+  color: var(--muted);
 }
-.token-arrow::before {
+.spin-flow-arrow::before {
   content: "";
   position: absolute;
   left: 0;
   right: 5px;
-  top: 8px;
-  border-top: 1.6px solid var(--border-strong);
+  top: 5px;
+  border-top: 1.5px solid currentColor;
 }
-.token-arrow::after {
+.spin-flow-arrow::after {
   content: "";
   position: absolute;
-  right: 3px;
-  top: 4px;
+  right: 1px;
+  top: 2px;
   width: 7px;
   height: 7px;
-  border-top: 1.6px solid var(--border-strong);
-  border-right: 1.6px solid var(--border-strong);
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
   transform: rotate(45deg);
 }
-.target-mini {
-  position: relative;
-  width: 82px;
-  height: 82px;
-  margin: 0 auto;
-}
-.target-disc {
-  position: absolute;
-  left: 17px;
-  top: 17px;
-  width: 48px;
-  height: 48px;
-  border: 2px solid var(--border-strong);
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--accent-soft) 58%, var(--surface));
-}
-.force-arrow-mini {
-  position: absolute;
-  left: 53px;
-  top: 40px;
-  width: 26px;
-  border-top: 3px solid var(--accent-ink);
-}
-.force-arrow-mini::after {
-  content: "";
-  position: absolute;
-  right: -1px;
-  top: -5px;
-  width: 8px;
-  height: 8px;
-  border-top: 3px solid var(--accent-ink);
-  border-right: 3px solid var(--accent-ink);
-  transform: rotate(45deg);
-}
-.torque-arrow-mini {
-  position: absolute;
-  left: 8px;
-  top: 7px;
-  width: 66px;
-  height: 66px;
-  border: 3px solid transparent;
-  border-top-color: var(--spin);
-  border-right-color: var(--spin);
-  border-radius: 50%;
-  transform: rotate(-25deg);
-}
-.torque-arrow-mini.reverse {
-  border-right-color: transparent;
-  border-left-color: var(--spin);
-  transform: rotate(25deg);
-}
-.torque-arrow-mini::after {
-  content: "";
-  position: absolute;
-  right: -3px;
-  top: 5px;
-  width: 8px;
-  height: 8px;
-  border-top: 3px solid var(--spin);
-  border-right: 3px solid var(--spin);
-  transform: rotate(22deg);
-}
-.torque-arrow-mini.reverse::after {
-  left: -3px;
-  right: auto;
-  border-right: 0;
-  border-left: 3px solid var(--spin);
-  transform: rotate(-22deg);
-}
-.visual-caption {
-  grid-column: 1 / -1;
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: .68rem;
-  font-style: italic;
-  line-height: 1.34;
+.spin-result {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--linear);
+  font-size: .78rem;
+  line-height: 1.2;
   text-align: center;
+  white-space: nowrap;
 }
-.outcomes {
+.circular-spin .spin-result { color: var(--spin); }
+.math-state[hidden],
+.spin-glyph g[hidden] { display: none !important; }
+.channel {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  border: 1px solid var(--border);
-  border-top: 0;
+  grid-template-rows: 72px 94px 94px 94px 142px auto;
+  background: var(--surface-muted);
+}
+.channel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
-.outcome {
-  min-width: 0;
+.channel-head strong {
+  font-family: var(--font-ui);
+  font-size: .68rem;
+  font-weight: 760;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.channel-head span { color: var(--muted); font-size: .68rem; font-style: italic; text-align: right; }
+.derivation {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-height: 0;
+  height: 100%;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 76%, var(--surface-muted));
+}
+.derivation.momentum { box-shadow: inset 3px 0 0 var(--accent); }
+.derivation.spin { box-shadow: inset 3px 0 0 var(--spin); }
+.step-label {
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: .59rem;
+  font-weight: 760;
+  letter-spacing: .075em;
+  line-height: 1.22;
+  text-transform: uppercase;
+}
+.step-copy { min-width: 0; font-size: clamp(.74rem, 1.05vw, .88rem); line-height: 1.3; }
+.step-copy small { display: block; margin-top: 3px; color: var(--muted); font-size: .79em; line-height: 1.35; }
+.diagram-wrap {
+  display: grid;
+  align-items: center;
+  min-height: 0;
+  height: 100%;
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.diagram-caption {
+  padding: 8px 12px 10px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: .7rem;
+  font-style: italic;
+  line-height: 1.4;
+  text-align: center;
+}
+.outcome {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
   gap: 10px;
   align-items: center;
-  padding: 10px 12px;
+  min-height: 90px;
+  padding: 11px 12px;
+  background: var(--surface);
 }
-.outcome + .outcome { border-left: 1px solid var(--border); }
 .outcome-badge {
-  min-width: 68px;
-  padding: 5px 7px;
+  padding: 5px 6px;
   border: 1px solid var(--border-strong);
   font-family: var(--font-ui);
   font-size: .65rem;
-  font-weight: 750;
-  letter-spacing: .085em;
+  font-weight: 760;
+  letter-spacing: .08em;
   text-align: center;
   text-transform: uppercase;
 }
-.outcome.linear .outcome-badge { color: var(--linear); border-color: color-mix(in srgb, var(--linear) 45%, var(--border)); }
-.outcome.circular .outcome-badge { color: var(--circular); border-color: color-mix(in srgb, var(--circular) 45%, var(--border)); }
-.outcome-copy {
-  min-width: 0;
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: clamp(.72rem, 1.02vw, .82rem);
-  line-height: 1.42;
-}
+.outcome.linear .outcome-badge { color: var(--linear); }
+.outcome.circular .outcome-badge { color: var(--circular); }
+.outcome-copy { color: var(--muted); font-size: clamp(.72rem, 1vw, .82rem); line-height: 1.44; }
 .outcome-copy strong { color: var(--ink); font-weight: 600; }
-.omitted-note {
-  padding: 9px 12px;
-  border: 1px solid var(--border);
-  border-top: 0;
-  background: var(--surface-muted);
-  color: var(--muted);
-  font-family: var(--font-reading);
-  font-size: clamp(.7rem, .98vw, .78rem);
-  line-height: 1.38;
-  text-align: center;
-}
-.omitted-note strong { color: var(--ink); font-weight: 600; }
-
 .field-disk { fill: var(--surface); stroke: var(--border-strong); stroke-width: 1.4; }
 .field-inner { fill: color-mix(in srgb, var(--surface-muted) 62%, var(--surface)); stroke: var(--border); stroke-width: 1; }
 .axis { stroke: var(--border-strong); stroke-width: 1; }
 .linear-trace { stroke: var(--linear); stroke-width: 2.4; stroke-linecap: round; }
-.circular-trace { fill: none; stroke: var(--circular); stroke-width: 2.4; }
+.orbit { fill: none; stroke: var(--circular); stroke-width: 2.4; }
 .e-linear { stroke: var(--linear); stroke-width: 4; stroke-linecap: round; }
-.e-circular { stroke: var(--circular); stroke-width: 4; stroke-linecap: round; }
 .tip-linear { fill: var(--linear); }
-.tip-circular { fill: var(--circular); }
+.phase-dot { fill: var(--circular); stroke: var(--surface); stroke-width: 1.2; }
 .rotation { fill: none; stroke: var(--spin); stroke-width: 2.4; stroke-linecap: round; }
-.svg-label {
-  fill: var(--muted);
-  font-family: var(--font-ui);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: .04em;
-}
-.svg-math {
-  fill: var(--ink);
-  font-family: var(--font-reading);
-  font-size: 14px;
-  font-style: italic;
-}
-.sign-disc { fill: var(--surface); stroke: var(--spin); stroke-width: 1.4; }
-.sign-text {
+.svg-label { fill: var(--muted); font-family: var(--font-ui); font-size: 9px; font-weight: 600; }
+.svg-math { fill: var(--ink); font-family: var(--font-reading); font-size: 14px; font-style: italic; }
+.beam-svg { display: block; width: 100%; height: 110px; }
+.beam-line { stroke: var(--border-strong); stroke-width: 1.6; }
+.beam-arrow { stroke: var(--accent-ink); stroke-width: 2.4; stroke-linecap: round; }
+.beam-label { fill: var(--accent-ink); font-family: var(--font-ui); font-size: 11px; font-weight: 700; }
+.spin-icon { fill: none; stroke: var(--spin); stroke-width: 2.1; stroke-linecap: round; }
+.spin-icon-head { fill: var(--spin); stroke: none; }
+.spin-mark {
   fill: var(--spin);
-  font-family: var(--font-ui);
-  font-size: 12px;
-  font-weight: 750;
+  font-family: var(--font-reading);
+  font-size: 13px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
 }
-
-@media (max-width: 900px) {
-  .main-grid { grid-template-columns: 1fr; }
-  .field-rows { grid-template-columns: 1fr 1fr; }
-  .field-row + .field-row { border-top: 0; border-left: 1px solid var(--border); }
-  .same-power-note { grid-column: 1 / -1; }
+.target-fill { fill: color-mix(in srgb, var(--accent-soft) 58%, var(--surface)); stroke: var(--border-strong); stroke-width: 2; }
+.target-label { fill: var(--muted); font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: .03em; }
+.force-out { stroke: var(--accent-ink); stroke-width: 3; stroke-linecap: round; }
+.force-text { fill: var(--accent-ink); font-family: var(--font-reading); font-size: 14px; font-style: italic; }
+.torque-path { fill: none; stroke: var(--spin); stroke-width: 3; stroke-linecap: round; }
+.torque-text { fill: var(--spin); font-family: var(--font-reading); font-size: 14px; font-style: italic; }
+@media (max-width: 760px) {
+  body { padding: 4px; }
+  .topbar { padding: 13px; }
+  .field-card { grid-template-columns: 98px minmax(0, 1fr); gap: 6px; padding: 8px; }
+  .field-svg { width: 98px; height: 98px; }
+  .spin-card { grid-template-columns: 180px minmax(0, 1fr); padding: 9px 10px; }
+  .spin-visual { gap: 5px; }
+  .spin-glyph { width: 40px; height: 40px; }
+  .channel { grid-template-rows: auto; }
+  .derivation { grid-template-columns: 68px minmax(0, 1fr); min-height: 82px; height: auto; padding: 8px; }
+  .diagram-wrap { min-height: 126px; height: auto; }
+  .channel-head { display: block; }
+  .channel-head span { display: block; margin-top: 2px; text-align: left; }
 }
-@media (max-width: 720px) {
-  body { padding: 5px; }
-  .topbar { padding: 14px; }
-  .energy-bridge { grid-template-columns: 1fr; gap: 0; padding: 8px; }
-  .bridge-arrow { height: 24px; }
-  .bridge-arrow::before,
-  .step-arrow::before {
-    left: 50%;
-    right: auto;
-    top: 4px;
-    bottom: 6px;
-    border-top: 0;
-    border-left: 1.6px solid var(--border-strong);
-  }
-  .bridge-arrow::after,
-  .step-arrow::after {
-    left: calc(50% - 4px);
-    right: auto;
-    top: auto;
-    bottom: 5px;
-    transform: rotate(135deg);
-  }
-  .figure { padding: 7px; }
-  .field-rows { grid-template-columns: 1fr; }
-  .field-row + .field-row { border-left: 0; border-top: 1px solid var(--border); }
-  .packet-intro { grid-template-columns: 1fr; gap: 0; }
-  .packet-intro .step-arrow { height: 24px; }
-  .consequence-grid { grid-template-columns: 1fr; }
-  .consequence + .consequence { border-left: 0; border-top: 1px solid var(--border); }
-  .outcomes { grid-template-columns: 1fr; }
-  .outcome + .outcome { border-left: 0; border-top: 1px solid var(--border); }
-}
-@media (max-width: 540px) {
-  .field-panel-head {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap-inline: 8px;
-  }
-  .phase-control { width: 88px; min-width: 88px; }
-  .helicity-button { min-width: 44px; padding-inline: 4px; }
-}
-@media (max-width: 430px) {
-  .field-panel-head {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "title"
-      "controls"
-      "subtitle";
-    align-items: stretch;
-  }
-  .stage-controls { justify-content: flex-start; }
-  .field-row { grid-template-columns: 104px minmax(0, 1fr); gap: 7px; padding: 8px; }
-  .field-svg { width: 104px; height: 104px; }
-  .derivation-step { grid-template-columns: 74px minmax(0, 1fr); }
-  .outcome { grid-template-columns: 1fr; }
+@media (max-width: 520px) {
+  .controls { flex-wrap: wrap; }
+  .phase-control { width: 108px; }
+  .helicity-button { min-width: 54px; }
+  .field-card { grid-template-columns: 1fr; text-align: center; align-content: start; }
+  .field-svg { margin: 0 auto; }
+  .spin-card { grid-template-columns: 1fr; text-align: center; }
+  .spin-visual { margin: 0 auto; }
+  .derivation { grid-template-columns: 1fr; align-content: start; }
+  .outcome { grid-template-columns: 1fr; align-content: start; }
   .outcome-badge { width: max-content; }
 }
 </style>
@@ -866,366 +436,244 @@ input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 <body>
 <main class="viz">
   <header class="topbar">
-    <div>
-      <div class="heading-row">
-        <p class="eyebrow">field → energy → mechanical transfer</p>
-        <h1>Why polarized light pushes—and when it twists</h1>
+    <p class="eyebrow">polarization · momentum · spin</p>
+    <h1>Why polarized light pushes—and when it twists</h1>
+    <div class="controls">
+      <label class="phase-control" for="phase">
+        <span class="control-label">phase <strong id="phaseValue">40°</strong></span>
+        <input id="phase" type="range" min="0" max="359" step="1" value="40" aria-label="Field phase">
+      </label>
+      <div class="helicity-tabs" role="group" aria-label="Circular-polarization spin">
+        <button class="helicity-button" data-helicity="1" aria-pressed="true">\(\sigma=+1\)</button>
+        <button class="helicity-button" data-helicity="-1" aria-pressed="false">\(\sigma=-1\)</button>
       </div>
-      <p class="definition">
-        Polarization determines how the transverse electric field \(\mathbf E\) moves. Maxwell's equations then determine the energy flux \(\mathbf S\); over a beam area \(A\) and a time \(\Delta t\), that flux delivers the energy \(U=P\Delta t\). The arriving energy always carries forward momentum, while a definite circular rotation also carries spin angular momentum. Absorption transfers those two conserved quantities as force and torque.
-      </p>
     </div>
   </header>
 
-  <section class="energy-bridge" aria-label="From the field to a finite amount of energy">
-    <div class="bridge-node">
-      <strong>the field fixes power per area</strong>
-      <span class="formula">
-        \(\displaystyle
-        \mathbf B=\frac1c\hat{\mathbf k}\times\mathbf E
-        \quad\Longrightarrow\quad
-        \mathbf S=\frac1{\mu_0}\mathbf E\times\mathbf B\)
-      </span>
-      <small>
-        Maxwell fixes \(\mathbf B\) once \(\mathbf E\) and the travel direction \(\hat{\mathbf k}\) are known. Hence
-        \(\langle\mathbf S\rangle=\varepsilon_0c\langle|\mathbf E|^2\rangle\hat{\mathbf k}\), where \(|\langle\mathbf S\rangle|\) is average power per unit area.
-      </small>
+  <section>
+    <div class="section-title">1 · polarization chooses the field motion</div>
+    <div class="comparison">
+      <div class="column field-card linear">
+        <svg class="field-svg" viewBox="0 0 126 126" role="img" aria-label="Linearly polarized electric field">
+          <defs>
+            <marker id="linearArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0 0L10 5L0 10Z" fill="var(--linear)"></path>
+            </marker>
+          </defs>
+          <circle class="field-disk" cx="63" cy="61" r="50"></circle>
+          <circle class="field-inner" cx="63" cy="61" r="40"></circle>
+          <line class="axis" x1="18" y1="61" x2="108" y2="61"></line>
+          <line class="axis" x1="63" y1="16" x2="63" y2="106"></line>
+          <line class="linear-trace" x1="63" y1="25" x2="63" y2="97"></line>
+          <line id="linearE" class="e-linear" x1="63" y1="61" x2="63" y2="25" marker-end="url(#linearArrow)"></line>
+          <circle id="linearTip" class="tip-linear" cx="63" cy="25" r="3.6"></circle>
+          <text class="svg-math" x="70" y="31">E</text>
+          <text class="svg-label" x="63" y="121" text-anchor="middle">viewed along +k̂</text>
+        </svg>
+        <div>
+          <div class="card-topline"><div class="card-name">linear</div><div class="badge">back and forth</div></div>
+          <div class="equation">\(\mathbf E_{\rm lin}(t)=\sqrt2E_0\cos\theta\,\hat{\mathbf y}\)</div>
+          <div class="note">The tip of \(\mathbf E\) moves back and forth along one line.</div>
+        </div>
+      </div>
+
+      <div class="column field-card circular">
+        <svg class="field-svg" viewBox="0 0 126 126" role="img" aria-label="Circularly polarized electric field">
+          <defs>
+            <marker id="rotationArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0 0L10 5L0 10Z" fill="var(--spin)"></path>
+            </marker>
+          </defs>
+          <circle class="field-disk" cx="63" cy="61" r="50"></circle>
+          <circle class="field-inner" cx="63" cy="61" r="40"></circle>
+          <line class="axis" x1="18" y1="61" x2="108" y2="61"></line>
+          <line class="axis" x1="63" y1="16" x2="63" y2="106"></line>
+          <circle class="orbit" cx="63" cy="61" r="34"></circle>
+          <path id="fieldRotation" class="rotation" d="M63 12A49 49 0 0 1 112 61" marker-end="url(#rotationArrow)"></path>
+          <circle id="phaseDot" class="phase-dot" cx="89" cy="83" r="5"></circle>
+          <text class="svg-math" x="92" y="84">E</text>
+          <text class="svg-label" x="63" y="121" text-anchor="middle">viewed along +k̂</text>
+        </svg>
+        <div>
+          <div class="card-topline"><div class="card-name">circular</div><div class="badge"><span id="helicityBadgePlus" class="math-state">\(\sigma=+1\)</span><span id="helicityBadgeMinus" class="math-state" hidden>\(\sigma=-1\)</span></div></div>
+          <div class="equation">\(\mathbf E_{\rm circ}(t)=E_0(\cos\theta\,\hat{\mathbf x}+\sigma\sin\theta\,\hat{\mathbf y})\)</div>
+          <div class="note">The tip does not prefer one fixed direction; it rotates around the orbit. The sign \(\sigma=\pm1\) chooses the rotation sense.</div>
+        </div>
+      </div>
     </div>
 
-    <div class="bridge-arrow" aria-hidden="true"></div>
-
-    <div class="bridge-node">
-      <strong>choose the illuminated area</strong>
-      <span class="formula">\(\displaystyle P=A|\langle\mathbf S\rangle|\)</span>
-      <small>Multiplying by the beam area \(A\) gives total power.</small>
-    </div>
-
-    <div class="bridge-arrow" aria-hidden="true"></div>
-
-    <div class="bridge-node">
-      <strong>follow one time interval</strong>
-      <span class="formula">\(\displaystyle U=P\,\Delta t\)</span>
-      <small>This is the finite energy that reaches the absorber during \(\Delta t\).</small>
+    <div class="section-title">How the field motion selects spin</div>
+    <div class="comparison">
+      <div class="column spin-card linear-spin">
+        <div class="spin-visual" role="img" aria-label="Equal positive and negative helicity components cancel to zero spin">
+          <div class="spin-component">
+            <svg class="spin-glyph" viewBox="0 0 48 48" aria-hidden="true">
+              <path class="spin-arc" d="M34 12A17 17 0 1 1 12 17"></path>
+              <path class="spin-arrowhead" d="M12 17L13.5 8.5L21 13Z"></path>
+              <text class="spin-glyph-sign" x="24" y="25">+</text>
+            </svg>
+            <span class="spin-component-label">\(\sigma=+1\)</span>
+          </div>
+          <span class="spin-operator">+</span>
+          <div class="spin-component">
+            <svg class="spin-glyph" viewBox="0 0 48 48" aria-hidden="true">
+              <path class="spin-arc" d="M14 12A17 17 0 1 0 36 17"></path>
+              <path class="spin-arrowhead" d="M36 17L34.5 8.5L27 13Z"></path>
+              <text class="spin-glyph-sign" x="24" y="25">−</text>
+            </svg>
+            <span class="spin-component-label">\(\sigma=-1\)</span>
+          </div>
+          <span class="spin-result"><span class="spin-flow-arrow" aria-hidden="true"></span><span>\(\mathbf J_{\rm spin}=0\)</span></span>
+        </div>
+        <div>
+          <strong>Linear field</strong>
+          <p>\(\mathbf E_{\rm lin}=(\mathbf E_++\mathbf E_-)/\sqrt2\). The two circular components have equal weight and opposite helicity, so their spin contributions cancel.</p>
+        </div>
+      </div>
+      <div class="column spin-card circular-spin">
+        <div class="spin-visual" role="img" aria-label="One selected helicity gives one photon spin sign">
+          <div class="spin-component">
+            <svg class="spin-glyph" viewBox="0 0 48 48" aria-hidden="true">
+              <g id="selectedSpinPlusGlyph">
+                <path class="spin-arc" d="M34 12A17 17 0 1 1 12 17"></path>
+                <path class="spin-arrowhead" d="M12 17L13.5 8.5L21 13Z"></path>
+                <text class="spin-glyph-sign" x="24" y="25">+</text>
+              </g>
+              <g id="selectedSpinMinusGlyph" hidden>
+                <path class="spin-arc" d="M14 12A17 17 0 1 0 36 17"></path>
+                <path class="spin-arrowhead" d="M36 17L34.5 8.5L27 13Z"></path>
+                <text class="spin-glyph-sign" x="24" y="25">−</text>
+              </g>
+            </svg>
+            <span id="selectedSpinLabelPlus" class="spin-component-label math-state">\(\sigma=+1\)</span>
+            <span id="selectedSpinLabelMinus" class="spin-component-label math-state" hidden>\(\sigma=-1\)</span>
+          </div>
+          <span class="spin-result">
+            <span class="spin-flow-arrow" aria-hidden="true"></span>
+            <span id="selectedSpinEquationPlus" class="math-state">\(\mathbf J_{\gamma,\rm spin}=+\hbar\hat{\mathbf k}\)</span>
+            <span id="selectedSpinEquationMinus" class="math-state" hidden>\(\mathbf J_{\gamma,\rm spin}=-\hbar\hat{\mathbf k}\)</span>
+          </span>
+        </div>
+        <div>
+          <strong>Circular field</strong>
+          <p>One definite rotation sense selects \(\sigma=+1\) or \(\sigma=-1\). Every photon therefore carries the same spin sign: \(\mathbf J_{\gamma,\rm spin}=\sigma\hbar\hat{\mathbf k}\).</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <figure class="figure">
-    <div class="main-grid">
-      <section class="panel">
-        <div class="panel-head field-panel-head">
-          <div class="panel-heading-copy">
-            <strong>1 · polarization chooses the field motion</strong>
-            <span>both rows have the same average power</span>
-          </div>
-
-          <div class="stage-controls">
-            <label class="phase-control" for="phase">
-              <span class="compact-control-label">phase <strong id="phaseValue">40°</strong></span>
-              <input id="phase" type="range" min="0" max="359" step="1" value="40" aria-label="Field phase theta equals omega t">
-            </label>
-
-            <div class="helicity-tabs" role="group" aria-label="Circular-polarization handedness">
-              <button class="helicity-button" data-helicity="1" aria-pressed="true">\(\sigma=+1\)</button>
-              <button class="helicity-button" data-helicity="-1" aria-pressed="false">\(\sigma=-1\)</button>
-            </div>
-          </div>
+  <section>
+    <div class="section-title">2 · follow the same absorbed energy \(U=P\Delta t\)</div>
+    <div class="comparison">
+      <div class="column channel">
+        <div class="channel-head"><strong>linear momentum channel</strong><span>present for both polarizations</span></div>
+        <div class="derivation momentum"><span class="step-label">one photon</span><span class="step-copy">\(\mathbf p_\gamma=\hbar\mathbf k=(\hbar\omega/c)\hat{\mathbf k}\)<small>Since \(E_\gamma=c|\mathbf p_\gamma|\).</small></span></div>
+        <div class="derivation momentum"><span class="step-label">all \(N\)</span><span class="step-copy">\(\mathbf p=N\mathbf p_\gamma=(U/c)\hat{\mathbf k}\)</span></div>
+        <div class="derivation momentum"><span class="step-label">absorbed in \(\Delta t\)</span><span class="step-copy">\(\mathbf F=\Delta\mathbf p_{\rm target}/\Delta t=(P/c)\hat{\mathbf k}\)</span></div>
+        <div class="diagram-wrap">
+          <svg class="beam-svg" viewBox="0 0 360 110" role="img" aria-label="Forward momentum arrows add to a force on the absorber">
+            <defs>
+              <marker id="beamMarker" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--accent-ink)"></path>
+              </marker>
+              <marker id="forceMarker" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--accent-ink)"></path>
+              </marker>
+            </defs>
+            <text class="beam-label" x="66" y="14" text-anchor="middle">each pγ points along +k̂</text>
+            <line class="beam-arrow" x1="22" y1="32" x2="110" y2="32" marker-end="url(#beamMarker)"></line>
+            <line class="beam-arrow" x1="22" y1="55" x2="110" y2="55" marker-end="url(#beamMarker)"></line>
+            <line class="beam-arrow" x1="22" y1="78" x2="110" y2="78" marker-end="url(#beamMarker)"></line>
+            <text class="target-label" x="156" y="42" text-anchor="middle">add</text>
+            <line class="beam-line" x1="128" y1="55" x2="184" y2="55"></line>
+            <path d="M176 47L184 55L176 63" fill="none" class="beam-line"></path>
+            <circle class="target-fill" cx="246" cy="55" r="28"></circle>
+            <text class="target-label" x="246" y="94" text-anchor="middle">absorber</text>
+            <line class="force-out" x1="274" y1="55" x2="332" y2="55" marker-end="url(#forceMarker)"></line>
+            <text class="force-text" x="296" y="48">F</text>
+          </svg>
         </div>
+        <div class="diagram-caption">all momentum arrows point along \(+\hat{\mathbf k}\), so absorption pushes the target forward</div>
+      </div>
 
-        <div class="field-rows">
-          <div class="field-row linear">
-            <svg class="field-svg" viewBox="0 0 126 126" role="img" aria-label="Linearly polarized electric field">
-              <defs>
-                <marker id="linearArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                  <path d="M0 0L10 5L0 10Z" fill="var(--linear)"></path>
-                </marker>
-              </defs>
-              <circle class="field-disk" cx="63" cy="61" r="50"></circle>
-              <circle class="field-inner" cx="63" cy="61" r="40"></circle>
-              <line class="axis" x1="18" y1="61" x2="108" y2="61"></line>
-              <line class="axis" x1="63" y1="16" x2="63" y2="106"></line>
-              <line class="linear-trace" x1="63" y1="25" x2="63" y2="97"></line>
-              <line id="linearE" class="e-linear" x1="63" y1="61" x2="63" y2="25" marker-end="url(#linearArrow)"></line>
-              <circle id="linearTip" class="tip-linear" cx="63" cy="25" r="3.6"></circle>
-              <text class="svg-math" x="70" y="31">E</text>
-              <text class="svg-label" x="63" y="121" text-anchor="middle">viewed along +k̂</text>
-            </svg>
-
-            <div class="field-copy">
-              <div class="field-name">
-                <span>linear</span>
-                <span class="power-badge">same \(P\)</span>
-              </div>
-              <div class="field-equation">
-                \(\displaystyle
-                \mathbf E_{\rm lin}(t)
-                =\sqrt2E_0\cos\theta\,\hat{\mathbf y}\)
-              </div>
-              <div class="field-note">
-                The tip moves back and forth on one line. The \(\sqrt2\) makes
-                \(\langle|\mathbf E_{\rm lin}|^2\rangle=E_0^2\).
-              </div>
-            </div>
-          </div>
-
-          <div class="field-row circular">
-            <svg class="field-svg" viewBox="0 0 126 126" role="img" aria-label="Circularly polarized electric field">
-              <defs>
-                <marker id="circularArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                  <path d="M0 0L10 5L0 10Z" fill="var(--circular)"></path>
-                </marker>
-                <marker id="rotationArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                  <path d="M0 0L10 5L0 10Z" fill="var(--spin)"></path>
-                </marker>
-              </defs>
-              <circle class="field-disk" cx="63" cy="61" r="50"></circle>
-              <circle class="field-inner" cx="63" cy="61" r="40"></circle>
-              <line class="axis" x1="18" y1="61" x2="108" y2="61"></line>
-              <line class="axis" x1="63" y1="16" x2="63" y2="106"></line>
-              <circle class="circular-trace" cx="63" cy="61" r="34"></circle>
-              <line id="circularE" class="e-circular" x1="63" y1="61" x2="89" y2="83" marker-end="url(#circularArrow)"></line>
-              <circle id="circularTip" class="tip-circular" cx="89" cy="83" r="3.6"></circle>
-              <path id="fieldRotation" class="rotation" d="M63 12A49 49 0 0 1 112 61" marker-end="url(#rotationArrow)"></path>
-              <circle class="sign-disc" cx="108" cy="18" r="11"></circle>
-              <text id="fieldSign" class="sign-text" x="108" y="22" text-anchor="middle">+</text>
-              <text class="svg-math" x="91" y="82">E</text>
-              <text class="svg-label" x="63" y="121" text-anchor="middle">viewed along +k̂</text>
-            </svg>
-
-            <div class="field-copy">
-              <div class="field-name">
-                <span>circular</span>
-                <span class="power-badge">same \(P\)</span>
-              </div>
-              <div class="field-equation">
-                \(\displaystyle
-                \mathbf E_{\rm circ}(t)
-                =E_0(\cos\theta\,\hat{\mathbf x}
-                +\sigma\sin\theta\,\hat{\mathbf y})\)
-              </div>
-              <div class="field-note">
-                The tip circles with constant length \(E_0\), so
-                \(|\mathbf E_{\rm circ}|^2=E_0^2\) at every instant.
-                The sign \(\sigma=\pm1\) chooses the rotation sense.
-              </div>
-            </div>
-          </div>
-
-          <div class="same-power-note">
-            <strong>Same average \(\langle|\mathbf E|^2\rangle\) means the same \(\langle\mathbf S\rangle\), hence the same total power \(P\).</strong>
-            Polarization changes the field's transverse motion; it does not change the chosen average power.
-          </div>
-
-          <div class="spin-origin">
-            <div class="spin-origin-head">
-              <strong>How the field motion selects spin</strong>
-              <span>this is the missing link between polarization and \(\mathbf J_{\rm spin}\)</span>
-            </div>
-
-            <div class="spin-origin-grid">
-              <div class="spin-origin-item linear-origin">
-                <div class="rotation-pair" aria-hidden="true">
-                  <span class="rotation-chip plus">+</span>
-                  <span class="join-sign">+</span>
-                  <span class="rotation-chip minus">−</span>
-                </div>
-                <div>
-                  <strong>Linear field</strong>
-                  <span>
-                    A back-and-forth field is the equal sum of two circular fields rotating in opposite senses:
-                    \(\mathbf E_{\rm lin}=(\mathbf E_++\mathbf E_-)/\sqrt2\).
-                    Their spin contributions \(+\hbar\) and \(-\hbar\) cancel.
-                  </span>
-                </div>
-              </div>
-
-              <div class="spin-origin-item circular-origin">
-                <div class="rotation-pair single" aria-hidden="true">
-                  <span id="originSpinChip" class="rotation-chip plus">+</span>
-                </div>
-                <div>
-                  <strong>Circular field</strong>
-                  <span>
-                    The field rotates in one definite sense only. That choice is the helicity \(\sigma=\pm1\), so each photon carries the corresponding spin
-                    \(\mathbf J_{\gamma,\rm spin}=\sigma\hbar\hat{\mathbf k}\).
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div class="column channel">
+        <div class="channel-head"><strong>spin angular-momentum channel</strong><span>set by polarization</span></div>
+        <div class="derivation spin"><span class="step-label">one circular photon</span><span class="step-copy">\(\mathbf J_{\gamma,\rm spin}=\sigma\hbar\hat{\mathbf k}\)</span></div>
+        <div class="derivation spin"><span class="step-label">all \(N\)</span><span class="step-copy">\(\mathbf J_{\rm spin}=N\sigma\hbar\hat{\mathbf k}=\sigma(U/\omega)\hat{\mathbf k}\)</span></div>
+        <div class="derivation spin"><span class="step-label">absorbed in \(\Delta t\)</span><span class="step-copy">\(\boldsymbol\tau=\Delta\mathbf J_{\rm target}/\Delta t=\sigma(P/\omega)\hat{\mathbf k}\)</span></div>
+        <div class="diagram-wrap">
+          <svg class="beam-svg" viewBox="0 0 360 110" role="img" aria-label="Equal spin signs add to a torque on the absorber">
+            <defs>
+              <symbol id="spinPlusGlyph" viewBox="0 0 48 48">
+                <path class="spin-icon" d="M34 12A17 17 0 1 1 12 17"></path>
+                <path class="spin-icon-head" d="M12 17L13.5 8.5L21 13Z"></path>
+                <text class="spin-mark" x="24" y="25">+</text>
+              </symbol>
+              <symbol id="spinMinusGlyph" viewBox="0 0 48 48">
+                <path class="spin-icon" d="M14 12A17 17 0 1 0 36 17"></path>
+                <path class="spin-icon-head" d="M36 17L34.5 8.5L27 13Z"></path>
+                <text class="spin-mark" x="24" y="25">−</text>
+              </symbol>
+              <marker id="neutralArrowMarker" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--border-strong)"></path>
+              </marker>
+              <marker id="torqueMarker" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--spin)"></path>
+              </marker>
+            </defs>
+            <text class="beam-label" x="76" y="14" text-anchor="middle">same spin sign</text>
+            <use id="spinGlyph1" href="#spinPlusGlyph" x="12" y="27" width="42" height="42"></use>
+            <use id="spinGlyph2" href="#spinPlusGlyph" x="54" y="27" width="42" height="42"></use>
+            <use id="spinGlyph3" href="#spinPlusGlyph" x="96" y="27" width="42" height="42"></use>
+            <text class="target-label" x="164" y="43" text-anchor="middle">add</text>
+            <line class="beam-line" x1="143" y1="59" x2="188" y2="59" marker-end="url(#neutralArrowMarker)"></line>
+            <circle class="target-fill" cx="246" cy="55" r="28"></circle>
+            <text class="target-label" x="246" y="94" text-anchor="middle">absorber</text>
+            <path id="torquePath" class="torque-path" d="M217 80A37 37 0 0 1 275 22" marker-end="url(#torqueMarker)"></path>
+            <text class="torque-text" x="288" y="39">τ</text>
+          </svg>
         </div>
-      </section>
-
-      <section class="panel packet-panel">
-        <div class="panel-head">
-          <strong>2 · follow the same absorbed energy \(U=P\Delta t\)</strong>
-          <span>one packet, two conserved quantities</span>
-        </div>
-
-        <div class="packet-intro">
-          <div class="packet-node">
-            <strong>energy per photon</strong>
-            <span class="formula">\(\displaystyle E_\gamma=\hbar\omega\)</span>
-            <small>For monochromatic light of angular frequency \(\omega\).</small>
-          </div>
-
-          <div class="step-arrow" aria-hidden="true"></div>
-
-          <div class="packet-node">
-            <strong>photons in the arriving energy</strong>
-            <span class="formula">\(\displaystyle N=\frac{U}{\hbar\omega}\)</span>
-            <small>Counting quanta exposes the momentum and spin ratios without introducing extra density symbols.</small>
-          </div>
-        </div>
-
-        <div class="consequence-grid">
-          <section class="consequence">
-            <div class="consequence-title">
-              <strong>linear momentum channel</strong>
-              <span>present for both polarizations</span>
-            </div>
-
-            <div class="derivation-step momentum-step">
-              <span class="step-label">one photon</span>
-              <span class="step-equation">
-                \(\displaystyle \mathbf p_\gamma=\hbar\mathbf k
-                =\frac{\hbar\omega}{c}\hat{\mathbf k}\)
-                <small>Because a vacuum photon obeys \(E_\gamma=c|\mathbf p_\gamma|\).</small>
-              </span>
-            </div>
-
-            <div class="derivation-step momentum-step">
-              <span class="step-label">all \(N\)</span>
-              <span class="step-equation">
-                \(\displaystyle
-                \mathbf p=N\mathbf p_\gamma
-                =\frac{U}{c}\hat{\mathbf k}\)
-                <small>The relation is linear because both energy and momentum add when photons are added.</small>
-              </span>
-            </div>
-
-            <div class="derivation-step momentum-step">
-              <span class="step-label">absorbed in \(\Delta t\)</span>
-              <span class="step-equation">
-                \(\displaystyle
-                \mathbf F
-                =\frac{\Delta\mathbf p_{\rm target}}{\Delta t}
-                =\frac{\mathbf p}{\Delta t}
-                =\frac{P}{c}\hat{\mathbf k}\)
-                <small>Force is simply the rate at which the target gains the light's linear momentum.</small>
-              </span>
-            </div>
-
-            <div class="token-visual" aria-label="Photon momenta add to a forward force">
-              <div class="token-stack">
-                <span class="token momentum">p</span><span class="token momentum">p</span><span class="token momentum">p</span>
-                <span class="token momentum">p</span><span class="token momentum">p</span><span class="token momentum">p</span>
-              </div>
-              <div class="token-arrow" aria-hidden="true"></div>
-              <div class="target-mini" aria-hidden="true">
-                <div class="target-disc"></div>
-                <div class="force-arrow-mini"></div>
-              </div>
-              <div class="visual-caption">all momentum arrows point along \(+\hat{\mathbf k}\), so absorption pushes the target forward</div>
-            </div>
-          </section>
-
-          <section class="consequence">
-            <div class="consequence-title">
-              <strong>spin angular-momentum channel</strong>
-              <span>set by polarization</span>
-            </div>
-
-            <div class="derivation-step spin-step">
-              <span class="step-label">one circular photon</span>
-              <span class="step-equation">
-                \(\displaystyle
-                \mathbf J_{\gamma,\rm spin}
-                =\sigma\hbar\hat{\mathbf k}\)
-                <small>The two circular polarizations are the two spin states \(\sigma=\pm1\).</small>
-              </span>
-            </div>
-
-            <div class="derivation-step spin-step">
-              <span class="step-label">all \(N\)</span>
-              <span class="step-equation">
-                \(\displaystyle
-                \mathbf J_{\rm spin}
-                =N\sigma\hbar\hat{\mathbf k}
-                =\sigma\frac{U}{\omega}\hat{\mathbf k}\)
-                <small>The factor \(1/\omega\) comes directly from dividing spin \(\hbar\) by photon energy \(\hbar\omega\).</small>
-              </span>
-            </div>
-
-            <div class="derivation-step spin-step">
-              <span class="step-label">absorbed in \(\Delta t\)</span>
-              <span class="step-equation">
-                \(\displaystyle
-                \boldsymbol\tau
-                =\frac{\Delta\mathbf J_{\rm target}}{\Delta t}
-                =\frac{\mathbf J_{\rm spin}}{\Delta t}
-                =\sigma\frac{P}{\omega}\hat{\mathbf k}\)
-                <small>Torque is the angular analogue of force: the rate at which the target gains angular momentum.</small>
-              </span>
-            </div>
-
-            <div class="token-visual" aria-label="Circular photon spins add to a torque; opposite circular components cancel for linear polarization">
-              <div id="spinTokens" class="token-stack">
-                <span class="token spin">+</span><span class="token spin">+</span><span class="token spin">+</span>
-                <span class="token spin">+</span><span class="token spin">+</span><span class="token spin">+</span>
-              </div>
-              <div class="token-arrow" aria-hidden="true"></div>
-              <div class="target-mini" aria-hidden="true">
-                <div class="target-disc"></div>
-                <div id="torqueArrowMini" class="torque-arrow-mini"></div>
-              </div>
-              <div class="visual-caption">
-                circular: every photon has the same spin sign, so the spins add;<br>
-                linear: equal \(+\) and \(-\) circular components cancel, so net spin and torque are zero
-              </div>
-            </div>
-          </section>
-        </div>
-      </section>
+        <div class="diagram-caption">circular: every photon has the same spin sign, so the spins add; linear: equal \(+\) and \(-\) circular components cancel, so net spin and torque are zero</div>
+      </div>
     </div>
+  </section>
 
-    <div class="outcomes" aria-label="Final comparison">
-      <div class="outcome linear">
+  <section>
+    <div class="comparison">
+      <div class="column outcome linear">
         <div class="outcome-badge">linear</div>
-        <div class="outcome-copy">
-          <strong>Same forward force:</strong>
-          \(\mathbf F=(P/c)\hat{\mathbf k}\).
-          The equal opposite circular components give
-          \(\mathbf J_{\rm spin}=0\), hence \(\boldsymbol\tau=0\).
-        </div>
+        <div class="outcome-copy"><strong>Same forward force:</strong> \(\mathbf F=(P/c)\hat{\mathbf k}\). The equal opposite circular components give \(\mathbf J_{\rm spin}=0\), hence \(\boldsymbol\tau=0\).</div>
       </div>
-
-      <div class="outcome circular">
+      <div class="column outcome circular">
         <div class="outcome-badge">circular</div>
-        <div class="outcome-copy">
-          <strong>Same forward force, plus spin torque:</strong>
-          \(\mathbf F=(P/c)\hat{\mathbf k}\) and
-          \(\boldsymbol\tau=\sigma(P/\omega)\hat{\mathbf k}\).
-          Reversing the field rotation reverses the torque, not the force.
-        </div>
+        <div class="outcome-copy"><strong>Same forward force, plus spin torque:</strong> \(\mathbf F=(P/c)\hat{\mathbf k}\) and \(\boldsymbol\tau=\sigma(P/\omega)\hat{\mathbf k}\). Reversing the field rotation reverses the torque, not the force.</div>
       </div>
     </div>
-
-
-  </figure>
+  </section>
 </main>
 
 <script>
 (() => {
   "use strict";
-
   const phaseInput = document.getElementById("phase");
   const phaseValue = document.getElementById("phaseValue");
-  const helicityButtons = [...document.querySelectorAll(".helicity-button")];
-  const spinTokens = [...document.querySelectorAll("#spinTokens .token")];
-  const torqueArrowMini = document.getElementById("torqueArrowMini");
-  const originSpinChip = document.getElementById("originSpinChip");
+  const buttons = [...document.querySelectorAll(".helicity-button")];
+  const helicityBadgePlus = document.getElementById("helicityBadgePlus");
+  const helicityBadgeMinus = document.getElementById("helicityBadgeMinus");
+  const selectedSpinPlusGlyph = document.getElementById("selectedSpinPlusGlyph");
+  const selectedSpinMinusGlyph = document.getElementById("selectedSpinMinusGlyph");
+  const selectedSpinLabelPlus = document.getElementById("selectedSpinLabelPlus");
+  const selectedSpinLabelMinus = document.getElementById("selectedSpinLabelMinus");
+  const selectedSpinEquationPlus = document.getElementById("selectedSpinEquationPlus");
+  const selectedSpinEquationMinus = document.getElementById("selectedSpinEquationMinus");
+  const spinGlyphs = [
+    document.getElementById("spinGlyph1"),
+    document.getElementById("spinGlyph2"),
+    document.getElementById("spinGlyph3")
+  ];
+  const torquePath = document.getElementById("torquePath");
   let helicity = 1;
-  let lastReportedHeight = 0;
+  let lastHeight = 0;
 
   function setLine(id, x1, y1, x2, y2) {
     const line = document.getElementById(id);
@@ -1235,113 +683,101 @@ input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     line.setAttribute("y2", y2);
   }
 
-  function render() {
-    const phaseDeg = Number(phaseInput.value);
-    const phase = phaseDeg * Math.PI / 180;
-    const linearValue = Math.cos(phase);
-    const circularX = Math.cos(phase);
-    const circularY = helicity * Math.sin(phase);
-    const linearPeak = 36;
-    const circularRadius = 34;
-
-    setLine("linearE", 63, 61, 63, 61 - linearPeak * linearValue);
-    const linearTip = document.getElementById("linearTip");
-    linearTip.setAttribute("cx", 63);
-    linearTip.setAttribute("cy", 61 - linearPeak * linearValue);
-
-    setLine(
-      "circularE",
-      63,
-      61,
-      63 + circularRadius * circularX,
-      61 + circularRadius * circularY
+  function reportHeight() {
+    if (window.parent === window) return;
+    const height = Math.max(
+      document.documentElement.scrollHeight,
+      document.body.scrollHeight,
+      Math.ceil(document.querySelector(".viz").getBoundingClientRect().bottom + window.scrollY + 4)
     );
-    const circularTip = document.getElementById("circularTip");
-    circularTip.setAttribute("cx", 63 + circularRadius * circularX);
-    circularTip.setAttribute("cy", 61 + circularRadius * circularY);
+    if (Math.abs(height - lastHeight) < 2) return;
+    lastHeight = height;
+    try {
+      window.parent.postMessage(
+        { type: "article-visualization-height", height },
+        window.location.origin === "null" ? "*" : window.location.origin
+      );
+    } catch (_) {}
+  }
+
+  function render() {
+    const deg = Number(phaseInput.value);
+    const phase = deg * Math.PI / 180;
+
+    const linearY = 61 - 36 * Math.cos(phase);
+    setLine("linearE", 63, 61, 63, linearY);
+    document.getElementById("linearTip").setAttribute("cy", linearY);
+
+    const dotX = 63 + 34 * Math.cos(phase);
+    const dotY = 61 + 34 * helicity * Math.sin(phase);
+    document.getElementById("phaseDot").setAttribute("cx", dotX);
+    document.getElementById("phaseDot").setAttribute("cy", dotY);
+
+    const label = document.querySelector(".field-card.circular .svg-math");
+    label.setAttribute("x", dotX + 7);
+    label.setAttribute("y", dotY + 1);
 
     document.getElementById("fieldRotation").setAttribute(
       "d",
-      helicity > 0
-        ? "M63 12A49 49 0 0 1 112 61"
-        : "M63 12A49 49 0 0 0 14 61"
+      helicity > 0 ? "M63 12A49 49 0 0 1 112 61" : "M63 12A49 49 0 0 0 14 61"
     );
 
-    const sign = helicity > 0 ? "+" : "−";
-    document.getElementById("fieldSign").textContent = sign;
-    spinTokens.forEach(token => { token.textContent = sign; });
-    originSpinChip.textContent = sign;
-    originSpinChip.classList.toggle("minus", helicity < 0);
-    originSpinChip.classList.toggle("plus", helicity > 0);
-    torqueArrowMini.classList.toggle("reverse", helicity < 0);
+    spinGlyphs.forEach(glyph => glyph.setAttribute("href", helicity > 0 ? "#spinPlusGlyph" : "#spinMinusGlyph"));
 
-    phaseValue.textContent = `${Math.round(phaseDeg)}°`;
-    helicityButtons.forEach(button => {
-      button.setAttribute(
-        "aria-pressed",
-        String(Number(button.dataset.helicity) === helicity)
-      );
+    helicityBadgePlus.hidden = helicity < 0;
+    helicityBadgeMinus.hidden = helicity > 0;
+    selectedSpinPlusGlyph.style.display = helicity > 0 ? "" : "none";
+    selectedSpinMinusGlyph.style.display = helicity > 0 ? "none" : "";
+    selectedSpinLabelPlus.hidden = helicity < 0;
+    selectedSpinLabelMinus.hidden = helicity > 0;
+    selectedSpinEquationPlus.hidden = helicity < 0;
+    selectedSpinEquationMinus.hidden = helicity > 0;
+
+    torquePath.setAttribute(
+      "d",
+      helicity > 0 ? "M217 80A37 37 0 0 1 275 22" : "M275 80A37 37 0 0 0 217 22"
+    );
+
+    phaseValue.textContent = `${Math.round(deg)}°`;
+    buttons.forEach(button => {
+      button.setAttribute("aria-pressed", String(Number(button.dataset.helicity) === helicity));
     });
-
-    reportHeight();
+    requestAnimationFrame(reportHeight);
   }
 
   phaseInput.addEventListener("input", render);
-  helicityButtons.forEach(button => {
+  buttons.forEach(button => {
     button.addEventListener("click", () => {
       helicity = Number(button.dataset.helicity);
       render();
     });
   });
 
-  function reportHeight() {
-    if (window.parent === window) return;
-    const target = document.querySelector(".viz") || document.body;
-    const rectangle = target.getBoundingClientRect();
-    const height = Math.max(1, Math.ceil(rectangle.bottom + window.scrollY));
-    if (Math.abs(height - lastReportedHeight) < 2) return;
-    lastReportedHeight = height;
-    try {
-      const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
-      window.parent.postMessage({ type: "article-visualization-height", height }, targetOrigin);
-    } catch (_) {}
-  }
-
-  function loadMathJax() {
-    window.MathJax = {
-      tex: {
-        inlineMath: [["\\(", "\\)"], ["$", "$"]],
-        displayMath: [["\\[", "\\]"], ["$$", "$$"]]
-      },
-      output: {
-        font: "mathjax-stix2"
-      },
-      chtml: { scale: 1 },
-      startup: {
-        typeset: false,
-        ready() {
-          MathJax.startup.defaultReady();
-          MathJax.startup.promise
-            .then(() => MathJax.typesetPromise([document.body]))
-            .then(() => requestAnimationFrame(() => { render(); reportHeight(); }))
-            .catch(() => {});
-        }
+  window.MathJax = {
+    tex: {
+      inlineMath: [["\\(", "\\)"], ["$", "$"]],
+      displayMath: [["\\[", "\\]"], ["$$", "$$"]]
+    },
+    output: { font: "mathjax-stix2" },
+    startup: {
+      typeset: false,
+      ready() {
+        MathJax.startup.defaultReady();
+        MathJax.startup.promise
+          .then(() => MathJax.typesetPromise([document.body]))
+          .then(() => requestAnimationFrame(() => { render(); reportHeight(); }))
+          .catch(() => {});
       }
-    };
+    }
+  };
 
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = "https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml-nofont.js";
-    document.head.appendChild(script);
-  }
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = "https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml-nofont.js";
+  document.head.appendChild(script);
 
   render();
-  loadMathJax();
-
-  if ("ResizeObserver" in window) {
-    const observer = new ResizeObserver(() => reportHeight());
-    observer.observe(document.querySelector(".viz") || document.body);
-  }
+  if ("ResizeObserver" in window) new ResizeObserver(reportHeight).observe(document.querySelector(".viz"));
   window.addEventListener("load", reportHeight);
   window.addEventListener("resize", reportHeight);
 })();

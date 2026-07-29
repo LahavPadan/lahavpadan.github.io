@@ -82,9 +82,10 @@
     html, body { margin: 0; min-width: 0; background: transparent; color: var(--ink); }
     body { padding: clamp(6px, 1.2vw, 14px); font-family: var(--font-reading); }
     .viz { border: 1px solid var(--border); border-top: 4px solid var(--primary); background: var(--surface); overflow: hidden; box-shadow: 0 16px 45px color-mix(in srgb, var(--ink) 8%, transparent); }
-    .head { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); border-bottom: 1px solid var(--border); }
+    .head { display: grid; grid-template-columns: 8.8rem minmax(0,1fr) minmax(0,1fr); border-bottom: 1px solid var(--border); }
     .head > div { padding: 1rem 1.15rem; text-align: center; }
     .head > div + div { border-left: 1px solid var(--border); }
+    .head .spacer { background: var(--surface-muted); padding: 0; }
     .head h3 { margin: 0; font-size: clamp(1.15rem, 2.7vw, 1.75rem); line-height: 1.12; }
     .head .te { color: var(--primary-ink); background: linear-gradient(120deg, var(--primary-soft), transparent 75%); }
     .head .tm { color: var(--tm); background: linear-gradient(120deg, var(--tm-soft), transparent 75%); }
@@ -111,6 +112,7 @@
     .conclusion strong { color: var(--primary-ink); }
     @media (max-width: 760px) {
       .head { grid-template-columns: 1fr; }
+      .head .spacer { display: none; }
       .head > div + div { border-left: 0; border-top: 1px solid var(--border); }
       .matrix { grid-template-columns: 1fr; }
       .row-label { border-bottom: 0; padding: .75rem .9rem; }
@@ -125,6 +127,7 @@
 <body>
   <section class="viz" aria-labelledby="brewster-title">
     <header class="head" id="brewster-title">
+      <div class="spacer" aria-hidden="true"></div>
       <div class="te"><h3>TE (transverse electric)</h3><p>Each boundary launches a backward increment.</p></div>
       <div class="tm"><h3>TM at Brewster incidence</h3><p>The single-interface reflection coefficient vanishes.</p></div>
     </header>
