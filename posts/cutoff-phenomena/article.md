@@ -46,7 +46,7 @@ which is equation \eqref{eq:cutoff-dispersion} with $$v = c$$ and cutoff frequen
 
 {% include visualization.html src="waveguide-modes-and-cutoff.html" title="Transverse waveguide modes, dispersion, and cutoff" %}
 
-<div class="guided-fold-start" data-label="Bouncing plane waves make the dispersion a Pythagorean identity" data-tone="derivation"></div>
+<div class="guided-fold-start" id="fold-bouncing-plane-waves" data-label="Bouncing plane waves make the dispersion a Pythagorean identity" data-tone="derivation"></div>
 
 Inside the pipe, a mode can be decomposed as a superposition of two free-space plane waves, each carrying total wavenumber $$\omega/c$$, bouncing between the walls at some angle $$\theta$$ from the axis. The two components superpose to
 
@@ -62,7 +62,7 @@ and squaring and adding recovers $$\omega^2/c^2 = k_z^2 + k_\perp^2$$: the dispe
 
 <div class="guided-fold-end"></div>
 
-The mechanism is entirely geometric. Nothing about the metal enters except the constraint that the transverse field must vanish somewhere; that constraint forces a minimum transverse wavenumber, and by conservation of the total wavenumber $$\omega/c$$ a corresponding maximum axial wavenumber. But other settings produce the same equation with no walls at all. Where does the transverse constraint come from in those?
+The mechanism is entirely geometric — but other settings produce the same equation with no walls at all. Where does the transverse constraint come from in those?
 
 ## § 3. When the medium itself supplies the restoring force {#sec-3}
 
@@ -92,7 +92,7 @@ $$k^2 = \frac{\omega^2 \varepsilon(\omega)}{c^2} = \frac{\omega^2 - \omega_p^2}{
 
 But something has been left unexplained. The quantity $$\omega_p$$ appeared as an algebraic combination in the permittivity and was given the name "plasma frequency" without any oscillation having yet been identified. It is a real oscillation frequency, and identifying it as such is what makes the analogy with the waveguide picture more than formal.
 
-<div class="guided-fold-start" data-label="What omega-p physically is, and the skin depth it produces" data-tone="derivation"></div>
+<div class="guided-fold-start" data-label="What the plasma frequency physically is, and the skin depth it produces" data-tone="derivation"></div>
 
 Imagine the whole electron cloud rigidly displaced by a small distance $$x$$ relative to the ion background, with no external field applied. In the bulk of the cloud, nothing has changed: an electron that moved has been replaced by its neighbor's electron, and the local charge density stays zero. But at one edge of the cloud a layer of positive ions has been left uncovered, and at the opposite edge a layer of electrons has piled up beyond the ion background. The system now looks like a parallel-plate capacitor with surface charge density $$\pm n_e e x$$, and it produces a uniform electric field inside itself of magnitude
 
@@ -127,7 +127,7 @@ E^2 = (pc)^2 + (mc^2)^2.
 \tag{2}\label{eq:energy-momentum}
 $$
 
-Under the identifications $$E = \hbar\omega$$ and $$p = \hbar k$$ — derived separately in a companion piece on the wave description of matter — this becomes
+Under the identifications $$E = \hbar\omega$$ and $$p = \hbar k$$ — [derived separately in a companion piece on the wave description of matter](/posts/justification-of-the-de-broglie-relation/#why-the-wave-packet-velocity-leads-to-p--hbar-k) — this becomes
 
 $$\omega^2 = c^2 k^2 + \left(\frac{mc^2}{\hbar}\right)^2,$$
 
@@ -141,15 +141,15 @@ $$\omega_c = \frac{mc^2}{\hbar}.$$
 
 Above $$\omega_c$$ the field propagates; below it, the field is evanescent.
 
-The evanescent tail below cutoff has a concrete realization: it is the static field surrounding any persistent source. Put a point source at the origin. "Static" means $$\omega = 0$$, and equation \eqref{eq:cutoff-dispersion} at $$\omega = 0$$ gives $$k^2 = -\omega_c^2/c^2$$, so $$k$$ is purely imaginary. Writing $$k = i/\lambda_C$$ with
+The evanescent tail below cutoff has a concrete realization: it is the field surrounding a **stationary source** of the field — a charge held fixed in place sourcing a Coulomb-like field, or, in the case that motivated the massive Klein–Gordon equation historically, a nucleon at rest sourcing the nuclear pion field. "Stationary" here is a statement about the source in time: it does not switch on or off and does not oscillate, so it excites only the $$\omega = 0$$ component of the field. Setting $$\omega = 0$$ in equation \eqref{eq:cutoff-dispersion} gives $$k^2 = -k_c^2$$, so $$k$$ is purely imaginary. Writing $$k = i k_c$$ with
 
-$$\lambda_C \equiv \frac{c}{\omega_c} = \frac{\hbar}{mc},$$
+$$k_c \equiv \frac{\omega_c}{c} = \frac{mc}{\hbar},$$
 
-the spatial equation for the field away from the source becomes $$(-\nabla^2 + 1/\lambda_C^2)\phi = 0$$, whose spherically-symmetric solution that decays at infinity is
+the spatial equation for the field away from the source becomes $$(-\nabla^2 + k_c^2)\phi = 0$$, whose spherically-symmetric solution that decays at infinity is
 
-$$\phi(r) \propto \frac{e^{-r/\lambda_C}}{r}.$$
+$$\phi(r) \propto \frac{e^{-k_c r}}{r}.$$
 
-The Coulomb-like $$1/r$$ fall-off has picked up an exponential factor, and the length scale $$\lambda_C$$ — the **Compton wavelength** — sets the range beyond which the field is negligible. The massless Coulomb law is the $$m \to 0$$ limit: the cutoff sits at $$\omega = 0$$, $$\lambda_C \to \infty$$, and the exponential factor becomes $$1$$. Any finite mass raises the cutoff above zero, and the static field around a source gets an exponential envelope with range $$\lambda_C$$.
+The Coulomb-like $$1/r$$ fall-off has picked up an exponential envelope, and $$1/k_c$$ — the **Compton wavelength** of the massive quantum — sets the range beyond which the field is negligible. The massless Coulomb law is the $$m \to 0$$ limit: the cutoff sits at $$\omega = 0$$, $$k_c \to 0$$, and the exponential factor becomes $$1$$. Any finite mass raises the cutoff above zero, and the field around a stationary source gets an exponential envelope with range $$1/k_c$$.
 
 This is the deepest sense in which a mass is a cutoff. The rest energy $$mc^2$$ is the minimum energy a quantum of the field can carry; any interaction that would require exchanging a lower-energy quantum is forbidden, and the field adjusts around a source with an evanescent tail whose decay length is the reciprocal cutoff wavenumber. Massless mediators — photons, gravitons — produce forces of unbounded range because their cutoff sits at zero.
 
@@ -201,9 +201,11 @@ v_p v_g = \frac{\omega}{k}\cdot\frac{v^2 k}{\omega} = v^2.
 \tag{4}\label{eq:phase-group-product}
 $$
 
-This is not a universal law about waves. It follows from equation \eqref{eq:cutoff-dispersion} alone: any dispersion that is quadratic in both $$\omega$$ and $$k$$ produces the same identity. Because $$k < \omega/v$$ above cutoff (with equality only at $$k \to \infty$$), the phase velocity always exceeds $$v$$ and the group velocity always falls short: $$v_p > v > v_g$$, and their product is exactly $$v^2$$.
+This identity is specific to the cutoff dispersion, not a general fact about waves. It comes from equation \eqref{eq:quadratic-budget} being quadratic in both $$\omega$$ and $$k$$: $$v_p = \omega/k$$ and $$v_g = v^2 k/\omega$$ are then reciprocal partners, and multiplying them cancels the $$\omega/k$$ dependence, leaving $$v^2$$ no matter where on the curve we sit. Break the "quadratic in both" structure and the identity goes with it — surface gravity waves, waves on a stiff string, or a Klein–Gordon equation with an added anharmonic term all give phase and group velocities whose product depends on $$k$$.
 
-The waveguide picture from [§ 2](#sec-2) makes this concrete geometrically. If the mode in the pipe is a plane wave making angle $$\theta$$ with the axis, then
+The inequalities that accompany the product come from the same equation read geometrically. Rewriting equation \eqref{eq:cutoff-dispersion} as $$k^2 = (\omega/v)^2 - k_c^2$$ shows that $$k < \omega/v$$ above cutoff, with equality only in the $$k \to \infty$$ limit where the cutoff contribution becomes negligible. So $$v_p = \omega/k > v$$, and by the fixed product $$v_g = v^2/v_p < v$$: the phase velocity always exceeds the medium's characteristic speed and the group velocity always falls short of it. The two velocities squeeze in from opposite sides of $$v$$ and their geometric mean is exactly $$v$$.
+
+The [bouncing-plane-waves picture](#fold-bouncing-plane-waves) from § 2 makes this concrete geometrically. If the mode in the pipe is a plane wave making angle $$\theta$$ with the axis, then
 
 $$v_g = c\cos\theta$$
 
@@ -213,24 +215,28 @@ $$v_p = \frac{c}{\cos\theta}$$
 
 is the rate at which the intersection of a transverse phase front with the axis sweeps forward. The intersection point can outrun the wave itself along the axis because the wave is not moving along the axis — it is moving at angle $$\theta$$ from it, and the intersection is a purely kinematic construction. The product is $$c^2$$ by trigonometry. The same decomposition operates less visibly in the plasma and massive-particle cases.
 
-<div class="guided-fold-start" data-label="Why v_p greater than c is not a signal outrunning light" data-tone="derivation"></div>
+<div class="guided-fold-start" data-label="Why a phase velocity above the medium speed carries no signal" data-tone="derivation"></div>
 
 That $$v_p > v$$ can be alarming in the relativistic case, because $$v$$ there is $$c$$ and it can look as if a signal is outrunning light. It is not. The phase velocity is a bookkeeping property of an infinite carrier, not a channel for information; information is in the envelope, and the envelope moves at $$v_g \le c$$. The check is the **Poynting vector** — the local energy flux $$\vec S = \vec E \times \vec H$$ — whose time-average, for a modulated wave, points along the axis with magnitude equal to the local energy density times $$v_g$$. Where the energy is, and how fast it moves, are questions answered by $$v_g$$; $$v_p$$ answers nothing physical about localized wave content.
 
 <div class="guided-fold-end"></div>
 
-There is one more piece of information encoded in the shape near cutoff. Just above $$\omega_c$$, expand the dispersion:
+There is one more piece of information encoded in the shape near cutoff. Just above $$\omega_c$$, the hyperbola looks like a parabola. To see this, factor $$\omega_c = v k_c$$ out of equation \eqref{eq:quadratic-budget},
 
-$$\omega(k) = \omega_c\sqrt{1 + (k/k_c)^2} \approx \omega_c + \frac{v^2 k^2}{2\omega_c}\quad\text{for } k \ll k_c.$$
+$$\omega(k) = v\sqrt{k^2 + k_c^2} = \omega_c\sqrt{1 + \left(\frac{k}{k_c}\right)^2},$$
 
-Compare this with the non-relativistic energy-momentum relation of a free particle, $$E(p) = mc^2 + p^2/(2m)$$. Setting $$E = \hbar\omega$$ and $$p = \hbar k$$, both have the shape "constant plus quadratic," and matching the coefficients of the quadratic term identifies an **effective mass**
+and Taylor-expand the square root for $$k \ll k_c$$ using $$\sqrt{1+\epsilon} \approx 1 + \tfrac{1}{2}\epsilon$$,
+
+$$\omega(k) \approx \omega_c + \frac{v^2 k^2}{2\omega_c}.$$
+
+The shape is "constant plus quadratic in $$k$$" — exactly the shape of a low-momentum expansion of equation \eqref{eq:energy-momentum}. Setting $$E = \hbar\omega$$ and $$p = \hbar k$$ and expanding equation \eqref{eq:energy-momentum} for $$p \ll mc$$ gives $$E(p) \approx mc^2 + p^2/(2m)$$: rest energy plus non-relativistic kinetic energy. There is no contradiction between "relativistic" and "non-relativistic" here — the second is the small-momentum limit of the first, and it is precisely near cutoff (where $$k$$ is small compared to $$k_c$$) that the two expressions coincide. Matching the coefficients of the quadratic terms identifies an **effective mass**
 
 $$
 m_\text{eff} = \frac{\hbar\omega_c}{v^2}.
 \tag{5}\label{eq:effective-mass}
 $$
 
-Every cutoff-carrying medium exhibits this. Very close to cutoff, a wave packet in the medium moves and spreads exactly as a non-relativistic quantum-mechanical particle of mass $$m_\text{eff}$$ would: the same wave-packet spreading rate, the same momentum-space uncertainty, the same evolution equation. The medium's carrier travels at speed $$v$$, but near cutoff the wave riding it behaves as though it had acquired a small rest mass.
+In the mass-cutoff setting of [§ 4](#sec-4) this is not an analogy: $$m_\text{eff}$$ coincides with the particle's rest mass $$m$$, and a wave packet near cutoff simply *is* that particle in its non-relativistic limit. In the waveguide and plasma settings the medium admits no rest-mass particle, but a wave packet whose central wavenumber sits just above the cutoff obeys the same free-particle Schrödinger equation as a non-relativistic quantum particle would: the same spreading rate, the same momentum-space uncertainty, the same evolution. Here $$m_\text{eff}$$ is an emergent mass — not the mass of anything real, but the mass a fictitious quantum particle would need to have for its wave function to obey the same equation the medium's field does near cutoff.
 
 This has practical consequences worth separating:
 
@@ -248,12 +254,12 @@ The wave becomes $$e^{-\alpha z}$$, decaying into the medium with characteristic
 
 - In the **waveguide**, the wave cannot arrange a forward-moving axial component, so it sets up a transverse standing wave near the input face and no energy flows down the pipe. A source driving the pipe below cutoff sees a purely reactive load: fields are present, storing electric and magnetic energy in the near region, but no net power crosses any transverse plane past the input in steady state. All the power the source pushes in during a build-up returns to it as the reactive field settles.
 - In the **plasma**, the wave penetrates a skin depth before being canceled by the electron polarization response. The electrons rearrange themselves to produce a field exactly opposite to the incoming one, and the total field inside the medium falls exponentially. Because the model has no dissipation — the electrons carry inertia but no friction — none of the incoming power is absorbed, and all of it is reflected. That is why a good metal below its plasma frequency is nearly a perfect mirror.
-- In the **relativistic** case, the evanescent solution is the static field surrounding a persistent source. Nothing is bouncing off anything — the source is not sending a wave into the medium, it is simply present — and the field around it settles into the exponential envelope of the previous section, with range $$\lambda_C = \hbar/mc$$.
+- In the **relativistic** case, the evanescent solution is the field surrounding a stationary source of the field — a charge held fixed, or a nucleon sourcing the pion field. Nothing is bouncing off anything: the source is not sending a wave into the medium, it is simply present, and the field around it settles into the Yukawa-like envelope of [§ 4](#sec-4), with range $$1/k_c = \hbar/mc$$.
 
-The common feature is that below cutoff the medium does not admit any mode that carries energy forward at the specified frequency. What differs is what the energy does instead: it either returns to the driving source (reflection, when the field is driven from outside) or organizes itself around a persistent embedded source into the exponential tail derived in [§ 4](#sec-4). In neither case is any energy lost; no traveling-wave solution exists at that frequency, and the field takes the only shape it can — an exponentially decaying envelope whose decay length is fixed by how far below cutoff we are.
+The common feature is that below cutoff the medium does not admit any mode that carries energy forward at the specified frequency. What differs is what the energy does instead: it either returns to the driving source (reflection, when the field is driven from outside) or organizes itself around a stationary embedded source into the Yukawa-like envelope $$e^{-k_c r}/r$$ derived in [§ 4](#sec-4). In neither case is any energy lost; no traveling-wave solution exists at that frequency, and the field takes the only shape it can — an exponentially decaying envelope whose decay length is fixed by how far below cutoff we are.
 
 ## § 8. The full picture {#sec-8}
 
 The hyperbola $$\omega^2 = v^2(k^2 + k_c^2)$$ organizes a large class of otherwise-disparate phenomena. Once its shape is recognized, everything else reads off the same figure: propagation above cutoff, an exponentially decaying tail below it, a group velocity that vanishes at the edge, a phase velocity that exceeds $$v$$ throughout, a product $$v_p v_g = v^2$$, and — the piece that is easiest to overlook — an effective mass just above cutoff that turns any near-threshold wave into a slow massive particle for as long as it stays near the edge. Whether the mechanism is geometric confinement, collective electronic response, or a genuine relativistic rest mass, the same reading applies to all three, and the physical differences show up only in what specifically the medium is doing during the evanescent phase below cutoff.
 
-Two directions of continuation are worth flagging. One is the case in which a gap opens both above and below a reference frequency rather than only on one side — the setting of periodic media, in which the same hyperbola describes each of the two band edges — worked out in [a companion piece on coupled modes and band structure](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/), where the effective mass of equation \eqref{eq:effective-mass} reappears as the mass of slow light near a photonic band edge. The other is the derivation of the identifications $$E = \hbar\omega$$ and $$p = \hbar k$$ used in [§ 4](#sec-4), developed separately in [a piece on the wave description of matter](/posts/justification-of-the-de-broglie-relation/). Both are reached from what has been derived here, and both extend it — to periodic structure on one hand, and to the general question of when a wave admits a particle interpretation on the other.
+Two directions of continuation are worth flagging. One is the case in which a gap opens both above and below a reference frequency rather than only on one side — the setting of periodic media, in which the same hyperbola describes each of the two band edges — worked out in [a companion piece on coupled modes and band structure](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/), where the effective mass of equation \eqref{eq:effective-mass} reappears as the mass of slow light near a photonic band edge. The other is the derivation of the identifications $$E = \hbar\omega$$ and $$p = \hbar k$$ used in [§ 4](#sec-4), developed separately in [a piece on the wave description of matter](/posts/justification-of-the-de-broglie-relation/#why-the-wave-packet-velocity-leads-to-p--hbar-k). Both are reached from what has been derived here, and both extend it — to periodic structure on one hand, and to the general question of when a wave admits a particle interpretation on the other.

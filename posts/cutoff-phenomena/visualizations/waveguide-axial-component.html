@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap">
-<title>Waveguide cutoff geometry — compact verified</title>
+<title>Waveguide cutoff geometry</title>
 <script>
 (() => {
   try {
@@ -38,7 +38,6 @@
   --field-negative: #315fae;
   --shadow: rgba(20, 31, 25, .06);
   --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --serif: Lora, Georgia, serif;
   --mono: "Roboto Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
   --math-font: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
 }
@@ -119,8 +118,8 @@ h1 {
 .control-scale span:last-child { text-align: right; }
 .control-scale b { color: var(--ink); font-weight: 720; }
 .figure { margin: 0; padding: clamp(10px, 2.1vw, 20px); }
-.figure-grid { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 11px; align-items: start; }
-.k-panel { width: 240px; max-width: 240px; justify-self: center; align-self: start; }
+.figure-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 13px; align-items: start; }
+.k-panel { width: 300px; max-width: 300px; justify-self: center; align-self: start; }
 .panel { min-width: 0; border: 1px solid var(--border); background: var(--surface-muted); overflow: hidden; }
 .panel-head {
   min-height: 49px;
@@ -150,10 +149,10 @@ h1 {
 #realPlot { display: block; width: 100%; height: auto; }
 #kPlot {
   display: block;
-  width: 238px !important;
+  width: 298px !important;
   max-width: 100% !important;
-  height: 172px !important;
-  max-height: 172px !important;
+  height: 216px !important;
+  max-height: 216px !important;
   margin: 0 auto;
 }
 .guide-wall { fill: var(--border-strong); }
@@ -168,6 +167,11 @@ h1 {
 .ray-ghost { fill: none; stroke: var(--border-strong); stroke-width: 1.4; stroke-dasharray: 6 6; opacity: .7; }
 .component-arrow-a { stroke: var(--component-a); stroke-width: 2.9; stroke-linecap: round; }
 .component-arrow-b { stroke: var(--component-b); stroke-width: 2.9; stroke-linecap: round; }
+.component-kz { stroke: var(--accent); stroke-width: 2.45; stroke-linecap: round; }
+.component-perp-a { stroke: var(--component-a); stroke-width: 2.25; stroke-linecap: round; }
+.component-perp-b { stroke: var(--component-b); stroke-width: 2.25; stroke-linecap: round; }
+.component-right-angle { fill: none; stroke: var(--border-strong); stroke-width: 1.35; }
+.real-angle-arc { fill: none; stroke: var(--accent-ink); stroke-width: 1.45; }
 .envelope { fill: none; stroke: var(--warning); stroke-width: 1.7; stroke-dasharray: 6 5; }
 .wavefront { stroke-width: 1; opacity: .38; }
 .wavefront.a { stroke: var(--component-a); }
@@ -177,6 +181,7 @@ h1 {
 .k-fixed { stroke: var(--component-b); stroke-width: 2.2; stroke-dasharray: 7 5; }
 .k-vector { stroke: var(--accent); stroke-width: 3.1; stroke-linecap: round; }
 .k-projection { stroke: var(--border-strong); stroke-width: 1.35; stroke-dasharray: 5 5; }
+.k-projection-perp { stroke: var(--component-b); stroke-width: 2.4; stroke-dasharray: none; }
 .k-point-halo { fill: var(--surface-muted); stroke: var(--accent); stroke-width: 2.1; }
 .k-point { fill: var(--accent); }
 .no-intersection { stroke: var(--warning); stroke-width: 2.2; stroke-linecap: round; }
@@ -192,7 +197,7 @@ h1 {
   stroke-linejoin: round;
 }
 .svg-label.muted { fill: var(--muted); font-size: 12px; font-weight: 560; }
-.svg-label.math { font-family: var(--serif); font-size: 17px; font-style: italic; font-weight: 600; }
+.svg-label.math { font-family: var(--math-font); font-size: 17px; font-style: italic; font-weight: 600; }
 .math-fo { overflow: visible; pointer-events: none; }
 .math-html {
   width: 100%;
@@ -216,6 +221,13 @@ h1 {
 .math-readout { color: var(--accent-ink); white-space: nowrap; }
 .math-readout mjx-container { margin: 0 !important; }
 .readout-math { justify-content: flex-end; color: var(--muted); font-size: 16px; }
+.panel-readout {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: clamp(.66rem, 1vw, .76rem);
+  white-space: nowrap;
+}
+.panel-readout mjx-container { margin: 0 !important; }
 .svg-label.a { fill: var(--component-a); }
 .svg-label.b { fill: var(--component-b); }
 .svg-label.accent { fill: var(--accent-ink); }
@@ -254,8 +266,8 @@ h1 {
 @media (max-width: 680px) {
   .topbar { grid-template-columns: 1fr; }
   .figure-grid { grid-template-columns: 1fr; }
-  .k-panel { width: 240px; max-width: 240px; }
-  .k-panel .plot-wrap { width: 238px; max-width: 238px; margin: 0 auto; }
+  .k-panel { width: 300px; max-width: 300px; }
+  .k-panel .plot-wrap { width: 298px; max-width: 298px; margin: 0 auto; }
 }
 @media (max-width: 600px) {
   body { padding: 5px; }
@@ -299,7 +311,7 @@ h1 {
         <header class="panel-head">
           <div>
             <p class="panel-kicker">real space</p>
-            <p class="panel-title" id="realTitle">oblique components create axial phase advance</p>
+            <p class="panel-title" id="realTitle">reflections preserve the axial component</p>
           </div>
           <span class="state-pill" id="statePill">propagating</span>
         </header>
@@ -318,6 +330,9 @@ h1 {
               <marker id="axisArrow" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
                 <path d="M0 0L10 5L0 10Z" fill="var(--border-strong)"></path>
               </marker>
+              <marker id="arrowKz" viewBox="0 0 10 10" refX="8.7" refY="5" markerWidth="6.2" markerHeight="6.2" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="var(--accent)"></path>
+              </marker>
             </defs>
 
             <g clip-path="url(#guideClip)">
@@ -328,6 +343,14 @@ h1 {
               <path id="rayDown" class="ray-b"></path>
               <line id="arrowUp" class="component-arrow-a" marker-end="url(#arrowA)"></line>
               <line id="arrowDown" class="component-arrow-b" marker-end="url(#arrowB)"></line>
+              <g id="componentTriangle">
+                <line id="kzComponent" class="component-kz" marker-end="url(#arrowKz)"></line>
+                <line id="perpUpComponent" class="component-perp-a" marker-end="url(#arrowA)"></line>
+                <line id="perpDownComponent" class="component-perp-b" marker-end="url(#arrowB)"></line>
+                <path id="componentRightAngleUp" class="component-right-angle"></path>
+                <path id="componentRightAngleDown" class="component-right-angle"></path>
+                <path id="realAngleArc" class="real-angle-arc"></path>
+              </g>
               <g id="cutoffArrows"></g>
               <path id="envelopeTop" class="envelope"></path>
               <path id="envelopeBottom" class="envelope"></path>
@@ -346,19 +369,21 @@ h1 {
             <text class="svg-label muted" x="43" y="365" text-anchor="end">−a</text>
             <text class="svg-label muted" x="43" y="219" text-anchor="end">0</text>
 
-            <foreignObject id="componentUpLabel" class="math-fo" x="82" y="92" width="82" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html a">\(+k_\perp\)</div></foreignObject>
-            <foreignObject id="componentDownLabel" class="math-fo" x="82" y="303" width="82" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html b">\(-k_\perp\)</div></foreignObject>
+            <foreignObject id="totalUpLabel" class="math-fo" x="82" y="92" width="74" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html a">\(\mathbf{k}_{+}\)</div></foreignObject>
+            <foreignObject id="totalDownLabel" class="math-fo" x="82" y="303" width="74" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html b">\(\mathbf{k}_{-}\)</div></foreignObject>
+            <foreignObject id="kzComponentLabel" class="math-fo" x="90" y="196" width="66" height="32"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html accent small">\(k_z\)</div></foreignObject>
+            <foreignObject id="perpUpComponentLabel" class="math-fo" x="175" y="146" width="82" height="32"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html a small">\(+k_\perp\)</div></foreignObject>
+            <foreignObject id="perpDownComponentLabel" class="math-fo" x="175" y="246" width="82" height="32"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html b small">\(-k_\perp\)</div></foreignObject>
+            <foreignObject id="realThetaLabel" class="math-fo" x="103" y="176" width="44" height="30"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html accent small">\(\theta\)</div></foreignObject>
             <foreignObject id="axialPhaseLabel" class="math-fo" x="425" y="385" width="210" height="38"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html accent small">\(\text{phase advance}\propto k_z\)</div></foreignObject>
             <foreignObject id="axialZeroLabel" class="math-fo" x="486" y="385" width="92" height="38" style="display:none"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html accent">\(k_z=0\)</div></foreignObject>
             <foreignObject id="evanescentLabel" class="math-fo" x="442" y="103" width="95" height="38"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html warning">\(e^{-\alpha z}\)</div></foreignObject>
-            <foreignObject class="math-fo" x="392" y="13" width="250" height="30">
-              <div xmlns="http://www.w3.org/1999/xhtml" id="realReadout" class="math-html small readout-math">\(\theta=43.6^\circ\;\cdot\;k_z/k_\perp=1.05\)</div>
-            </foreignObject>
           </svg>
           <div class="plot-note" aria-label="Real-space visual key">
-            <span class="note-item" id="componentNoteA"><i class="swatch a"></i><span>component with \(+k_\perp\)</span></span>
-            <span class="note-item" id="componentNoteB"><i class="swatch b"></i><span>component with \(-k_\perp\)</span></span>
+            <span class="note-item" id="componentNoteA"><i class="swatch a"></i><span>\(\mathbf{k}_{+}=(k_z,+k_\perp)\)</span></span>
+            <span class="note-item" id="componentNoteB"><i class="swatch b"></i><span>\(\mathbf{k}_{-}=(k_z,-k_\perp)\)</span></span>
             <span class="note-item"><span id="fieldNote">colour field: their superposed mode</span></span>
+            <span class="panel-readout" id="realReadout">\(\theta=43.6^\circ\;\cdot\;k_z/k_\perp=1.05\)</span>
           </div>
         </div>
       </section>
@@ -391,7 +416,7 @@ h1 {
             <path id="kCircle" class="k-circle"></path>
             <line id="fixedLine" class="k-fixed" x1="72" y1="146" x2="402" y2="146"></line>
             <line id="projectionHorizontal" class="k-projection"></line>
-            <line id="projectionVertical" class="k-projection"></line>
+            <line id="projectionVertical" class="k-projection-perp"></line>
             <line id="kVector" class="k-vector" marker-end="url(#kArrow)"></line>
             <path id="angleArc" class="angle-arc"></path>
             <circle id="kPointHalo" class="k-point-halo" r="8"></circle>
@@ -404,15 +429,14 @@ h1 {
             <foreignObject id="circleLabel" class="math-fo" x="224" y="52" width="132" height="38"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html a">\(k_0=\omega/c\)</div></foreignObject>
             <foreignObject class="math-fo" x="292" y="119" width="124" height="36"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html b">\(k_\perp\;\text{fixed}\)</div></foreignObject>
             <foreignObject id="kzProjectionLabel" class="math-fo" x="160" y="264" width="74" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html accent"><span id="kzMath">\(k_z\)</span><span id="kzZeroMath" hidden>\(k_z=0\)</span></div></foreignObject>
+            <foreignObject id="perpProjectionLabel" class="math-fo" x="0" y="0" width="48" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html b">\(k_\perp\)</div></foreignObject>
             <foreignObject id="thetaLabel" class="math-fo" x="88" y="218" width="48" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="math-html accent">\(\theta\)</div></foreignObject>
             <text id="missLabel" class="svg-label warning" x="235" y="128" text-anchor="middle">no real intersection</text>
-            <foreignObject class="math-fo" x="238" y="5" width="164" height="28">
-              <div xmlns="http://www.w3.org/1999/xhtml" id="kReadout" class="math-html small readout-math">\(k_0/k_\perp=1.45\)</div>
-            </foreignObject>
           </svg>
           <div class="plot-note" aria-label="Wavenumber-space visual key">
             <span class="note-item"><i class="swatch circle"></i><span>radius \(k_0=\omega/c\)</span></span>
             <span class="note-item"><i class="swatch fixed"></i><span>wall-selected \(k_\perp\)</span></span>
+            <span class="panel-readout" id="kReadout">\(k_0/k_\perp=1.45\)</span>
           </div>
         </div>
       </section>
@@ -658,8 +682,13 @@ h1 {
     const axialPhaseLabel = document.getElementById("axialPhaseLabel");
     const axialZeroLabel = document.getElementById("axialZeroLabel");
     const evanescentLabel = document.getElementById("evanescentLabel");
-    const upLabel = document.getElementById("componentUpLabel");
-    const downLabel = document.getElementById("componentDownLabel");
+    const upLabel = document.getElementById("totalUpLabel");
+    const downLabel = document.getElementById("totalDownLabel");
+    const componentTriangle = document.getElementById("componentTriangle");
+    const kzComponentLabel = document.getElementById("kzComponentLabel");
+    const perpUpComponentLabel = document.getElementById("perpUpComponentLabel");
+    const perpDownComponentLabel = document.getElementById("perpDownComponentLabel");
+    const realThetaLabel = document.getElementById("realThetaLabel");
     const componentNoteA = document.getElementById("componentNoteA");
     const componentNoteB = document.getElementById("componentNoteB");
     const fieldNote = document.getElementById("fieldNote");
@@ -680,6 +709,11 @@ h1 {
     axialZeroLabel.style.display = cutoff ? "" : "none";
     upLabel.style.display = propagating ? "" : "none";
     downLabel.style.display = propagating ? "" : "none";
+    componentTriangle.style.display = propagating ? "" : "none";
+    kzComponentLabel.style.display = propagating ? "" : "none";
+    perpUpComponentLabel.style.display = propagating ? "" : "none";
+    perpDownComponentLabel.style.display = propagating ? "" : "none";
+    realThetaLabel.style.display = propagating ? "" : "none";
     componentNoteA.style.display = evanescent ? "none" : "";
     componentNoteB.style.display = evanescent ? "none" : "";
     fieldNote.textContent = evanescent ? "standing transverse profile × axial decay" : "colour field: their superposed mode";
@@ -687,8 +721,34 @@ h1 {
     if (propagating) {
       rayUp.setAttribute("d", rayPath(guide.cy, -1, kz));
       rayDown.setAttribute("d", rayPath(guide.cy, 1, kz));
-      setLine("arrowUp", ...firstArrow(-1, kz));
-      setLine("arrowDown", ...firstArrow(1, kz));
+      const upperArrow = firstArrow(-1, kz);
+      const lowerArrow = firstArrow(1, kz);
+      setLine("arrowUp", ...upperArrow);
+      setLine("arrowDown", ...lowerArrow);
+
+      const [originX, originY, endX, upperEndY] = upperArrow;
+      const lowerEndY = lowerArrow[3];
+      setLine("kzComponent", originX, originY, endX, originY);
+      setLine("perpUpComponent", endX, originY, endX, upperEndY);
+      setLine("perpDownComponent", endX, originY, endX, lowerEndY);
+
+      const square = 9;
+      document.getElementById("componentRightAngleUp").setAttribute("d", `M${endX-square} ${originY}L${endX-square} ${originY-square}L${endX} ${originY-square}`);
+      document.getElementById("componentRightAngleDown").setAttribute("d", `M${endX-square} ${originY}L${endX-square} ${originY+square}L${endX} ${originY+square}`);
+
+      const realTheta = Math.atan2(originY - upperEndY, endX - originX);
+      const arcRadius = 34;
+      const arcEndX = originX + arcRadius * Math.cos(realTheta);
+      const arcEndY = originY - arcRadius * Math.sin(realTheta);
+      document.getElementById("realAngleArc").setAttribute("d", `M${originX+arcRadius} ${originY}A${arcRadius} ${arcRadius} 0 0 0 ${arcEndX.toFixed(2)} ${arcEndY.toFixed(2)}`);
+
+      setForeignCenter(upLabel, originX + .72 * (endX - originX) - 6, originY + .72 * (upperEndY - originY) - 24);
+      setForeignCenter(downLabel, originX + .72 * (endX - originX) - 6, originY + .72 * (lowerEndY - originY) + 24);
+      setForeignCenter(kzComponentLabel, (originX + endX) / 2, originY + 17);
+      setForeignCenter(perpUpComponentLabel, endX + 43, (originY + upperEndY) / 2);
+      setForeignCenter(perpDownComponentLabel, endX + 43, (originY + lowerEndY) / 2);
+      setForeignCenter(realThetaLabel, originX + 54 * Math.cos(realTheta / 2), originY - 54 * Math.sin(realTheta / 2));
+
       setMath(realReadout, `\\theta=${(theta * 180 / Math.PI).toFixed(1)}^\\circ\\;\\cdot\\;k_z/k_\\perp=${kz.toFixed(2)}`);
     } else if (cutoff) {
       setMath(realReadout, "\\theta=90.0^\\circ\\;\\cdot\\;k_z=0");
@@ -726,11 +786,12 @@ h1 {
     const missLabel = document.getElementById("missLabel");
     const thetaLabel = document.getElementById("thetaLabel");
     const kzLabel = document.getElementById("kzProjectionLabel");
+    const perpLabel = document.getElementById("perpProjectionLabel");
     const kzMath = document.getElementById("kzMath");
     const kzZeroMath = document.getElementById("kzZeroMath");
 
     const hasRealPoint = regime !== "evanescent";
-    [vector, horizontal, vertical, halo, point, arc, thetaLabel, kzLabel].forEach(element => {
+    [vector, horizontal, vertical, halo, point, arc, thetaLabel, kzLabel, perpLabel].forEach(element => {
       element.style.display = hasRealPoint ? "" : "none";
     });
     cross.style.display = hasRealPoint ? "none" : "";
@@ -752,8 +813,9 @@ h1 {
       const endX = kView.ox + arcRadius * Math.cos(theta);
       const endY = kView.oy - arcRadius * Math.sin(theta);
       arc.setAttribute("d", `M${startX} ${startY} A${arcRadius} ${arcRadius} 0 0 0 ${endX.toFixed(2)} ${endY.toFixed(2)}`);
-      setForeignCenter(thetaLabel, kView.ox + 42 * Math.cos(theta / 2), kView.oy - 42 * Math.sin(theta / 2) - 2);
+      setForeignCenter(thetaLabel, kView.ox + 58 * Math.cos(theta / 2), kView.oy - 58 * Math.sin(theta / 2));
       setForeignCenter(kzLabel, Math.max(kView.ox + 34, (kView.ox + px) / 2), 281);
+      setForeignCenter(perpLabel, px > kView.ox + 78 ? px - 32 : px + 34, (fixedY + kView.oy) / 2);
 
       const atCutoff = regime === "cutoff";
       kzMath.toggleAttribute("hidden", atCutoff);
@@ -764,7 +826,8 @@ h1 {
       const crossY = (fixedY + topOfCircle) / 2;
       setLine("crossA", kView.ox - 8, crossY - 8, kView.ox + 8, crossY + 8);
       setLine("crossB", kView.ox - 8, crossY + 8, kView.ox + 8, crossY - 8);
-      missLabel.setAttribute("y", Math.max(60, crossY - 12));
+      missLabel.setAttribute("x", 245);
+      missLabel.setAttribute("y", 92);
     }
 
     const circleLabel = document.getElementById("circleLabel");
@@ -790,7 +853,7 @@ h1 {
     show(evanescentEquation, regime === "evanescent");
 
     if (regime === "propagating") {
-      realTitle.textContent = "oblique components create axial phase advance";
+      realTitle.textContent = "reflections preserve the axial component";
       dynamicLabel.textContent = "real axial component";
     } else if (regime === "cutoff") {
       realTitle.textContent = "the components are purely transverse";

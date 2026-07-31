@@ -11,13 +11,15 @@ Everything else developed here — apodization ([§ 5.1](#sec-5-1)), chirp ([§ 
 
 The results we use from the previous post, all justified in [§ 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4):
 
-- A grating with **Bragg period**{:#defn-bragg-period} $\Lambda$ singles out the **Bragg wavenumber**{:#defn-bragg-wavenumber} $k_B = \pi/\Lambda$. Its defining property: a round trip through one period at $k_B$ accumulates $2\pi$, or equivalently, the grating's fundamental spatial harmonic $2 k_B$ is exactly the momentum kick that takes a forward wave at $+k_B$ into a backward wave at $-k_B$. Expressing this **Bragg condition**{:#defn-bragg-condition} in the vacuum wavelength — using $k = 2\pi n_\text{avg} / \lambda$ inside the medium so $k = k_B$ becomes $2\pi n_\text{avg}/\lambda = \pi/\Lambda$ — gives the **Bragg wavelength**{:#defn-bragg-wavelength}
+- The grating sits in a medium whose refractive index varies periodically along $z$: $n(z) = n_\text{avg} + \Delta n \cos(2 k_B z)$. The **average index**{:#defn-navg} $n_\text{avg}$ is the value the field would see if the modulation were smoothed away — the "background" index against which the modulation rides. Two things depend on it. First, it converts a wavenumber inside the medium to a vacuum wavelength: a wave at vacuum wavelength $\lambda$ propagates in this medium with in-medium wavenumber $k = 2\pi n_\text{avg}/\lambda$, so a geometric condition on $k$ becomes a condition on $\lambda$ through $n_\text{avg}$. Second, the fractional index contrast $\Delta n / n_\text{avg}$ measures how strongly the modulation perturbs the wave — a dimensionless small parameter that will set the coupling strength below.
 
-  $$\lambda_B = 2\, n_\text{avg}\, \Lambda, \tag{1}\label{eq:bragg}$$
+- A grating with **Bragg period**{:#defn-bragg-period} $\Lambda$ singles out the **Bragg wavenumber**{:#defn-bragg-wavenumber} $k_B = \pi/\Lambda$. Its defining property: a round trip through one period at $k_B$ accumulates $2\pi$, or equivalently, the grating's fundamental spatial harmonic $2 k_B$ is exactly the momentum kick that takes a forward wave at $+k_B$ into a backward wave at $-k_B$. Expressing this **Bragg condition**{:#defn-bragg-condition} in the vacuum wavelength — $k = k_B$ becomes $2\pi n_\text{avg}/\lambda = \pi/\Lambda$ — gives the **Bragg wavelength**{:#defn-bragg-wavelength}
 
-  where $n_\text{avg}$ is the spatial average of the refractive index. The corresponding **Bragg frequency**{:#defn-bragg-frequency} is $\omega_B = 2\pi c/\lambda_B$.
+  $$\lambda_B = 2\, n_\text{avg}\, \Lambda. \tag{1}\label{eq:bragg}$$
 
-- Near this reference wavenumber, two Fourier components of the field dominate — the forward wave at $k \approx k_B$ and the wave it Bragg-backscatters into at $k - 2k_B \approx -k_B$. All others are suppressed by $\Delta n / n_\text{avg}$, where $\Delta n$ is the amplitude of the refractive-index modulation (if $n(z) = n_\text{avg} + \Delta n \cos(2 k_B z)$, then $\Delta n$ is the maximum deviation from the average). The field decomposes as
+  The corresponding **Bragg frequency**{:#defn-bragg-frequency} is $\omega_B = 2\pi c/\lambda_B$.
+
+- Near this reference wavenumber, two Fourier components of the field dominate — the forward wave at $k \approx k_B$ and the wave it Bragg-backscatters into at $k - 2k_B \approx -k_B$. All others are suppressed by $\Delta n / n_\text{avg}$, the fractional index contrast of the first bullet. The field decomposes as
 
   $$E(z) = A(z)\, e^{i k_B z} + B(z)\, e^{-i k_B z},$$
 
@@ -250,7 +252,7 @@ so a grating at [exact Bragg tuning](#defn-bragg-tuning) needs about $3/\kappa$ 
 
 ## § 3. The DBR: a Bragg grating in fabricated hardware {#sec-3}
 
-We take the sinusoidal grating of § 1–§ 2 and replace it with what a real deposition tool produces: a stack of alternating high-index and low-index layers, $N$ pairs total — an *$N$-period stack*. The physics is the same, but three questions need concrete answers when the modulation is a square wave rather than a cosine:
+We take the sinusoidal grating of [§ 1](#sec-1)–[§ 2](#sec-2) and replace it with what a real deposition tool produces: a stack of alternating high-index and low-index layers, $N$ pairs total — an *$N$-period stack*. The physics is the same, but three questions need concrete answers when the modulation is a square wave rather than a cosine:
 
 - **How much reflection does an $N$-period stack deliver?** [§ 3.1](#sec-3-1) computes it exactly from the layer wave equation and reads off how quickly $R$ saturates with $N$.
 - **What is $\kappa$ for a square-wave grating?** [§ 3.2](#sec-3-2) Fourier-expands the square wave; the lowest cosine harmonic — the one at wavenumber $2 k_B$ — is what drives the Bragg reflection, and it sets $\kappa$ as a fraction of $k_B$ through the index contrast $\Delta n = n_H - n_L$.
@@ -384,11 +386,11 @@ First, though: what does a flat-mirror [cavity](#defn-cavity) do, and why does i
 
 ### § 4.1. Why flat mirrors do not pick a wavelength {#sec-4-1}
 
-Take the simplest cavity: a gain-carrying dielectric of length $L$ and effective index $n_\text{eff}$, bounded by two flat interfaces at which the index steps back to air. Two features of this setup decide what the laser does.
+Take the simplest cavity: a gain-carrying dielectric of length $L$ and refractive index $n_\text{avg}$ (same symbol as the rest of the post — the modulation of [§ 1](#sec-1) simply hasn't been switched on yet), bounded by two flat interfaces at which the index steps back to air. Two features of this setup decide what the laser does.
 
-**A comb of resonant modes.** A round trip picks up phase $2 k L = 2\, n_\text{eff}\, \omega L/c$; the round-trip-of-$2\pi$ condition selects a discrete comb of frequencies
+**A comb of resonant modes.** A round trip picks up phase $2 k L = 2\, n_\text{avg}\, \omega L/c$; the round-trip-of-$2\pi$ condition selects a discrete comb of frequencies
 
-$$\nu_n = n \cdot \frac{c}{2 n_\text{eff} L}, \qquad \Delta\nu_\text{FSR} = \frac{c}{2 n_\text{eff} L},$$
+$$\nu_n = n \cdot \frac{c}{2 n_\text{avg} L}, \qquad \Delta\nu_\text{FSR} = \frac{c}{2 n_\text{avg} L},$$
 
 where $\Delta\nu_\text{FSR}$ is the **free spectral range**. Each $\nu_n$ is a standing wave fitting an integer number of half-wavelengths between the mirrors.
 
@@ -498,36 +500,36 @@ The result is a pair of integral transforms relating $\chi'$ and $\chi''$: speci
 
 For a single-mode laser, the linewidth $\Delta\nu$ is the frequency-domain width of the emission peak — equivalently, the reciprocal of the timescale $\tau_\text{coh}$ over which the emitted phase stays predictable ($\Delta\nu \sim 1/(2\pi \tau_\text{coh})$). A narrow line means a long-lived phase. Three effects add to set that timescale:
 
-- **Photon lifetime $\tau_p$.** Even the passive [cavity](#defn-cavity) — no [gain](#defn-gain), no noise — has a finite response time set by how many round trips the field survives before residual loss dominates. This alone gives a passive linewidth $\Delta\nu_p \sim 1/(2\pi \tau_p)$; longer gratings and larger $\kappa$ (so $R \to 1$ at both effective mirrors) make $\tau_p$ larger and $\Delta\nu_p$ smaller.
+- **Photon lifetime $\tau_p$.** Even the passive [cavity](#defn-cavity) — no [gain](#defn-gain), no noise — has a finite response time set by how long a photon survives inside it before leaking out or being absorbed. Two loss channels set $\tau_p$: transmission through the two ends of the finite grating, where each end acts as a mirror of reflectivity $R = \tanh^2(\kappa L)$ ([§ 2.2](#sec-2-2)), and any intrinsic waveguide absorption or scattering along $L$. The rate is $1/\tau_p = (\text{round-trip loss})/(\text{round-trip time})$; longer gratings and larger $\kappa$ push $R \to 1$ at the two grating ends exponentially in $\kappa L$, so the leakage channel drops out fast and $\tau_p$ becomes limited by the intrinsic absorption. This alone gives a passive linewidth $\Delta\nu_p \sim 1/(2\pi \tau_p)$ — the width the cavity would have if the [gain](#defn-gain) merely maintained the field against loss and injected no noise.
 
-- **Spontaneous emission phase noise.** Even inside an actively lasing mode, some of the transitions in the [gain](#defn-gain) medium happen at random times with random phase, injecting incoherent field into the coherent mode. Each event kicks the mode's phase by an amount that scales as one over the square root of the intra-cavity photon number. These random kicks accumulate as a random walk of the phase — a Lorentzian line whose width is inversely proportional to output power.
+- **Spontaneous emission phase noise.** Some transitions in the [gain](#defn-gain) medium happen at random times with a phase uncorrelated with the coherent mode — spontaneous rather than stimulated events. Each such event adds one photon of random phase to a mode already containing $N$ photons. Adding a unit-length vector at random angle to a length-$\sqrt N$ vector perturbs the total's phase by a small angle whose typical magnitude is $\sim 1/\sqrt{N}$. Over a time window in which many independent kicks occur, these angles compose into a random walk of the phase — the coherent phase diffuses, and the emission line acquires a Lorentzian shape. The higher the intra-cavity photon number $N$ (equivalently, the output power $P_\text{out}$), the smaller each kick and the narrower the line: $\Delta\nu \propto 1/P_\text{out}$.
 
-- **Amplitude–phase [coupling](#defn-coupling) through the carrier density.** By the causal response of [§ 4.3.1](#sec-4-3-1), changing the number of free carriers changes $\Delta\varepsilon''$ (the [gain](#defn-gain)) *and* $\Delta\varepsilon'$ (the refractive index) at the same time. So every amplitude fluctuation — including the spontaneous-emission kicks above — carries a phase fluctuation with it. The strength of the drag is captured by a dimensionless ratio
+- **Amplitude–phase [coupling](#defn-coupling) through the carrier density.** By the causal response of [§ 4.3.1](#sec-4-3-1), any change in the carrier density $N$ shifts $\Delta\varepsilon''$ (the [gain](#defn-gain)) *and* $\Delta\varepsilon'$ (the refractive index) together — never one alone. So a single spontaneous-emission event drives *two* phase kicks on the same mode: the direct kick of the previous bullet, plus an indirect kick that runs through the carrier population perturbation this event causes, changing $\Delta\varepsilon'$ and with it the round-trip phase. The size of the indirect kick relative to the direct one is set by
 
   $$\alpha_H = -\frac{d \Delta\varepsilon' / dN}{d \Delta\varepsilon'' / dN},$$
 
-  where $N$ is carrier density; measured values run 2 to 5. Because both the "direct" spontaneous-emission phase kick and the amplitude-mediated phase kick add coherently in the linewidth, the noise contribution is multiplied by $(1 + \alpha_H^2)$.
+  measured values 2 to 5, the ratio at which carrier-density changes turn into index changes versus gain changes. Because the two kicks come from the same event they are perfectly correlated — the composite phase-kick variance goes as $1 + \alpha_H^2$, and the linewidth is enhanced by the same factor over what the direct kicks alone would give.
 
 Combining these gives
 
 $$\Delta\nu = \frac{h\nu\, n_{sp}}{4\pi\, \tau_p^2\, P_\text{out}}\, (1 + \alpha_H^2), \tag{12}\label{eq:linewidth}$$
 
-with $P_\text{out}$ the output power and $n_{sp} \geq 1$ counting spontaneous emissions per stimulated emission event. Two shapes of dependence to read off: $\Delta\nu \propto 1/P_\text{out}$ (higher output power narrows the line, because more coherent photons dilute each spontaneous kick) and $\Delta\nu \propto 1/\tau_p^2$ (longer photon lifetime narrows the line quadratically).
+with $n_{sp} \geq 1$ counting spontaneous emissions per stimulated emission event. The dependence $\Delta\nu \propto 1/\tau_p^2$ is the payoff of the [DFB](#defn-dfb) geometry: pushing $\kappa L$ up gives $R \to 1$ exponentially, $\tau_p$ up exponentially, and the linewidth down quadratically on top of that. It is why a DFB delivers MHz-scale lines from a millimeter-scale chip, orders of magnitude below the flat-mirror comb of [§ 4.1](#sec-4-1).
 
-That leaves one operational question about the [DFB](#defn-dfb): the lithography step fixes $\Lambda$ (and with it $k_B = \pi/\Lambda$) at fabrication. Can the emission frequency $\omega_B = \pi c/(n_\text{avg}\, \Lambda)$ be moved after the fact, and by how much?
+That leaves one operational question about the [DFB](#defn-dfb): $\Lambda$ (and with it $k_B = \pi/\Lambda$) is set once at fabrication. Can the emission frequency $\omega_B = \pi c/(n_\text{avg}\, \Lambda)$ be moved after the fact, and by how much?
 
 ### § 4.5. Tuning a DFB {#sec-4-5}
 
-Tuning a [DFB](#defn-dfb) requires shifting its emission frequency $\omega_B = \pi c/(n_\text{avg}\, \Lambda)$. The physical period $\Lambda$ is fixed by lithography, so tuning must change $n_\text{avg}$. Two mechanisms are practical:
+Tuning a [DFB](#defn-dfb) requires shifting its emission frequency $\omega_B = \pi c/(n_\text{avg}\, \Lambda)$. The period $\Lambda$ is set once by the geometric pattern written into the chip at fabrication, so tuning after the fact must act on $n_\text{avg}$ or on $\Lambda$ indirectly (through overall dimensional change of the substrate). Two mechanisms are practical:
 
-- **Temperature.** The thermo-optic effect and thermal expansion give a temperature dependence to the effective index — of order $0.1$ nm of wavelength shift per K in semiconductor gain media. Total tuning range around 5 nm; response time in milliseconds (set by thermal diffusion in the chip).
-- **Current injection.** Injected carriers change the refractive index directly (free-carrier plasma effect and band-filling). Fast — nanoseconds — but only about $0.01$ nm per mA, and with unwanted [coupling](#defn-coupling) to output power (more current means more [gain](#defn-gain)).
+- **Temperature.** Heating the chip shifts both factors — $n_\text{avg}$ rises slightly with temperature (an empirical coefficient of the material, $dn/dT$ of order $10^{-4}$/K in a semiconductor), and the substrate expands, stretching $\Lambda$. Both terms push $\lambda_B$ in the same direction, giving of order $0.1$ nm of Bragg-wavelength shift per K. Range around 5 nm; response set by thermal diffusion in the chip, so milliseconds.
+- **Current injection.** Passing extra current through the [DFB](#defn-dfb) injects extra free carriers into the [gain](#defn-gain) medium. These carriers do two things at once. First, they contribute their own polarizability to the material's response — free charges accelerated by the optical field lower the medium's real index, the same mechanism that makes metals reflective. Second, by filling states near the band edge they suppress the medium's absorption at those energies, and by the causal-response relations of [§ 4.3.1](#sec-4-3-1) that absorption change comes with a companion index change. Both effects point the same way and are fast — the response time is set by how quickly carrier populations equilibrate, nanoseconds — but the tuning coefficient is small, about $0.01$ nm per mA, and the same current controls the output power, so this knob is not independent of the drive point.
 
 Both act on the whole device at once: because the grating and the [gain](#defn-gain) share the same $n_\text{avg}$, moving one drags the other. The tuning range is capped at a few nm. Wider tuning requires making $\kappa$ and $\gamma$ act in physically distinct stretches of waveguide, so their indices can move independently.
 
 ### § 4.6. DBR laser: grating outside the gain {#sec-4-6}
 
-A **DBR laser** places the [coupling](#defn-coupling) and the [gain](#defn-gain) in physically distinct stretches of the same waveguide. Reading along the propagation axis: a central active stretch carries $\gamma$; one or both ends of the waveguide continue into a passive stretch carrying $\kappa$ instead. Each stretch has its own electrical contact, so the current injected into the [gain](#defn-gain) region and the current injected into the [DBR](#defn-dbr) region — the latter used to shift $n$ through the free-carrier effect of [§ 4.5](#sec-4-5) — are set independently.
+A **DBR laser** places the [coupling](#defn-coupling) and the [gain](#defn-gain) in physically distinct stretches of the same waveguide. Reading along the propagation axis: a central active stretch carries $\gamma$; one or both ends of the waveguide continue into a passive stretch carrying $\kappa$ instead. Each stretch has its own electrical contact, so the current injected into the [gain](#defn-gain) region and the current injected into the [DBR](#defn-dbr) region — the latter used to shift $n_\text{avg}$ through the carrier-injection mechanism of [§ 4.5](#sec-4-5) — are set independently.
 
 Three tuning strategies follow from that independence:
 
@@ -553,67 +555,89 @@ Choosing different sampling periods for the two mirrors produces combs with diff
 
 ---
 
+
 ## § 5. Engineered gratings {#sec-5}
 
 Sections 1–4 treated the grating as uniform: constant [coupling](#defn-coupling) $\kappa$ and constant period $\Lambda$. Real gratings can vary either along their length, and the two knobs — spatial variation of amplitude, spatial variation of period — open up a family of engineered devices. We cover apodization, chirp, co-propagating coupling, and the extension of the Bragg momentum-conservation argument to nonlinear frequency conversion.
 
 ### § 5.1. Apodization: shaping the amplitude {#sec-5-1}
 
-A uniform grating of length $L$ has a boxcar coupling profile along $z$: $\kappa(z) = \kappa_0$ inside $[0, L]$ and zero outside. Cast in signal-processing terms, the grating multiplies an infinitely long modulation by the indicator function $\mathbf{1}_{[0, L]}(z)$ — the "window" through which the incident field sees the modulation. That window sets the shape of the reflection spectrum at detuning $\delta \neq 0$.
+A uniform grating turns on at $z = 0$ and off at $z = L$: $\kappa$ jumps from zero to $\kappa_0$ at the entrance and back to zero at the exit. Inside the [stopband](#defn-stopband) the reflection saturates near unity as $\kappa_0 L$ grows large ([§ 2.2](#sec-2-2)); outside the [stopband](#defn-stopband) reflection is weak but not zero — the spectrum carries a train of secondary maxima on both sides of $\lambda_B$. Those two abrupt on/off transitions are what puts them there. We first compute the reflection spectrum for the uniform grating in the weak-coupling limit, then remove the secondary maxima by softening the two ends of $\kappa(z)$.
 
-At small enough coupling — $\kappa_0 L \ll 1$, so a wave crosses the grating with its amplitude barely modified — every element $dz$ scatters the forward wave into the backward wave independently, with amplitude proportional to $\kappa(z)\, dz$. Each element imprints a phase $e^{2i\delta z}$ on the returned wave (the round-trip phase difference between the driven wavenumber $k = k_B + \delta$ and the Bragg reference), and the total reflected amplitude is the coherent sum:
+**The reflection outside the stopband: a coherent sum over depths.** Work in the weak-coupling limit $\kappa_0 L \ll 1$, where the forward-wave amplitude barely changes crossing the grating and each thin slab $dz$ can be treated in isolation. A wave at [detuning](#defn-detuning) $\delta$ enters at $z = 0$, propagates freely to depth $z$ with in-medium wavenumber $k_B + \delta$, meets the local modulation $\kappa(z)$ there, and a small piece of the wave — with amplitude $\kappa(z)\, dz$ — is scattered back. That piece propagates back to $z = 0$, again with wavenumber $k_B + \delta$. The full round trip from $z = 0$ to $z$ and back accumulates a total phase $2(k_B + \delta) z$; the reference we compare against is the field at $z = 0$ oscillating at the Bragg reference, whose phase for the same round trip would be $2 k_B z$. So each slab's return arrives back at the entrance with a phase $2\delta z$ against reference. Summing coherently across all depths,
 
-$$r(\delta) \approx i \int_{-\infty}^{\infty} \kappa(z)\, e^{2i\delta z}\, dz.$$
+$$r(\delta) \approx i \int_0^L \kappa(z)\, e^{2i\delta z}\, dz. \tag{13}\label{eq:r-of-delta}$$
 
-The reflection amplitude in this **first-Born regime** is the Fourier transform of the coupling profile — the boxcar $\kappa(z) = \kappa_0\, \mathbf{1}_{[0,L]}(z)$. Evaluating that Fourier transform directly,
+The factor $i$ carries the $\pi/2$ phase kick that a low-to-high interface imprints at Bragg ([§ 1.3](#sec-1-3)); it is common to all depths and does not affect the spectrum's shape.
 
-$$r(\delta) \approx i\, \kappa_0 \int_0^L e^{2i\delta z}\, dz = i\, \kappa_0\, L\, e^{i \delta L}\, \operatorname{sinc}(\delta L),$$
+At $\delta = 0$ every depth contributes in phase, and the amplitudes add to $i\kappa_0 L$. Away from $\delta = 0$, deeper contributions rotate faster than shallower ones, and the sum shrinks. For $\kappa(z) = \kappa_0$ on $[0, L]$ and zero outside, the integral is elementary:
 
-with $\operatorname{sinc}(x) \equiv \sin x / x$. The power reflectivity $\vert r(\delta) \vert^2 = (\kappa_0 L)^2\, \operatorname{sinc}^2(\delta L)$ inherits the shape of a squared sinc: a main lobe of half-width $\delta L \sim \pi$ centered on the [Bragg wavelength](#defn-bragg-wavelength), and a train of sidelobes at $\delta L \approx (n + 1/2)\pi$ that fall off only as $1/(\delta L)^2$. The first sidelobe reaches about 4.7% of the peak power — small, but not small enough for a channel filter dropping one wavelength from a densely packed stream, where those sidelobes cause cross-talk into the neighbors.
+$$r(\delta) \approx i\, \kappa_0 \int_0^L e^{2i\delta z}\, dz = i\, \kappa_0\, L\, e^{i \delta L}\, \frac{\sin(\delta L)}{\delta L},$$
 
-(At larger $\kappa_0 L$, $\tanh(\kappa_0 L)$ saturates and the peak reflectivity approaches unity rather than growing quadratically, but the sidelobe structure inherited from the window remains: a hard cut at $z = 0$ and $z = L$ imprints slowly-decaying sidelobes on the spectrum regardless.)
+and the power reflectivity is
 
-**Apodization** replaces the boxcar window with a smoother one:
+$$\vert r(\delta) \vert^2 = (\kappa_0 L)^2\, \left[\frac{\sin(\delta L)}{\delta L}\right]^2.$$
 
-$$\kappa(z) = \kappa_0\, w(z),$$
+Two features shape this spectrum.
 
-with $w(z)$ a window function that rises smoothly from zero at the ends of the grating to unity in the middle. Common choices — Gaussian, raised-cosine, Kaiser — are the same window shapes used in digital filter design. Apodization is that signal-processing operation applied to the grating's spectral response: soften the discontinuities at the ends of $w(z)$ and its Fourier transform decays faster than any polynomial, killing the sidelobes.
+- **A main lobe of width $\delta L \sim \pi$ around $\delta = 0$.** All depths add in phase at $\delta = 0$; the width of the main lobe is the range of $\delta$ over which they remain within $\sim \pi/2$ of each other across the length of the grating, i.e. $\delta L \sim 1$.
+- **A train of secondary maxima at $\delta L \approx (n + 1/2)\pi$ for $n \geq 1$, decaying only as $1/(\delta L)^2$.** These are the signature of the abrupt on/off at $z = 0$ and $z = L$. At large $\delta$, the interior contributions of the integral cancel among themselves (deep-slab returns interleave in phase with shallow-slab returns), and what survives is dominated by the two endpoint discontinuities. The first secondary maximum reaches about $4.7\%$ of the peak — small, but not negligible.
 
-The trade-off is the standard windowing one: a smoother window suppresses sidelobes but broadens the main lobe. A Gaussian-apodized grating has essentially no sidelobes but a wider [stopband](#defn-stopband) than the same-length boxcar grating. Fiber Bragg gratings used as wavelength-division-multiplexing filters are almost always apodized to keep adjacent channels isolated, with the wider stopband accepted as the cost.
+**Why abrupt cutoffs produce slowly-decaying secondary maxima.** Integrate \eqref{eq:r-of-delta} by parts:
+
+$$r(\delta) \approx i \int_0^L \kappa(z)\, e^{2i\delta z}\, dz = \left[\frac{\kappa(z)\, e^{2i\delta z}}{2\delta}\right]_0^L - \frac{1}{2\delta} \int_0^L \kappa'(z)\, e^{2i\delta z}\, dz.$$
+
+The boundary term evaluates to $\bigl(\kappa(L) - \kappa(0)\bigr)/(2\delta)$ up to a phase — a fixed number of order $\kappa_0/(2\delta)$, contributing $\sim (\kappa_0 / 2\delta)^2$ to the power. That is the $1/\delta^2$ envelope the sidelobes ride on. If $\kappa$ instead vanishes at both endpoints, the boundary term drops out, and the remaining integral admits another integration by parts — the result now decays as $1/\delta^2$ in amplitude, $1/\delta^4$ in power. Iterating: each additional derivative of $\kappa$ that vanishes at the two ends earns another factor of $1/\delta$ in amplitude at large $\delta$.
+
+**Apodization** puts this to work: multiply $\kappa$ by a smooth taper $w(z)$ that rises from zero at $z = 0$ to about unity across the middle of the grating and back to zero at $z = L$,
+
+$$\kappa(z) = \kappa_0\, w(z).$$
+
+A common choice is Gaussian, $w(z) \propto \exp\bigl[-(z - L/2)^2 / (2\sigma^2)\bigr]$ with $\sigma$ a fraction of $L$: all derivatives of $\kappa$ vanish at the two ends, and by the integration-by-parts iteration above the reflection spectrum outside the [stopband](#defn-stopband) decays faster than any polynomial in $\delta$. The secondary maxima are effectively erased. Raised-cosine and Kaiser tapers work the same way, differing only in how quickly they roll off.
+
+The cost is the width of the main lobe. Tapering concentrates most of the reflection into the central portion of the grating where $w(z) \approx 1$; the effective length participating in the coherent sum is shorter than $L$, and by the $\delta L \sim 1$ estimate the main lobe correspondingly widens. Sidelobe suppression and main-lobe width trade against each other, roughly linearly: a factor-of-ten suppression comes with a comparable widening.
+
+**Where this matters concretely.** Fiber-optic links carry several wavelength channels through the same fiber at spacings of $100\,\text{GHz}$ (about $0.8\,\text{nm}$ at $\lambda = 1550\,\text{nm}$), or increasingly $50\,\text{GHz}$ and $25\,\text{GHz}$. A grating used to add or drop one channel must reflect its target channel almost fully while leaving its immediate neighbors untouched. A uniform grating whose reflectivity peaks on the target channel would still return the $4.7\%$ first secondary maximum on the neighbor channel one slot over — every downstream receiver would receive a $-13\,\text{dB}$ shadow of the wrong channel. Apodized fiber Bragg gratings — the smoothing implemented during the two-beam interference exposure that writes the index modulation — routinely push this floor to $-40\,\text{dB}$ or lower, at the price of a main lobe wider than the same-length uniform grating's.
 
 ### § 5.2. Chirp: shaping the period {#sec-5-2}
 
-The uniform grating of § 1–§ 4 has a single Bragg wavenumber $k_B = \pi/\Lambda$ and, through \eqref{eq:bragg}, a single [Bragg wavelength](#defn-bragg-wavelength) $\lambda_B = 2 n_\text{avg}\, \Lambda$. The two are locked to each other by $\Lambda$, and the coupled-mode framework of § 1–§ 2 works comfortably with $k_B$. What follows reads more easily in $\lambda_B$: chirp assigns a *different* Bragg wavelength to each depth, and "which wavelength turns around where" is the phrasing that makes the physics visible. Every step below can be translated back to $k_B(z) = \pi n_\text{avg}/\lambda_B(z)$ if wanted.
+Every derivation before this subsection assumed a single [Bragg wavenumber](#defn-bragg-wavenumber) $k_B = \pi/\Lambda$ set by a single period $\Lambda$. **Chirp** breaks that: the period varies slowly along the grating,
 
-**Chirp** varies the local period $\Lambda(z)$ along the grating, so \eqref{eq:bragg} promotes the [Bragg wavelength](#defn-bragg-wavelength) to a function of position:
+$$\Lambda(z) = \Lambda_0\, (1 + \alpha z),$$
 
-$$\lambda_B(z) = 2\, n_\text{avg}\, \Lambda(z).$$
+with $\alpha$ small enough that $\Lambda$ changes by a small fraction over one Bragg period. The grating stays locally sinusoidal, so at every depth a local [Bragg wavelength](#defn-bragg-wavelength) is well-defined,
 
-For a linear chirp,
+$$\lambda_B(z) = 2\, n_\text{avg}\, \Lambda(z) = \lambda_{B, 0}\, (1 + \alpha z).$$
 
-$$\Lambda(z) = \Lambda_0 (1 + \alpha z), \qquad \lambda_B(z) = \lambda_{B, 0}(1 + \alpha z),$$
+What follows reads more naturally in $\lambda$ than in $k_B$: chirp assigns a different reflecting wavelength to each depth, and "which wavelength turns around where" is the phrasing that makes the physics visible.
 
-different parts of the grating reflect different wavelengths.
+**Depth-selective reflection.** Send a wave at wavelength $\lambda$ into the grating from $z = 0$. At each depth the grating tries to couple the forward and backward waves, but that coupling is resonant: it only survives the coherent sum over the many periods that make up any small stretch of grating if the wave's wavelength matches the local $\lambda_B(z)$. At depths where $\lambda \neq \lambda_B(z)$, the phase mismatch $2\delta = 2(k - k_B(z))$ is nonzero, and successive periods contribute to the reflection with rotating phases that cancel to leading order — the same phase-error accumulation of [§ 1.4](#sec-1-4), local to that depth. The wave crosses those depths essentially untouched. It reaches the specific depth $z^*$ at which the local Bragg matches:
 
-An incident wave at wavelength $\lambda$ propagates into the grating from the left, at first outside every local stopband — the field crosses each depth essentially unattenuated while $\lambda \neq \lambda_B(z)$. It reaches the depth $z^*(\lambda)$ at which $\lambda_B(z^*) = \lambda$ — its "own" Bragg point — and there it reflects, decaying into the deeper grating over the characteristic $1/\kappa$ of [§ 2.1](#sec-2-1). Solving $\lambda_B(z^*) = \lambda$ against the linear chirp gives
+$$\lambda_B(z^*) = \lambda.$$
+
+There the phase mismatch is zero, successive periods add coherently, and the local grating acts as a Bragg mirror at that depth — the wave reflects and decays into the deeper grating over the characteristic decay length $1/\kappa$ of [§ 2.1](#sec-2-1). Deeper layers, where the local $\lambda_B$ has drifted past $\lambda$, again do nothing. From outside, the wave has turned around at $z^*$ — a wavelength-dependent penetration depth.
+
+Read as a function of $\lambda$: the wave selects the depth where the grating's local Bragg matches it. Invert $\lambda_B(z^*) = \lambda$ using the linear chirp $\lambda_B(z) = \lambda_{B, 0}(1 + \alpha z)$:
 
 $$z^*(\lambda) = \frac{\lambda - \lambda_{B, 0}}{\alpha\, \lambda_{B, 0}}.$$
 
-Shorter wavelengths turn around near the entrance; longer wavelengths propagate deeper before turning around. The round-trip *time* each wavelength accumulates from entering the grating, reaching $z^*(\lambda)$, and returning is $\tau(\lambda) = 2 n_g\, z^*(\lambda)/c$, with $n_g$ the group index of the grating outside its local stopband. Substituting,
+Shorter wavelengths turn around near the entrance; longer wavelengths propagate deeper before turning around (for $\alpha > 0$; flip signs for $\alpha < 0$).
 
-$$\tau(\lambda) = \frac{2 n_g}{c\, \alpha\, \lambda_{B, 0}}\, (\lambda - \lambda_{B, 0}). \tag{13}\label{eq:chirp-delay}$$
+**Wavelength-dependent group delay.** Compare the arrival time of two wavelengths on their way back out. Each wave propagates from $z = 0$ down to its own $z^*(\lambda)$ and back, and only that middle stretch of the round trip depends on $\lambda$ — the entrance and exit are at fixed $z = 0$. Approximating the propagation between $z = 0$ and $z^*$ as free (the wave sees successive off-resonant depths, negligibly disturbed), the round-trip time is $2\, n_\text{avg}\, z^*(\lambda) / c$. Substituting $z^*(\lambda)$,
 
-The group delay is *linear* in wavelength, with a slope
+$$\tau(\lambda) = \frac{2\, n_\text{avg}\, z^*(\lambda)}{c} = \frac{2\, n_\text{avg}}{c\, \alpha\, \lambda_{B, 0}}\, (\lambda - \lambda_{B, 0}). \tag{13}\label{eq:chirp-delay}$$
 
-$$\frac{d\tau}{d\lambda} = \frac{2 n_g}{c\, \alpha\, \lambda_{B, 0}}$$
+The reflected pulse's spectral components emerge with a delay that is *linear* in $\lambda$. The slope
 
-set by the chirp rate $\alpha$. Its sign is picked at fabrication: $\alpha > 0$ delays longer wavelengths more, $\alpha < 0$ delays shorter wavelengths more. The grating is a **dispersive reflector** with a group-delay profile the designer specifies through $\alpha$.
+$$\frac{d\tau}{d\lambda} = \frac{2\, n_\text{avg}}{c\, \alpha\, \lambda_{B, 0}}$$
 
-The primary application is dispersion compensation in fiber-optic links. Standard telecom fiber has group-velocity dispersion of about $D_\text{fiber} \approx 17\,\text{ps}/(\text{nm} \cdot \text{km})$: a wavelength $\lambda$ acquires a group delay $D_\text{fiber} \cdot (\lambda - \lambda_0) \cdot z_\text{fiber}$ after propagating $z_\text{fiber}$ of fiber, so a pulse whose spectrum spans $\Delta\lambda = 10\,\text{nm}$ has its red and blue edges arrive $170\,\text{ps}$ apart after $1\,\text{km}$ — a $170\,\text{ps}$ broadening in the time domain. A **chirped fiber Bragg grating (CFBG)** with the *opposite* sign of $d\tau/d\lambda$ in \eqref{eq:chirp-delay}, of matched magnitude, applies the reverse wavelength-dependent delay: choose $\alpha$ so that $d\tau/d\lambda = -D_\text{fiber} \cdot z_\text{fiber}$, and after reflection off the CFBG the edges arrive together again and the received pulse is recompressed to its original width. Real designs must match not only this first-order slope but its wavelength dependence (second-order dispersion) and polarization behavior across the spectrum; those refinements need the full transfer-matrix treatment of [§ 8 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-8).
+is the design output: given a target $d\tau/d\lambda$, the chirp $\alpha$ is set by inverting. Its sign is picked by the sign of $\alpha$: $\alpha > 0$ delays longer wavelengths more, $\alpha < 0$ delays shorter wavelengths more. The chirped grating is a **dispersive reflector** — a reflector whose reflection embeds a designer-chosen wavelength-dependent delay.
 
-A related use is intracavity dispersion compensation in femtosecond lasers, where the round-trip group-velocity dispersion from prisms, air, and the gain medium has to be cancelled to sustain pulses of picosecond duration or shorter. Chirped mirrors are the standard element for delivering a prescribed group-delay profile.
+**Dispersion compensation in fiber.** The main use is undoing chromatic dispersion in fiber-optic links. Standard single-mode telecom fiber at $1550\,\text{nm}$ has group-velocity dispersion of about $D_\text{fiber} \approx 17\,\text{ps}/(\text{nm} \cdot \text{km})$: a wavelength $\lambda$ acquires a group delay $D_\text{fiber} \cdot (\lambda - \lambda_0) \cdot z_\text{fiber}$ after propagating $z_\text{fiber}$ of fiber, so a pulse whose spectrum spans $\Delta\lambda = 10\,\text{nm}$ has its red and blue edges arrive $170\,\text{ps}$ apart after $1\,\text{km}$ — a temporal broadening that limits how tightly bits can be packed on the link. A **chirped fiber Bragg grating** (CFBG) engineered with the opposite sign of $d\tau/d\lambda$ in \eqref{eq:chirp-delay} — choose $\alpha$ so that $d\tau/d\lambda = -D_\text{fiber} \cdot z_\text{fiber}$ — applies the reverse delay in reflection, and the emerging pulse is recompressed to its original width. A related use is intracavity dispersion compensation in femtosecond lasers, where the round-trip dispersion from prisms, air, and the gain medium must be cancelled to sustain sub-picosecond pulses; chirped mirrors are the standard element.
 
-The mechanism is a direct reading of \eqref{eq:hyperbola} at $\delta = \pm\kappa$: group velocity vanishes at the two [stopband](#defn-stopband) boundary frequencies $\omega_\pm$ of [§ 1](#sec-1), and its slope diverges there. Chirping the grating slides that vanishing point in $z$, so different wavelengths hit the boundary at different depths, integrate different accumulated phases, and emerge with the designed group delay.
+Two refinements a real design has to make. The "free propagation" approximation used to derive \eqref{eq:chirp-delay} ignores the last piece of the round trip: as the wave enters the local stopband near $z^*$ and turns around inside it, it slows down and picks up an extra contribution to $\tau(\lambda)$ from that region. And $D_\text{fiber}$ itself varies with $\lambda$ across the pulse spectrum (second-order dispersion), so matching the CFBG's response over the full bandwidth requires the full transfer-matrix treatment of [§ 8 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-8), with $\alpha$ itself allowed to vary with $z$.
+
+**Underlying picture.** The mechanism is a direct reading of \eqref{eq:hyperbola} at $\delta = \pm\kappa$: the group velocity $d\omega/dq$ vanishes at the two [stopband](#defn-stopband) boundaries $\omega_\pm$ of [§ 1](#sec-1). Chirping the grating slides that vanishing point in $z$, so different wavelengths reach the boundary at different depths, integrate different accumulated phases along the way, and emerge with the designed group delay.
 
 ### § 5.3. Co-propagating coupling and long-period gratings {#sec-5-3}
 

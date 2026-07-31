@@ -54,6 +54,7 @@ module LahavBlog
 
         attr = { 'class' => "guided-disclosure guided-disclosure--#{tone}" }
         attr['open'] = 'open' if marker.attr['data-open'] == 'true'
+        attr['id'] = marker.attr['id'] if marker.attr['id'] && !marker.attr['id'].empty?
 
         block('details', attr, [
           summary(label, tone),

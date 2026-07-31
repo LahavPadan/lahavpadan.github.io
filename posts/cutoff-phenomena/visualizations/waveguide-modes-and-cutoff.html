@@ -38,9 +38,7 @@
   --negative-soft: rgba(160, 70, 85, .12);
   --shadow: rgba(20, 31, 25, .06);
   --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --display: Lora, Georgia, "Times New Roman", serif;
-  --math: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
-  --mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --math-font: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -93,7 +91,6 @@ button, input { font: inherit; }
 }
 h1 {
   margin: 0;
-  font-family: var(--display);
   font-size: clamp(1.25rem, 2.7vw, 1.9rem);
   font-weight: 560;
   line-height: 1.14;
@@ -146,25 +143,28 @@ input[type="range"] { display: block; width: 100%; margin: 7px 0 0; accent-color
 .panel { min-width: 0; padding: clamp(10px, 1.55vw, 15px); }
 .panel + .panel { border-left: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 63%, var(--surface-muted)); }
 .panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 9px; margin-bottom: 6px; }
-.panel-title { margin: 0; font-family: var(--display); font-size: clamp(.88rem, 1.35vw, 1.03rem); font-weight: 560; line-height: 1.15; letter-spacing: -.018em; }
+.panel-title { margin: 0; font-size: clamp(.88rem, 1.35vw, 1.03rem); font-weight: 560; line-height: 1.15; letter-spacing: -.018em; }
 .panel-kicker { color: var(--muted); font-size: .62rem; font-weight: 720; line-height: 1.2; white-space: nowrap; }
-.math { font-family: var(--math); }
+.math { font-family: var(--math-font); }
 mjx-container { margin: 0 !important; }
 .mode-panel { align-self: start; padding: 8px; }
 .mode-panel .panel-head { margin-bottom: 4px; }
 .mode-panel .panel-title { font-family: var(--sans); font-size: clamp(.76rem, 1vw, .84rem); font-weight: 780; line-height: 1.15; letter-spacing: -.006em; }
 .mode-panel .panel-kicker { font-size: .57rem; }
 .mode-stage { position: relative; height: clamp(166px, 15vw, 184px); overflow: hidden; border: 1px solid var(--border); background: var(--surface); }
-#modeSvg, #dispersionSvg { display: block; width: 100%; height: 100%; }
+.axial-stage { position: relative; height: clamp(84px, 8.5vw, 100px); overflow: hidden; border: 1px solid var(--border); background: var(--surface); }
+.sub-head { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border); }
+#modeSvg, #dispersionSvg, #axialSvg { display: block; width: 100%; height: 100%; }
 .mode-wall { fill: none; stroke: var(--border-strong); stroke-width: 2; }
 .mode-node { stroke: var(--border-strong); stroke-width: 1; stroke-dasharray: 4 5; opacity: .76; }
 .mode-center { stroke: var(--accent-border); stroke-width: 1.15; stroke-dasharray: 5 5; }
 .mode-curve { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.axial-envelope { fill: none; stroke: var(--warm); stroke-width: 1.5; stroke-dasharray: 5 5; opacity: .78; }
 .mode-midline { stroke: var(--border); stroke-width: 1; }
 .dimension { stroke: var(--muted); stroke-width: 1.2; }
 .svg-label { fill: var(--muted); font-family: var(--sans); font-size: 12px; }
 .svg-label.strong { fill: var(--ink); font-weight: 700; }
-.svg-math { fill: var(--ink); font-family: var(--math); font-size: 15px; font-style: italic; }
+.svg-math { fill: var(--ink); font-family: var(--math-font); font-size: 15px; font-style: italic; }
 .svg-math.accent { fill: var(--accent-ink); }
 .mode-formulas {
   display: grid;
@@ -202,7 +202,7 @@ mjx-container { margin: 0 !important; }
 .plot-label.selected { fill: var(--accent-ink); font-weight: 760; }
 .plot-math {
   fill: var(--ink);
-  font-family: var(--math);
+  font-family: var(--math-font);
   font-size: 14px;
   font-style: italic;
   paint-order: stroke;
@@ -226,24 +226,21 @@ mjx-container { margin: 0 !important; }
 .regime-copy strong { color: var(--ink); font-weight: 740; }
 .regime-value { color: var(--pair); font-size: clamp(.7rem, 1.18vw, .82rem); font-weight: 720; line-height: 1.25; text-align: right; white-space: nowrap; }
 .regime-value mjx-container { margin: 0 !important; }
-.plot-html-math {
-  position: absolute;
-  z-index: 5;
+.plot-fo { overflow: visible; pointer-events: none; }
+.plot-fo-math {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--ink);
-  font-size: clamp(.66rem, 1.05vw, .78rem);
+  font-size: 15px;
   line-height: 1;
   white-space: nowrap;
-  pointer-events: none;
 }
-.plot-html-math mjx-container { margin: 0 !important; }
-.plot-x-math { right: 5.9%; bottom: 2.1%; }
-.plot-y-math { left: 1.15%; top: 4.3%; }
-.plot-regime-math {
-  top: 8.8%;
-  color: var(--warm);
-  transform: translateX(-50%);
-}
-.plot-regime-math mjx-container { color: inherit; }
+.plot-fo-math.regime { color: var(--warm); }
+.plot-fo-math.cutoff { color: var(--accent-ink); font-weight: 720; }
+.plot-fo-math mjx-container { margin: 0 !important; }
 .field-section { border: 1px solid var(--border); border-bottom: 0; background: var(--surface); }
 .field-head {
   display: grid;
@@ -253,14 +250,14 @@ mjx-container { margin: 0 !important; }
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
 }
-.field-title { margin: 0; font-family: var(--display); font-size: clamp(.94rem, 1.7vw, 1.08rem); font-weight: 560; letter-spacing: -.018em; }
+.field-title { margin: 0; font-size: clamp(.94rem, 1.7vw, 1.08rem); font-weight: 560; letter-spacing: -.018em; }
 .field-status { color: var(--accent-ink); font-size: .71rem; font-weight: 760; white-space: nowrap; }
 .field-canvas-wrap { position: relative; height: clamp(140px, 20vw, 190px); overflow: hidden; background: var(--surface-muted); }
 #fieldCanvas { display: block; width: 100%; height: 100%; }
 .field-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .guide-wall { stroke: var(--border-strong); stroke-width: 2; }
 .guide-axis { stroke: var(--muted); stroke-width: 1.2; marker-end: url(#arrowMuted); }
-.guide-label { fill: var(--muted); font-family: var(--math); font-size: 14px; font-style: italic; }
+.guide-label { fill: var(--muted); font-family: var(--math-font); font-size: 14px; font-style: italic; }
 .field-note {
   position: absolute;
   right: 12px;
@@ -379,9 +376,9 @@ mjx-container { margin: 0 !important; }
           <span class="panel-kicker" id="halfWaveLabel">one half-wave across a</span>
         </div>
         <div class="mode-stage">
-          <svg id="modeSvg" viewBox="48 42 414 285" role="img" aria-labelledby="modeTitle modeDescription" preserveAspectRatio="xMidYMid meet">
+          <svg id="modeSvg" viewBox="40 42 422 285" role="img" aria-labelledby="modeTitle modeDescription" preserveAspectRatio="xMidYMid meet">
             <title id="modeTitle">Selected transverse waveguide mode</title>
-            <desc id="modeDescription">A rectangular cross-section whose field varies sinusoidally across a and is uniform across b.</desc>
+            <desc id="modeDescription">A rectangular cross-section whose field varies sinusoidally along a and is uniform along b.</desc>
             <defs>
               <linearGradient id="positiveFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0" stop-color="var(--accent)" stop-opacity=".33"></stop>
@@ -395,7 +392,7 @@ mjx-container { margin: 0 !important; }
             </defs>
             <rect x="78" y="58" width="315" height="178" fill="var(--surface-muted)"></rect>
             <g id="modeBands" clip-path="url(#crossSectionClip)"></g>
-            <line class="mode-midline" x1="78" y1="147" x2="393" y2="147"></line>
+            <line class="mode-midline" x1="235.5" y1="58" x2="235.5" y2="236"></line>
             <g id="modeNodes"></g>
             <path id="modeCurve" class="mode-curve"></path>
             <rect class="mode-wall" x="78" y="58" width="315" height="178"></rect>
@@ -403,22 +400,62 @@ mjx-container { margin: 0 !important; }
             <line class="dimension" x1="78" y1="267" x2="393" y2="267"></line>
             <line class="dimension" x1="78" y1="260" x2="78" y2="274"></line>
             <line class="dimension" x1="393" y1="260" x2="393" y2="274"></line>
-            <text class="svg-math" x="235.5" y="291" text-anchor="middle">a</text>
-            <text class="svg-label" x="78" y="253" text-anchor="middle">0</text>
-            <text class="svg-label" x="393" y="253" text-anchor="middle">a</text>
-            <text id="centerXLabel" class="svg-label strong" x="235.5" y="253" text-anchor="middle">a/2</text>
+            <text class="svg-math" x="235.5" y="291" text-anchor="middle">b</text>
+
+            <text class="svg-label" x="73" y="240" text-anchor="end">0</text>
+            <text class="svg-label" x="73" y="63" text-anchor="end">a</text>
+            <g id="modeNodeLabels"></g>
 
             <line class="dimension" x1="422" y1="58" x2="422" y2="236"></line>
             <line class="dimension" x1="415" y1="58" x2="429" y2="58"></line>
             <line class="dimension" x1="415" y1="236" x2="429" y2="236"></line>
-            <text class="svg-math" x="438" y="152">b</text>
+            <text class="svg-math" x="438" y="152">a</text>
 
-            <text class="svg-label" x="235.5" y="318" text-anchor="middle">field is uniform in the vertical direction</text>
+            <text class="svg-label" x="235.5" y="318" text-anchor="middle">field is uniform in the horizontal direction</text>
           </svg>
         </div>
         <div class="mode-formulas">
           <div class="formula-cell">\(X_n(x)=\sin\!\left(\dfrac{n\pi x}{a}\right)\)</div>
           <div class="formula-cell"><strong id="kPerpFormula">\(k_{\perp}=\dfrac{\pi}{a}\)</strong></div>
+        </div>
+
+        <div class="panel-head sub-head">
+          <h2 class="panel-title">Progressing wave shape</h2>
+          <span class="panel-kicker" id="axialShapeKicker">\(\cos(k_z z)\)</span>
+        </div>
+        <div class="axial-stage">
+          <svg id="axialSvg" viewBox="40 0 422 135" role="img" aria-labelledby="axialTitle axialDesc" preserveAspectRatio="xMidYMid meet">
+            <title id="axialTitle">Axial waveform along z</title>
+            <desc id="axialDesc">One-dimensional shape along the axial direction: cosine oscillation when propagating, constant at cutoff, exponential decay when evanescent.</desc>
+            <defs>
+              <linearGradient id="axialPositiveFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="var(--accent)" stop-opacity=".33"></stop>
+                <stop offset="1" stop-color="var(--accent)" stop-opacity=".12"></stop>
+              </linearGradient>
+              <linearGradient id="axialNegativeFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="var(--negative)" stop-opacity=".30"></stop>
+                <stop offset="1" stop-color="var(--negative)" stop-opacity=".11"></stop>
+              </linearGradient>
+              <clipPath id="axialClip"><rect x="78" y="18" width="315" height="82"></rect></clipPath>
+            </defs>
+            <rect x="78" y="18" width="315" height="82" fill="var(--surface-muted)"></rect>
+            <g id="axialBands" clip-path="url(#axialClip)"></g>
+            <line class="mode-midline" x1="78" y1="59" x2="393" y2="59"></line>
+            <g clip-path="url(#axialClip)">
+              <path id="axialEnvelope" class="axial-envelope"></path>
+              <path id="axialCurve" class="mode-curve"></path>
+            </g>
+            <rect class="mode-wall" x="78" y="18" width="315" height="82"></rect>
+
+            <line class="dimension" x1="78" y1="114" x2="393" y2="114"></line>
+            <line class="dimension" x1="78" y1="107" x2="78" y2="121"></line>
+            <line class="dimension" x1="393" y1="107" x2="393" y2="121"></line>
+            <text class="svg-math" x="235.5" y="132" text-anchor="middle">z</text>
+          </svg>
+        </div>
+        <div class="mode-formulas">
+          <div class="formula-cell" id="axialFormulaCell">\(Z(z)=\cos(k_z z)\)</div>
+          <div class="formula-cell"><strong id="kzShapeFormula">\(k_z=\sqrt{k_0^2-k_\perp^2}\)</strong></div>
         </div>
       </section>
 
@@ -451,10 +488,11 @@ mjx-container { margin: 0 !important; }
             <circle id="cutoffDot" class="cutoff-dot" cy="354" r="4.1"></circle>
             <g id="plotLabels"></g>
             <text class="plot-label" x="556" y="67" text-anchor="end">free-space line</text>
+            <foreignObject class="plot-fo" x="522" y="360" width="66" height="28"><div xmlns="http://www.w3.org/1999/xhtml" class="plot-fo-math">\(\frac{\omega}{\omega_c}\)</div></foreignObject>
+            <foreignObject class="plot-fo" x="12" y="8" width="72" height="28"><div xmlns="http://www.w3.org/1999/xhtml" class="plot-fo-math">\(\frac{k_z}{\pi/a}\)</div></foreignObject>
+            <foreignObject id="regimePlotLabelFO" class="plot-fo" x="80" y="45" width="90" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="regimePlotLabel" class="plot-fo-math regime">\(k_z=i\kappa\)</div></foreignObject>
+            <foreignObject id="cutoffLabelFO" class="plot-fo" x="150" y="362" width="60" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="cutoffLabelDiv" class="plot-fo-math cutoff">\(\omega_c\)</div></foreignObject>
           </svg>
-          <div class="plot-html-math plot-x-math">\(\frac{\omega}{\omega_c}\)</div>
-          <div class="plot-html-math plot-y-math">\(\frac{k_z}{\pi/a}\)</div>
-          <div id="regimePlotLabel" class="plot-html-math plot-regime-math">\(k_z=i\kappa\)</div>
         </div>
         <div class="regime-strip">
           <div class="regime-copy" id="regimeCopy"><strong>Propagating.</strong> The transverse mode has been paid for; the remainder becomes a real axial wavenumber.</div>
@@ -485,8 +523,14 @@ mjx-container { margin: 0 !important; }
   const modeBands = document.getElementById("modeBands");
   const modeNodes = document.getElementById("modeNodes");
   const modeCurve = document.getElementById("modeCurve");
-  const centerXLabel = document.getElementById("centerXLabel");
+  const modeNodeLabels = document.getElementById("modeNodeLabels");
   const kPerpFormula = document.getElementById("kPerpFormula");
+  const axialCurve = document.getElementById("axialCurve");
+  const axialEnvelope = document.getElementById("axialEnvelope");
+  const axialBands = document.getElementById("axialBands");
+  const axialFormulaCell = document.getElementById("axialFormulaCell");
+  const kzShapeFormula = document.getElementById("kzShapeFormula");
+  const axialShapeKicker = document.getElementById("axialShapeKicker");
   const plotGrid = document.getElementById("plotGrid");
   const branches = document.getElementById("branches");
   const plotLabels = document.getElementById("plotLabels");
@@ -499,6 +543,9 @@ mjx-container { margin: 0 !important; }
   const cutoffTick = document.getElementById("cutoffTick");
   const cutoffDot = document.getElementById("cutoffDot");
   const regimePlotLabel = document.getElementById("regimePlotLabel");
+  const cutoffLabelDiv = document.getElementById("cutoffLabelDiv");
+  const regimePlotLabelFO = document.getElementById("regimePlotLabelFO");
+  const cutoffLabelFO = document.getElementById("cutoffLabelFO");
   const regimeCopy = document.getElementById("regimeCopy");
   const regimeValue = document.getElementById("regimeValue");
   const fieldCanvas = document.getElementById("fieldCanvas");
@@ -520,46 +567,67 @@ mjx-container { margin: 0 !important; }
     return element;
   }
 
+  function setForeignCenter(element, cx, cy) {
+    const width = Number(element.getAttribute("width")) || 0;
+    const height = Number(element.getAttribute("height")) || 0;
+    element.setAttribute("x", cx - width / 2);
+    element.setAttribute("y", cy - height / 2);
+  }
+
   function renderMode() {
     modeBands.replaceChildren();
     modeNodes.replaceChildren();
+    modeNodeLabels.replaceChildren();
 
     const width = modeBox.x1 - modeBox.x0;
     const height = modeBox.y1 - modeBox.y0;
-    const bandWidth = width / selectedMode;
+    const bandHeight = height / selectedMode;
+    const midX = (modeBox.x0 + modeBox.x1) / 2;
 
     for (let index = 0; index < selectedMode; index += 1) {
+      const y = modeBox.y1 - (index + 1) * bandHeight;
       const rect = makeSvg("rect", {
-        x: modeBox.x0 + index * bandWidth,
-        y: modeBox.y0,
-        width: bandWidth + .5,
-        height,
+        x: modeBox.x0,
+        y,
+        width,
+        height: bandHeight + .5,
         fill: index % 2 === 0 ? "url(#positiveFill)" : "url(#negativeFill)"
       });
       modeBands.appendChild(rect);
     }
 
     for (let index = 1; index < selectedMode; index += 1) {
-      const x = modeBox.x0 + index * bandWidth;
-      modeNodes.appendChild(makeSvg("line", { x1: x, x2: x, y1: modeBox.y0, y2: modeBox.y1, class: "mode-node" }));
+      const y = modeBox.y1 - index * bandHeight;
+      modeNodes.appendChild(makeSvg("line", { x1: modeBox.x0, x2: modeBox.x1, y1: y, y2: y, class: "mode-node" }));
     }
 
     if (selectedMode === 1) {
-      modeNodes.appendChild(makeSvg("line", { x1: (modeBox.x0 + modeBox.x1) / 2, x2: (modeBox.x0 + modeBox.x1) / 2, y1: modeBox.y0, y2: modeBox.y1, class: "mode-center" }));
+      const y = modeBox.y1 - height / 2;
+      modeNodes.appendChild(makeSvg("line", { x1: modeBox.x0, x2: modeBox.x1, y1: y, y2: y, class: "mode-center" }));
+
+      const label = makeSvg("text", { x: 73, y: y + 4, "text-anchor": "end", class: "svg-label strong" });
+      label.textContent = "a/2";
+      modeNodeLabels.appendChild(label);
+    } else {
+      for (let index = 1; index < selectedMode; index += 1) {
+        const y = modeBox.y1 - index * bandHeight;
+        const label = makeSvg("text", { x: 73, y: y + 4, "text-anchor": "end", class: "svg-label strong" });
+        label.textContent = `${index === 1 ? "" : index}a/${selectedMode}`;
+        modeNodeLabels.appendChild(label);
+      }
     }
 
     let path = "";
-    const amplitude = 65;
+    const amplitude = 100;
     for (let index = 0; index <= 260; index += 1) {
       const t = index / 260;
-      const x = modeBox.x0 + t * width;
-      const y = modeBox.mid - amplitude * Math.sin(selectedMode * Math.PI * t);
+      const x = midX + amplitude * Math.sin(selectedMode * Math.PI * t);
+      const y = modeBox.y1 - t * height;
       path += `${index ? "L" : "M"}${x.toFixed(2)} ${y.toFixed(2)} `;
     }
     modeCurve.setAttribute("d", path);
 
-    halfWaveLabel.textContent = selectedMode === 1 ? "one half-wave across a" : `${selectedMode} half-waves across a`;
-    centerXLabel.textContent = selectedMode === 1 ? "a/2" : `nodes at j a/${selectedMode}`;
+    halfWaveLabel.textContent = selectedMode === 1 ? "one half-wave along a" : `${selectedMode} half-waves along a`;
     kPerpFormula.innerHTML = selectedMode === 1
       ? "\\(k_{\\perp}=\\dfrac{\\pi}{a}\\)"
       : `\\(k_{\\perp,${selectedMode}}=\\dfrac{${selectedMode}\\pi}{a}\\)`;
@@ -626,14 +694,92 @@ mjx-container { margin: 0 !important; }
     cutoffDot.setAttribute("cx", cutoffX);
     evanescentRegion.setAttribute("width", Math.max(0, cutoffX - plot.x0));
 
-    const cutoffLabel = makeSvg("text", {
-      x: cutoffX,
-      y: 394,
-      "text-anchor": "middle",
-      class: "plot-math selected"
-    });
-    cutoffLabel.textContent = selectedMode === 1 ? "ωc" : `${selectedMode}ωc`;
-    plotLabels.appendChild(cutoffLabel);
+    setForeignCenter(cutoffLabelFO, cutoffX, 375);
+    cutoffLabelDiv.innerHTML = selectedMode === 1
+      ? "\\(\\omega_c\\)"
+      : `\\(${selectedMode}\\omega_c\\)`;
+  }
+
+  function renderAxial(regime, q, kappa) {
+    const x0 = 78, x1 = 393, midY = 59, amplitude = 32;
+    const bandY = 18, bandH = 82;
+    let path = "";
+    let envPath = "";
+
+    axialBands.replaceChildren();
+
+    if (regime === "propagating") {
+      // Bands align with the cosine's zero-crossings, so their count reflects k_z.
+      const cycles = Math.max(0.001, 1.2 * q);
+      const zeros = [0];
+      let n = 0;
+      while (true) {
+        const t = (2 * n + 1) / (4 * cycles);
+        if (t >= 1) break;
+        zeros.push(t);
+        n += 1;
+      }
+      zeros.push(1);
+      for (let i = 0; i < zeros.length - 1; i += 1) {
+        const bx = x0 + zeros[i] * (x1 - x0);
+        const bw = (zeros[i + 1] - zeros[i]) * (x1 - x0);
+        axialBands.appendChild(makeSvg("rect", {
+          x: bx.toFixed(2),
+          y: bandY,
+          width: (bw + 0.5).toFixed(2),
+          height: bandH,
+          fill: i % 2 === 0 ? "url(#axialPositiveFill)" : "url(#axialNegativeFill)"
+        }));
+      }
+
+      for (let i = 0; i <= 240; i += 1) {
+        const t = i / 240;
+        const x = x0 + t * (x1 - x0);
+        const y = midY - amplitude * Math.cos(2 * Math.PI * cycles * t);
+        path += `${i ? "L" : "M"}${x.toFixed(2)} ${y.toFixed(2)} `;
+      }
+      axialShapeKicker.innerHTML = "\\(\\cos(k_z z)\\)";
+      axialFormulaCell.innerHTML = "\\(Z(z)=\\cos(k_z z)\\)";
+      kzShapeFormula.innerHTML = "\\(k_z=\\sqrt{k_0^2-k_\\perp^2}\\)";
+    } else if (regime === "cutoff") {
+      axialBands.appendChild(makeSvg("rect", {
+        x: x0, y: bandY, width: x1 - x0, height: bandH, fill: "url(#axialPositiveFill)"
+      }));
+      path = `M${x0} ${(midY - amplitude).toFixed(2)} L${x1} ${(midY - amplitude).toFixed(2)}`;
+      axialShapeKicker.innerHTML = "\\(k_z=0\\)";
+      axialFormulaCell.innerHTML = "\\(Z(z)=\\text{const}\\)";
+      kzShapeFormula.innerHTML = "\\(k_z=0\\)";
+    } else {
+      const decay = 2.2 * kappa;
+      const nStrips = 72;
+      const stripW = (x1 - x0) / nStrips;
+      for (let i = 0; i < nStrips; i += 1) {
+        const tCenter = (i + 0.5) / nStrips;
+        const value = Math.exp(-decay * tCenter);
+        const alpha = 0.10 + 0.45 * value;
+        axialBands.appendChild(makeSvg("rect", {
+          x: (x0 + i * stripW).toFixed(2),
+          y: bandY,
+          width: (stripW + 0.5).toFixed(2),
+          height: bandH,
+          fill: "var(--accent)",
+          opacity: alpha.toFixed(3)
+        }));
+      }
+      for (let i = 0; i <= 240; i += 1) {
+        const t = i / 240;
+        const x = x0 + t * (x1 - x0);
+        const env = amplitude * Math.exp(-decay * t);
+        path += `${i ? "L" : "M"}${x.toFixed(2)} ${(midY - env).toFixed(2)} `;
+        envPath += `${i ? "L" : "M"}${x.toFixed(2)} ${(midY + env).toFixed(2)} `;
+      }
+      axialShapeKicker.innerHTML = "\\(e^{-\\kappa z}\\)";
+      axialFormulaCell.innerHTML = "\\(Z(z)=e^{-\\kappa z}\\)";
+      kzShapeFormula.innerHTML = "\\(\\kappa=\\sqrt{k_\\perp^2-k_0^2}\\)";
+    }
+
+    axialCurve.setAttribute("d", path.trim());
+    axialEnvelope.setAttribute("d", envPath.trim());
   }
 
   function renderCurrentState() {
@@ -665,17 +811,18 @@ mjx-container { margin: 0 !important; }
       });
       currentDrop.style.display = "";
       regimePlotLabel.innerHTML = `\\(k_z=i\\kappa\\)`;
-      regimePlotLabel.style.left = `${100 * clamp((plot.x0 + sx(cutoff)) / 2, 82, 242) / 610}%`;
+      setForeignCenter(regimePlotLabelFO, (plot.x0 + sx(cutoff)) / 2, 55);
       regimeCopy.innerHTML = `<strong>Propagating.</strong> The transverse mode has been paid for; the remainder becomes a real axial wavenumber.`;
       regimeValue.innerHTML = `\\(\\frac{k_z}{\\pi/a}=${q.toFixed(3)}\\)`;
       fieldStatus.textContent = "standing across x · traveling along z";
       fieldNote.innerHTML = `<strong>Real \\(k_z\\).</strong> The transverse profile repeats while phase accumulates along the guide.`;
+      renderAxial("propagating", q, 0);
     } else {
       const kappa = Math.sqrt(Math.max(0, cutoff * cutoff - r * r));
       currentDrop.style.display = "none";
       [currentPointHalo, currentPoint].forEach(point => { point.style.display = "none"; });
       regimePlotLabel.innerHTML = atCutoff ? `\\(k_z=0\\)` : `\\(k_z=i\\kappa\\)`;
-      regimePlotLabel.style.left = `${100 * clamp((plot.x0 + sx(cutoff)) / 2, 82, 242) / 610}%`;
+      setForeignCenter(regimePlotLabelFO, (plot.x0 + sx(cutoff)) / 2, 55);
       regimeCopy.innerHTML = atCutoff
         ? `<strong>At cutoff.</strong> The axial wavelength diverges: the mode is just at the boundary between decay and propagation.`
         : `<strong>Evanescent.</strong> The wall-compatible transverse shape still exists, but there is no real axial wavenumber.`;
@@ -686,6 +833,7 @@ mjx-container { margin: 0 !important; }
       fieldNote.innerHTML = atCutoff
         ? `<strong>At cutoff.</strong> The axial oscillation has stretched to infinite wavelength.`
         : `<strong>Imaginary \\(k_z=i\\kappa\\).</strong> The same transverse profile survives, but its amplitude fades exponentially along the guide.`;
+      renderAxial(atCutoff ? "cutoff" : "evanescent", 0, kappa);
     }
 
     drawField();
@@ -812,7 +960,11 @@ mjx-container { margin: 0 !important; }
         cutoffValue,
         regimeValue,
         regimePlotLabel,
-        fieldNote
+        cutoffLabelDiv,
+        fieldNote,
+        axialShapeKicker,
+        axialFormulaCell,
+        kzShapeFormula
       ];
 
       MathJax.typesetClear?.(targets);
