@@ -1,0 +1,1100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="artifact-build" content="mathjax-fixed-v2-2026-07-30">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap">
+<title>Gradient descent in the Hessian eigenbasis</title>
+<script>
+(() => {
+  try {
+    const root = window.parent.document.documentElement;
+    const body = window.parent.document.body;
+    const raw = `${root.dataset.theme || ""} ${root.className || ""} ${body?.dataset?.theme || ""} ${body?.className || ""}`.toLowerCase();
+    document.documentElement.dataset.theme = raw.includes("dark") ? "dark" : raw.includes("light") ? "light" : "";
+  } catch (_) {}
+})();
+</script>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]]
+  },
+  svg: { fontCache: "global" },
+  options: {
+    skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+  },
+  startup: {
+    pageReady() {
+      return MathJax.startup.defaultPageReady().then(() => {
+        document.documentElement.dataset.mathReady = "true";
+        document.dispatchEvent(new CustomEvent("viz:math-ready"));
+      });
+    }
+  }
+};
+</script>
+<script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --surface: var(--viz-surface, #fff);
+  --surface-muted: var(--viz-surface-muted, #f5f6f2);
+  --ink: var(--viz-ink, #1b2420);
+  --muted: var(--viz-muted, #68736c);
+  --border: var(--viz-border, #d6ddd7);
+  --border-strong: var(--viz-border-strong, #a7b3aa);
+  --accent: var(--viz-accent, #0d7659);
+  --accent-ink: var(--viz-accent-ink, #095f48);
+  --accent-soft: var(--viz-accent-soft, #dcefe7);
+  --accent-border: var(--viz-accent-border, #91c7b6);
+  --steep: #315fae;
+  --steep-soft: rgba(49, 95, 174, .12);
+  --flat: #9b631b;
+  --flat-soft: rgba(155, 99, 27, .12);
+  --danger: #b64b43;
+  --danger-soft: rgba(182, 75, 67, .11);
+  --shadow: rgba(20, 31, 25, .06);
+  --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --serif: Lora, Georgia, serif;
+  --mono: "Roboto Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+  --math-font: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: var(--viz-surface, #171e19);
+  --surface-muted: var(--viz-surface-muted, #1d2720);
+  --ink: var(--viz-ink, #e9efeb);
+  --muted: var(--viz-muted, #a7b5aa);
+  --border: var(--viz-border, #344138);
+  --border-strong: var(--viz-border-strong, #617168);
+  --accent: var(--viz-accent, #63d2aa);
+  --accent-ink: var(--viz-accent-ink, #8ee7c6);
+  --accent-soft: var(--viz-accent-soft, #16362c);
+  --accent-border: var(--viz-accent-border, #3c7964);
+  --steep: #8bb2ff;
+  --steep-soft: rgba(139, 178, 255, .13);
+  --flat: #e0a666;
+  --flat-soft: rgba(224, 166, 102, .13);
+  --danger: #ff9289;
+  --danger-soft: rgba(255, 146, 137, .12);
+  --shadow: rgba(0, 0, 0, .18);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; overflow-x: hidden; background: transparent; color: var(--ink); }
+body { padding: clamp(7px, 1.8vw, 18px); font-family: var(--sans); }
+button, input { font: inherit; }
+.viz {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 18px 48px var(--shadow);
+}
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, .43fr);
+  gap: 22px;
+  align-items: center;
+  padding: clamp(16px, 2.6vw, 25px);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 76%);
+}
+.heading-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 18px; }
+.eyebrow {
+  margin: 0;
+  color: var(--accent-ink);
+  font: 760 .68rem/1 var(--sans);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(1.22rem, 2.55vw, 1.86rem);
+  font-weight: 560;
+  line-height: 1.14;
+  letter-spacing: -.026em;
+}
+.definition {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: clamp(.89rem, 1.55vw, 1.02rem);
+  line-height: 1.43;
+}
+.definition mjx-container { margin: 0 !important; }
+.controls { display: grid; gap: 9px; min-width: 0; }
+.mode-control,
+.step-control {
+  min-width: 0;
+  padding: 9px 11px 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.control-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.control-name { color: var(--muted); font-size: .72rem; }
+.control-value { color: var(--accent-ink); font: 760 .75rem/1 var(--mono); }
+.step-control input[type="range"] { width: 100%; margin: 8px 0 0; accent-color: var(--accent); }
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+.segmented button {
+  appearance: none;
+  border: 0;
+  padding: 7px 8px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: .72rem;
+  font-weight: 680;
+}
+.segmented button[aria-pressed="true"] {
+  color: var(--accent-ink);
+  background: var(--surface);
+  box-shadow: 0 1px 5px var(--shadow);
+}
+.figure { margin: 0; padding: clamp(10px, 2.1vw, 20px); }
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.42fr) minmax(300px, .82fr);
+  gap: 12px;
+  align-items: stretch;
+}
+.plot-card,
+.readout-card {
+  min-width: 0;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+.plot-head,
+.readout-head {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 76%, transparent);
+}
+.panel-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--accent-ink);
+  font: 750 .62rem/1 var(--sans);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.panel-title { color: var(--ink); font-size: .84rem; font-weight: 680; line-height: 1.2; }
+.mode-note { color: var(--muted); font: 650 .68rem/1.25 var(--mono); text-align: right; }
+.plot-wrap { position: relative; overflow: hidden; }
+#landscape { display: block; width: 100%; height: auto; min-height: 350px; }
+mjx-container { color: inherit; }
+.definition mjx-container,
+.mode-note mjx-container,
+.control-value mjx-container,
+.box-formula mjx-container,
+.component-math mjx-container,
+.status-math mjx-container,
+.key-item mjx-container { margin: 0 !important; }
+.svg-math-html {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.svg-math-html mjx-container { margin: 0 !important; }
+.svg-math-html.center { justify-content: center; text-align: center; }
+.svg-math-html.flat { color: var(--flat); }
+.svg-math-html.steep { color: var(--steep); }
+.svg-math-html.muted { color: var(--muted); }
+.svg-math-html.axis-math { font-size: 15px; font-weight: 650; }
+.svg-math-html.point-math { font-size: 13px; }
+.svg-math-html.small-math { font-size: 12.5px; }
+.svg-math-html.factor-math { justify-content: center; font-size: 11px; font-weight: 650; }
+foreignObject { overflow: visible; pointer-events: none; }
+.plot-bg { fill: var(--surface-muted); }
+.grid-line { stroke: var(--border); stroke-width: 1; opacity: .72; }
+.axis-line { stroke: var(--border-strong); stroke-width: 1.2; }
+.contour { fill: none; stroke: color-mix(in srgb, var(--accent) 52%, var(--border)); stroke-width: 1.35; }
+.contour.inner { fill: color-mix(in srgb, var(--accent-soft) 44%, transparent); }
+.principal-axis { stroke-width: 1.65; stroke-dasharray: 7 6; }
+.principal-axis.flat { stroke: var(--flat); }
+.principal-axis.steep { stroke: var(--steep); }
+.axis-label-svg,
+.point-label-svg,
+.small-label-svg { font-family: var(--sans); paint-order: stroke; stroke: var(--surface-muted); stroke-linejoin: round; }
+.axis-label-svg { font-size: 15px; font-weight: 740; stroke-width: 5px; }
+.axis-label-svg.flat { fill: var(--flat); }
+.axis-label-svg.steep { fill: var(--steep); }
+.small-label-svg { fill: var(--muted); font-size: 12px; font-weight: 620; stroke-width: 4px; }
+.point-label-svg { fill: var(--ink); font-size: 13px; font-weight: 720; stroke-width: 4px; }
+.path-line { fill: none; stroke: var(--accent); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#pathArrow); }
+.path-guide { fill: none; stroke: color-mix(in srgb, var(--accent) 42%, var(--border)); stroke-width: 1.2; stroke-dasharray: 4 5; }
+.iteration-dot { fill: var(--surface); stroke: var(--accent); stroke-width: 2; }
+.iteration-dot.start { fill: var(--ink); stroke: var(--ink); }
+.iteration-dot.end { fill: var(--accent); stroke: var(--surface); stroke-width: 3; }
+.minimum-halo { fill: var(--surface); stroke: var(--accent); stroke-width: 2; }
+.minimum-dot { fill: var(--accent); }
+.coordinate-arrow { stroke: var(--muted); stroke-width: 1.35; marker-end: url(#thinArrow); }
+.readout-card { display: flex; flex-direction: column; }
+.readout-body { display: grid; gap: 10px; padding: 10px; }
+.factor-box,
+.component-box,
+.status-box {
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.box-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 9px 7px;
+  border-bottom: 1px solid var(--border);
+}
+.box-title { color: var(--ink); font-size: .72rem; font-weight: 730; }
+.box-formula { color: var(--muted); font-size: .68rem; }
+.box-formula mjx-container { margin: 0 !important; }
+#factorPlot { display: block; width: 100%; height: auto; }
+.regime-band.monotone { fill: var(--flat-soft); }
+.regime-band.zigzag { fill: var(--steep-soft); }
+.regime-band.diverge { fill: var(--danger-soft); }
+.ruler-axis { stroke: var(--border-strong); stroke-width: 1.2; }
+.ruler-tick { stroke: var(--border-strong); stroke-width: 1; }
+.ruler-text { fill: var(--muted); font-family: var(--sans); font-size: 10.5px; }
+.ruler-caption { font-family: var(--sans); font-size: 10px; font-weight: 720; }
+.ruler-caption.monotone { fill: var(--flat); }
+.ruler-caption.zigzag { fill: var(--steep); }
+.ruler-caption.diverge { fill: var(--danger); }
+.factor-stem { stroke-width: 1.55; stroke-dasharray: 3 3; }
+.factor-stem.flat { stroke: var(--flat); }
+.factor-stem.steep { stroke: var(--steep); }
+.factor-dot { stroke: var(--surface); stroke-width: 2.5; }
+.factor-dot.flat { fill: var(--flat); }
+.factor-dot.steep { fill: var(--steep); }
+.factor-label { font-family: var(--sans); font-size: 10.5px; font-weight: 740; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.factor-label.flat { fill: var(--flat); }
+.factor-label.steep { fill: var(--steep); }
+.factor-explain {
+  display: grid;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-muted) 72%, var(--surface));
+}
+.factor-explain-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 8px 9px;
+}
+.factor-explain-row + .factor-explain-row { border-top: 1px solid var(--border); }
+.factor-tag {
+  display: inline-block;
+  padding-top: 1px;
+  font-size: .6rem;
+  font-weight: 760;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.factor-tag.flat { color: var(--flat); }
+.factor-tag.steep { color: var(--steep); }
+.factor-copy { min-width: 0; display: grid; gap: 3px; }
+.factor-main { display: block; color: var(--ink); font-size: .66rem; line-height: 1.3; }
+.factor-sub { display: block; color: var(--muted); font-size: .62rem; line-height: 1.32; }
+
+.component-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  min-height: 88px;
+  padding: 7px 8px;
+}
+.component-row + .component-row { border-top: 1px solid var(--border); }
+.component-name { min-width: 0; padding-top: 2px; }
+.component-name strong { display: block; font-size: .7rem; line-height: 1.1; }
+.component-name span { display: block; margin-top: 3px; color: var(--muted); font-size: .66rem; line-height: 1.2; }
+.component-name.flat strong { color: var(--flat); }
+.component-name.steep strong { color: var(--steep); }
+.component-main { min-width: 0; display: grid; gap: 6px; }
+.component-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.spark { display: block; width: 100%; height: 54px; overflow: visible; }
+.spark-axis { stroke: var(--border-strong); stroke-width: 1; }
+.spark-line { fill: none; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; }
+.spark-line.flat { stroke: var(--flat); }
+.spark-line.steep { stroke: var(--steep); }
+.spark-dot.flat { fill: var(--flat); }
+.spark-dot.steep { fill: var(--steep); }
+.spark-k { fill: var(--muted); font-family: var(--sans); font-size: 8.6px; }
+.component-summary { display: grid; gap: 2px; min-width: 0; }
+.component-sequence { display: block; color: var(--ink); font-size: .63rem; line-height: 1.18; }
+.component-note { display: block; color: var(--muted); font-size: .61rem; line-height: 1.28; }
+.regime-pill {
+  justify-self: end;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  font-size: .6rem;
+  font-weight: 760;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+}
+.regime-pill.monotone { color: var(--flat); background: var(--flat-soft); }
+.regime-pill.zigzag { color: var(--steep); background: var(--steep-soft); }
+.regime-pill.diverge { color: var(--danger); background: var(--danger-soft); }
+.regime-pill.zero { color: var(--accent-ink); background: var(--accent-soft); }
+.status-grid { display: grid; grid-template-columns: 1fr 1fr; }
+.status-cell { min-width: 0; padding: 8px 9px 9px; }
+.status-cell + .status-cell { border-left: 1px solid var(--border); }
+.status-label { display: block; margin-bottom: 4px; color: var(--muted); font-size: .59rem; font-weight: 700; letter-spacing: .065em; text-transform: uppercase; }
+.status-value { display: block; color: var(--ink); font-size: .72rem; font-weight: 720; line-height: 1.25; }
+.status-value.good { color: var(--accent-ink); }
+.status-value.bad { color: var(--danger); }
+.status-note { display: block; margin-top: 3px; color: var(--muted); font-size: .62rem; line-height: 1.34; }
+.status-note-strong { color: var(--ink); }
+.status-note mjx-container { margin: 0 !important; }
+.key-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.key-item {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 8px;
+  color: var(--muted);
+  font-size: clamp(.67rem, 1.08vw, .77rem);
+  line-height: 1.25;
+  text-align: center;
+}
+.key-item + .key-item { border-left: 1px solid var(--border); }
+.key-item mjx-container { margin: 0 !important; }
+.swatch { flex: 0 0 auto; display: inline-block; width: 19px; height: 0; border-top: 3px solid var(--accent); }
+.swatch.flat { border-top-color: var(--flat); border-top-style: dashed; }
+.swatch.steep { border-top-color: var(--steep); border-top-style: dashed; }
+.swatch.factor { width: 10px; height: 10px; border: 0; border-radius: 50%; background: var(--accent); }
+@media (max-width: 850px) {
+  .topbar { grid-template-columns: 1fr; gap: 14px; }
+  .controls { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .stage { grid-template-columns: 1fr; }
+  #landscape { min-height: 0; }
+}
+@media (max-width: 620px) {
+  body { padding: 5px; }
+  .topbar { padding: 14px; }
+  .figure { padding: 8px; }
+  .controls { grid-template-columns: 1fr; }
+  .plot-head, .readout-head { min-height: 47px; padding: 8px 10px; }
+  .mode-note { font-size: .64rem; }
+  .svg-math-html.axis-math { font-size: 13.5px; }
+  .svg-math-html.small-math { font-size: 11.5px; }
+  .readout-body { gap: 8px; padding: 8px; }
+  .component-row { grid-template-columns: 64px minmax(0, 1fr); gap: 6px; }
+  .component-top { grid-template-columns: minmax(0, 1fr) auto; }
+  .factor-explain-row { grid-template-columns: 62px minmax(0, 1fr); }
+  .key-strip { grid-template-columns: 1fr 1fr; }
+  .key-item:nth-child(3), .key-item:nth-child(4) { border-top: 1px solid var(--border); }
+  .key-item:nth-child(3) { border-left: 0; }
+}
+@media (max-width: 430px) {
+  .status-grid { grid-template-columns: 1fr; }
+  .status-cell + .status-cell { border-left: 0; border-top: 1px solid var(--border); }
+  .key-strip { grid-template-columns: 1fr; }
+  .key-item + .key-item { border-left: 0; border-top: 1px solid var(--border); }
+}
+</style>
+</head>
+<body>
+<main class="viz">
+  <header class="topbar">
+    <div>
+      <div class="heading-row">
+        <p class="eyebrow">quadratic gradient descent</p>
+        <h1>One matrix update becomes independent scalar modes</h1>
+      </div>
+      <p class="definition">
+        In the Hessian eigenbasis, each component obeys
+        \(\widetilde e_{k+1,i}=(1-\eta\lambda_i)\widetilde e_{k,i}\).
+        Move \(\eta\): the trajectory, both component traces, and the stability boundary change together.
+      </p>
+    </div>
+
+    <div class="controls">
+      <div class="mode-control">
+        <div class="control-row" style="margin-bottom:7px">
+          <span class="control-name">coordinates</span>
+          <span class="control-value status-math" id="conditionValue">\(\kappa=8\)</span>
+        </div>
+        <div class="segmented" role="group" aria-label="Coordinate system">
+          <button id="originalMode" type="button" aria-pressed="true">original bowl</button>
+          <button id="whiteMode" type="button" aria-pressed="false">whitened bowl</button>
+        </div>
+      </div>
+
+      <label class="step-control" for="eta">
+        <span class="control-row">
+          <span class="control-name">step size \(\eta\)</span>
+          <strong class="control-value" id="etaValue">0.180</strong>
+        </span>
+        <input id="eta" type="range" min="0" max="0.32" step="0.005" value="0.18" aria-label="Gradient descent step size eta">
+      </label>
+    </div>
+  </header>
+
+  <figure class="figure">
+    <div class="stage">
+      <section class="plot-card" aria-labelledby="geometryTitle">
+        <header class="plot-head">
+          <div>
+            <span class="panel-kicker">geometry</span>
+            <span class="panel-title" id="geometryTitle">The same step, seen in the quadratic bowl</span>
+          </div>
+          <span class="mode-note" id="modeNote">\(\lambda_{\min}=1,\;\lambda_{\max}=8\)</span>
+        </header>
+        <div class="plot-wrap">
+          <svg id="landscape" viewBox="0 0 720 520" role="img" aria-labelledby="landscapeTitle landscapeDescription" preserveAspectRatio="xMidYMid meet">
+            <title id="landscapeTitle">Gradient descent path on a quadratic bowl</title>
+            <desc id="landscapeDescription">Elliptical contours show unequal Hessian curvatures. The path is generated by independent contractions along the two principal axes. Whitening turns the contours circular and equalizes the contractions.</desc>
+            <defs>
+              <clipPath id="plotClip"><rect x="34" y="24" width="652" height="456"></rect></clipPath>
+              <marker id="pathArrow" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="5.7" markerHeight="5.7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"></path>
+              </marker>
+              <marker id="thinArrow" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="5.2" markerHeight="5.2" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted)"></path>
+              </marker>
+            </defs>
+            <rect class="plot-bg" x="34" y="24" width="652" height="456"></rect>
+            <g id="grid"></g>
+            <g clip-path="url(#plotClip)">
+              <g id="contours"></g>
+              <line id="flatAxis" class="principal-axis flat"></line>
+              <line id="steepAxis" class="principal-axis steep"></line>
+              <path id="pathGuide" class="path-guide"></path>
+              <path id="pathLine" class="path-line"></path>
+              <g id="iterationDots"></g>
+              <circle id="minimumHalo" class="minimum-halo" r="8.5"></circle>
+              <circle id="minimumDot" class="minimum-dot" r="3.8"></circle>
+            </g>
+            <foreignObject id="flatLabelBox" width="176" height="34">
+              <div xmlns="http://www.w3.org/1999/xhtml" id="flatLabel" class="svg-math-html axis-math flat">\(q_{\min}\;(\lambda_{\min})\)</div>
+            </foreignObject>
+            <foreignObject id="steepLabelBox" width="176" height="34">
+              <div xmlns="http://www.w3.org/1999/xhtml" id="steepLabel" class="svg-math-html axis-math steep">\(q_{\max}\;(\lambda_{\max})\)</div>
+            </foreignObject>
+            <foreignObject id="startLabelBox" width="58" height="28">
+              <div xmlns="http://www.w3.org/1999/xhtml" id="startLabel" class="svg-math-html point-math center">\(x_0\)</div>
+            </foreignObject>
+            <foreignObject id="endLabelBox" width="66" height="28">
+              <div xmlns="http://www.w3.org/1999/xhtml" id="endLabel" class="svg-math-html point-math center">\(x_{12}\)</div>
+            </foreignObject>
+            <foreignObject id="minimumLabelBox" width="58" height="30">
+              <div xmlns="http://www.w3.org/1999/xhtml" id="minimumLabel" class="svg-math-html point-math center">\(x^\star\)</div>
+            </foreignObject>
+            <line id="errorArrow" class="coordinate-arrow"></line>
+            <foreignObject id="errorLabelBox" width="176" height="32">
+              <div xmlns="http://www.w3.org/1999/xhtml" id="errorLabel" class="svg-math-html small-math muted center">\(e_0=x_0-x^\star\)</div>
+            </foreignObject>
+            <foreignObject id="surfaceFormulaBox" x="48" y="34" width="282" height="36">
+              <div xmlns="http://www.w3.org/1999/xhtml" id="surfaceFormula" class="svg-math-html small-math muted">\(\tfrac12(x-x^\star)^\top H(x-x^\star)\)</div>
+            </foreignObject>
+          </svg>
+        </div>
+      </section>
+
+      <aside class="readout-card" aria-labelledby="readoutTitle">
+        <header class="readout-head">
+          <div>
+            <span class="panel-kicker">eigenbasis</span>
+            <span class="panel-title" id="readoutTitle">Each axis only sees its own factor</span>
+          </div>
+          <span class="mode-note">\(r_i=1-\eta\lambda_i\)</span>
+        </header>
+
+        <div class="readout-body">
+          <section class="factor-box">
+            <div class="box-head">
+              <span class="box-title">Contraction factors</span>
+              <span class="box-formula">\(|r_i|<1\) is stable</span>
+            </div>
+            <svg id="factorPlot" viewBox="0 0 360 136" role="img" aria-label="Contraction-factor ruler from divergence through zig-zag to monotone contraction">
+              <rect id="leftDivergence" class="regime-band diverge" x="15" y="28" width="56" height="42"></rect>
+              <rect id="zigzagBand" class="regime-band zigzag" x="71" y="28" width="112" height="42"></rect>
+              <rect id="monotoneBand" class="regime-band monotone" x="183" y="28" width="112" height="42"></rect>
+              <line class="ruler-axis" x1="15" y1="70" x2="344" y2="70"></line>
+              <g id="rulerTicks"></g>
+              <text class="ruler-caption diverge" x="42" y="22" text-anchor="middle">diverges</text>
+              <text class="ruler-caption zigzag" x="127" y="22" text-anchor="middle">zig-zag</text>
+              <text class="ruler-caption monotone" x="239" y="22" text-anchor="middle">monotone</text>
+              <line id="flatStem" class="factor-stem flat"></line>
+              <circle id="flatFactor" class="factor-dot flat" r="5.4"></circle>
+              <foreignObject id="flatFactorLabelBox" width="96" height="24">
+                <div xmlns="http://www.w3.org/1999/xhtml" id="flatFactorLabel" class="svg-math-html factor-math flat">\(r_{\min}=0.82\)</div>
+              </foreignObject>
+              <line id="steepStem" class="factor-stem steep"></line>
+              <circle id="steepFactor" class="factor-dot steep" r="5.4"></circle>
+              <foreignObject id="steepFactorLabelBox" width="96" height="24">
+                <div xmlns="http://www.w3.org/1999/xhtml" id="steepFactorLabel" class="svg-math-html factor-math steep">\(r_{\max}=-0.44\)</div>
+              </foreignObject>
+            </svg>
+            <div class="factor-explain">
+              <div class="factor-explain-row">
+                <span class="factor-tag steep">steep axis</span>
+                <div class="factor-copy">
+                  <span id="steepFactorMain" class="factor-main status-math">\(\eta\lambda_{\max}=1.44\Rightarrow r_{\max}=-0.44\)</span>
+                  <span id="steepFactorSub" class="factor-sub">Negative factor: the sign flips every step, and the magnitude is cut to 44% each time.</span>
+                </div>
+              </div>
+              <div class="factor-explain-row">
+                <span class="factor-tag flat">flat axis</span>
+                <div class="factor-copy">
+                  <span id="flatFactorMain" class="factor-main status-math">\(\eta\lambda_{\min}=0.18\Rightarrow r_{\min}=0.82\)</span>
+                  <span id="flatFactorSub" class="factor-sub">Positive factor: the sign stays fixed, but each step keeps 82% of the flat error.</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="component-box">
+            <div class="box-head">
+              <span class="box-title">Independent component histories</span>
+              <span class="box-formula">\(\widetilde e_{k+1,i}=r_i\widetilde e_{k,i},\;k=0,\ldots,12\)</span>
+            </div>
+            <div class="component-row">
+              <div class="component-name flat">
+                <strong>flat axis</strong>
+                <span id="flatFactorText" class="component-math">\(r_{\min}=0.82\)</span>
+              </div>
+              <div class="component-main">
+                <div class="component-top">
+                  <svg id="flatSpark" class="spark" viewBox="0 0 150 54" preserveAspectRatio="none" aria-label="Flat-axis error sequence"></svg>
+                  <span id="flatRegime" class="regime-pill monotone">monotone</span>
+                </div>
+                <div class="component-summary">
+                  <span id="flatSequence" class="component-sequence component-math">\(0.90\to0.74\to0.61\to\cdots\)</span>
+                  <span id="flatInterpretation" class="component-note">Same sign throughout; this is the long-axis crawl down the valley.</span>
+                </div>
+              </div>
+            </div>
+            <div class="component-row">
+              <div class="component-name steep">
+                <strong>steep axis</strong>
+                <span id="steepFactorText" class="component-math">\(r_{\max}=-0.44\)</span>
+              </div>
+              <div class="component-main">
+                <div class="component-top">
+                  <svg id="steepSpark" class="spark" viewBox="0 0 150 54" preserveAspectRatio="none" aria-label="Steep-axis error sequence"></svg>
+                  <span id="steepRegime" class="regime-pill zigzag">zig-zag</span>
+                </div>
+                <div class="component-summary">
+                  <span id="steepSequence" class="component-sequence component-math">\(0.70\to-0.31\to0.14\to\cdots\)</span>
+                  <span id="steepInterpretation" class="component-note">Alternating sign; the bouncing dies quickly because \(|r_{\max}|\) is well below 1.</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="status-box">
+            <div class="status-grid">
+              <div class="status-cell">
+                <span class="status-label">stability ceiling</span>
+                <strong id="stabilityValue" class="status-value good">set by the steep axis</strong>
+                <span id="stabilityNote" class="status-note status-math">\(\eta=0.180<2/\lambda_{\max}=0.250\)</span>
+                <span id="stabilityExplain" class="status-note">As \(\eta\) grows, the steep mode is the first one to hit \(r=-1\) and turn unstable.</span>
+              </div>
+              <div class="status-cell">
+                <span class="status-label">why the path still crawls</span>
+                <strong id="slowValue" class="status-value">flat axis is the bottleneck</strong>
+                <span id="slowNoteMath" class="status-note status-math">\(|r_{\min}|=0.820>|r_{\max}|=0.440\)</span>
+                <span id="slowNoteText" class="status-note">The cross-valley bounce disappears quickly, but motion along the flat direction decays much more slowly.</span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </aside>
+    </div>
+
+    <div class="key-strip" aria-label="Visual key">
+      <div class="key-item"><i class="swatch flat"></i><span>flat direction: curvature \(\lambda_{\min}\)</span></div>
+      <div class="key-item"><i class="swatch steep"></i><span>steep direction: curvature \(\lambda_{\max}\)</span></div>
+      <div class="key-item"><i class="swatch"></i><span>full path from repeated applications of \(I-\eta H\)</span></div>
+      <div class="key-item"><i class="swatch factor"></i><span>whitening makes every \(\lambda_i=1\)</span></div>
+    </div>
+  </figure>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  const etaInput = document.getElementById("eta");
+  const etaValue = document.getElementById("etaValue");
+  const originalButton = document.getElementById("originalMode");
+  const whiteButton = document.getElementById("whiteMode");
+
+  const plot = {
+    x0: 34,
+    x1: 686,
+    y0: 24,
+    y1: 480,
+    xMin: -4.55,
+    xMax: 4.55,
+    yMin: -3.35,
+    yMax: 3.35
+  };
+
+  const angle = -22 * Math.PI / 180;
+  const qFlat = { x: Math.cos(angle), y: Math.sin(angle) };
+  const qSteep = { x: -Math.sin(angle), y: Math.cos(angle) };
+  const levels = [.5, 1.1, 2.0, 3.4, 5.5];
+  const iterations = 12;
+  const original = { lambdaFlat: 1, lambdaSteep: 8, eta: .18, maxEta: .32, step: .005 };
+  const whitened = { lambdaFlat: 1, lambdaSteep: 1, eta: 1, maxEta: 2.25, step: .01 };
+  let mode = "original";
+  let mathReady = document.documentElement.dataset.mathReady === "true";
+  let mathQueue = new Map();
+  let mathFrame = 0;
+  let mathChain = Promise.resolve();
+
+  function flushMathQueue() {
+    mathFrame = 0;
+    if (!mathReady || !window.MathJax || !mathQueue.size) return;
+    const entries = [...mathQueue.entries()];
+    mathQueue = new Map();
+    mathChain = mathChain.then(async () => {
+      const nodes = entries.map(([node]) => node);
+      entries.forEach(([node, tex]) => {
+        try { MathJax.typesetClear([node]); } catch (_) {}
+        node.textContent = `\\(${tex}\\)`;
+      });
+      await MathJax.typesetPromise(nodes);
+      reportHeight();
+    }).catch(() => {});
+  }
+
+  function setMath(id, tex) {
+    const node = document.getElementById(id);
+    if (!node) return;
+    const same = node.dataset.tex === tex;
+    node.dataset.tex = tex;
+    if (!mathReady) {
+      if (!same || !node.querySelector("mjx-container")) node.textContent = `\\(${tex}\\)`;
+      return;
+    }
+    if (same && node.querySelector("mjx-container")) return;
+    mathQueue.set(node, tex);
+    if (!mathFrame) mathFrame = requestAnimationFrame(flushMathQueue);
+  }
+
+  function placeMathBox(id, centerX, centerY, width, height, anchor = "center") {
+    const box = document.getElementById(id);
+    const x = anchor === "left" ? centerX : anchor === "right" ? centerX - width : centerX - width / 2;
+    box.setAttribute("x", x.toFixed(2));
+    box.setAttribute("y", (centerY - height / 2).toFixed(2));
+    box.setAttribute("width", width);
+    box.setAttribute("height", height);
+  }
+
+  const sx = x => plot.x0 + (x - plot.xMin) / (plot.xMax - plot.xMin) * (plot.x1 - plot.x0);
+  const sy = y => plot.y1 - (y - plot.yMin) / (plot.yMax - plot.yMin) * (plot.y1 - plot.y0);
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const fmt = value => {
+    const rounded = Math.abs(value) < .0005 ? 0 : value;
+    return rounded.toFixed(3).replace("-", "−");
+  };
+  const fmtShort = value => {
+    const rounded = Math.abs(value) < .005 ? 0 : value;
+    return rounded.toFixed(2).replace("-", "−");
+  };
+
+  function createSvg(name, attrs = {}) {
+    const node = document.createElementNS(NS, name);
+    Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+    return node;
+  }
+
+  function eigenToWorld(u, v) {
+    return {
+      x: u * qFlat.x + v * qSteep.x,
+      y: u * qFlat.y + v * qSteep.y
+    };
+  }
+
+  function screen(point) {
+    return { x: sx(point.x), y: sy(point.y) };
+  }
+
+  function setLine(id, first, second) {
+    const line = document.getElementById(id);
+    const a = screen(first);
+    const b = screen(second);
+    line.setAttribute("x1", a.x);
+    line.setAttribute("y1", a.y);
+    line.setAttribute("x2", b.x);
+    line.setAttribute("y2", b.y);
+  }
+
+  function setCircle(id, point) {
+    const node = document.getElementById(id);
+    const p = screen(point);
+    node.setAttribute("cx", p.x);
+    node.setAttribute("cy", p.y);
+  }
+
+  function pathFromPoints(points) {
+    return points.map((point, index) => {
+      const p = screen(point);
+      return `${index ? "L" : "M"}${p.x.toFixed(2)} ${p.y.toFixed(2)}`;
+    }).join(" ");
+  }
+
+  function contourPath(level, lambdaFlat, lambdaSteep) {
+    const a = Math.sqrt(2 * level / lambdaFlat);
+    const b = Math.sqrt(2 * level / lambdaSteep);
+    const points = [];
+    for (let i = 0; i <= 180; i += 1) {
+      const t = 2 * Math.PI * i / 180;
+      points.push(eigenToWorld(a * Math.cos(t), b * Math.sin(t)));
+    }
+    return `${pathFromPoints(points)} Z`;
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById("grid");
+    grid.replaceChildren();
+    for (let x = -4; x <= 4; x += 1) {
+      grid.appendChild(createSvg("line", {
+        class: x === 0 ? "axis-line" : "grid-line",
+        x1: sx(x), y1: plot.y0, x2: sx(x), y2: plot.y1
+      }));
+    }
+    for (let y = -3; y <= 3; y += 1) {
+      grid.appendChild(createSvg("line", {
+        class: y === 0 ? "axis-line" : "grid-line",
+        x1: plot.x0, y1: sy(y), x2: plot.x1, y2: sy(y)
+      }));
+    }
+  }
+
+  function renderContours(lambdaFlat, lambdaSteep) {
+    const group = document.getElementById("contours");
+    group.replaceChildren();
+    levels.forEach((level, index) => {
+      group.appendChild(createSvg("path", {
+        class: index === 0 ? "contour inner" : "contour",
+        d: contourPath(level, lambdaFlat, lambdaSteep),
+        opacity: String(.98 - .1 * index)
+      }));
+    });
+  }
+
+  function initialComponents(isWhite) {
+    return isWhite
+      ? { u: -3.05, v: Math.sqrt(8) * 1.02 }
+      : { u: -3.05, v: 1.02 };
+  }
+
+  function sequence(initial, factor) {
+    return Array.from({ length: iterations + 1 }, (_, k) => initial * factor ** k);
+  }
+
+  function regime(factor) {
+    const magnitude = Math.abs(factor);
+    if (magnitude < .005) return { label: "one step", className: "zero" };
+    if (magnitude >= 1) return { label: "diverges", className: "diverge" };
+    if (factor < 0) return { label: "zig-zag", className: "zigzag" };
+    return { label: "monotone", className: "monotone" };
+  }
+
+  function applyRegime(id, factor) {
+    const target = document.getElementById(id);
+    const state = regime(factor);
+    target.textContent = state.label;
+    target.className = `regime-pill ${state.className}`;
+  }
+
+  function renderSpark(id, values, className) {
+    const svg = document.getElementById(id);
+    svg.replaceChildren();
+    const width = 150;
+    const height = 54;
+    const x = index => 4 + index / iterations * (width - 8);
+    const maxAbs = Math.max(1e-6, ...values.map(value => Math.abs(value)));
+    const y = value => height / 2 - value / maxAbs * (height * .39);
+
+    svg.appendChild(createSvg("line", {
+      class: "spark-axis",
+      x1: 2, y1: height / 2, x2: width - 2, y2: height / 2
+    }));
+
+    [0, iterations].forEach((tick, idx) => {
+      svg.appendChild(createSvg("line", {
+        class: "spark-axis",
+        x1: x(tick), y1: height / 2 - 22, x2: x(tick), y2: height / 2 + 22
+      }));
+      const label = createSvg('text', {
+        class: 'spark-k',
+        x: x(tick),
+        y: height - 2,
+        'text-anchor': idx === 0 ? 'start' : 'end'
+      });
+      label.textContent = `k=${tick}`;
+      svg.appendChild(label);
+    });
+
+    const points = values.map((value, index) => `${x(index).toFixed(2)},${y(value).toFixed(2)}`).join(" ");
+    svg.appendChild(createSvg("polyline", {
+      class: `spark-line ${className}`,
+      points
+    }));
+
+    values.forEach((value, index) => {
+      svg.appendChild(createSvg("circle", {
+        class: `spark-dot ${className}`,
+        cx: x(index),
+        cy: y(value),
+        r: index === 0 ? 2.8 : index === values.length - 1 ? 2.6 : 2.1
+      }));
+    });
+  }
+
+  const ruler = { min: -1.5, max: 1.05, x0: 15, x1: 344 };
+  const rx = value => ruler.x0 + (value - ruler.min) / (ruler.max - ruler.min) * (ruler.x1 - ruler.x0);
+
+  function renderRulerBase() {
+    const ticks = document.getElementById("rulerTicks");
+    ticks.replaceChildren();
+    [-1, 0, 1].forEach(value => {
+      const x = rx(value);
+      ticks.appendChild(createSvg("line", { class: "ruler-tick", x1: x, y1: 65, x2: x, y2: 76 }));
+      const label = createSvg("text", { class: "ruler-text", x, y: 89, "text-anchor": "middle" });
+      label.textContent = value;
+      ticks.appendChild(label);
+    });
+    const leftDivergence = document.getElementById("leftDivergence");
+    leftDivergence.setAttribute("x", ruler.x0);
+    leftDivergence.setAttribute("width", rx(-1) - ruler.x0);
+    document.getElementById("zigzagBand").setAttribute("x", rx(-1));
+    document.getElementById("zigzagBand").setAttribute("width", rx(0) - rx(-1));
+    document.getElementById("monotoneBand").setAttribute("x", rx(0));
+    document.getElementById("monotoneBand").setAttribute("width", rx(1) - rx(0));
+  }
+
+  function placeFactor(prefix, factor, laneY) {
+    const x = clamp(rx(factor), ruler.x0, ruler.x1);
+    const stem = document.getElementById(`${prefix}Stem`);
+    const dot = document.getElementById(`${prefix}Factor`);
+    const isFlat = prefix === "flat";
+    const labelCenterY = isFlat ? 105 : 124;
+
+    stem.setAttribute("x1", x);
+    stem.setAttribute("x2", x);
+    stem.setAttribute("y1", 70);
+    stem.setAttribute("y2", laneY);
+    dot.setAttribute("cx", x);
+    dot.setAttribute("cy", laneY);
+    placeMathBox(`${prefix}FactorLabelBox`, clamp(x, 52, 308), labelCenterY, 96, 24);
+    const factorSymbol = isFlat ? String.raw`r_{\min}` : String.raw`r_{\max}`;
+    setMath(`${prefix}FactorLabel`, `${factorSymbol}=${fmtShort(factor).replace("−", "-")}`);
+  }
+
+  function renderGeometry(lambdaFlat, lambdaSteep, eta, isWhite) {
+    renderContours(lambdaFlat, lambdaSteep);
+
+    const flatExtent = 4.1;
+    const steepExtent = 2.85;
+    setLine("flatAxis", eigenToWorld(-flatExtent, 0), eigenToWorld(flatExtent, 0));
+    setLine("steepAxis", eigenToWorld(0, -steepExtent), eigenToWorld(0, steepExtent));
+
+    const flatLabelPoint = screen(eigenToWorld(3.72, 0));
+    const steepLabelPoint = screen(eigenToWorld(0, 2.58));
+    placeMathBox("flatLabelBox", flatLabelPoint.x + 52, flatLabelPoint.y - 13, 176, 34);
+    placeMathBox("steepLabelBox", steepLabelPoint.x + 58, steepLabelPoint.y - 8, 176, 34);
+    setMath("flatLabel", isWhite ? String.raw`\lambda_1=\lambda_2=1` : String.raw`q_{\min}\;(\lambda_{\min})`);
+    setMath("steepLabel", isWhite ? String.raw`\lambda_1=\lambda_2=1` : String.raw`q_{\max}\;(\lambda_{\max})`);
+
+    const start = initialComponents(isWhite);
+    const rFlat = 1 - eta * lambdaFlat;
+    const rSteep = 1 - eta * lambdaSteep;
+    const flatValues = sequence(start.u, rFlat);
+    const steepValues = sequence(start.v, rSteep);
+    const points = flatValues.map((u, index) => eigenToWorld(u, steepValues[index]));
+
+    const path = pathFromPoints(points);
+    document.getElementById("pathGuide").setAttribute("d", path);
+    document.getElementById("pathLine").setAttribute("d", path);
+
+    const dots = document.getElementById("iterationDots");
+    dots.replaceChildren();
+    points.forEach((point, index) => {
+      const p = screen(point);
+      dots.appendChild(createSvg("circle", {
+        class: `iteration-dot${index === 0 ? " start" : index === points.length - 1 ? " end" : ""}`,
+        cx: p.x,
+        cy: p.y,
+        r: index === 0 ? 4.3 : index === points.length - 1 ? 5.2 : 3.2
+      }));
+    });
+
+    const origin = { x: 0, y: 0 };
+    setCircle("minimumHalo", origin);
+    setCircle("minimumDot", origin);
+
+    const startP = screen(points[0]);
+    const endP = screen(points[points.length - 1]);
+    const originP = screen(origin);
+    placeMathBox("startLabelBox", clamp(startP.x - 13, 52, 662), clamp(startP.y - 13, 42, 464), 58, 28);
+    placeMathBox("endLabelBox", clamp(endP.x + 24, 56, 650), clamp(endP.y - 10, 42, 464), 66, 28);
+    placeMathBox("minimumLabelBox", originP.x + 26, originP.y + 17, 58, 30);
+    setMath("startLabel", isWhite ? "z_0" : "x_0");
+    setMath("endLabel", isWhite ? "z_{12}" : "x_{12}");
+    setMath("minimumLabel", isWhite ? "0" : String.raw`x^\star`);
+
+    const arrowStart = eigenToWorld(start.u * .04, start.v * .04);
+    const arrowEnd = eigenToWorld(start.u * .88, start.v * .88);
+    setLine("errorArrow", arrowStart, arrowEnd);
+    const mid = screen(eigenToWorld(start.u * .58, start.v * .58));
+    placeMathBox("errorLabelBox", clamp(mid.x + 45, 106, 600), clamp(mid.y - 15, 48, 458), 176, 32);
+    setMath("errorLabel", isWhite ? "z_0=H^{1/2}e_0" : String.raw`e_0=x_0-x^\star`);
+    setMath("surfaceFormula", isWhite ? String.raw`\tfrac12 z^\top z` : String.raw`\tfrac12(x-x^\star)^\top H(x-x^\star)`);
+
+    return { rFlat, rSteep, flatValues, steepValues };
+  }
+
+  function previewTex(values, count = 4) {
+    const shown = values.slice(0, count).map(value => formatPreview(value));
+    return shown.join(String.raw`\to`) + String.raw`\to\cdots`;
+  }
+
+  function formatPreview(value) {
+    const rounded = Math.abs(value) >= 0.095 ? value.toFixed(2) : value.toFixed(3);
+    return rounded.replace(/^-/, '-').replace(/\.00$/, '.0').replace(/(\.[0-9]*?)0+$/, '$1').replace(/\.$/, '');
+  }
+
+  function percent(value) {
+    return Math.round(value * 100);
+  }
+
+  function magnitudeCopy(factor, modeName) {
+    const mag = percent(Math.abs(factor));
+    if (Math.abs(factor) < 0.005) return 'Zero factor: that component is annihilated in one step.';
+    if (factor > 0) return `Positive factor: the sign stays fixed, and each step keeps ${mag}% of the previous ${modeName} error.`;
+    if (factor > -1) return `Negative factor: the sign flips every step, and the magnitude is cut to ${mag}% each time.`;
+    return `Outside the stable strip: the sign flips and the magnitude grows by about ${mag}% each step.`;
+  }
+
+  function render() {
+    const isWhite = mode === "white";
+    const config = isWhite ? whitened : original;
+    const lambdaFlat = config.lambdaFlat;
+    const lambdaSteep = config.lambdaSteep;
+    const eta = Number(etaInput.value);
+    const kappa = lambdaSteep / lambdaFlat;
+
+    etaValue.textContent = eta.toFixed(isWhite ? 2 : 3);
+    setMath("conditionValue", String.raw`\kappa=${fmtShort(kappa).replace("−", "-")}`);
+    setMath("modeNote", isWhite
+      ? String.raw`\lambda_1=\lambda_2=1,\;\kappa=1`
+      : String.raw`\lambda_{\min}=1,\;\lambda_{\max}=8`);
+
+    const values = renderGeometry(lambdaFlat, lambdaSteep, eta, isWhite);
+    renderSpark("flatSpark", values.flatValues, "flat");
+    renderSpark("steepSpark", values.steepValues, "steep");
+    placeFactor("flat", values.rFlat, 94);
+    placeFactor("steep", values.rSteep, 82);
+
+    setMath("flatFactorText", String.raw`r_{\min}=${fmtShort(values.rFlat).replace("−", "-")}`);
+    setMath("steepFactorText", String.raw`r_{\max}=${fmtShort(values.rSteep).replace("−", "-")}`);
+    applyRegime("flatRegime", values.rFlat);
+    applyRegime("steepRegime", values.rSteep);
+
+    const stabilityLimit = 2 / lambdaSteep;
+    const stable = eta < stabilityLimit;
+    const stabilityValue = document.getElementById("stabilityValue");
+    stabilityValue.textContent = stable ? "stable on every axis" : "steep axis is unstable";
+    stabilityValue.className = `status-value ${stable ? "good" : "bad"}`;
+    setMath("stabilityNote", String.raw`\eta=${eta.toFixed(isWhite ? 2 : 3)}${stable ? "<" : String.raw`\ge`}2/\lambda_{\max}=${stabilityLimit.toFixed(isWhite ? 2 : 3)}`);
+
+    setMath("slowValue", String.raw`\lvert r_{\min}\rvert=${Math.abs(values.rFlat).toFixed(3)}`);
+    setMath("slowNoteMath", isWhite
+      ? (Math.abs(values.rFlat) < .005 ? String.raw`\eta=1` : String.raw`\kappa=1`)
+      : String.raw`\kappa=8`);
+    document.getElementById("slowNoteText").textContent = isWhite
+      ? (Math.abs(values.rFlat) < .005 ? " annihilates every component" : " gives every axis the same rate")
+      : " leaves the flat component near 1";
+
+    reportHeight();
+  }
+
+  function setMode(nextMode) {
+    mode = nextMode;
+    const isWhite = mode === "white";
+    const config = isWhite ? whitened : original;
+    originalButton.setAttribute("aria-pressed", String(!isWhite));
+    whiteButton.setAttribute("aria-pressed", String(isWhite));
+    etaInput.max = config.maxEta;
+    etaInput.step = config.step;
+    etaInput.value = config.eta;
+    render();
+  }
+
+  etaInput.addEventListener("input", render);
+  originalButton.addEventListener("click", () => setMode("original"));
+  whiteButton.addEventListener("click", () => setMode("white"));
+
+  let lastReportedHeight = 0;
+  function reportHeight() {
+    if (window.parent === window) return;
+    const target = document.querySelector(".viz") || document.body;
+    const rectangle = target.getBoundingClientRect();
+    const height = Math.max(1, Math.ceil(rectangle.bottom + window.scrollY));
+    if (Math.abs(height - lastReportedHeight) < 2) return;
+    lastReportedHeight = height;
+    try {
+      const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+      window.parent.postMessage({ type: "article-visualization-height", height }, targetOrigin);
+    } catch (_) {}
+  }
+
+  document.addEventListener("viz:math-ready", () => {
+    mathReady = true;
+    render();
+    reportHeight();
+  });
+
+  renderGrid();
+  renderRulerBase();
+  render();
+
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(reportHeight);
+    observer.observe(document.querySelector(".viz") || document.body);
+  }
+  window.addEventListener("load", reportHeight);
+  window.addEventListener("resize", () => { render(); reportHeight(); });
+})();
+</script>
+<script src="/assets/js/visualization-frame.js"></script>
+</body>
+</html>

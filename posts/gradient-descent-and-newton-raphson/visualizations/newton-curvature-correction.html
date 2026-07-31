@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap">
+<title>Newton curvature correction</title>
+<meta name="visualization-revision" content="math-persistence-v3-all-quadrants">
+<script>
+(() => {
+  try {
+    const root = window.parent.document.documentElement;
+    const body = window.parent.document.body;
+    const raw = `${root.dataset.theme || ""} ${root.className || ""} ${body?.dataset?.theme || ""} ${body?.className || ""}`.toLowerCase();
+    document.documentElement.dataset.theme = raw.includes("dark") ? "dark" : raw.includes("light") ? "light" : "";
+  } catch (_) {}
+})();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --surface: var(--viz-surface, #fff);
+  --surface-muted: var(--viz-surface-muted, #f5f6f2);
+  --ink: var(--viz-ink, #1b2420);
+  --muted: var(--viz-muted, #68736c);
+  --border: var(--viz-border, #d6ddd7);
+  --border-strong: var(--viz-border-strong, #a7b3aa);
+  --accent: var(--viz-accent, #0d7659);
+  --accent-ink: var(--viz-accent-ink, #095f48);
+  --accent-soft: var(--viz-accent-soft, #dcefe7);
+  --accent-border: var(--viz-accent-border, #91c7b6);
+  --gradient: #7250a4;
+  --gradient-soft: rgba(114, 80, 164, .12);
+  --gd: #b96f22;
+  --gd-soft: rgba(185, 111, 34, .13);
+  --curvature: #315fae;
+  --contour: rgba(13, 118, 89, .30);
+  --grid: rgba(104, 115, 108, .18);
+  --shadow: rgba(20, 31, 25, .06);
+  --font-display: "Lora", Georgia, "Times New Roman", serif;
+  --font-reading: "Lora", Georgia, "Times New Roman", serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --math-font: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: var(--viz-surface, #171e19);
+  --surface-muted: var(--viz-surface-muted, #1d2720);
+  --ink: var(--viz-ink, #e9efeb);
+  --muted: var(--viz-muted, #a7b5aa);
+  --border: var(--viz-border, #344138);
+  --border-strong: var(--viz-border-strong, #617168);
+  --accent: var(--viz-accent, #63d2aa);
+  --accent-ink: var(--viz-accent-ink, #8ee7c6);
+  --accent-soft: var(--viz-accent-soft, #16362c);
+  --accent-border: var(--viz-accent-border, #3c7964);
+  --gradient: #b89aee;
+  --gradient-soft: rgba(184, 154, 238, .13);
+  --gd: #e0a666;
+  --gd-soft: rgba(224, 166, 102, .13);
+  --curvature: #8bb2ff;
+  --contour: rgba(99, 210, 170, .30);
+  --grid: rgba(167, 181, 170, .15);
+  --shadow: rgba(0, 0, 0, .18);
+}
+* { box-sizing: border-box; }
+html, body { min-width: 320px; margin: 0; overflow-x: hidden; background: transparent; color: var(--ink); }
+body {
+  padding: clamp(8px, 2vw, 20px);
+  font-family: var(--font-reading);
+  font-size: 16px;
+  line-height: 1.58;
+  -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; }
+.viz {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(230px, .32fr);
+  gap: 20px;
+  align-items: center;
+  padding: clamp(15px, 2.4vw, 24px);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 76%);
+}
+.heading-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 9px 17px; }
+.eyebrow {
+  margin: 0;
+  color: var(--accent-ink);
+  font: 750 .68rem/1 var(--font-ui);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.48rem, 3.2vw, 2.14rem);
+  font-weight: 550;
+  line-height: 1.16;
+  letter-spacing: -.035em;
+}
+.definition {
+  margin: 9px 0 0;
+  max-width: 760px;
+  color: var(--muted);
+  font-family: var(--font-reading);
+  font-size: .95rem;
+  line-height: 1.62;
+}
+.definition mjx-container { margin: 0 !important; }
+.control { min-width: 0; padding: 9px 12px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); font-family: var(--font-ui); }
+.control-label { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: .72rem; font-weight: 750; }
+.control-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .36em;
+  color: var(--accent-ink);
+  white-space: nowrap;
+}
+.control-value mjx-container { margin: 0 !important; }
+.control-value .equals { font-family: var(--font-reading); font-weight: 600; }
+.control-value .number { font: 750 .72rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.control input[type="range"] { width: 100%; margin: 8px 0 0; accent-color: var(--accent); }
+.figure { margin: 0; padding: clamp(10px, 2vw, 20px); }
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1.58fr) minmax(285px, .78fr);
+  gap: 12px;
+  align-items: stretch;
+}
+.canvas {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-muted);
+}
+#plot { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+.plot-bg { fill: var(--surface-muted); }
+.grid-line { stroke: var(--grid); stroke-width: 1; }
+.axis-line { stroke: var(--border-strong); stroke-width: 1.3; }
+.axis-arrow { fill: var(--border-strong); }
+.axis-label { fill: var(--muted); font-family: "Lora", Georgia, serif; font-size: 22px; font-style: italic; font-weight: 600; }
+.contour { fill: none; stroke: var(--contour); stroke-width: 1.45; }
+.contour.major { stroke: var(--accent); stroke-width: 2.15; opacity: .48; }
+.eigen-guide { stroke: var(--curvature); stroke-width: 1.45; stroke-dasharray: 5 6; opacity: .65; }
+.point-guide { stroke: var(--border-strong); stroke-width: 1.2; stroke-dasharray: 4 5; opacity: .72; }
+.error-component { stroke: var(--curvature); stroke-width: 2.2; stroke-linecap: round; opacity: .78; }
+.gradient-component { stroke: var(--gradient); stroke-width: 1.7; stroke-dasharray: 5 5; }
+.gradient-vector { stroke: var(--gradient); stroke-width: 3.3; stroke-linecap: round; }
+.gd-vector { stroke: var(--gd); stroke-width: 3.4; stroke-linecap: round; }
+.newton-vector { stroke: var(--accent); stroke-width: 3.7; stroke-linecap: round; }
+.origin-halo, .point-halo { fill: var(--surface); stroke-width: 2.2; }
+.origin-halo { stroke: var(--accent); }
+.point-halo { stroke: var(--ink); }
+.origin-dot { fill: var(--accent); }
+.point-dot { fill: var(--ink); }
+.drag-ring { fill: none; stroke: var(--ink); stroke-width: 1.2; stroke-dasharray: 3 4; opacity: .34; }
+.curvature-bracket { fill: none; stroke: var(--curvature); stroke-width: 1.65; }
+.math-label {
+  position: absolute;
+  z-index: 5;
+  padding: 3px 6px;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: 0 2px 8px var(--shadow);
+  color: var(--ink);
+  font-family: var(--font-reading);
+  font-size: clamp(.71rem, 1.2vw, .91rem);
+  line-height: 1.12;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+.math-label mjx-container { margin: 0 !important; }
+.math-label.point {
+  padding: 2px 5px;
+  border: 0;
+  background: color-mix(in srgb, var(--surface-muted) 91%, transparent);
+  box-shadow: none;
+  font-size: clamp(.79rem, 1.3vw, .98rem);
+}
+.math-label.gradient { color: var(--gradient); border-color: color-mix(in srgb, var(--gradient) 34%, var(--border)); }
+.math-label.gd { color: var(--gd); border-color: color-mix(in srgb, var(--gd) 34%, var(--border)); }
+.math-label.newton { color: var(--accent-ink); border-color: var(--accent-border); }
+.drag-hint {
+  position: absolute;
+  left: 10px;
+  bottom: 9px;
+  z-index: 4;
+  padding: 4px 7px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: var(--muted);
+  font: 650 .66rem/1.25 var(--font-ui);
+  letter-spacing: .015em;
+  pointer-events: none;
+}
+.axis-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.panel-head {
+  padding: 11px 12px 10px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface-muted), var(--surface));
+}
+.panel-title { margin: 4px 0 0; font-family: var(--font-reading); font-size: .94rem; font-weight: 550; line-height: 1.4; letter-spacing: -.018em; }
+.axis-card { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 12px; border-bottom: 1px solid var(--border); }
+.axis-card:last-of-type { border-bottom: 0; }
+.axis-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
+.axis-name {
+  color: var(--curvature);
+  font-family: "Lora", Georgia, serif;
+  font-size: 1.02rem;
+  font-style: italic;
+  font-weight: 700;
+}
+.lambda-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .34em;
+  color: var(--muted);
+  font-family: var(--font-reading);
+  font-size: .72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lambda-value mjx-container { margin: 0 !important; }
+.lambda-value strong { font: 650 .69rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.scale-flow { display: grid; grid-template-columns: minmax(0, 1fr) 46px minmax(0, 1fr); gap: 7px; align-items: center; }
+.quantity { min-width: 0; }
+.quantity-label { display: flex; justify-content: space-between; gap: 5px; margin-bottom: 5px; color: var(--muted); font: 650 .65rem/1.2 var(--font-ui); }
+.quantity-label mjx-container { margin: 0 !important; }
+.quantity-label strong { color: var(--ink); font: 650 .65rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.bar-track { position: relative; height: 8px; overflow: hidden; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-muted); }
+.bar-fill { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: inherit; transition: width 140ms ease; }
+.bar-fill.gradient { background: var(--gradient); }
+.bar-fill.corrected { background: var(--accent); }
+.operator { color: var(--accent-ink); font: 750 .67rem/1.1 var(--font-ui); text-align: center; }
+.operator mjx-container { margin: 0 !important; }
+.matrix-strip {
+  margin-top: auto;
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+.matrix-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3px;
+  align-items: center;
+  min-width: 0;
+  padding: 9px 11px;
+  font-family: var(--font-reading);
+  font-size: clamp(.66rem, 1vw, .78rem);
+}
+.matrix-row + .matrix-row { border-top: 1px solid var(--border); }
+.matrix-row .tag { color: var(--muted); font: 750 .62rem/1.1 var(--font-ui); letter-spacing: .055em; text-transform: uppercase; }
+.matrix-row .formula { min-width: 0; color: var(--ink); white-space: nowrap; }
+.matrix-row.gradient .formula { color: var(--gradient); }
+.matrix-row.newton .formula { color: var(--accent-ink); }
+.matrix-row mjx-container { margin: 0 !important; }
+.key-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.key-item {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 8px;
+  color: var(--muted);
+  font: 650 clamp(.68rem, 1.1vw, .78rem)/1.35 var(--font-ui);
+  text-align: center;
+}
+.key-item + .key-item { border-left: 1px solid var(--border); }
+.key-item mjx-container { margin: 0 !important; }
+.swatch { flex: 0 0 auto; display: inline-block; width: 21px; height: 0; border-top: 3px solid var(--gradient); }
+.swatch.gd { border-top-color: var(--gd); }
+.swatch.newton { border-top-color: var(--accent); }
+@media (max-width: 840px) {
+  .topbar { grid-template-columns: 1fr; }
+  .workbench { grid-template-columns: 1fr; }
+  .axis-panel { display: grid; grid-template-columns: 1fr 1fr; }
+  .panel-head { grid-column: 1 / -1; }
+  .axis-card { border-bottom: 0; }
+  .axis-card + .axis-card { border-left: 1px solid var(--border); }
+  .matrix-strip { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
+  .matrix-row + .matrix-row { border-top: 0; border-left: 1px solid var(--border); }
+}
+@media (max-width: 560px) {
+  body { padding: 0; }
+  .viz { border-right: 0; border-left: 0; border-radius: 0; }
+  .topbar { padding: 13px; }
+  .figure { padding: 7px; }
+  .axis-panel { grid-template-columns: 1fr; }
+  .axis-card + .axis-card { border-left: 0; border-top: 1px solid var(--border); }
+  .matrix-strip { grid-template-columns: 1fr; }
+  .matrix-row + .matrix-row { border-left: 0; border-top: 1px solid var(--border); }
+  .key-strip { grid-template-columns: 1fr; }
+  .key-item + .key-item { border-left: 0; border-top: 1px solid var(--border); }
+  .math-label { font-size: .64rem; padding: 2px 4px; }
+  .drag-hint { font-size: .58rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+mjx-container { color: inherit; }
+mjx-container[jax="SVG"] { line-height: 1; }
+</style>
+</head>
+<body>
+<main class="viz">
+  <header class="topbar">
+    <div>
+      <div class="heading-row">
+        <p class="eyebrow">Newton's method</p>
+        <h1>Remove the curvature weighting</h1>
+      </div>
+      <p class="definition">
+        Drag \(x_k\). The gradient is tilted toward the steep eigendirection; applying \(H^{-1}\) restores the displacement to the minimizer.
+      </p>
+    </div>
+
+    <label class="control" for="ratio">
+      <span class="control-label">
+        <span>curvature contrast</span>
+        <span class="control-value">
+          <span>\(\lambda_1/\lambda_2\)</span><span class="equals">=</span><strong class="number" id="ratioNumber">6.0</strong>
+        </span>
+      </span>
+      <input id="ratio" type="range" min="2" max="10" step="0.1" value="6" aria-label="Curvature ratio lambda one over lambda two">
+    </label>
+  </header>
+
+  <figure class="figure">
+    <div class="workbench">
+      <div class="canvas" id="canvas">
+        <svg id="plot" viewBox="0 0 760 500" role="img" aria-labelledby="plotTitle plotDescription" preserveAspectRatio="xMidYMid meet">
+          <title id="plotTitle">Gradient descent and Newton correction in the Hessian eigenbasis</title>
+          <desc id="plotDescription">Elliptical level sets show unequal curvature. The gradient is curvature weighted, gradient descent scales it by one scalar, and the Newton step divides each eigendirection by its own eigenvalue.</desc>
+          <defs>
+            <clipPath id="plotClip"><rect x="54" y="30" width="652" height="412"></rect></clipPath>
+            <marker id="arrowGradient" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L10 5 L0 10 Z" fill="var(--gradient)"></path>
+            </marker>
+            <marker id="arrowGd" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L10 5 L0 10 Z" fill="var(--gd)"></path>
+            </marker>
+            <marker id="arrowNewton" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L10 5 L0 10 Z" fill="var(--accent)"></path>
+            </marker>
+          </defs>
+
+          <rect class="plot-bg" x="54" y="30" width="652" height="412"></rect>
+          <g id="grid"></g>
+          <g clip-path="url(#plotClip)">
+            <g id="contours"></g>
+            <line id="e1Guide" class="eigen-guide"></line>
+            <line id="e2Guide" class="eigen-guide"></line>
+            <line id="xAxis" class="axis-line"></line>
+            <line id="yAxis" class="axis-line"></line>
+            <path id="xAxisArrow" class="axis-arrow"></path>
+            <path id="yAxisArrow" class="axis-arrow"></path>
+
+            <line id="pointDropX" class="point-guide"></line>
+            <line id="pointDropY" class="point-guide"></line>
+            <line id="errorE1" class="error-component"></line>
+            <line id="errorE2" class="error-component"></line>
+
+            <line id="gradientE1" class="gradient-component"></line>
+            <line id="gradientE2" class="gradient-component"></line>
+            <line id="gradientVector" class="gradient-vector" marker-end="url(#arrowGradient)"></line>
+            <line id="gdVector" class="gd-vector" marker-end="url(#arrowGd)"></line>
+            <line id="newtonVector" class="newton-vector" marker-end="url(#arrowNewton)"></line>
+
+            <circle id="originHalo" class="origin-halo" r="8"></circle>
+            <circle id="originDot" class="origin-dot" r="3.9"></circle>
+            <circle id="dragRing" class="drag-ring" r="15"></circle>
+            <circle id="pointHalo" class="point-halo" r="8.4"></circle>
+            <circle id="pointDot" class="point-dot" r="4.4"></circle>
+            <rect id="pointerSurface" x="54" y="30" width="652" height="412" fill="transparent" aria-hidden="true"></rect>
+          </g>
+
+          <text class="axis-label" x="696" y="259" text-anchor="end">e₁</text>
+          <text class="axis-label" x="389" y="49">e₂</text>
+        </svg>
+
+        <div id="originLabel" class="math-label point">\(x^\star\)</div>
+        <div id="pointLabel" class="math-label point">\(x_k\)</div>
+        <div id="gradientLabel" class="math-label gradient">\(\nabla f\)</div>
+        <div id="gdLabel" class="math-label gd">\(-\eta\nabla f\)</div>
+        <div id="newtonLabel" class="math-label newton">\(-H^{-1}\nabla f\)</div>
+        <div class="drag-hint">drag \(x_k\) anywhere</div>
+      </div>
+
+      <aside class="axis-panel" aria-label="Axis-wise action of the inverse Hessian">
+        <div class="panel-head">
+          <p class="eyebrow">in the eigenbasis</p>
+          <p class="panel-title">Each component gets its own scale</p>
+        </div>
+
+        <section class="axis-card">
+          <div class="axis-card-head">
+            <span class="axis-name">\(e_1\)</span>
+            <span class="lambda-value"><span>\(\lambda_1\)</span><span>=</span><strong id="lambda1Number">3.90</strong></span>
+          </div>
+          <div class="scale-flow">
+            <div class="quantity">
+              <div class="quantity-label"><span>\(\lambda_1 a_1\)</span><strong id="g1Value">0.00</strong></div>
+              <div class="bar-track"><i id="g1Bar" class="bar-fill gradient"></i></div>
+            </div>
+            <div class="operator">\(\div\lambda_1\)</div>
+            <div class="quantity">
+              <div class="quantity-label"><span>\(a_1\)</span><strong id="a1Value">0.00</strong></div>
+              <div class="bar-track"><i id="a1Bar" class="bar-fill corrected"></i></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="axis-card">
+          <div class="axis-card-head">
+            <span class="axis-name">\(e_2\)</span>
+            <span class="lambda-value"><span>\(\lambda_2\)</span><span>=</span><strong id="lambda2Number">0.65</strong></span>
+          </div>
+          <div class="scale-flow">
+            <div class="quantity">
+              <div class="quantity-label"><span>\(\lambda_2 a_2\)</span><strong id="g2Value">0.00</strong></div>
+              <div class="bar-track"><i id="g2Bar" class="bar-fill gradient"></i></div>
+            </div>
+            <div class="operator">\(\div\lambda_2\)</div>
+            <div class="quantity">
+              <div class="quantity-label"><span>\(a_2\)</span><strong id="a2Value">0.00</strong></div>
+              <div class="bar-track"><i id="a2Bar" class="bar-fill corrected"></i></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="matrix-strip">
+          <div class="matrix-row gradient">
+            <span class="tag">gradient</span>
+            <span class="formula">\(\nabla f=\lambda_1a_1e_1+\lambda_2a_2e_2\)</span>
+          </div>
+          <div class="matrix-row newton">
+            <span class="tag">after \(H^{-1}\)</span>
+            <span class="formula">\(H^{-1}\nabla f=a_1e_1+a_2e_2\)</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="key-strip" aria-label="Visual key">
+      <div class="key-item"><i class="swatch"></i><span>curvature-weighted gradient</span></div>
+      <div class="key-item"><i class="swatch gd"></i><span>one scalar \(\eta\) for both axes</span></div>
+      <div class="key-item"><i class="swatch newton"></i><span>axis-wise correction by \(H^{-1}\)</span></div>
+    </div>
+  </figure>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.getElementById("plot");
+  const canvas = document.getElementById("canvas");
+  const ratioInput = document.getElementById("ratio");
+  const pointerSurface = document.getElementById("pointerSurface");
+
+  const view = { width: 760, height: 500 };
+  const box = { x0: 54, x1: 706, y0: 30, y1: 442 };
+  const bounds = { xMin: -2.45, xMax: 2.45, yMin: -2.2, yMax: 2.2 };
+  const eta = 0.18;
+  const lambda2 = 0.65;
+  const state = { point: { x: 1.12, y: 1.02 } };
+
+  const sx = x => box.x0 + (x - bounds.xMin) / (bounds.xMax - bounds.xMin) * (box.x1 - box.x0);
+  const sy = y => box.y1 - (y - bounds.yMin) / (bounds.yMax - bounds.yMin) * (box.y1 - box.y0);
+  const fromSvg = (px, py) => ({
+    x: bounds.xMin + (px - box.x0) / (box.x1 - box.x0) * (bounds.xMax - bounds.xMin),
+    y: bounds.yMin + (box.y1 - py) / (box.y1 - box.y0) * (bounds.yMax - bounds.yMin)
+  });
+  const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
+
+  function createSvg(name, attributes = {}) {
+    const element = document.createElementNS(NS, name);
+    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+    return element;
+  }
+
+  function setLine(id, first, second) {
+    const element = document.getElementById(id);
+    element.setAttribute("x1", sx(first.x));
+    element.setAttribute("y1", sy(first.y));
+    element.setAttribute("x2", sx(second.x));
+    element.setAttribute("y2", sy(second.y));
+  }
+
+  function setCircle(id, point) {
+    const element = document.getElementById(id);
+    element.setAttribute("cx", sx(point.x));
+    element.setAttribute("cy", sy(point.y));
+  }
+
+  function placeLabel(id, px, py, dx = 0, dy = 0) {
+    const label = document.getElementById(id);
+    const x = clamp(px + dx, 18, view.width - 18);
+    const y = clamp(py + dy, 15, view.height - 15);
+    label.style.left = `${100 * x / view.width}%`;
+    label.style.top = `${100 * y / view.height}%`;
+  }
+
+  function vectorOffset(first, second, distance) {
+    const dx = second.x - first.x;
+    const dy = second.y - first.y;
+    const length = Math.hypot(dx, dy) || 1;
+    return { x: -dy / length * distance, y: dx / length * distance };
+  }
+
+  function rectanglesOverlap(first, second, padding = 4) {
+    return !(
+      first.right + padding <= second.left ||
+      second.right + padding <= first.left ||
+      first.bottom + padding <= second.top ||
+      second.bottom + padding <= first.top
+    );
+  }
+
+  function labelFitsCanvas(rectangle, canvasRectangle, padding = 5) {
+    return (
+      rectangle.left >= canvasRectangle.left + padding &&
+      rectangle.right <= canvasRectangle.right - padding &&
+      rectangle.top >= canvasRectangle.top + padding &&
+      rectangle.bottom <= canvasRectangle.bottom - padding
+    );
+  }
+
+  function layoutLabels(anchors) {
+    const canvasRectangle = canvas.getBoundingClientRect();
+    const occupied = [];
+    const plans = [
+      { id: "pointLabel", anchor: anchors.point, candidates: [[22, 22], [-22, 22], [24, -22], [-24, -22], [34, 0], [-34, 0]] },
+      { id: "gradientLabel", anchor: anchors.gradient, candidates: [[16, -26], [-16, -26], [24, 22], [-24, 22], [0, -38]] },
+      { id: "gdLabel", anchor: anchors.gd, candidates: [[-14, -28], [16, -28], [-20, 27], [20, 27], [0, -42], [0, 42]] },
+      { id: "newtonLabel", anchor: anchors.newton, candidates: [[-24, 29], [24, 29], [-28, -29], [28, -29], [0, 43], [0, -43], [-44, 0], [44, 0]] },
+      { id: "originLabel", anchor: anchors.origin, candidates: [[-22, 22], [22, 22], [-22, -22], [22, -22], [-34, 0], [34, 0]] }
+    ];
+
+    plans.forEach(plan => {
+      const label = document.getElementById(plan.id);
+      if (label.hidden) return;
+      let selected = null;
+
+      for (const [dx, dy] of plan.candidates) {
+        placeLabel(plan.id, plan.anchor.x, plan.anchor.y, dx, dy);
+        const rectangle = label.getBoundingClientRect();
+        if (!labelFitsCanvas(rectangle, canvasRectangle)) continue;
+        if (occupied.some(other => rectanglesOverlap(rectangle, other))) continue;
+        selected = rectangle;
+        break;
+      }
+
+      if (!selected) {
+        const [dx, dy] = plan.candidates[0];
+        placeLabel(plan.id, plan.anchor.x, plan.anchor.y, dx, dy);
+        selected = label.getBoundingClientRect();
+      }
+      occupied.push(selected);
+    });
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+    for (let x = -2; x <= 2; x += .5) {
+      grid.appendChild(createSvg("line", { class: "grid-line", x1: sx(x), y1: box.y0, x2: sx(x), y2: box.y1 }));
+    }
+    for (let y = -2; y <= 2; y += .5) {
+      grid.appendChild(createSvg("line", { class: "grid-line", x1: box.x0, y1: sy(y), x2: box.x1, y2: sy(y) }));
+    }
+  }
+
+  function renderContours(lambda1) {
+    const contours = document.getElementById("contours");
+    contours.innerHTML = "";
+    const levels = [.32, .64, 1.05, 1.58, 2.22, 2.98, 3.86, 4.86];
+    levels.forEach((level, index) => {
+      const rx = Math.sqrt(2 * level / lambda1);
+      const ry = Math.sqrt(2 * level / lambda2);
+      const ellipse = createSvg("ellipse", {
+        class: `contour${index === 3 ? " major" : ""}`,
+        cx: sx(0), cy: sy(0),
+        rx: Math.abs(sx(rx) - sx(0)),
+        ry: Math.abs(sy(ry) - sy(0))
+      });
+      contours.appendChild(ellipse);
+    });
+  }
+
+  function renderAxes() {
+    setLine("xAxis", { x: bounds.xMin, y: 0 }, { x: bounds.xMax, y: 0 });
+    setLine("yAxis", { x: 0, y: bounds.yMin }, { x: 0, y: bounds.yMax });
+    setLine("e1Guide", { x: -2.3, y: 0 }, { x: 2.3, y: 0 });
+    setLine("e2Guide", { x: 0, y: -2.05 }, { x: 0, y: 2.05 });
+    document.getElementById("xAxisArrow").setAttribute("d", `M${box.x1 - 11} ${sy(0) - 5} L${box.x1} ${sy(0)} L${box.x1 - 11} ${sy(0) + 5}Z`);
+    document.getElementById("yAxisArrow").setAttribute("d", `M${sx(0) - 5} ${box.y0 + 11} L${sx(0)} ${box.y0} L${sx(0) + 5} ${box.y0 + 11}Z`);
+  }
+
+  function updateBars(values) {
+    const maximum = Math.max(1e-6, ...values.map(Math.abs));
+    const width = value => `${Math.max(4, 100 * Math.abs(value) / maximum)}%`;
+    document.getElementById("g1Bar").style.width = width(values[0]);
+    document.getElementById("a1Bar").style.width = width(values[1]);
+    document.getElementById("g2Bar").style.width = width(values[2]);
+    document.getElementById("a2Bar").style.width = width(values[3]);
+  }
+
+  function render() {
+    const ratio = Number(ratioInput.value);
+    const lambda1 = ratio * lambda2;
+    const point = state.point;
+    const gradient = { x: lambda1 * point.x, y: lambda2 * point.y };
+    const gradientScale = Math.min(0.18, 1.0 / Math.max(Math.abs(gradient.x), Math.abs(gradient.y), 1e-6));
+    const gradientTip = { x: point.x + gradientScale * gradient.x, y: point.y + gradientScale * gradient.y };
+    const gradientCorner = { x: gradientTip.x, y: point.y };
+    const gdTip = { x: point.x - eta * gradient.x, y: point.y - eta * gradient.y };
+    const origin = { x: 0, y: 0 };
+
+    renderContours(lambda1);
+    renderAxes();
+
+    setLine("pointDropX", point, { x: point.x, y: 0 });
+    setLine("pointDropY", point, { x: 0, y: point.y });
+    setLine("errorE1", origin, { x: point.x, y: 0 });
+    setLine("errorE2", { x: point.x, y: 0 }, point);
+
+    setLine("gradientE1", point, gradientCorner);
+    setLine("gradientE2", gradientCorner, gradientTip);
+    setLine("gradientVector", point, gradientTip);
+    setLine("gdVector", point, gdTip);
+    setLine("newtonVector", point, origin);
+
+    ["originHalo", "originDot"].forEach(id => setCircle(id, origin));
+    ["dragRing", "pointHalo", "pointDot"].forEach(id => setCircle(id, point));
+
+    const pSvg = { x: sx(point.x), y: sy(point.y) };
+    const oSvg = { x: sx(0), y: sy(0) };
+    const gSvg = { x: sx(gradientTip.x), y: sy(gradientTip.y) };
+    const gdSvg = { x: sx(gdTip.x), y: sy(gdTip.y) };
+
+    const nMid = { x: pSvg.x + .54 * (oSvg.x - pSvg.x), y: pSvg.y + .54 * (oSvg.y - pSvg.y) };
+    const renderedScale = canvas.clientWidth / view.width;
+    const gdLength = Math.hypot(gdSvg.x - pSvg.x, gdSvg.y - pSvg.y) * renderedScale;
+    const newtonLength = Math.hypot(oSvg.x - pSvg.x, oSvg.y - pSvg.y) * renderedScale;
+    document.getElementById("gdLabel").hidden = gdLength < 42;
+    document.getElementById("newtonLabel").hidden = newtonLength < 48;
+
+    layoutLabels({
+      origin: oSvg,
+      point: pSvg,
+      gradient: gSvg,
+      gd: gdSvg,
+      newton: nMid
+    });
+
+    document.getElementById("ratioNumber").textContent = ratio.toFixed(1);
+    document.getElementById("lambda1Number").textContent = lambda1.toFixed(2);
+    document.getElementById("lambda2Number").textContent = lambda2.toFixed(2);
+    document.getElementById("g1Value").textContent = gradient.x.toFixed(2);
+    document.getElementById("a1Value").textContent = point.x.toFixed(2);
+    document.getElementById("g2Value").textContent = gradient.y.toFixed(2);
+    document.getElementById("a2Value").textContent = point.y.toFixed(2);
+    updateBars([gradient.x, point.x, gradient.y, point.y]);
+
+    reportHeight();
+  }
+
+  function pointerToPoint(event) {
+    const rectangle = svg.getBoundingClientRect();
+    const px = (event.clientX - rectangle.left) * view.width / rectangle.width;
+    const py = (event.clientY - rectangle.top) * view.height / rectangle.height;
+    const point = fromSvg(px, py);
+    state.point.x = clamp(point.x, -1.62, 1.62);
+    state.point.y = clamp(point.y, -1.55, 1.55);
+    render();
+  }
+
+  let dragging = false;
+  pointerSurface.addEventListener("pointerdown", event => {
+    dragging = true;
+    pointerSurface.setPointerCapture(event.pointerId);
+    pointerToPoint(event);
+  });
+  pointerSurface.addEventListener("pointermove", event => { if (dragging) pointerToPoint(event); });
+  pointerSurface.addEventListener("pointerup", event => {
+    dragging = false;
+    if (pointerSurface.hasPointerCapture(event.pointerId)) pointerSurface.releasePointerCapture(event.pointerId);
+  });
+  pointerSurface.addEventListener("pointercancel", () => { dragging = false; });
+  ratioInput.addEventListener("input", render);
+
+  let lastReportedHeight = 0;
+  function reportHeight() {
+    if (window.parent === window) return;
+    const target = document.querySelector(".viz") || document.body;
+    const rectangle = target.getBoundingClientRect();
+    const height = Math.max(1, Math.ceil(rectangle.bottom + window.scrollY));
+    if (Math.abs(height - lastReportedHeight) < 2) return;
+    lastReportedHeight = height;
+    try {
+      const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+      window.parent.postMessage({ type: "article-visualization-height", height }, targetOrigin);
+    } catch (_) {}
+  }
+
+  function loadMathJax() {
+    window.MathJax = {
+      tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+      svg: { fontCache: "local" },
+      startup: {
+        typeset: false,
+        ready() {
+          MathJax.startup.defaultReady();
+          MathJax.startup.promise
+            .then(() => MathJax.typesetPromise([document.body]))
+            .then(() => { render(); reportHeight(); })
+            .catch(() => {});
+        }
+      }
+    };
+
+    let source = "";
+    try {
+      source = [...window.parent.document.scripts]
+        .map(script => script.src)
+        .find(value => value && /mathjax/i.test(value)) || "";
+    } catch (_) {}
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = source || "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js";
+    document.head.appendChild(script);
+  }
+
+  renderGrid();
+  render();
+  loadMathJax();
+
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(reportHeight);
+    observer.observe(document.querySelector(".viz") || document.body);
+  }
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(() => { render(); reportHeight(); }).catch(() => {});
+  }
+  window.addEventListener("load", reportHeight);
+  window.addEventListener("resize", render);
+})();
+</script>
+<script src="/assets/js/visualization-frame.js"></script>
+</body>
+</html>

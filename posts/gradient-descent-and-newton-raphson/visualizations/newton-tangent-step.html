@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto+Mono:wght@400..700&display=swap">
+<title>One Newton step</title>
+<script>
+(() => {
+  try {
+    const root = window.parent.document.documentElement;
+    const body = window.parent.document.body;
+    const raw = `${root.dataset.theme || ""} ${root.className || ""} ${body?.dataset?.theme || ""} ${body?.className || ""}`.toLowerCase();
+    document.documentElement.dataset.theme = raw.includes("dark") ? "dark" : raw.includes("light") ? "light" : "";
+  } catch (_) {}
+})();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --surface: var(--viz-surface, #fff);
+  --surface-muted: var(--viz-surface-muted, #f5f6f2);
+  --ink: var(--viz-ink, #1b2420);
+  --muted: var(--viz-muted, #68736c);
+  --border: var(--viz-border, #d6ddd7);
+  --border-strong: var(--viz-border-strong, #a7b3aa);
+  --accent: var(--viz-accent, #0d7659);
+  --accent-ink: var(--viz-accent-ink, #095f48);
+  --accent-soft: var(--viz-accent-soft, #dcefe7);
+  --accent-border: var(--viz-accent-border, #91c7b6);
+  --curve: #315fae;
+  --curve-soft: rgba(49, 95, 174, .12);
+  --tangent: #a05d18;
+  --tangent-soft: rgba(160, 93, 24, .12);
+  --guide: #87938b;
+  --shadow: rgba(20, 31, 25, .06);
+  --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --math-font: "STIX Two Math", "Cambria Math", "Latin Modern Math", Georgia, serif;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: var(--viz-surface, #171e19);
+  --surface-muted: var(--viz-surface-muted, #1d2720);
+  --ink: var(--viz-ink, #e9efeb);
+  --muted: var(--viz-muted, #a7b5aa);
+  --border: var(--viz-border, #344138);
+  --border-strong: var(--viz-border-strong, #617168);
+  --accent: var(--viz-accent, #63d2aa);
+  --accent-ink: var(--viz-accent-ink, #8ee7c6);
+  --accent-soft: var(--viz-accent-soft, #16362c);
+  --accent-border: var(--viz-accent-border, #3c7964);
+  --curve: #8bb2ff;
+  --curve-soft: rgba(139, 178, 255, .13);
+  --tangent: #e0a666;
+  --tangent-soft: rgba(224, 166, 102, .13);
+  --guide: #77827a;
+  --shadow: rgba(0, 0, 0, .18);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; overflow-x: hidden; background: transparent; color: var(--ink); }
+body { padding: clamp(7px, 1.8vw, 18px); font-family: var(--sans); }
+button, input { font: inherit; }
+.viz {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 18px 48px var(--shadow);
+}
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, .42fr);
+  gap: 20px;
+  align-items: center;
+  padding: clamp(16px, 2.6vw, 25px);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 76%);
+}
+.heading-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 18px; }
+.eyebrow {
+  margin: 0;
+  color: var(--accent-ink);
+  font: 760 .68rem/1 var(--sans);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.7vw, 1.9rem);
+  font-weight: 560;
+  line-height: 1.14;
+  letter-spacing: -.026em;
+}
+.definition {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: clamp(.9rem, 1.65vw, 1.04rem);
+  line-height: 1.4;
+}
+.definition mjx-container { margin: 0 !important; }
+.controls {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px 11px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.control-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: .74rem;
+}
+.control-label strong { color: var(--accent-ink); font-weight: 760; font-variant-numeric: tabular-nums; }
+.controls input[type="range"] { width: 100%; margin: 0; accent-color: var(--accent); }
+.actions { display: grid; grid-template-columns: 1fr auto; gap: 7px; }
+.action {
+  min-height: 32px;
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  background: var(--accent);
+  color: white;
+  font-weight: 720;
+  font-size: .74rem;
+  cursor: pointer;
+}
+:root[data-theme="dark"] .action { color: #10251d; }
+.action.secondary {
+  padding-inline: 12px;
+  border-color: var(--border);
+  background: var(--surface-muted);
+  color: var(--muted);
+}
+.action:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.figure { margin: 0; padding: clamp(11px, 2.3vw, 22px); }
+.canvas {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+#plot { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+.plot-bg { fill: var(--surface-muted); }
+.grid-line { stroke: var(--border); stroke-width: 1; opacity: .72; }
+.axis-line { stroke: var(--border-strong); stroke-width: 1.35; }
+.axis-arrow { fill: var(--border-strong); }
+.tick-label, .axis-label { fill: var(--muted); font-family: var(--sans); }
+.tick-label { font-size: 12px; }
+.axis-label { font-size: 15px; font-weight: 700; }
+.root-guide { stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 4 6; opacity: .5; }
+.curve-halo { fill: none; stroke: var(--surface-muted); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+.curve { fill: none; stroke: var(--curve); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+.tangent-halo { stroke: var(--surface-muted); stroke-width: 7; stroke-linecap: round; }
+.tangent { stroke: var(--tangent); stroke-width: 3.2; stroke-linecap: round; }
+.height-guide { stroke: var(--curve); stroke-width: 1.75; stroke-dasharray: 5 5; }
+.correction-guide { stroke: var(--tangent); stroke-width: 4; stroke-linecap: round; }
+.correction-cap { stroke: var(--tangent); stroke-width: 1.8; stroke-linecap: round; }
+.root-halo, .point-halo, .next-halo { fill: var(--surface-muted); stroke-width: 2; }
+.root-halo { stroke: var(--accent); }
+.point-halo { stroke: var(--curve); }
+.next-halo { stroke: var(--tangent); }
+.root-dot { fill: var(--accent); }
+.point-dot { fill: var(--curve); }
+.next-dot { fill: var(--tangent); }
+.axis-foot { fill: var(--ink); }
+.slope-marker { fill: none; stroke: var(--tangent); stroke-width: 1.5; opacity: .8; }
+.curve-label {
+  fill: var(--curve);
+  font-family: var(--math-font);
+  font-size: 24px;
+  font-style: italic;
+  font-weight: 650;
+  paint-order: stroke;
+  stroke: var(--surface-muted);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+.math-label {
+  position: absolute;
+  z-index: 5;
+  padding: 3px 6px;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: 0 2px 8px var(--shadow);
+  color: var(--ink);
+  font-size: clamp(.72rem, 1.25vw, .92rem);
+  line-height: 1.12;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+.math-label mjx-container { margin: 0 !important; }
+.math-label.curve-value { color: var(--curve); }
+.math-label.correction { color: var(--tangent); border-color: color-mix(in srgb, var(--tangent) 38%, var(--border)); }
+.math-label.point-label {
+  padding: 2px 5px;
+  border: 0;
+  background: color-mix(in srgb, var(--surface-muted) 90%, transparent);
+  box-shadow: none;
+  font-size: clamp(.8rem, 1.42vw, 1rem);
+}
+.math-label.current { color: var(--curve); }
+.math-label.next { color: var(--tangent); }
+.math-label.root { color: var(--accent-ink); }
+.tangent-callout {
+  position: absolute;
+  z-index: 6;
+  top: 12px;
+  left: 12px;
+  min-width: 190px;
+  padding: 8px 10px 9px;
+  border: 1px solid color-mix(in srgb, var(--tangent) 40%, var(--border));
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  box-shadow: 0 3px 12px var(--shadow);
+  pointer-events: none;
+}
+.tangent-callout-title {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--tangent);
+  font: 760 .64rem/1.1 var(--sans);
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+.tangent-callout-formula { font-size: clamp(.72rem, 1.18vw, .9rem); line-height: 1.1; white-space: nowrap; }
+.tangent-callout-formula mjx-container { margin: 0 !important; }
+.readout-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--border);
+  border-top: 0;
+  background: var(--surface);
+}
+.readout {
+  min-width: 0;
+  padding: 10px 12px 11px;
+  text-align: center;
+}
+.readout + .readout { border-left: 1px solid var(--border); }
+.readout-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: clamp(.62rem, 1vw, .72rem);
+  font-weight: 720;
+  letter-spacing: .065em;
+  text-transform: uppercase;
+}
+.readout-value {
+  display: block;
+  color: var(--ink);
+  font-size: clamp(.75rem, 1.22vw, .92rem);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.readout-value mjx-container { margin: 0 !important; }
+.readout-number { color: var(--accent-ink); font-weight: 760; font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) {
+  .topbar { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  body { padding: 5px; }
+  .topbar { padding: 14px; }
+  .figure { padding: 8px; }
+  .math-label { font-size: .63rem; padding: 2px 4px; }
+  .tangent-callout { top: 7px; left: 7px; min-width: 0; padding: 6px 7px 7px; }
+  .tangent-callout-title { font-size: .54rem; }
+  .tangent-callout-formula { font-size: .6rem; }
+  .readout-strip { grid-template-columns: 1fr; }
+  .readout { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: baseline; text-align: left; }
+  .readout + .readout { border-left: 0; border-top: 1px solid var(--border); }
+  .readout-label { margin: 0; }
+}
+</style>
+</head>
+<body>
+<main class="viz">
+  <header class="topbar">
+    <div>
+      <div class="heading-row">
+        <p class="eyebrow">Newton's method</p>
+        <h1>The tangent's root becomes the next guess</h1>
+      </div>
+      <p class="definition">
+        The vertical height at \(x_k\) and the tangent slope determine the horizontal correction. The tangent reaches \(g=0\) at \(x_{k+1}\).
+      </p>
+    </div>
+
+    <div class="controls">
+      <label for="guess">
+        <span class="control-label">
+          <span>move the current guess</span>
+          <strong id="guessValue">xₖ = 2.55</strong>
+        </span>
+      </label>
+      <input id="guess" type="range" min="0.90" max="2.90" step="0.01" value="2.55" aria-label="Move the current Newton iterate">
+      <div class="actions">
+        <button class="action" id="stepButton" type="button">take one Newton step</button>
+        <button class="action secondary" id="resetButton" type="button">reset</button>
+      </div>
+    </div>
+  </header>
+
+  <figure class="figure">
+    <div class="canvas" id="canvas">
+      <svg id="plot" viewBox="0 0 1000 610" role="img" aria-labelledby="plotTitle plotDescription" preserveAspectRatio="xMidYMid meet">
+        <title id="plotTitle">One geometric Newton step</title>
+        <desc id="plotDescription">A tangent at the current point on g crosses the horizontal axis at the next Newton iterate. A vertical height and horizontal correction form the tangent triangle.</desc>
+        <defs>
+          <clipPath id="plotClip"><rect x="64" y="78" width="872" height="462"></rect></clipPath>
+        </defs>
+
+        <rect class="plot-bg" x="64" y="78" width="872" height="462"></rect>
+        <g id="grid"></g>
+
+        <g clip-path="url(#plotClip)">
+          <line id="rootGuide" class="root-guide"></line>
+          <line id="xAxis" class="axis-line"></line>
+          <line id="yAxis" class="axis-line"></line>
+          <path id="curveHalo" class="curve-halo"></path>
+          <path id="curve" class="curve"></path>
+          <line id="tangentHalo" class="tangent-halo"></line>
+          <line id="tangent" class="tangent"></line>
+          <line id="heightGuide" class="height-guide"></line>
+          <line id="correctionGuide" class="correction-guide"></line>
+          <line id="correctionCap0" class="correction-cap"></line>
+          <line id="correctionCap1" class="correction-cap"></line>
+          <path id="slopeMarker" class="slope-marker"></path>
+          <circle id="rootHalo" class="root-halo" r="9"></circle>
+          <circle id="rootDot" class="root-dot" r="4.6"></circle>
+          <circle id="pointHalo" class="point-halo" r="9.5"></circle>
+          <circle id="pointDot" class="point-dot" r="4.9"></circle>
+          <circle id="axisFoot" class="axis-foot" r="3.7"></circle>
+          <circle id="nextHalo" class="next-halo" r="9"></circle>
+          <circle id="nextDot" class="next-dot" r="4.7"></circle>
+        </g>
+
+        <g id="tickLabels"></g>
+        <text class="axis-label" x="926" y="568" text-anchor="end">x</text>
+        <text class="axis-label" x="79" y="92">g(x)</text>
+        <text id="curveLabel" class="curve-label">g</text>
+        <rect id="pointerSurface" x="64" y="78" width="872" height="462" fill="transparent" aria-hidden="true"></rect>
+      </svg>
+
+      <div class="tangent-callout">
+        <span class="tangent-callout-title">tangent at the current guess</span>
+        <span class="tangent-callout-formula">\(T_k(x)=g(x_k)+g'(x_k)(x-x_k)\)</span>
+      </div>
+
+      <div id="heightLabel" class="math-label curve-value">\(g(x_k)\)</div>
+      <div id="correctionLabel" class="math-label correction">\(\Delta x_k=-\dfrac{g(x_k)}{g'(x_k)}\)</div>
+      <div id="currentLabel" class="math-label point-label current">\(x_k\)</div>
+      <div id="nextLabel" class="math-label point-label next">\(x_{k+1}\)</div>
+      <div id="rootLabel" class="math-label point-label root">\(x^*\)</div>
+    </div>
+
+    <div class="readout-strip" aria-label="Newton step readout">
+      <div class="readout">
+        <span class="readout-label">vertical height</span>
+        <span class="readout-value">\(g(x_k)\) = <b id="heightValue" class="readout-number">3.008</b></span>
+      </div>
+      <div class="readout">
+        <span class="readout-label">horizontal correction</span>
+        <span class="readout-value">\(\Delta x_k\) = <b id="correctionValue" class="readout-number">−0.650</b></span>
+      </div>
+      <div class="readout">
+        <span class="readout-label">tangent-axis crossing</span>
+        <span class="readout-value">\(x_{k+1}\) = <b id="nextValue" class="readout-number">1.900</b></span>
+      </div>
+    </div>
+  </figure>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.getElementById("plot");
+  const canvas = document.getElementById("canvas");
+  const guessInput = document.getElementById("guess");
+  const stepButton = document.getElementById("stepButton");
+  const resetButton = document.getElementById("resetButton");
+  const pointerSurface = document.getElementById("pointerSurface");
+
+  const view = { width: 1000, height: 610 };
+  const box = { x0: 64, x1: 936, y0: 78, y1: 540 };
+  const bounds = { xMin: 0, xMax: 3.05, yMin: -1.15, yMax: 5.75 };
+  const initialGuess = 2.55;
+  const root = 1.5213797068045676;
+
+  const g = x => .25 * (x * x * x - x - 2);
+  const dg = x => .25 * (3 * x * x - 1);
+  const newton = x => x - g(x) / dg(x);
+  const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
+  const sx = x => box.x0 + (x - bounds.xMin) / (bounds.xMax - bounds.xMin) * (box.x1 - box.x0);
+  const sy = y => box.y1 - (y - bounds.yMin) / (bounds.yMax - bounds.yMin) * (box.y1 - box.y0);
+  const fromSvgX = px => bounds.xMin + (px - box.x0) / (box.x1 - box.x0) * (bounds.xMax - bounds.xMin);
+
+  let currentGuess = initialGuess;
+  let animationFrame = 0;
+  let dragging = false;
+
+  function createSvg(name, attributes = {}) {
+    const element = document.createElementNS(NS, name);
+    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+    return element;
+  }
+
+  function fixed(value, digits = 3) {
+    const rounded = Math.abs(value) < .0005 ? 0 : value;
+    return rounded.toFixed(digits).replace("-", "−");
+  }
+
+  function setSegment(id, first, second) {
+    const element = document.getElementById(id);
+    element.setAttribute("x1", sx(first.x));
+    element.setAttribute("y1", sy(first.y));
+    element.setAttribute("x2", sx(second.x));
+    element.setAttribute("y2", sy(second.y));
+  }
+
+  function setCircle(id, point) {
+    const element = document.getElementById(id);
+    element.setAttribute("cx", sx(point.x));
+    element.setAttribute("cy", sy(point.y));
+  }
+
+  function curvePath() {
+    let path = "";
+    const samples = 280;
+    for (let i = 0; i <= samples; i += 1) {
+      const x = bounds.xMin + (bounds.xMax - bounds.xMin) * i / samples;
+      path += `${i ? "L" : "M"}${sx(x).toFixed(2)} ${sy(g(x)).toFixed(2)}`;
+    }
+    return path;
+  }
+
+  function tangentBoxIntersections(xk, yk, slope) {
+    const points = [];
+    const epsilon = 1e-9;
+    const yAt = x => yk + slope * (x - xk);
+
+    [bounds.xMin, bounds.xMax].forEach(x => {
+      const y = yAt(x);
+      if (y >= bounds.yMin - epsilon && y <= bounds.yMax + epsilon) points.push({ x, y });
+    });
+
+    if (Math.abs(slope) > epsilon) {
+      [bounds.yMin, bounds.yMax].forEach(y => {
+        const x = xk + (y - yk) / slope;
+        if (x >= bounds.xMin - epsilon && x <= bounds.xMax + epsilon) points.push({ x, y });
+      });
+    }
+
+    const unique = [];
+    points.forEach(point => {
+      if (!unique.some(other => Math.hypot(point.x - other.x, point.y - other.y) < 1e-7)) unique.push(point);
+    });
+    if (unique.length < 2) return [{ x: bounds.xMin, y: yAt(bounds.xMin) }, { x: bounds.xMax, y: yAt(bounds.xMax) }];
+
+    let best = [unique[0], unique[1]];
+    let bestDistance = -1;
+    for (let i = 0; i < unique.length; i += 1) {
+      for (let j = i + 1; j < unique.length; j += 1) {
+        const distance = (unique[i].x - unique[j].x) ** 2 + (unique[i].y - unique[j].y) ** 2;
+        if (distance > bestDistance) {
+          bestDistance = distance;
+          best = [unique[i], unique[j]];
+        }
+      }
+    }
+    return best;
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById("grid");
+    const labels = document.getElementById("tickLabels");
+    grid.replaceChildren();
+    labels.replaceChildren();
+
+    [.5, 1, 1.5, 2, 2.5, 3].forEach(x => {
+      grid.appendChild(createSvg("line", {
+        class: "grid-line",
+        x1: sx(x), y1: box.y0, x2: sx(x), y2: box.y1
+      }));
+      const label = createSvg("text", {
+        class: "tick-label",
+        x: sx(x), y: box.y1 + 22,
+        "text-anchor": "middle"
+      });
+      label.textContent = Number.isInteger(x) ? String(x) : x.toFixed(1);
+      labels.appendChild(label);
+    });
+
+    [0, 1, 2, 3, 4, 5].forEach(y => {
+      grid.appendChild(createSvg("line", {
+        class: y === 0 ? "axis-line" : "grid-line",
+        x1: box.x0, y1: sy(y), x2: box.x1, y2: sy(y)
+      }));
+      if (y !== 0) {
+        const label = createSvg("text", {
+          class: "tick-label",
+          x: box.x0 - 11, y: sy(y) + 4,
+          "text-anchor": "end"
+        });
+        label.textContent = y;
+        labels.appendChild(label);
+      }
+    });
+  }
+
+  function placeOverlay(id, point, dx = 0, dy = 0, xClamp = 58) {
+    const element = document.getElementById(id);
+    const rectangle = canvas.getBoundingClientRect();
+    const xScale = rectangle.width / view.width;
+    const yScale = rectangle.height / view.height;
+    let left = sx(point.x) * xScale + dx;
+    let top = sy(point.y) * yScale + dy;
+    left = clamp(left, xClamp, rectangle.width - xClamp);
+    top = clamp(top, 24, rectangle.height - 22);
+    element.style.left = `${left}px`;
+    element.style.top = `${top}px`;
+  }
+
+  function keepApart(firstId, secondId, gap = 7) {
+    const first = document.getElementById(firstId);
+    const second = document.getElementById(secondId);
+    const canvasRect = canvas.getBoundingClientRect();
+    for (let pass = 0; pass < 6; pass += 1) {
+      const a = first.getBoundingClientRect();
+      const b = second.getBoundingClientRect();
+      const overlap = a.left < b.right + gap && a.right + gap > b.left && a.top < b.bottom + gap && a.bottom + gap > b.top;
+      if (!overlap) return;
+      const direction = b.left >= a.left ? 1 : -1;
+      const current = parseFloat(second.style.left || "0");
+      second.style.left = `${clamp(current + direction * 18, 55, canvasRect.width - 55)}px`;
+    }
+  }
+
+  function updateLabels(xk, yk, xNext) {
+    const rectangle = canvas.getBoundingClientRect();
+    const scaleY = rectangle.height / view.height;
+    const axisY = sy(0) * scaleY;
+    const currentPx = sx(xk) * rectangle.width / view.width;
+    const nextPx = sx(xNext) * rectangle.width / view.width;
+    const direction = xNext >= xk ? 1 : -1;
+
+    const axisLabelDy = yk >= 0 ? 25 : -25;
+    const correctionDy = yk >= 0 ? -31 : 31;
+    placeOverlay("currentLabel", { x: xk, y: 0 }, 0, axisLabelDy, 34);
+    placeOverlay("nextLabel", { x: xNext, y: 0 }, 0, axisLabelDy, 45);
+    placeOverlay("rootLabel", { x: root, y: 0 }, 0, -25, 36);
+
+    const heightMid = { x: xk, y: yk / 2 };
+    placeOverlay("heightLabel", heightMid, direction > 0 ? -40 : 40, 0, 50);
+
+    const correctionMid = { x: (xk + xNext) / 2, y: 0 };
+    placeOverlay("correctionLabel", correctionMid, 0, correctionDy, 112);
+
+    if (Math.abs(currentPx - nextPx) < 92) keepApart("currentLabel", "nextLabel", 10);
+    if (Math.abs(sx(root) * rectangle.width / view.width - nextPx) < 100) keepApart("nextLabel", "rootLabel", 8);
+
+    const label = document.getElementById("correctionLabel");
+    const rect = label.getBoundingClientRect();
+    if (rect.top < canvas.getBoundingClientRect().top + 8) label.style.top = `${axisY + 34}px`;
+  }
+
+  function render() {
+    const xk = currentGuess;
+    const yk = g(xk);
+    const slope = dg(xk);
+    const xNext = newton(xk);
+    const correction = xNext - xk;
+    const point = { x: xk, y: yk };
+    const foot = { x: xk, y: 0 };
+    const next = { x: xNext, y: 0 };
+    const rootPoint = { x: root, y: 0 };
+    const tangentEnds = tangentBoxIntersections(xk, yk, slope);
+
+    document.getElementById("curveHalo").setAttribute("d", curvePath());
+    document.getElementById("curve").setAttribute("d", curvePath());
+    setSegment("xAxis", { x: bounds.xMin, y: 0 }, { x: bounds.xMax, y: 0 });
+    setSegment("yAxis", { x: bounds.xMin, y: bounds.yMin }, { x: bounds.xMin, y: bounds.yMax });
+    setSegment("rootGuide", { x: root, y: bounds.yMin }, { x: root, y: 0 });
+    setSegment("tangentHalo", tangentEnds[0], tangentEnds[1]);
+    setSegment("tangent", tangentEnds[0], tangentEnds[1]);
+    setSegment("heightGuide", foot, point);
+    setSegment("correctionGuide", foot, next);
+
+    const capHalf = .055;
+    setSegment("correctionCap0", { x: xk, y: -capHalf }, { x: xk, y: capHalf });
+    setSegment("correctionCap1", { x: xNext, y: -capHalf }, { x: xNext, y: capHalf });
+
+    const markerWidth = Math.min(.18, Math.abs(correction) * .22);
+    const markerHeight = slope * markerWidth;
+    const markerDirection = correction >= 0 ? 1 : -1;
+    const markerX = xk + markerDirection * markerWidth;
+    const markerY = yk + slope * markerDirection * markerWidth;
+    document.getElementById("slopeMarker").setAttribute(
+      "d",
+      `M${sx(xk)} ${sy(yk)}L${sx(markerX)} ${sy(yk)}L${sx(markerX)} ${sy(markerY)}`
+    );
+
+    setCircle("rootHalo", rootPoint);
+    setCircle("rootDot", rootPoint);
+    setCircle("pointHalo", point);
+    setCircle("pointDot", point);
+    setCircle("axisFoot", foot);
+    setCircle("nextHalo", next);
+    setCircle("nextDot", next);
+
+    const curveLabelX = 2.47;
+    document.getElementById("curveLabel").setAttribute("x", sx(curveLabelX) + 12);
+    document.getElementById("curveLabel").setAttribute("y", sy(g(curveLabelX)) - 12);
+
+    document.getElementById("guessValue").textContent = `xₖ = ${fixed(xk, 2)}`;
+    document.getElementById("heightValue").textContent = fixed(yk);
+    document.getElementById("correctionValue").textContent = fixed(correction);
+    document.getElementById("nextValue").textContent = fixed(xNext);
+
+    updateLabels(xk, yk, xNext);
+    reportHeight();
+  }
+
+  function setGuess(value) {
+    currentGuess = clamp(value, Number(guessInput.min), Number(guessInput.max));
+    guessInput.value = currentGuess.toFixed(2);
+    render();
+  }
+
+  function animateTo(target) {
+    cancelAnimationFrame(animationFrame);
+    const start = currentGuess;
+    const duration = 560;
+    const began = performance.now();
+    stepButton.disabled = true;
+
+    function frame(now) {
+      const raw = clamp((now - began) / duration, 0, 1);
+      const eased = 1 - (1 - raw) ** 3;
+      setGuess(start + (target - start) * eased);
+      if (raw < 1) {
+        animationFrame = requestAnimationFrame(frame);
+      } else {
+        stepButton.disabled = false;
+      }
+    }
+    animationFrame = requestAnimationFrame(frame);
+  }
+
+  function updateGuessFromPointer(event) {
+    const rectangle = svg.getBoundingClientRect();
+    const px = (event.clientX - rectangle.left) * view.width / rectangle.width;
+    const x = fromSvgX(px);
+    setGuess(x);
+  }
+
+  guessInput.addEventListener("input", () => setGuess(Number(guessInput.value)));
+  stepButton.addEventListener("click", () => animateTo(newton(currentGuess)));
+  resetButton.addEventListener("click", () => animateTo(initialGuess));
+
+  pointerSurface.addEventListener("pointerdown", event => {
+    dragging = true;
+    pointerSurface.setPointerCapture(event.pointerId);
+    updateGuessFromPointer(event);
+  });
+  pointerSurface.addEventListener("pointermove", event => { if (dragging) updateGuessFromPointer(event); });
+  pointerSurface.addEventListener("pointerup", event => {
+    dragging = false;
+    if (pointerSurface.hasPointerCapture(event.pointerId)) pointerSurface.releasePointerCapture(event.pointerId);
+  });
+  pointerSurface.addEventListener("pointercancel", () => { dragging = false; });
+
+  let lastReportedHeight = 0;
+  function reportHeight() {
+    if (window.parent === window) return;
+    const target = document.querySelector(".viz") || document.body;
+    const rectangle = target.getBoundingClientRect();
+    const height = Math.max(1, Math.ceil(rectangle.bottom + window.scrollY));
+    if (Math.abs(height - lastReportedHeight) < 2) return;
+    lastReportedHeight = height;
+    try {
+      const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+      window.parent.postMessage({ type: "article-visualization-height", height }, targetOrigin);
+    } catch (_) {}
+  }
+
+  function loadMathJax() {
+    window.MathJax = {
+      tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+      svg: { fontCache: "local" },
+      startup: {
+        typeset: false,
+        ready() {
+          MathJax.startup.defaultReady();
+          MathJax.startup.promise
+            .then(() => MathJax.typesetPromise([document.body]))
+            .then(() => { render(); reportHeight(); })
+            .catch(() => {});
+        }
+      }
+    };
+
+    let source = "";
+    try {
+      source = [...window.parent.document.scripts]
+        .map(script => script.src)
+        .find(value => value && /mathjax/i.test(value)) || "";
+    } catch (_) {}
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = source || "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js";
+    document.head.appendChild(script);
+  }
+
+  renderGrid();
+  render();
+  loadMathJax();
+
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(() => { render(); reportHeight(); });
+    observer.observe(document.querySelector(".viz") || document.body);
+  }
+  window.addEventListener("load", reportHeight);
+  window.addEventListener("resize", render);
+})();
+</script>
+<script src="/assets/js/visualization-frame.js"></script>
+</body>
+</html>
