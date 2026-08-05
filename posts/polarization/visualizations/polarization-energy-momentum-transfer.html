@@ -331,8 +331,9 @@ input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--
   line-height: 1.22;
   text-transform: uppercase;
 }
-.step-copy { min-width: 0; font-size: clamp(.74rem, 1.05vw, .88rem); line-height: 1.3; }
-.step-copy small { display: block; margin-top: 3px; color: var(--muted); font-size: .79em; line-height: 1.35; }
+.step-copy { min-width: 0; font-size: clamp(.86rem, 1.25vw, 1.02rem); line-height: 1.35; }
+.step-copy small { display: block; margin-top: 3px; color: var(--muted); font-size: .78em; line-height: 1.35; }
+.channel-flag { display: inline-block; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent-ink); font-size: .66rem; font-style: normal; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; padding: 2px 7px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent); }
 .diagram-wrap {
   display: grid;
   align-items: center;
@@ -341,15 +342,6 @@ input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--
   padding: 10px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
-}
-.diagram-caption {
-  padding: 8px 12px 10px;
-  background: var(--surface);
-  color: var(--muted);
-  font-size: .7rem;
-  font-style: italic;
-  line-height: 1.4;
-  text-align: center;
 }
 .outcome {
   display: grid;
@@ -436,7 +428,6 @@ input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--
 <body>
 <main class="viz">
   <header class="topbar">
-    <p class="eyebrow">polarization · momentum · spin</p>
     <h1>Why polarized light pushes—and when it twists</h1>
     <div class="controls">
       <label class="phase-control" for="phase">
@@ -468,7 +459,11 @@ input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--
           <line id="linearE" class="e-linear" x1="63" y1="61" x2="63" y2="25" marker-end="url(#linearArrow)"></line>
           <circle id="linearTip" class="tip-linear" cx="63" cy="25" r="3.6"></circle>
           <text class="svg-math" x="70" y="31">E</text>
-          <text class="svg-label" x="63" y="121" text-anchor="middle">viewed along +k̂</text>
+          <g transform="translate(41 121)">
+            <circle r="4.6" fill="none" stroke="var(--muted)" stroke-width="1.2"></circle>
+            <circle r="1.6" fill="var(--muted)"></circle>
+            <text class="svg-label" x="10" y="3">ẑ out of page</text>
+          </g>
         </svg>
         <div>
           <div class="card-topline"><div class="card-name">linear</div><div class="badge">back and forth</div></div>
@@ -492,7 +487,11 @@ input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--
           <path id="fieldRotation" class="rotation" d="M63 12A49 49 0 0 1 112 61" marker-end="url(#rotationArrow)"></path>
           <circle id="phaseDot" class="phase-dot" cx="89" cy="83" r="5"></circle>
           <text class="svg-math" x="92" y="84">E</text>
-          <text class="svg-label" x="63" y="121" text-anchor="middle">viewed along +k̂</text>
+          <g transform="translate(41 121)">
+            <circle r="4.6" fill="none" stroke="var(--muted)" stroke-width="1.2"></circle>
+            <circle r="1.6" fill="var(--muted)"></circle>
+            <text class="svg-label" x="10" y="3">ẑ out of page</text>
+          </g>
         </svg>
         <div>
           <div class="card-topline"><div class="card-name">circular</div><div class="badge"><span id="helicityBadgePlus" class="math-state">\(\sigma=+1\)</span><span id="helicityBadgeMinus" class="math-state" hidden>\(\sigma=-1\)</span></div></div>
@@ -502,10 +501,10 @@ input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--
       </div>
     </div>
 
-    <div class="section-title">How the field motion selects spin</div>
+    <div class="section-title">2 · from the field motion to the per-photon angular momentum</div>
     <div class="comparison">
       <div class="column spin-card linear-spin">
-        <div class="spin-visual" role="img" aria-label="Equal positive and negative helicity components cancel to zero spin">
+        <div class="spin-visual" role="img" aria-label="Equal positive and negative helicity components cancel to zero angular momentum">
           <div class="spin-component">
             <svg class="spin-glyph" viewBox="0 0 48 48" aria-hidden="true">
               <path class="spin-arc" d="M34 12A17 17 0 1 1 12 17"></path>
@@ -523,15 +522,15 @@ input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--
             </svg>
             <span class="spin-component-label">\(\sigma=-1\)</span>
           </div>
-          <span class="spin-result"><span class="spin-flow-arrow" aria-hidden="true"></span><span>\(\mathbf J_{\rm spin}=0\)</span></span>
+          <span class="spin-result"><span class="spin-flow-arrow" aria-hidden="true"></span><span>\(\vec L_\text{one photon}=0\)</span></span>
         </div>
         <div>
           <strong>Linear field</strong>
-          <p>\(\mathbf E_{\rm lin}=(\mathbf E_++\mathbf E_-)/\sqrt2\). The two circular components have equal weight and opposite helicity, so their spin contributions cancel.</p>
+          <p>A linear polarization is an equal superposition of two circular polarizations, \(\vec E_{\rm lin}=(\vec E_++\vec E_-)/\sqrt2\), whose contributions to \(\vec L\) have opposite sign and cancel.</p>
         </div>
       </div>
       <div class="column spin-card circular-spin">
-        <div class="spin-visual" role="img" aria-label="One selected helicity gives one photon spin sign">
+        <div class="spin-visual" role="img" aria-label="One selected helicity gives one photon angular momentum sign">
           <div class="spin-component">
             <svg class="spin-glyph" viewBox="0 0 48 48" aria-hidden="true">
               <g id="selectedSpinPlusGlyph">
@@ -550,28 +549,28 @@ input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--
           </div>
           <span class="spin-result">
             <span class="spin-flow-arrow" aria-hidden="true"></span>
-            <span id="selectedSpinEquationPlus" class="math-state">\(\mathbf J_{\gamma,\rm spin}=+\hbar\hat{\mathbf k}\)</span>
-            <span id="selectedSpinEquationMinus" class="math-state" hidden>\(\mathbf J_{\gamma,\rm spin}=-\hbar\hat{\mathbf k}\)</span>
+            <span id="selectedSpinEquationPlus" class="math-state">\(\vec L_\text{one photon}=+\hbar\hat{\vec z}\)</span>
+            <span id="selectedSpinEquationMinus" class="math-state" hidden>\(\vec L_\text{one photon}=-\hbar\hat{\vec z}\)</span>
           </span>
         </div>
         <div>
           <strong>Circular field</strong>
-          <p>One definite rotation sense selects \(\sigma=+1\) or \(\sigma=-1\). Every photon therefore carries the same spin sign: \(\mathbf J_{\gamma,\rm spin}=\sigma\hbar\hat{\mathbf k}\).</p>
+          <p>One definite rotation direction fixes a single \(\sigma\). Every photon carries the same angular-momentum sign along \(\hat{\vec z}\): \(\vec L_\text{one photon}=\sigma\hbar\hat{\vec z}\).</p>
         </div>
       </div>
     </div>
   </section>
 
   <section>
-    <div class="section-title">2 · follow the same absorbed energy \(U=P\Delta t\)</div>
+    <div class="section-title">3 · follow the same absorbed energy \(U=P\Delta t\)</div>
     <div class="comparison">
       <div class="column channel">
-        <div class="channel-head"><strong>linear momentum channel</strong><span>present for both polarizations</span></div>
-        <div class="derivation momentum"><span class="step-label">one photon</span><span class="step-copy">\(\mathbf p_\gamma=\hbar\mathbf k=(\hbar\omega/c)\hat{\mathbf k}\)<small>Since \(E_\gamma=c|\mathbf p_\gamma|\).</small></span></div>
-        <div class="derivation momentum"><span class="step-label">all \(N\)</span><span class="step-copy">\(\mathbf p=N\mathbf p_\gamma=(U/c)\hat{\mathbf k}\)</span></div>
-        <div class="derivation momentum"><span class="step-label">absorbed in \(\Delta t\)</span><span class="step-copy">\(\mathbf F=\Delta\mathbf p_{\rm target}/\Delta t=(P/c)\hat{\mathbf k}\)</span></div>
+        <div class="channel-head"><strong>linear momentum</strong><span class="channel-flag">present for both polarizations</span></div>
+        <div class="derivation momentum"><span class="step-label">one photon</span><span class="step-copy">\(\vec p=\hbar\vec k=(\hbar\omega/c)\hat{\vec z}\)<small>using \(E_{\rm photon}=c|\vec p|\).</small></span></div>
+        <div class="derivation momentum"><span class="step-label">all \(N\)</span><span class="step-copy">\(N\vec p=(U/c)\hat{\vec z}\)</span></div>
+        <div class="derivation momentum"><span class="step-label">absorbed in \(\Delta t\)</span><span class="step-copy">\(\vec F=\Delta(N\vec p)/\Delta t=(P/c)\hat{\vec z}\)</span></div>
         <div class="diagram-wrap">
-          <svg class="beam-svg" viewBox="0 0 360 110" role="img" aria-label="Forward momentum arrows add to a force on the absorber">
+          <svg class="beam-svg" viewBox="0 0 360 110" role="img" aria-label="Forward momentum arrows add to a force on the target">
             <defs>
               <marker id="beamMarker" viewBox="0 0 10 10" refX="8.4" refY="5" markerWidth="6" markerHeight="6" orient="auto">
                 <path d="M0 0L10 5L0 10Z" fill="var(--accent-ink)"></path>
@@ -580,7 +579,7 @@ input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--
                 <path d="M0 0L10 5L0 10Z" fill="var(--accent-ink)"></path>
               </marker>
             </defs>
-            <text class="beam-label" x="66" y="14" text-anchor="middle">each pγ points along +k̂</text>
+            <text class="beam-label" x="66" y="14" text-anchor="middle">each photon carries p along +ẑ</text>
             <line class="beam-arrow" x1="22" y1="32" x2="110" y2="32" marker-end="url(#beamMarker)"></line>
             <line class="beam-arrow" x1="22" y1="55" x2="110" y2="55" marker-end="url(#beamMarker)"></line>
             <line class="beam-arrow" x1="22" y1="78" x2="110" y2="78" marker-end="url(#beamMarker)"></line>
@@ -588,21 +587,20 @@ input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--
             <line class="beam-line" x1="128" y1="55" x2="184" y2="55"></line>
             <path d="M176 47L184 55L176 63" fill="none" class="beam-line"></path>
             <circle class="target-fill" cx="246" cy="55" r="28"></circle>
-            <text class="target-label" x="246" y="94" text-anchor="middle">absorber</text>
+            <text class="target-label" x="246" y="94" text-anchor="middle">target</text>
             <line class="force-out" x1="274" y1="55" x2="332" y2="55" marker-end="url(#forceMarker)"></line>
             <text class="force-text" x="296" y="48">F</text>
           </svg>
         </div>
-        <div class="diagram-caption">all momentum arrows point along \(+\hat{\mathbf k}\), so absorption pushes the target forward</div>
       </div>
 
       <div class="column channel">
-        <div class="channel-head"><strong>spin angular-momentum channel</strong><span>set by polarization</span></div>
-        <div class="derivation spin"><span class="step-label">one circular photon</span><span class="step-copy">\(\mathbf J_{\gamma,\rm spin}=\sigma\hbar\hat{\mathbf k}\)</span></div>
-        <div class="derivation spin"><span class="step-label">all \(N\)</span><span class="step-copy">\(\mathbf J_{\rm spin}=N\sigma\hbar\hat{\mathbf k}=\sigma(U/\omega)\hat{\mathbf k}\)</span></div>
-        <div class="derivation spin"><span class="step-label">absorbed in \(\Delta t\)</span><span class="step-copy">\(\boldsymbol\tau=\Delta\mathbf J_{\rm target}/\Delta t=\sigma(P/\omega)\hat{\mathbf k}\)</span></div>
+        <div class="channel-head"><strong>angular momentum</strong><span>set by polarization</span></div>
+        <div class="derivation spin"><span class="step-label">one photon</span><span class="step-copy">\(\vec L=\sigma\hbar\hat{\vec z}\)</span></div>
+        <div class="derivation spin"><span class="step-label">all \(N\)</span><span class="step-copy">\(N\vec L=\sigma(U/\omega)\hat{\vec z}\)</span></div>
+        <div class="derivation spin"><span class="step-label">absorbed in \(\Delta t\)</span><span class="step-copy">\(\vec\tau=\Delta(N\vec L)/\Delta t=\sigma(P/\omega)\hat{\vec z}\)</span></div>
         <div class="diagram-wrap">
-          <svg class="beam-svg" viewBox="0 0 360 110" role="img" aria-label="Equal spin signs add to a torque on the absorber">
+          <svg class="beam-svg" viewBox="0 0 360 110" role="img" aria-label="Photons with the same helicity add to a torque on the target">
             <defs>
               <symbol id="spinPlusGlyph" viewBox="0 0 48 48">
                 <path class="spin-icon" d="M34 12A17 17 0 1 1 12 17"></path>
@@ -621,19 +619,18 @@ input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--
                 <path d="M0 0L10 5L0 10Z" fill="var(--spin)"></path>
               </marker>
             </defs>
-            <text class="beam-label" x="76" y="14" text-anchor="middle">same spin sign</text>
+            <text class="beam-label" x="76" y="14" text-anchor="middle">same L direction along +ẑ</text>
             <use id="spinGlyph1" href="#spinPlusGlyph" x="12" y="27" width="42" height="42"></use>
             <use id="spinGlyph2" href="#spinPlusGlyph" x="54" y="27" width="42" height="42"></use>
             <use id="spinGlyph3" href="#spinPlusGlyph" x="96" y="27" width="42" height="42"></use>
             <text class="target-label" x="164" y="43" text-anchor="middle">add</text>
             <line class="beam-line" x1="143" y1="59" x2="188" y2="59" marker-end="url(#neutralArrowMarker)"></line>
             <circle class="target-fill" cx="246" cy="55" r="28"></circle>
-            <text class="target-label" x="246" y="94" text-anchor="middle">absorber</text>
+            <text class="target-label" x="246" y="94" text-anchor="middle">target</text>
             <path id="torquePath" class="torque-path" d="M217 80A37 37 0 0 1 275 22" marker-end="url(#torqueMarker)"></path>
             <text class="torque-text" x="288" y="39">τ</text>
           </svg>
         </div>
-        <div class="diagram-caption">circular: every photon has the same spin sign, so the spins add; linear: equal \(+\) and \(-\) circular components cancel, so net spin and torque are zero</div>
       </div>
     </div>
   </section>
@@ -642,11 +639,11 @@ input[type="range"] { width: 100%; height: 13px; margin: 0; accent-color: var(--
     <div class="comparison">
       <div class="column outcome linear">
         <div class="outcome-badge">linear</div>
-        <div class="outcome-copy"><strong>Same forward force:</strong> \(\mathbf F=(P/c)\hat{\mathbf k}\). The equal opposite circular components give \(\mathbf J_{\rm spin}=0\), hence \(\boldsymbol\tau=0\).</div>
+        <div class="outcome-copy"><strong>Same forward force:</strong> \(\vec F=(P/c)\hat{\vec z}\). The two opposite-helicity components give \(N\vec L=0\), hence \(\vec\tau=0\).</div>
       </div>
       <div class="column outcome circular">
         <div class="outcome-badge">circular</div>
-        <div class="outcome-copy"><strong>Same forward force, plus spin torque:</strong> \(\mathbf F=(P/c)\hat{\mathbf k}\) and \(\boldsymbol\tau=\sigma(P/\omega)\hat{\mathbf k}\). Reversing the field rotation reverses the torque, not the force.</div>
+        <div class="outcome-copy"><strong>Same forward force, plus torque:</strong> \(\vec F=(P/c)\hat{\vec z}\) and \(\vec\tau=\sigma(P/\omega)\hat{\vec z}\). Reversing the rotation reverses the torque, not the force.</div>
       </div>
     </div>
   </section>

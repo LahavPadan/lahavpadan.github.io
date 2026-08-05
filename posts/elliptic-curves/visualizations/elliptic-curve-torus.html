@@ -200,9 +200,9 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 <body>
 <main>
   <header class="hero">
-    <h1>From two values of y to a torus and a period lattice</h1>
+    <h1>From two values of \(y\) to a torus and a period lattice</h1>
     <p>
-      The same object is viewed in four ways. Above an ordinary x-value there are two opposite y-values. At four special x-values those choices meet. Joining the two sheets at all four places creates a surface with one handle; its two non-shrinkable loops then produce the two period directions in the u-plane.
+      The same object is viewed in four ways. Above an ordinary \(x\)-value there are two opposite \(y\)-values. At four special \(x\)-values those choices meet. Joining the two sheets at all four places closes the curve into a torus; its two loop families then produce the two periods in the \(u\)-plane.
     </p>
   </header>
 
@@ -210,27 +210,27 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     <div class="panel-head">
       <div class="step">1</div>
       <div>
-        <h2>An ordinary x-value lifts to two curve points</h2>
-        <div class="kicker">Over the complex numbers, the two choices are y and −y; “upper” and “lower” are only visual names for the two sheets</div>
+        <h2>Two y-values above each ordinary x</h2>
+        <div class="kicker">Over the complex numbers, the two choices are \(y\) and \(-y\); “upper” and “lower” are only visual names for the two sheets</div>
       </div>
     </div>
 
     <div class="grid-two">
       <div class="stack">
         <div class="card">
-          <div class="math big">y² = x³ + ax + b</div>
-          <div class="math">f(x) = x³ + ax + b</div>
+          <div class="math big">\(y^2 = x^3 + ax + b\)</div>
+          <div class="math">\(f(x) = x^3 + ax + b\)</div>
           <div class="copy" style="margin-top:11px">
-            Fix x = x₀. The equation becomes <strong>y² = f(x₀)</strong>. When f(x₀) ≠ 0, its two solutions are opposite:
+            Fix \(x = x_0\). The equation becomes <strong>\(y^2 = f(x_0)\)</strong>. When \(f(x_0) \neq 0\), its two solutions are opposite:
           </div>
-          <div class="math" style="margin-top:7px">y₀ and −y₀, where y₀² = f(x₀).</div>
+          <div class="math" style="margin-top:7px">\(y_0\) and \(-y_0\), where \(y_0^2 = f(x_0)\).</div>
           <div class="copy" style="margin-top:11px">
-            Keeping the two choices separate gives two local copies of the x-sphere. Following a small loop around a special x-value flips <em>y</em> to −<em>y</em>, so a path that stays continuous on the curve must cross between the two copies as the loop closes — which is only possible if the two copies share a point at the special x-value itself.
+            Keeping the two choices separate gives two local copies of the \(x\)-sphere. Following a small loop around a special \(x\)-value flips \(y\) to \(-y\), so a path that stays continuous on the curve must cross between the two copies as the loop closes — which is only possible if the two copies share a point at the special \(x\)-value itself.
           </div>
         </div>
 
         <div class="note">
-          <strong>The meeting values are e₁, e₂, e₃, and ∞.</strong> At each finite root eᵢ, f(eᵢ) = 0, so y = −y = 0. Infinity supplies the fourth meeting value for a cubic.
+          <strong>The meeting values are \(e_1, e_2, e_3\), and \(\infty\).</strong> At each finite root \(e_i\), \(f(e_i) = 0\), so \(y = -y = 0\). Infinity supplies the fourth meeting value for a cubic.
         </div>
       </div>
 
@@ -282,16 +282,19 @@ svg{display:block;width:100%;height:auto;overflow:visible}
               <circle cx="205" cy="245" r="5.5"/><circle cx="310" cy="248" r="5.5"/><circle cx="421" cy="265" r="5.5"/><circle cx="555" cy="225" r="5.5"/>
             </g>
             <g font-size="19" fill="var(--ink)" font-family="Lora, Georgia, Times New Roman, serif" font-style="italic">
-              <text x="193" y="376">e₁</text><text x="298" y="376">e₂</text><text x="409" y="376">e₃</text><text x="547" y="376">∞</text>
+              <text x="193" y="376">e<tspan baseline-shift="sub" font-size="0.72em">1</tspan></text>
+              <text x="298" y="376">e<tspan baseline-shift="sub" font-size="0.72em">2</tspan></text>
+              <text x="409" y="376">e<tspan baseline-shift="sub" font-size="0.72em">3</tspan></text>
+              <text x="547" y="376" font-style="normal">∞</text>
             </g>
 
             <line x1="490" y1="346" x2="490" y2="115" stroke="var(--ink)" stroke-width="1.35" stroke-dasharray="6 5"/>
             <circle cx="490" cy="346" r="5.5" fill="var(--ink)"/>
             <circle cx="490" cy="112" r="6" fill="var(--ink)"/>
             <circle cx="490" cy="270" r="6" fill="var(--ink)"/>
-            <text x="477" y="376" font-size="19" fill="var(--ink)" font-family="Lora, Georgia, Times New Roman, serif" font-style="italic">x₀</text>
-            <text x="507" y="119" font-size="20" fill="var(--ink)" font-family="Lora, Georgia, Times New Roman, serif" font-style="italic">(x₀, y₀)</text>
-            <text x="507" y="278" font-size="20" fill="var(--ink)" font-family="Lora, Georgia, Times New Roman, serif" font-style="italic">(x₀, −y₀)</text>
+            <text x="477" y="376" font-size="19" fill="var(--ink)" font-family="Lora, Georgia, Times New Roman, serif" font-style="italic">x<tspan baseline-shift="sub" font-size="0.72em">0</tspan></text>
+            <text x="507" y="119" font-size="20" fill="var(--ink)" font-family="Lora, Georgia, Times New Roman, serif" font-style="italic">(x<tspan baseline-shift="sub" font-size="0.72em">0</tspan>, y<tspan baseline-shift="sub" font-size="0.72em">0</tspan>)</text>
+            <text x="507" y="278" font-size="20" fill="var(--ink)" font-family="Lora, Georgia, Times New Roman, serif" font-style="italic">(x<tspan baseline-shift="sub" font-size="0.72em">0</tspan>, <tspan font-style="normal">−</tspan>y<tspan baseline-shift="sub" font-size="0.72em">0</tspan>)</text>
 
             <g font-family="Inter, Segoe UI, sans-serif" font-size="14">
               <rect x="83" y="60" width="151" height="34" rx="9" fill="var(--panel)" stroke="var(--line)"/>
@@ -306,7 +309,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
           <span><i style="background:var(--orange)"></i>second sheet</span>
           <span><i style="background:var(--red)"></i>values where the sheets meet</span>
         </div>
-        <div class="caption">The two black points over x₀ are distinct — one on each sheet. At each of e₁, e₂, e₃, ∞, the red dots on the two sheets are identified: the connecting red segment marks them as a single point on the curve, so those are the places where a path can pass from one sheet to the other.</div>
+        <div class="caption">The two black points over \(x_0\) are distinct — one on each sheet. At each of \(e_1, e_2, e_3, \infty\), the red dots on the two sheets are identified: the connecting red segment marks them as a single point on the curve, so those are the places where a path can pass from one sheet to the other.</div>
       </div>
     </div>
   </section>
@@ -319,15 +322,15 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     <div class="panel-head">
       <div class="step">2</div>
       <div>
-        <h2>Two cross-gluings create one handle</h2>
-        <div class="kicker">The four meeting values are paired into two cuts; the second connection is what leaves a hole</div>
+        <h2>Two cuts, glued crosswise, close the curve into a torus</h2>
+        <div class="kicker">The four meeting values are paired into two cuts; the second connection is what leaves a hole in the middle</div>
       </div>
     </div>
 
     <div class="construction">
       <article class="construction-step">
         <div class="stage-top"><div class="stage-letter">A</div><h3>Pair the four meeting values</h3></div>
-        <p class="stage-copy">Pick any pairing of the four meeting values and draw a cut on the x-sphere between each pair — here, e₁–e₂ and e₃–∞. Any pairing gives the same final topology; only the count of pairs matters.</p>
+        <p class="stage-copy">Pick any pairing of the four meeting values and draw a cut on the \(x\)-sphere between each pair — here, \(e_1\)–\(e_2\) and \(e_3\)–\(\infty\). Any pairing gives the same final shape; only the count of pairs matters.</p>
         <div class="stage-figure">
           <svg viewBox="0 0 260 220" role="img" aria-label="The x-sphere with four meeting values paired by two cuts">
             <defs><radialGradient id="sphereFill" cx="37%" cy="30%" r="75%"><stop offset="0%" stop-color="var(--panel)"/><stop offset="100%" stop-color="var(--surface-2)"/></radialGradient></defs>
@@ -339,7 +342,10 @@ svg{display:block;width:100%;height:auto;overflow:visible}
             <path d="M157 145 C177 169,198 160,207 131" fill="none" stroke="var(--orange)" stroke-width="2.4" stroke-linecap="round"/>
             <g fill="var(--red)"><circle cx="75" cy="76" r="5"/><circle cx="127" cy="68" r="5"/><circle cx="157" cy="145" r="5"/><circle cx="207" cy="131" r="5"/></g>
             <g font-family="Lora, Georgia, Times New Roman, serif" font-style="italic" font-size="17" fill="var(--ink)">
-              <text x="48" y="72">e₁</text><text x="131" y="57">e₂</text><text x="137" y="168">e₃</text><text x="216" y="137">∞</text>
+              <text x="48" y="72">e<tspan baseline-shift="sub" font-size="0.72em">1</tspan></text>
+              <text x="131" y="57">e<tspan baseline-shift="sub" font-size="0.72em">2</tspan></text>
+              <text x="137" y="168">e<tspan baseline-shift="sub" font-size="0.72em">3</tspan></text>
+              <text x="216" y="137" font-style="normal">∞</text>
             </g>
             <text x="130" y="207" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="Inter, Segoe UI, sans-serif">two cuts, four endpoints</text>
           </svg>
@@ -348,7 +354,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 
       <article class="construction-step">
         <div class="stage-top"><div class="stage-letter">B</div><h3>Open both sheets along both cuts</h3></div>
-        <p class="stage-copy">Each sheet is a copy of the x-sphere, so the cuts on the x-sphere live on both sheets simultaneously. Slit each sheet along both cuts; every opening has two banks, one on each side of the cut.</p>
+        <p class="stage-copy">Each sheet is a copy of the \(x\)-sphere, so the cuts on the \(x\)-sphere live on both sheets simultaneously. Slit each sheet along both cuts; every opening has two banks, one on each side of the cut.</p>
         <div class="stage-figure">
           <svg viewBox="0 0 260 220" role="img" aria-label="Two sheets, each opened along the same two cuts">
             <ellipse cx="130" cy="65" rx="101" ry="37" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.7"/>
@@ -371,7 +377,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 
       <article class="construction-step">
         <div class="stage-top"><div class="stage-letter">C</div><h3>Glue each opening to the other sheet</h3></div>
-        <p class="stage-copy">Cross-gluing the first cut connects the sheets once. Cross-gluing the second cut connects them again by a separate route. The gap between those routes cannot be filled.</p>
+        <p class="stage-copy">Gluing the first cut connects the sheets once. Gluing the second cut connects them again by a separate route. The gap between those routes cannot be filled.</p>
         <div class="stage-figure">
           <svg viewBox="0 0 260 220" role="img" aria-label="Two sheets connected by two separate necks, leaving a gap between them">
             <ellipse cx="130" cy="69" rx="91" ry="31" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.6"/>
@@ -395,7 +401,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
         <div class="stage-top"><div class="stage-letter">D</div><h3>Round the same surface into a torus</h3></div>
         <p class="stage-copy">No further cutting or gluing occurs. Bending and smoothing the two-connection surface turns the gap into the visible central hole of a torus.</p>
         <div class="stage-figure torus-frame">
-          <svg id="torus-mini" viewBox="0 0 260 220" role="img" aria-label="The resulting one-handle surface drawn as a torus"></svg>
+          <svg id="torus-mini" viewBox="0 0 260 220" role="img" aria-label="The resulting torus"></svg>
         </div>
       </article>
     </div>
@@ -407,7 +413,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
       </div>
       <div class="mechanism-item">
         <div class="mechanism-index">2</div>
-        <div><strong>The second join supplies the handle</strong><span>It connects the same two sheets by another route, leaving a closed passage between the two routes. That passage is the torus hole.</span></div>
+        <div><strong>The second join opens the central hole</strong><span>It connects the same two sheets by another route, leaving a closed passage between the two routes. That passage is the torus hole.</span></div>
       </div>
     </div>
   </section>
@@ -420,7 +426,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     <div class="panel-head">
       <div class="step">3</div>
       <div>
-        <h2>The handle has two independent loop directions</h2>
+        <h2>Two loops on the torus that cannot be pulled to a point</h2>
         <div class="kicker">Both loops are drawn from the same torus coordinates, so the paths sit on the surface rather than floating beside it</div>
       </div>
     </div>
@@ -432,11 +438,11 @@ svg{display:block;width:100%;height:auto;overflow:visible}
         </div>
         <div class="cycle-key">
           <div class="cycle-key-item">
-            <div class="cycle-key-head" style="color:var(--blue)"><span class="cycle-swatch" style="background:var(--blue)"></span>γ₁</div>
+            <div class="cycle-key-head" style="color:var(--blue)"><span class="cycle-swatch" style="background:var(--blue)"></span>\(\gamma_1\)</div>
             <p>Runs around the tube. It closes after circling the short direction once.</p>
           </div>
           <div class="cycle-key-item">
-            <div class="cycle-key-head" style="color:var(--orange)"><span class="cycle-swatch" style="background:var(--orange)"></span>γ₂</div>
+            <div class="cycle-key-head" style="color:var(--orange)"><span class="cycle-swatch" style="background:var(--orange)"></span>\(\gamma_2\)</div>
             <p>Runs around the central hole. It closes after circling the long direction once.</p>
           </div>
         </div>
@@ -446,19 +452,19 @@ svg{display:block;width:100%;height:auto;overflow:visible}
       <div class="stack">
         <div class="card">
           <div class="mini-title">Integrate the same differential along each loop</div>
-          <div class="math big">dx / y</div>
+          <div class="math big">\(dx / y\)</div>
           <div class="copy" style="margin-top:8px">Going once around a closed loop returns to the same curve point, but the integral may have accumulated a nonzero change.</div>
         </div>
         <div class="formula-card blue">
-          <div class="label">change accumulated around γ₁</div>
-          <div class="eq">ω₁ = ∮<sub>γ₁</sub> dx / y</div>
+          <div class="label">change accumulated around \(\gamma_1\)</div>
+          <div class="eq">\(\omega_1 = \oint_{\gamma_1} dx / y\)</div>
         </div>
         <div class="formula-card orange">
-          <div class="label">change accumulated around γ₂</div>
-          <div class="eq">ω₂ = ∮<sub>γ₂</sub> dx / y</div>
+          <div class="label">change accumulated around \(\gamma_2\)</div>
+          <div class="eq">\(\omega_2 = \oint_{\gamma_2} dx / y\)</div>
         </div>
         <div class="note">
-          <strong>Why exactly two period directions?</strong> Any closed route on a torus can wind some whole number of times around γ₁ and some whole number of times around γ₂. The integral therefore changes by mω₁ + nω₂.
+          <strong>Why exactly two periods?</strong> Any closed route on a torus can wind some whole number of times around \(\gamma_1\) and some whole number of times around \(\gamma_2\). The integral therefore changes by \(m\omega_1 + n\omega_2\).
         </div>
       </div>
     </div>
@@ -480,20 +486,20 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     <div class="lattice-grid">
       <div class="stack">
         <div class="card">
-          <div class="math big">u(P) = ∫<sub>P₀</sub><sup>P</sup> dx / y</div>
+          <div class="math big">\(u(P) = \int_{P_0}^{P} dx / y\)</div>
           <div class="copy" style="margin-top:10px">
-            Choose a starting point P₀. Two paths from P₀ to the same endpoint P can differ by closed loops. Adding γ₁ changes u by ω₁; adding γ₂ changes it by ω₂.
+            Choose a starting point \(P_0\). Two paths from \(P_0\) to the same endpoint \(P\) can differ by closed loops. Adding \(\gamma_1\) changes \(u\) by \(\omega_1\); adding \(\gamma_2\) changes it by \(\omega_2\).
           </div>
         </div>
         <div class="card">
-          <div class="math">Λ = ℤω₁ + ℤω₂</div>
-          <div class="copy" style="margin-top:8px">Thus u, u + ω₁, u + ω₂, and every u + mω₁ + nω₂ describe the same point P on the curve.</div>
+          <div class="math">\(\Lambda = \mathbb{Z}\omega_1 + \mathbb{Z}\omega_2\)</div>
+          <div class="copy" style="margin-top:8px">Thus \(u\), \(u + \omega_1\), \(u + \omega_2\), and every \(u + m\omega_1 + n\omega_2\) describe the same point \(P\) on the curve.</div>
         </div>
         <div class="note">
-          <strong>The shaded parallelogram is one complete copy of the torus.</strong> Every other cell is a translated duplicate. Identifying corresponding points in all cells gives ℂ / Λ.
+          <strong>The shaded parallelogram is one complete copy of the torus.</strong> Every other cell is a translated duplicate. Identifying corresponding points in all cells gives \(\mathbb{C} / \Lambda\).
         </div>
         <div class="note warm">
-          The vectors are not parallel: they encode the two independent loop directions of the handle. A single line of repeats would describe only one periodic direction, not a torus.
+          The vectors are not parallel: they encode the two loop families of the torus. A single line of repeats would describe only one periodic direction, not a torus.
         </div>
       </div>
 
@@ -502,10 +508,10 @@ svg{display:block;width:100%;height:auto;overflow:visible}
           <svg id="period-lattice" viewBox="0 0 760 500" role="img" aria-label="A period lattice generated by omega one and omega two, with four translated copies of the same point"></svg>
         </div>
         <div class="lattice-explanation">
-          <div class="edge-pair"><span class="edge-line" style="background:var(--blue)"></span><strong>Blue edges differ by ω₁.</strong> Identifying the left and right edge closes one torus direction.</div>
-          <div class="edge-pair"><span class="edge-line" style="background:var(--orange)"></span><strong>Orange edges differ by ω₂.</strong> Identifying the lower and upper edge closes the other direction.</div>
+          <div class="edge-pair"><span class="edge-line" style="background:var(--blue)"></span><strong>Blue edges differ by \(\omega_1\).</strong> Identifying the left and right edge closes one torus direction.</div>
+          <div class="edge-pair"><span class="edge-line" style="background:var(--orange)"></span><strong>Orange edges differ by \(\omega_2\).</strong> Identifying the lower and upper edge closes the other direction.</div>
         </div>
-        <div class="caption">The four black points are placed by exact vector addition from the same base point u. The dashed arrows therefore end precisely at u + ω₁ and u + ω₂ rather than being positioned by eye.</div>
+        <div class="caption">The four black points are placed by exact vector addition from the same base point \(u\). The dashed arrows therefore end precisely at \(u + \omega_1\) and \(u + \omega_2\) rather than being positioned by eye.</div>
       </div>
     </div>
   </section>
@@ -699,7 +705,23 @@ svg{display:block;width:100%;height:auto;overflow:visible}
   function addTextLabel(svg, x, y, textValue, color, anchor = "start") {
     const group = el("g");
     const text = el("text", {x,y,"text-anchor":anchor,"font-size":"18",fill:color,"font-family":"Lora, Georgia, Times New Roman, serif","font-style":"italic"});
-    text.textContent = textValue;
+    // Parse "ω_1", "u_{12}" etc into text + <tspan baseline-shift=sub> segments
+    // so subscripts render as proper subscripts rather than inline glyphs.
+    const parts = textValue.split(/(_\{[^}]+\}|_[A-Za-z0-9])/g);
+    for (const p of parts) {
+      if (!p) continue;
+      if (p.startsWith("_{") && p.endsWith("}")) {
+        const sub = el("tspan", {"baseline-shift":"sub","font-size":"0.72em"});
+        sub.textContent = p.slice(2,-1);
+        text.appendChild(sub);
+      } else if (p.startsWith("_")) {
+        const sub = el("tspan", {"baseline-shift":"sub","font-size":"0.72em"});
+        sub.textContent = p.slice(1);
+        text.appendChild(sub);
+      } else {
+        text.appendChild(document.createTextNode(p));
+      }
+    }
     group.appendChild(text);
     svg.appendChild(group);
     const box = text.getBBox();
@@ -746,8 +768,8 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     const vector1 = el("path", {d:pathFrom([O,P(1,0)]),stroke:"var(--blue)","stroke-width":"3.5",fill:"none","stroke-linecap":"round","marker-end":"url(#lattice-arrow-blue)"});
     const vector2 = el("path", {d:pathFrom([O,P(0,1)]),stroke:"var(--orange)","stroke-width":"3.5",fill:"none","stroke-linecap":"round","marker-end":"url(#lattice-arrow-orange)"});
     svg.append(vector1,vector2);
-    addTextLabel(svg,O.x+a.x*.5,O.y+34,"ω₁","var(--blue)","middle");
-    addTextLabel(svg,O.x+b.x*.5-25,O.y+b.y*.5-7,"ω₂","var(--orange)","middle");
+    addTextLabel(svg,O.x+a.x*.5,O.y+34,"ω_1","var(--blue)","middle");
+    addTextLabel(svg,O.x+b.x*.5-25,O.y+b.y*.5-7,"ω_2","var(--orange)","middle");
 
     const u0 = {x:O.x+.34*a.x+.34*b.x,y:O.y+.34*a.y+.34*b.y};
     const u1 = {x:u0.x+a.x,y:u0.y+a.y};
@@ -766,9 +788,9 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     svg.appendChild(copies);
 
     addTextLabel(svg,u0.x-10,u0.y+31,"u","var(--ink)","middle");
-    addTextLabel(svg,u1.x+13,u1.y+7,"u + ω₁","var(--blue)","start");
-    addTextLabel(svg,u2.x-8,u2.y-18,"u + ω₂","var(--orange)","middle");
-    addTextLabel(svg,u12.x+12,u12.y-12,"u + ω₁ + ω₂","var(--ink)","start");
+    addTextLabel(svg,u1.x+13,u1.y+7,"u + ω_1","var(--blue)","start");
+    addTextLabel(svg,u2.x-8,u2.y-18,"u + ω_2","var(--orange)","middle");
+    addTextLabel(svg,u12.x+12,u12.y-12,"u + ω_1 + ω_2","var(--ink)","start");
 
     const cellLabel = el("text", {x:(O.x+a.x*.74+b.x*.48),y:(O.y+a.y*.74+b.y*.48-4),"text-anchor":"middle","font-size":"13",fill:"var(--blue)","font-family":"Inter,Segoe UI,sans-serif","font-weight":"700"});
     cellLabel.textContent="one repeating cell";

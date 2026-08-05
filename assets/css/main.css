@@ -1,22 +1,26 @@
 :root {
   --font-display:
     "Lora",
+    "Lora Fallback",
     Georgia,
     "Times New Roman",
     serif;
   --font-reading:
     "Lora",
+    "Lora Fallback",
     Georgia,
     "Times New Roman",
     serif;
   --font-ui:
     "Inter",
+    "Inter Fallback",
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
   --font-mono:
     "Roboto Mono",
+    "Roboto Mono Fallback",
     ui-monospace,
     SFMono-Regular,
     Menlo,

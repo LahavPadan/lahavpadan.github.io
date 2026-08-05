@@ -18,7 +18,7 @@ The same argument applied on $\nabla \cdot \vec B = 0$ gives $\hat z \cdot \vec 
 
 And so, we can focus on analyzing $\vec E$, and $\vec B$ will follow.
 
-Because the plane the wave traverses is two-dimensional, the most general electric field for a monochromatic plane wave is
+Because the plane the wave traverses is two-dimensional, the most general electric field for a wave of one frequency is
 
 $$\vec E(z, t) = \left( E_x\, \hat x + E_y\, \hat y \right) e^{i(kz - \omega t)}, \label{eq:1-3}\tag{1.3}$$
 
@@ -41,7 +41,7 @@ The tip of $\vec E(t)$ traces some curve in the $xy$-plane as $t$ varies. What c
 
 - **Linear ($\varphi = 0$ or $\pi$).** Both components are proportional to $\cos(\omega t)$, up to a possible sign (for $\varphi = \pi$). The tip moves along a fixed line through the origin — the line making angle $\arctan(E_y/E_x)$ with the $x$-axis. The electric field oscillates back and forth along a single direction.
 
-- **Circular ($\varphi = \pm\pi/2$ and $E_x = E_y$).** Taking $\varphi = \pi/2$ and $E_x = E_y = E$, the $x$-component is $E\cos(\omega t)$ and the $y$-component is $E\cos(\omega t - \pi/2) = E\sin(\omega t)$. The tip sits at $(E\cos\omega t, E\sin\omega t)$: a circle of radius $E$ traced at angular rate $\omega$, in the sense fixed by the sign of $\varphi$. The electric field rotates.
+- **Circular ($\varphi = \pm\pi/2$ and $E_x = E_y$).** Taking $\varphi = \pi/2$ and $E_x = E_y = E$, the $x$-component is $E\cos(\omega t)$ and the $y$-component is $E\cos(\omega t - \pi/2) = E\sin(\omega t)$. The tip sits at $(E\cos\omega t, E\sin\omega t)$: a circle of radius $E$ traced at angular rate $\omega$, in the direction fixed by the sign of $\varphi$. The electric field rotates.
 
 - **Elliptical (everything else).** For arbitrary $E_x, E_y, \varphi$, the tip traces an ellipse in the $xy$-plane, with the linear and circular cases as limits. The ellipse's axes are in general not aligned with $\hat x$ and $\hat y$; the tilt angle $\theta_e$ from $\hat x$ to the major axis is a joint function of both parameters, specifically
     $$\tan(2\theta_e) = \frac{2 E_x E_y \cos\varphi}{E_x^2 - E_y^2}. \label{eq:2-2}\tag{2.2}$$
@@ -87,128 +87,203 @@ The elliptical case sits between these two: $|\vec E(t)|^2 = E_x^2\cos^2(\omega 
 
 Constant energy flux is one physical marker of circular polarization; the other, and the sharper one, is that the wave carries angular momentum. That is what the rotating E-vector really means, quantitatively.
 
-## § 5. Angular momentum {#sec-5}
+## § 5. Linear and angular momentum {#sec-5}
 
-[§ 4](#sec-4) traced the energy the wave carries. It also carries linear momentum, and — for circular polarization — angular momentum: the electric field drives the charges in any absorber the wave hits. Linearly polarized light shakes them back and forth (pure translation, transferring linear momentum only); circularly polarized light drags them around a circle (real rotation, transferring both linear and angular momentum). What matters physically is the *rate* of transfer.
+The wave carries energy; it also carries linear momentum, and — for circular polarization — angular momentum. The electric field drives the charges in any target the wave hits. Linearly polarized light shakes them back and forth (pure translation, transferring linear momentum only); circularly polarized light drags them around a circle (real rotation, transferring both linear and angular momentum). What matters physically is the *rate* at which each is delivered.
 
-{% include visualization.html src="polarization-energy-momentum-transfer.html" title="From polarized-field energy to force and torque on an absorber" %}
+Write linear momentum as $\vec p$ and angular momentum as $\vec L$. Their transfer rates are the force and the torque:
 
-Getting from either momentum content — linear or angular — to a mechanical effect on an absorber follows three steps that apply identically to both:
+$$\vec F = \frac{d\vec p}{dt}, \qquad \vec\tau = \frac{d\vec L}{dt}. \label{eq:5-1}\tag{5.1}$$
 
-- **Density.** The wave carries the quantity at some density per unit volume.
-- **Rate.** Because the wave moves along $\hat z$ at speed $c$, in time $\Delta t$ everything in a volume $A\,c\,\Delta t$ crosses a fixed surface of area $A$ set perpendicular to $\hat z$. So the rate at which the quantity crosses that surface is density $\times c \times A$.
-- **Newton.** That rate is what an absorber picks up per unit time, and by Newton's second law it is the force ($\vec F = d\vec p/dt$) on the absorber for linear momentum, or the torque ($\vec\tau = d\vec L/dt$) for angular momentum.
+For both linear and angular momentum, the same three-step chain relates what the wave carries to what a receiver picks up:
 
-### Linear momentum
+- **Density.** The wave carries the momentum (linear or angular) at some density per unit volume.
+- **Rate.** Because the wave moves along $\hat z$ at speed $c$, in time $\Delta t$ everything in a volume $A\,c\,\Delta t$ crosses a fixed cross-section of area $A$ perpendicular to $\hat z$. So the momentum rate crossing that cross-section is (momentum density) $\times c \times A$.
+- **Newton.** That rate is the momentum picked up by the target per unit time. By $\eqref{eq:5-1}$, it is the force (for $\vec p$) or the torque (for $\vec L$).
+
+The density is the only piece that differs between linear and angular momentum. Both densities are read off the wave's energy density, so start there.
+
+### Energy per unit volume
+
+{% include visualization.html src="polarization-energy-momentum-transfer.html" title="From polarized-field energy to force and torque on a target" %}
 
 Take a length of the beam of cross-sectional area $A$. In time $\Delta t$, the energy that crosses a fixed cross-section is
 
-$$U = P\,\Delta t. \label{eq:5-1}\tag{5.1}$$
+$$U = P\,\Delta t, \label{eq:5-2}\tag{5.2}$$
 
-- This energy travels at speed $c$, so at any instant it occupies a volume $A c \Delta t$.
-- $P = |\vec S|\,A$, since $|\vec S|$ is the energy flux (power per unit area, by the definition $\eqref{eq:4-1}$ of $\vec S$) and $A$ the beam's cross-section.
+where $P = |\vec S|\,A$; since $|\vec S|$ is the energy flux (power per unit area, by the definition $\eqref{eq:4-1}$ of $\vec S$).
 
-The energy per unit volume is
+This energy travels at speed $c$, so at any instant it occupies a volume $A\,c\,\Delta t$. Therefore, the energy per unit volume is:
 
-$$\frac{U}{A c \Delta t} = \frac{|\vec S|}{c}. \label{eq:5-2}\tag{5.2}$$
+$$\frac{U}{A c \Delta t} = \frac{|\vec S|}{c}. \label{eq:5-3}\tag{5.3}$$
 
-*Why should the momentum per unit volume be $1/c$ times this?*
+Both densities in the chain above will follow from $\eqref{eq:5-3}$.
 
-- Consider a charge $q$ in an absorber illuminated by the wave.
-- The driven charge's velocity tracks the E-field: $\vec v \propto \vec E$.
-- The B-field then exerts a Lorentz force $q\vec v \times \vec B$. Since $\vec E$ and $\vec B$ are perpendicular within the plane the wave traverses, $\vec v \times \vec B$ points along $\hat z$ — along the wave's motion.
-- Rate of work done on the charge (energy delivered per unit time): $q\vec E \cdot \vec v$.
-- Rate of momentum delivered along $\hat z$: $|q\vec v \times \vec B| = q|\vec v|\,|\vec B|$.
+### Linear momentum
+
+*Why should the momentum per unit volume be $1/c$ times the energy density?*
+
+Take a charge $q$ in the target the wave hits. The electric field of the wave drives the charge, so its velocity $\vec v$ tracks $\vec E$:
+
+$$\vec v \parallel \vec E.$$
+
+The wave's magnetic field then exerts a Lorentz force $q\vec v \times \vec B$ on the charge.
+
+Since $\vec E$ and $\vec B$ are perpendicular within the plane the wave traverses, $\vec v \times \vec B$ points along $\hat z$ — along the wave's motion.
+
+So the charge picks up momentum along $\hat z$. Comparing the rate at which it picks up momentum to the rate at which it picks up energy fixes the density ratio:
+
+- Rate of energy delivery: $q\,\vec v \cdot \vec E$.
+- Rate of momentum delivery along $\hat z$: $|q\vec v \times \vec B| = q\,|\vec v|\,|\vec B|$, where the second equality uses that $\vec v \parallel \vec E$ and $\vec E \perp \vec B$, so $\vec v \perp \vec B$.
 
 Their ratio,
 
-$$\frac{q|\vec v|\,|\vec B|}{q\vec E \cdot \vec v} = \frac{|\vec B|}{|\vec E|} = \frac{1}{c},$$
+$$\frac{q\,|\vec v|\,|\vec B|}{q\,\vec v \cdot \vec E} = \frac{|\vec B|}{|\vec E|} = \frac{1}{c}, \label{eq:5-4}\tag{5.4}$$
 
 uses $|\vec B| = |\vec E|/c$ for a plane wave.
 
-So the absorber picks up momentum along $\hat z$ at $1/c$ times the rate it picks up energy.
+So the charge picks up momentum along $\hat z$ at $1/c$ times the rate it picks up energy. Whatever ratio is delivered has to be the ratio the wave was carrying — otherwise energy would keep accumulating without momentum, or the reverse. Hence
 
-By conservation, the wave itself must carry the two in the same ratio.
+$$\text{linear momentum per unit volume} = \frac{|\vec S|}{c^2}, \label{eq:5-5}\tag{5.5}$$
 
-Momentum per unit volume is energy per unit volume divided by $c$:
+directed along $\hat z$ (from [§ 1](#sec-1), $\vec S = \vec E \times \vec H$ lies along $\hat z$).
 
-$$\frac{|\vec S|}{c^2}, \label{eq:5-3}\tag{5.3}$$
+Feeding $\eqref{eq:5-5}$ into the density-rate-Newton chain — multiply the momentum density by $c \cdot A$ to get the momentum rate through a cross-section, and identify that rate with $\vec F$ via $\eqref{eq:5-1}$ — gives
 
-directed along the wave's motion (from [§ 1](#sec-1), both $\vec E$ and $\vec B$ lie in the plane the wave traverses, so $\vec S \propto \vec E \times \vec B$ is perpendicular to both — along $\hat z$).
+$$\vec F = \frac{|\vec S|}{c^2}\cdot c \cdot A\,\hat z = \frac{|\vec S|\,A}{c}\,\hat z = \frac{P}{c}\,\hat z. \label{eq:5-6}\tag{5.6}$$
 
-Feeding this density into the density-rate-Newton chain:
-
-$$\frac{|\vec S|}{c^2} \cdot c \cdot A \;=\; \frac{|\vec S|\, A}{c} \;=\; \frac{P}{c}, \label{eq:5-4}\tag{5.4}$$
-
-so the force on the absorber is
-
-$$\vec F = \frac{P}{c}\,\hat z. \label{eq:5-5}\tag{5.5}$$
-
-Force per unit incident power is $1/c$, independent of polarization.
+The force scales as $P/c$, independent of polarization.
 
 ### Angular momentum
 
-{% include visualization.html src="polarization-angular-momentum-density.html" title="Transverse momentum and angular momentum density in a finite beam" %}
+*Where can angular momentum come from?*
 
-The photon description of the wave gives the angular momentum density directly:
+Think of the wave as a stream of quanta (photons), each with energy $\hbar\omega$, where $\hbar = h/(2\pi)$ is Planck's reduced constant (and $h$ is Planck's constant).
 
-- A monochromatic wave of frequency $\omega$ consists of quanta (photons), each with energy $\hbar\omega$, where $\hbar$ is Planck's reduced constant.
-- A circularly polarized photon carries angular momentum $\pm\hbar$ along its direction of motion, with the sign fixed by the sense of rotation. Write $\sigma = \pm 1$ for that sign — the **helicity**.
+A circularly polarized photon carries angular momentum $\pm\hbar$ along its direction of motion, with the sign fixed by the direction of rotation. Write $\sigma = \pm 1$ for that sign — the **helicity**. This is a result from quantum mechanics.
 
-That a photon has this per-quantum angular momentum is an input from quantum mechanics.
+Divide the energy density $\eqref{eq:5-3}$ by the per-photon energy $\hbar\omega$ to get the number of photons per unit volume:
 
-Photon number per unit volume is (energy density)/$(\hbar\omega) = |\vec S|/(\hbar\omega c)$. Each photon carries angular momentum $\sigma\hbar$ along $\hat z$ (its direction of motion), so multiplying photon density by per-photon angular momentum gives the angular momentum density, itself along $\hat z$:
+$$n = \frac{1}{\hbar\omega}\cdot \frac{|\vec S|}{c} = \frac{|\vec S|}{\hbar\omega\,c}. \label{eq:5-7}\tag{5.7}$$
 
-$$\frac{|\vec S|}{\hbar\omega c} \cdot \sigma\hbar \;=\; \sigma\,\frac{|\vec S|}{\omega c}. \label{eq:5-6}\tag{5.6}$$
+Each of those $n$ photons contributes $\sigma\hbar$ along $\hat z$ to the angular momentum, so the angular momentum per unit volume is the sum
 
-Notice that $\hbar$ cancels: the result depends on the helicity and the wave's frequency but not on Planck's constant. A purely classical calculation reproduces $\eqref{eq:5-6}$, and it has to — a classical result cannot depend on $\hbar$.
+$$n \cdot \sigma\hbar = \sigma\, \frac{|\vec S|}{\omega\,c}. \label{eq:5-8}\tag{5.8}$$
 
-For a linearly polarized wave, the two helicities are populated equally: their contributions to $\eqref{eq:5-6}$ cancel to zero, and no angular momentum is available to transfer. The E-vector oscillates on one line and never rotates.
+Note that $\hbar$ cancels: the number density goes as $1/\hbar$, the per-photon angular momentum as $\hbar$. The result is $\hbar$-free — as it should be, since the wave carries the same angular momentum whether or not we describe it as photons.
 
-For a circularly polarized wave, one helicity fills the whole population and $\eqref{eq:5-6}$ gives the full angular momentum density. Feeding it into the density-rate-Newton chain:
+*What happens for a linearly polarized wave?*
 
-$$\sigma\,\frac{|\vec S|}{\omega c} \cdot c \cdot A \;=\; \sigma\,\frac{P}{\omega},$$
+A linear polarization is an equal superposition of the two circular polarizations. Take a wave polarized along $\hat x$ with amplitude $E$:
 
-so the torque on the absorber is
+$$\vec E_{\rm lin}(t) = E \cos(\omega t)\, \hat x.$$
 
-$$\vec\tau = \sigma\,\frac{P}{\omega}\,\hat z, \label{eq:5-7}\tag{5.7}$$
+Write the two circular waves — one with each helicity — with equal amplitudes and add them:
 
-whose sign flips with the sense of rotation. For the same $P$ the force $\eqref{eq:5-5}$ is unchanged; the torque is present only in the circular case, and points along or against $\hat z$ according to the helicity.
+$$\vec E_+(t) = \frac{E}{\sqrt 2}\big[\cos(\omega t)\, \hat x + \sin(\omega t)\, \hat y\big], \qquad \vec E_-(t) = \frac{E}{\sqrt 2}\big[\cos(\omega t)\, \hat x - \sin(\omega t)\, \hat y\big].$$
 
-Elliptical polarization mixes the two helicities unequally; its angular momentum density interpolates smoothly between zero (linear, equal populations that cancel) and the circular value $\eqref{eq:5-6}$ (one helicity only), tracking the axial ratio.
+The $\hat y$ components cancel; the $\hat x$ components add:
 
-## § 6. Envelopes and structured media {#sec-6}
+$$\vec E_+(t) + \vec E_-(t) = \sqrt 2\, E \cos(\omega t)\, \hat x = \sqrt 2\, \vec E_{\rm lin}(t),$$
 
-The polarization picture built in §§ [1](#sec-1)–[5](#sec-5) applies to monochromatic plane waves in free space. Two extensions of that setting matter.
+so
 
-**Envelope.** Polarization is independent of the wave's envelope. A pulsed wave still has a polarization state; the envelope modulates the amplitude on a slow time scale, and the polarization operates on the carrier on a fast one. What the envelope is and what the polarization is are fixed by independent physics — the envelope by gain and loss dynamics, the polarization by whichever linear component has the lower round-trip loss in the resonator.
+$$\vec E_{\rm lin} = \frac{1}{\sqrt 2}\big(\vec E_+ + \vec E_-\big). \label{eq:5-9}\tag{5.9}$$
 
-**Structured environments.** Once the wave enters a structure — a waveguide, a periodic dielectric, a plane interface — the two linear polarizations decouple from each other but couple to propagation:
+The two circular components have equal amplitude, so the two helicities are populated equally. Their contributions to $\eqref{eq:5-8}$ have opposite sign and cancel to zero. No angular momentum is available to transfer; the E-vector oscillates on one line and never rotates.
 
-- Hollow waveguides split their modes into two polarization classes with different dispersion relations, even in a symmetric guide. See [coupled modes and Bragg structures](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps).
-- Periodic dielectric structures have polarization-dependent bandgaps: light of one polarization can be reflected where light of the other is transmitted. See [Bragg mirrors and lasers](/posts/bragg-mirrors-and-lasers).
-- Dielectric interfaces reflect the two linear polarizations differently; one of them vanishes entirely at the Brewster angle.
+*What about circular polarization?*
 
-## § 7. Producing and manipulating polarization {#sec-7}
+One helicity fills the whole population, and $\eqref{eq:5-8}$ gives the full angular momentum density. Feeding it into the density-rate-Newton chain — multiply by $c \cdot A$ to get the angular momentum rate through a cross-section, and identify with $\vec\tau$ via $\eqref{eq:5-1}$ — gives
 
-Two basic operations act on the pair $(E_x, E_y)$ from [§ 1](#sec-1):
+$$\vec\tau = \sigma\, \frac{|\vec S|}{\omega c}\cdot c \cdot A\,\hat z = \sigma\, \frac{|\vec S|\,A}{\omega}\,\hat z = \sigma\, \frac{P}{\omega}\,\hat z. \label{eq:5-10}\tag{5.10}$$
 
-- **Polarizer.** Turns unpolarized or arbitrary light into a specific linear polarization.
-- **Wave plate.** Rearranges the relative phase and amplitude between the two linear components.
+The sign flips with the direction of rotation. For a given $P$, the force $\eqref{eq:5-6}$ is unchanged; the torque appears only in the circular case, and points along or against $\hat z$ according to the helicity.
 
-A polarizer selects one linear component and absorbs or deflects the other. The simplest version is a wire grid: a fine grating of parallel conducting wires transmits fields perpendicular to the wires (which cannot drive currents along them) and blocks fields parallel to the wires (which do). A polarizer aligned with $\hat x$ takes any input state $(E_x, E_y)$ to $(E_x, 0)$: the $\hat y$-component is gone. The transmitted intensity is the input's $|E_x|^2$, which for a linearly polarized input at angle $\theta$ to the polarizer is $|E_0|^2 \cos^2\theta$ — the same $\cos^2\theta$ that appeared in $\eqref{eq:3-2}$, for the same reason.
+Elliptical polarization mixes the two helicities unequally, with the split set by the axial ratio. Its angular momentum density interpolates smoothly between zero — the linear case, the two helicities cancelling by $\eqref{eq:5-9}$ — and the full circular value $\eqref{eq:5-8}$.
 
-A wave plate does not select components; it delays one relative to the other. The material used is one whose refractive index depends on the direction of the E-polarization within it — a property called **birefringence**. If the two orthogonal directions in the material have indices $n_1 < n_2$, then a wave propagating through thickness $d$ picks up phase $n_1 \omega d/c$ in one component and $n_2 \omega d/c$ in the other, so the relative phase between them shifts by
+That is the picture for a pure sinusoidal wave in empty space. What changes for pulsed waves, or once the wave enters a material?
 
-$$\Delta\varphi = \frac{\omega d}{c}(n_2 - n_1). \label{eq:7-1}\tag{7.1}$$
+## § 6. Beyond a pure sinusoidal wave in vacuum {#sec-6}
 
-Choosing $d$ so that $\Delta\varphi = \pi/2$ produces a **quarter-wave plate**. Its effect depends on how the input is oriented relative to the two material directions:
+The picture built in §§ [1](#sec-1)–[5](#sec-5) assumes a pure sinusoidal wave in vacuum. Two departures from that setting matter for what follows.
 
-- **Input at 45° to the two directions.** Equal amplitudes go into the two components; the plate shifts them 90° out of phase; the output has equal amplitudes in two perpendicular directions with a 90° phase difference — the recipe for circular polarization from [§ 2](#sec-2).
-- **Input at any other angle.** The amplitude split between the two directions is unequal, so the output is elliptical, with axial ratio set by the input angle.
+**A pulsed wave.** Real waves have a beginning and an end — they come in **pulses**. A pulse is a sinusoid multiplied by a slowly varying **envelope**: the carrier oscillates fast (at $\omega$), and the envelope shapes the amplitude over a much longer time scale. Since the polarization lives on the carrier and the envelope acts on the amplitude, the two are independent and can be modified separately. The separation between carrier and envelope is developed in [A crest and a packet need not move together](/posts/justification-of-the-de-broglie-relation/#a-crest-and-a-packet-need-not-move-together).
 
-Where the two refractive indices come from — some materials' electronic response is not isotropic — is worked out in the companion piece on dielectric response. Here it suffices that they exist.
+**A structured medium.** Once the wave leaves vacuum, the two linear polarizations — until now interchangeable — start to see the material differently. Three cases matter later:
 
-Lasers tend to be linearly polarized for a related reason. If any element inside the resonator has slightly different loss for the two linear polarizations, the favored one builds up over many round trips and the disfavored one decays; the steady-state output is linearly polarized along the low-loss direction. Circular output is almost always produced externally with a quarter-wave plate.
+- **A plane dielectric interface.** The reflection coefficient at a boundary depends on which linear polarization the wave carries. At one special angle — the **Brewster angle** — one polarization reflects nothing at all and passes through entirely.
+- **A hollow waveguide.** The two linear polarizations propagate as different mode families (transverse-electric and transverse-magnetic), with different dispersion relations, even in a perfectly symmetric guide. See [coupled modes and Bragg structures](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps).
+- **A periodic dielectric stack.** The reflectivity depends on polarization — at some wavelengths, one polarization is almost entirely reflected while the other passes through. See [Bragg mirrors and lasers](/posts/bragg-mirrors-and-lasers).
 
-Together, the polarizer and wave plate generate every polarization transformation available on a monochromatic wave.
+That the two linear polarizations behave differently in a material is exactly what makes it possible to produce a polarization from unpolarized light, and to transform one polarization into another — the subject of the last two sections.
+
+## § 7. Producing polarization {#sec-7}
+
+Ordinary light — sunlight, an incandescent bulb — is **unpolarized**: over any interval long compared to $1/\omega$, the E-vector cycles through all directions, and no fixed polarization is present. Producing a definite polarization means either **filtering** the unpolarized input to keep one direction, or generating a wave that is already polarized to begin with.
+
+### Polarizers: filtering unpolarized light
+
+A **polarizer** transmits one linear polarization and blocks the perpendicular one. The simplest realization is a **wire grid**: a fine grating of parallel conducting wires with spacing much smaller than the wavelength.
+
+- Fields parallel to the wires drive currents along them. Those currents radiate a reflected wave and dissipate energy in the wires; the parallel component is blocked.
+- Fields perpendicular to the wires cannot drive currents (the wires are thin, and there is no closed loop across the gap between wires). The perpendicular component passes through unattenuated.
+
+A polarizer aligned with $\hat x$ (wires along $\hat y$) takes any input $(E_x, E_y)$ to $(E_x, 0)$: the $\hat y$-component is gone. For a linearly polarized input at angle $\theta$ to the polarizer, the transmitted amplitude is $|E_0|\cos\theta$, so the transmitted intensity is $|E_0|^2 \cos^2\theta$ — the same $\cos^2\theta$ that appeared in $\eqref{eq:3-2}$, and for the same reason: only the projection on the transmission axis survives.
+
+For an unpolarized input, averaging $\cos^2\theta$ over all input angles gives $\tfrac12$: half the intensity survives, the other half is dissipated.
+
+### Laser cavities: selection by mode competition
+
+A laser cavity produces a wave that is already polarized on its way out — without discarding half the input. The reason is not a filter placed in the cavity; it is the geometry of how the wave lives inside the cavity in the first place.
+
+In a laser, the wave bounces between two mirrors many thousands of times before it escapes as the output beam. Every element inside the cavity — the gain medium, mirror coatings, tilted windows, imperfect surfaces — has slightly different loss for the two linear polarizations. Call the round-trip amplitude survival $\rho_1$ for one polarization and $\rho_2 < \rho_1$ for the other.
+
+Over $N$ round trips, the amplitudes evolve as
+
+$$A_1(N) = A_1(0)\, \rho_1^N, \qquad A_2(N) = A_2(0)\, \rho_2^N. \label{eq:7-1}\tag{7.1}$$
+
+The ratio between them grows exponentially:
+
+$$\frac{A_1(N)}{A_2(N)} = \frac{A_1(0)}{A_2(0)}\, \left(\frac{\rho_1}{\rho_2}\right)^N. \label{eq:7-2}\tag{7.2}$$
+
+Even a tiny asymmetry compounds. For $\rho_1/\rho_2 = 1.001$, after $10^3$ round trips the ratio has grown by $e^{10^3 \ln 1.001} \approx e \approx 2.7$; after $10^4$, by about $2 \times 10^4$; after $10^5$, by more than $10^{43}$. Meanwhile the gain medium replenishes the loss each round trip. In steady state the gain matches the loss of the favored polarization exactly; the disfavored polarization sees insufficient gain to sustain itself and its amplitude decays to zero. The laser oscillates on a single polarization — the one along the low-loss direction.
+
+This is a special case of **mode competition** in a resonant cavity: whichever mode has the lowest per-round-trip loss extracts all the available gain from the medium, and the others go dark. The same argument selects a single frequency and a single transverse mode.
+
+Circular output is almost never produced this way; the natural output of a laser cavity is linearly polarized along a fixed axis. To get circular polarization, the linearly polarized output is fed through a **quarter-wave plate** — the subject of the next section.
+
+## § 8. Manipulating polarization: wave plates {#sec-8}
+
+A wave plate does not filter light; it slows one linear component relative to the other. The material used is one whose refractive index depends on the direction of the E-polarization within it — a property called **birefringence**.
+
+<div class="guided-fold-start" data-label="Where birefringence comes from" data-tone="derivation"></div>
+
+For any crystal, the refractive index depends on the direction of the electric field. The dielectric tensor $\epsilon_{ij}$ is a symmetric $3 \times 3$ matrix with three principal values $\epsilon_x, \epsilon_y, \epsilon_z$ in its eigenbasis. The corresponding refractive indices are $n_x = \sqrt{\epsilon_x}$, and similarly for $n_y$ and $n_z$.
+
+Geometrically, this defines an ellipsoid called the **indicatrix**: an ellipsoid in 3D with three principal axes of lengths $n_x, n_y, n_z$. Light polarized along any direction sees an index equal to the radial distance of the ellipsoid in that direction.
+
+Crystal symmetry classifies the possibilities.
+
+**Isotropic** ($n_x = n_y = n_z$). The indicatrix is a sphere. Glass, and cubic crystals such as diamond and sodium chloride. Light propagates the same way regardless of direction or polarization; nothing special can be built with such a material.
+
+**Uniaxial** ($n_x = n_y \neq n_z$). Two of the principal indices are equal. The indicatrix is an ellipsoid of revolution — a rugby ball — with rotational symmetry about the unique axis (here the $z$-axis, called the **optic axis**). Sapphire, calcite, quartz, and lithium niobate are examples. There is one preferred direction: the optic axis. Light propagating along it sees no birefringence — any polarization sees the same index $n_x = n_y$. Light propagating perpendicular to it sees maximum birefringence — one polarization sees $n_x$, the other sees $n_z$. "Uni-axial" names the one axis of special behavior, along which the birefringence vanishes.
+
+**Biaxial** ($n_x \neq n_y \neq n_z$). All three principal indices differ. The indicatrix is a fully general ellipsoid. Examples include KTP, BBO, and mica. Two directions (not in general perpendicular to each other) exist along which light of any polarization propagates with the same phase velocity. These are the two **optic axes** — hence "bi-axial".
+
+<div class="guided-fold-end"></div>
+
+If the two orthogonal directions in the material — call them the fast and slow axes — have indices $n_1 < n_2$, then a wave propagating through thickness $d$ picks up phase $n_1 \omega d/c$ in one component and $n_2 \omega d/c$ in the other. The relative phase between them shifts by
+
+$$\Delta\varphi = \frac{\omega d}{c}(n_2 - n_1). \label{eq:8-1}\tag{8.1}$$
+
+Two choices of $d$ recover the transformations of [§ 2](#sec-2).
+
+**Quarter-wave plate** ($\Delta\varphi = \pi/2$). What it does to the input depends on the orientation of the input polarization relative to the plate's axes:
+
+- **Input at 45° to the two axes.** Equal amplitudes go into the two components; the plate shifts them $\pi/2$ out of phase; the output has equal amplitudes in two perpendicular directions with a $\pi/2$ phase difference — the recipe for circular polarization from [§ 2](#sec-2).
+- **Input at any other angle.** The amplitude split is unequal, so the output is elliptical, with axial ratio set by the input angle.
+
+**Half-wave plate** ($\Delta\varphi = \pi$). It flips the sign of one component and leaves the other alone — a mirror-reflection of the polarization about the fast axis. Rotating a half-wave plate by $\theta$ rotates the transmitted linear polarization by $2\theta$.
+
+Together, a polarizer and a small collection of wave plates generate every polarization transformation available on a wave of one frequency.

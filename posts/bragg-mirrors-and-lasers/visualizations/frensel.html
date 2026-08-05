@@ -382,7 +382,7 @@
   <main class="viz" aria-labelledby="viz-title">
     <header class="viz__header">
       <div>
-        <h1 class="viz__title" id="viz-title">Both reflections return with phase \(\pi\) at \(k=k_B\)</h1>
+        <h1 class="viz__title" id="viz-title">Successive interface reflections arrive in phase at \(k=k_B\)</h1>
         <p class="viz__lede">
           Write \(k\) for the illumination wavenumber and \(k_B\) for the Bragg wavenumber. At \(k=k_B\), reflection 1 picks up phase \(\pi\) at the \(\mathrm{air}|H\) interface—the low-to-high sign change. Reflection 2 picks up phase \(\pi\) from the round trip through the quarter-wave \(H\) layer. The two returned fields add.
         </p>
@@ -587,7 +587,7 @@
             <span class="phase-relation__label">Relative return phase</span>
             <strong class="phase-relation__math" id="phase-difference">\(\Delta\phi=\phi_2-\phi_1=\pi\left(k/k_B-1
 ight)=0\)</strong>
-            <p class="phase-relation__copy" id="ratio-explanation">At \(k=k_B\), corresponding crests, zero crossings, and troughs occur at the same phase coordinates.</p>
+            <p class="phase-relation__copy" id="ratio-explanation">At \(k=k_B\), the two returned waves peak together and trough together — they add cycle for cycle.</p>
           </div>
           <div class="phase-slider">
             <div class="slider-head"><label for="wavenumber-ratio">Detune the wavenumber</label><output class="ratio-readout" id="ratio-readout" for="wavenumber-ratio">\(k/k_B=1\)</output></div>
@@ -727,8 +727,8 @@ ight)=0\)</strong>
 
         if (Math.abs(delta) < 0.015) {
           ratioExplanation.innerHTML =
-            'At \\(k=k_B\\), corresponding crests, zero crossings, ' +
-            'and troughs occur at the same phase coordinates.';
+            'At \\(k=k_B\\), the two returned waves peak together ' +
+            'and trough together — they add cycle for cycle.';
 
           conclusionCopy.innerHTML =
             'At \\(k=k_B\\), the interface phase of reflection 1 ' +

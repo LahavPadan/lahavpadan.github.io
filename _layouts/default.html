@@ -22,8 +22,21 @@
   <link rel="icon" href="{{ '/assets/images/favicon.svg' | relative_url }}" type="image/svg+xml">
   <meta name="theme-color" content="#11131a">
   <link rel="sitemap" type="application/xml" href="{{ '/sitemap.xml' | relative_url }}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {%- comment -%}
+  Fonts are self-hosted from /assets/fonts. The two latin faces the article
+  opens with — Lora regular for the body and Inter for headings and UI — are
+  preloaded so they arrive in parallel with main.css and are ready for first
+  paint. The rest of the family (italic, latin-ext, hebrew, monospace) is
+  declared in fonts.css with matching unicode-range blocks and downloaded
+  on demand when a glyph in that range is used. A metric-matched fallback
+  ('Lora Fallback', 'Inter Fallback', 'Roboto Mono Fallback') sits between
+  the real face and the platform generic in main.css's --font-* stacks, so
+  the pre-swap paint occupies the same box as the final render.
+  {%- endcomment -%}
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="{{ '/assets/fonts/lora-400-700-latin.woff2' | relative_url }}">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="{{ '/assets/fonts/inter-400-800-latin.woff2' | relative_url }}">
   {% if page.math %}
   {%- comment -%}
   Preconnect + preload so the MathJax bundle starts downloading in parallel
@@ -33,10 +46,7 @@
   <link rel="preload" as="script" crossorigin
   href="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js">
   {% endif %}
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Lora:ital,wght@0,400..700;1,400..700&family=Noto+Sans+Hebrew:wght@400;500&family=Roboto+Mono:wght@400..700&display=swap"
-  >
+  <link rel="stylesheet" href="{{ '/assets/css/fonts.css' | relative_url }}?v={{ site.time | date: '%s' }}">
   <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}?v={{ site.time | date: '%s' }}">
 <script>
   (function () {

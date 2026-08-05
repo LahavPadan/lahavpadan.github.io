@@ -26,9 +26,12 @@
   // -- theme ----------------------------------------------------------------
 
   function setTheme(theme) {
+    var current = root.dataset.theme;
     if (theme === 'dark' || theme === 'light') {
+      if (current === theme) return;
       root.dataset.theme = theme;
     } else {
+      if (current == null) return;
       delete root.dataset.theme;
     }
   }

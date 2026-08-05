@@ -1,0 +1,216 @@
+/**
+ * Self-hosted web fonts and metric-adjusted fallbacks.
+ *
+ * The site's four families — Lora for reading, Inter for UI, Roboto Mono for
+ * code, Noto Sans Hebrew where needed — ship from /assets/fonts/ rather than
+ * fonts.gstatic.com. That removes the third-party round trip and lets the two
+ * latin faces the article opens with be preloaded from the layout head.
+ *
+ * Each web-font family also carries a same-metric fallback: a re-declaration of
+ * the platform serif or sans with `size-adjust`, `ascent-override`, and
+ * `descent-override` chosen so a line typed in the fallback occupies the same
+ * box as the same line typed in the web font. The fallback paints on first
+ * frame while the real face is still downloading; when the real face arrives,
+ * the swap changes glyph shapes but does not reflow, so it registers as a hint
+ * of texture rather than a layout jump. Values are from the Fontaine table
+ * (github.com/nuxt/fontaine) with light hand-tuning for our x-height targets.
+ *
+ * The site's --font-* CSS variables in main.css list the real family first,
+ * then the metric-matched fallback ('Lora Fallback', 'Inter Fallback',
+ * 'Roboto Mono Fallback'), and finally the platform generic. Loading order:
+ *   1. real face if already in the browser cache
+ *   2. metric-matched fallback (renders instantly — it IS a local font)
+ *   3. real face swaps in when it finishes downloading
+ * Step 2 is what removes the observed "second layer" on non-cyber posts.
+ */
+
+/* ------------------------------------------------------------------ */
+/*  Metric-adjusted fallbacks                                          */
+/* ------------------------------------------------------------------ */
+
+@font-face {
+  font-family: 'Lora Fallback';
+  src: local('Georgia'), local('Times New Roman');
+  ascent-override: 94.05%;
+  descent-override: 27.71%;
+  line-gap-override: 0%;
+  size-adjust: 108.47%;
+}
+
+@font-face {
+  font-family: 'Lora Fallback';
+  font-style: italic;
+  src: local('Georgia Italic'), local('Times New Roman Italic'), local('Georgia'), local('Times New Roman');
+  ascent-override: 94.05%;
+  descent-override: 27.71%;
+  line-gap-override: 0%;
+  size-adjust: 108.47%;
+}
+
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial'), local('Helvetica');
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+  size-adjust: 107.12%;
+}
+
+@font-face {
+  font-family: 'Roboto Mono Fallback';
+  src: local('Courier New'), local('Menlo'), local('Consolas');
+  ascent-override: 116.35%;
+  descent-override: 24.55%;
+  line-gap-override: 0%;
+  size-adjust: 82.32%;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Real self-hosted faces                                             */
+/* ------------------------------------------------------------------ */
+
+/*  Lora — reading + display, variable weight 400–700  */
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/assets/fonts/lora-400-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/assets/fonts/lora-400-700-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/assets/fonts/lora-400-700-latin-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/assets/fonts/lora-400-700-latin-ext-italic.woff2') format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/*  Inter — UI + headings, variable weight 400–800  */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/assets/fonts/inter-400-800-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/assets/fonts/inter-400-800-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/*  Roboto Mono — code, variable weight 400–700  */
+
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/assets/fonts/roboto-mono-400-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/assets/fonts/roboto-mono-400-700-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/*  Noto Sans Hebrew — Hebrew content, static weights 400 and 500  */
+
+@font-face {
+  font-family: 'Noto Sans Hebrew';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/noto-sans-hebrew-400-hebrew.woff2') format('woff2');
+  unicode-range: U+0307-0308, U+0591-05F4, U+FB1D-FB4F;
+}
+
+@font-face {
+  font-family: 'Noto Sans Hebrew';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/noto-sans-hebrew-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Noto Sans Hebrew';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/noto-sans-hebrew-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Noto Sans Hebrew';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/assets/fonts/noto-sans-hebrew-500-hebrew.woff2') format('woff2');
+  unicode-range: U+0307-0308, U+0591-05F4, U+FB1D-FB4F;
+}
+
+@font-face {
+  font-family: 'Noto Sans Hebrew';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/assets/fonts/noto-sans-hebrew-500-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Noto Sans Hebrew';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/assets/fonts/noto-sans-hebrew-500-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}

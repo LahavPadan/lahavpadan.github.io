@@ -5,13 +5,19 @@
  * A visualization is a self-contained document in an iframe. Each one carries
  * its own light and dark palette and repaints itself from a single signal:
  * the `data-theme` attribute on its own root. The parent's whole part in
- * theming is therefore to hand each frame the page theme — the attribute set
- * directly, and a matching message posted for frames that listen — and let the
- * frame's stylesheet do the rest. It never hands over colours of its own.
+ * theming is therefore to hand each frame the page theme by writing that
+ * attribute on the frame's document element. It never hands over colours of
+ * its own.
+ *
+ * A frame that already carries the right theme is not written to — a
+ * same-value attribute write still triggers a style recalc across the
+ * frame's tree, and most frames observe the parent root directly and have
+ * already written the attribute themselves by the time the parent's own
+ * observer runs.
  *
  * Height is the other thing that has to cross the boundary: only the frame
- * knows how tall its content is. Frames report it by message; the parent also
- * measures once on load for older diagrams that never post.
+ * knows how tall its content is. Frames report it by message; the parent
+ * also measures once on load for older diagrams that never post.
  */
 (function () {
   'use strict';
@@ -33,26 +39,24 @@
 
   // -- theme ----------------------------------------------------------------
   //
-  // A visualization owns its light and dark palette and repaints from one
-  // signal: the `data-theme` attribute on its own root. The parent's whole part
-  // is to hand each frame the current theme — set directly as an attribute on
-  // the same-origin frame, and posted as a message for any frame that prefers
-  // to listen — and let the frame's own stylesheet do the rest. The parent
-  // never reaches into a frame's colours: injecting the article's variables as
-  // inline styles would outrank the frame's own `:root[data-theme="dark"]`
-  // rules by specificity and leave it painted in a mix of two palettes.
+  // A visualization owns its palette and repaints from one signal: the
+  // `data-theme` attribute on its own root. The parent's whole part is to
+  // write that attribute for each same-origin frame. A same-value write
+  // still costs a style recalc, so the write is skipped when the frame is
+  // already on the requested theme — most visualizations observe the parent
+  // root themselves and have written the attribute before this runs, so
+  // this check turns what was a duplicate recalc per frame into a no-op.
+  //
+  // The parent never touches the frame's colours: injecting the article's
+  // variables as inline styles would outrank the frame's own
+  // `:root[data-theme="dark"]` rules by specificity and leave it painted
+  // in a mix of two palettes.
 
   function themeFrame(frame, theme) {
     var doc = frameDocument(frame);
-    if (doc) {
-      doc.documentElement.dataset.theme = theme;
-      doc.documentElement.style.colorScheme = theme;
-    }
-    if (frame.contentWindow) {
-      try {
-        frame.contentWindow.postMessage({ theme: theme }, window.location.origin);
-      } catch (_blocked) {}
-    }
+    if (!doc) return;
+    if (doc.documentElement.dataset.theme === theme) return;
+    doc.documentElement.dataset.theme = theme;
   }
 
   function themeAllFrames() {

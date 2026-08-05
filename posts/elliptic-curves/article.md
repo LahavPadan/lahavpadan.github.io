@@ -782,10 +782,10 @@ $$\langle a, b_1 + b_2 \rangle = \langle a, b_1 \rangle + \langle a, b_2 \rangle
 and similar for scaling.
 
 That's it. A pairing is "a way of multiplying two things together that distributes over addition in each slot." Examples you already know:
-- **Dot product**: $\langle u, v \rangle = u \cdot v$. Bilinear pairing $\mathbb{R}^n \times \mathbb{R}^n \to \mathbb{R}$.
-- **Matrix multiplication**: $(A, B) \mapsto AB$. Bilinear pairing.
-- **Determinant of a $2 \times 2$ matrix from its columns**: $(u, v) \mapsto \det[u | v]$. Bilinear pairing $\mathbb{R}^2 \times \mathbb{R}^2 \to \mathbb{R}$. (This is alternating: $\det[v | u] = -\det[u | v]$.)
-- **Integration**: $(f, g) \mapsto \int f g$. Bilinear pairing of function spaces.
+* **Dot product**: $\langle u, v \rangle = u \cdot v$. Bilinear pairing $\mathbb{R}^n \times \mathbb{R}^n \to \mathbb{R}$.
+* **Matrix multiplication**: $(A, B) \mapsto AB$. Bilinear pairing.
+* **Determinant of a $2 \times 2$ matrix from its columns**: $(u, v) \mapsto \det[u | v]$. Bilinear pairing $\mathbb{R}^2 \times \mathbb{R}^2 \to \mathbb{R}$. (This is alternating: $\det[v | u] = -\det[u | v]$.)
+* **Integration**: $(f, g) \mapsto \int f g$. Bilinear pairing of function spaces.
 
 The common theme: a pairing takes two objects and produces a single "scalar-like" output, in a way that respects the linear structure of both inputs.
 
@@ -843,17 +843,17 @@ $$\langle \phi, \phi \rangle = \deg(0) - 2 \deg(\phi) = -2 \deg(\phi)$$
 
 So the pairing is negative-definite on the diagonal — but its negation $-\langle \cdot, \cdot \rangle$ is positive-definite. Any positive-definite bilinear form $B$ satisfies a **Cauchy-Schwarz inequality** $|B(\phi, \psi)|^2 \leq B(\phi, \phi) \cdot B(\psi, \psi)$. The proof is a one-liner:
 
-- For any scalar $\alpha$, $B(\alpha\phi + \psi, \alpha\phi + \psi) \geq 0$.
-- Expanding gives $\alpha^2 B(\phi, \phi) + 2\alpha B(\phi, \psi) + B(\psi, \psi) \geq 0$, viewed as a quadratic in $\alpha$.
-- A non-negative quadratic has non-positive discriminant, so $4 B(\phi, \psi)^2 - 4 B(\phi, \phi) B(\psi, \psi) \leq 0$, which gives the inequality.
+* For any scalar $\alpha$, $B(\alpha\phi + \psi, \alpha\phi + \psi) \geq 0$.
+* Expanding gives $\alpha^2 B(\phi, \phi) + 2\alpha B(\phi, \psi) + B(\psi, \psi) \geq 0$, viewed as a quadratic in $\alpha$.
+* A non-negative quadratic has non-positive discriminant, so $4 B(\phi, \psi)^2 - 4 B(\phi, \phi) B(\psi, \psi) \leq 0$, which gives the inequality.
 
 Applied to our negated pairing: $|\langle \phi, \psi \rangle|^2 \leq \langle \phi, \phi \rangle \langle \psi, \psi \rangle = 4 \deg(\phi) \deg(\psi)$.
 
 Specializing to $\phi = \pi$ (Frobenius) and $\psi = [1]$ (identity):
-- $\deg(\pi) = q$ (Frobenius has $x$-coordinate map $x \mapsto x^q$, degree $q$).
-- $\deg([1]) = 1$.
-- $\langle \pi, [1] \rangle = \deg(\pi - 1) - q - 1$.
-- $\deg(\pi - 1) = |\ker(\pi - 1)|$ in the separable case (and $\pi - 1$ *is* separable: the derivative of $\pi - 1$ on $x$-coordinate is the derivative of $x^q - x$, which is $-1$, non-zero). The kernel is the fixed-point set of Frobenius, i.e., $E(\mathbb{F}_q)$, of size $N$.
+* $\deg(\pi) = q$ (Frobenius has $x$-coordinate map $x \mapsto x^q$, degree $q$).
+* $\deg([1]) = 1$.
+* $\langle \pi, [1] \rangle = \deg(\pi - 1) - q - 1$.
+* $\deg(\pi - 1) = |\ker(\pi - 1)|$ in the separable case (and $\pi - 1$ *is* separable: the derivative of $\pi - 1$ on $x$-coordinate is the derivative of $x^q - x$, which is $-1$, non-zero). The kernel is the fixed-point set of Frobenius, i.e., $E(\mathbb{F}_q)$, of size $N$.
 
 So $\langle \pi, [1] \rangle = N - q - 1 = -t$ (using $N = q + 1 - t$).
 
@@ -871,10 +871,10 @@ $$e_n: E[n] \times E[n] \to \mu_n,$$
 
 where $\mu_n$ is the group of $n$-th roots of unity in the base field. It has four properties:
 
-- **Bilinear**: $e_n(P_1 + P_2, Q) = e_n(P_1, Q) e_n(P_2, Q)$ and similarly in the second slot.
-- **Alternating**: $e_n(P, P) = 1$. (So pairing a torsion point with itself gives no information — the pairing only "sees" the way two *different* points sit relative to each other inside the 2D torsion space.)
-- **Non-degenerate**: if $e_n(P, Q) = 1$ for all $Q \in E[n]$, then $P = \mathcal{O}$. (No "ghost" torsion points hidden from the pairing.)
-- **Respects field automorphisms**: if $\sigma$ is any automorphism of the base field that fixes the curve's coefficients (e.g., the Frobenius $z \mapsto z^q$, which fixes $\mathbb{F}_q$), then $e_n(\sigma P, \sigma Q) = \sigma(e_n(P, Q))$. In practical terms: the pairing's output transforms the same way under field automorphisms as its inputs. This is what makes pairings well-defined as field-intrinsic operations and not artifacts of coordinate choices.
+* **Bilinear**: $e_n(P_1 + P_2, Q) = e_n(P_1, Q) e_n(P_2, Q)$ and similarly in the second slot.
+* **Alternating**: $e_n(P, P) = 1$. (So pairing a torsion point with itself gives no information — the pairing only "sees" the way two *different* points sit relative to each other inside the 2D torsion space.)
+* **Non-degenerate**: if $e_n(P, Q) = 1$ for all $Q \in E[n]$, then $P = \mathcal{O}$. (No "ghost" torsion points hidden from the pairing.)
+* **Respects field automorphisms**: if $\sigma$ is any automorphism of the base field that fixes the curve's coefficients (e.g., the Frobenius $z \mapsto z^q$, which fixes $\mathbb{F}_q$), then $e_n(\sigma P, \sigma Q) = \sigma(e_n(P, Q))$. In practical terms: the pairing's output transforms the same way under field automorphisms as its inputs. This is what makes pairings well-defined as field-intrinsic operations and not artifacts of coordinate choices.
 
 You can think of it as the "determinant pairing" on $E[n]$. Over $\mathbb{C}$ with the lattice picture ([§ 15A](#sec-15a)): $E[n]$ is generated by $\omega_1/n$ and $\omega_2/n$. The pairing of these two generators is the primitive $n$-th root of unity $e^{2\pi i/n}$, and the pairing of $aP_1 + bP_2$ and $cP_1 + dP_2$ is $e^{2\pi i (ad - bc)/n}$ — literally a determinant exponentiated.
 
@@ -1140,7 +1140,7 @@ The total cost is polynomial in $\log q$ (rather than $q$ itself), which is the 
 
 ## § 15A. The complex-analytic viewpoint: elliptic curves as tori {#sec-15a}
 
-The rational-function and Tate-module pictures of [§ 11](#sec-11) both work over any field. Over the complex numbers, a third picture becomes available that is far more geometric: the elliptic curve *is* a torus $\mathbb{C}/\Lambda$, and every algebraic structure on the curve (points, endomorphisms, isogenies, torsion, the $j$-invariant) has a linear-algebra shadow on the lattice $\Lambda$. This section develops that picture from scratch — motivating the elliptic integral, deriving the double periodicity, connecting the algebraic $\phi$ to complex multiplication by an $\alpha$, and using the picture to understand the $j$-invariant as a coordinate on the space of grid shapes.
+The rational-function and Tate-module pictures of [§ 11](#sec-11) both work over any field. Over the complex numbers, a third picture becomes available that is far more geometric: the elliptic curve *is* a torus $\mathbb{C}/\Lambda$, and every algebraic structure on the curve (points, endomorphisms, isogenies, torsion, the $j$-invariant) has a linear-algebra shadow on the lattice $\Lambda$. This section develops that picture from scratch — motivating the elliptic integral, showing that its natural coordinate takes values modulo a lattice, connecting the algebraic $\phi$ to complex multiplication by an $\alpha$, and reinterpreting the $j$-invariant as a function on lattice shapes.
 
 Nothing in this section is used to prove statements over finite fields (the Tate-module picture handled those in [§ 11](#sec-11)). Its role is to give geometric intuition and to build the language of *complex multiplication* that appears in secp256k1 and drives the GLV method ([§ 15B](#sec-15b)).
 
@@ -1177,65 +1177,73 @@ Integrating from $\mathcal{O}$ (where $u = 0$) up to a point at parameter $u_0$ 
 
 What we prove below is that this coordinate $u$ exists as a well-defined value modulo a lattice, and that the group law becomes $u_{P+Q} = u_P + u_Q$.
 
-### Why the integral is doubly periodic
+### Why the integral has two periods, not one
 
-For the circle, $\int_0^{2\pi} dx/y$ traces out a full loop and returns to the start — a single period $2\pi$. The circle has *one* topological loop, and the integral of $dx/y$ around it is that one period.
+For the circle, $\int_0^{2\pi} dx/y$ traces a full loop and returns to the start — one period $2\pi$. Below we derive the analogue for an elliptic curve: the integral $\int dx/y$ picks up *two* period values $\omega_1, \omega_2$, forced by the shape of the curve as a subset of $\mathbb{C} \times \mathbb{C}$.
 
-An elliptic curve over $\mathbb{C}$ has *two* independent loops, and the integral of $dx/y$ around each of them gives two independent periods $\omega_1, \omega_2$. This is what "doubly periodic" means, and it is forced by topology.
-
-**The topological argument.** For each $x \in \mathbb{C}$ (except a few) the equation $y^2 = f(x) = x^3 + ax + b$ has two solutions $\pm\sqrt{f(x)}$. Think of these as two copies of the $x$-plane $\mathbb{C} \cup \{\infty\}$ — the "sheets" — one for each sign choice; a point on the curve is a point $x$ together with a sign. The two sheets share the same point at four exceptional $x$-values, where the $+$ and $-$ solutions collapse into one:
+**Two sheets joined at four points.** For each $x \in \mathbb{C}$ (except a few) the equation $y^2 = f(x) = x^3 + ax + b$ has two solutions $\pm\sqrt{f(x)}$. Take two copies of the $x$-plane $\mathbb{C} \cup \{\infty\}$ — call them **sheets** — one for each sign choice; a point on the curve is an $x$ together with a choice of sheet. The two sheets share the same curve point at four exceptional $x$-values, where the two sign choices collapse to one:
 
 - **The three finite roots $e_1, e_2, e_3$ of $f(x) = 0$**: at each, $f(x) = 0$, so both signs give $y = 0$.
-- **The point $x = \infty$**: near infinity, $\sqrt{f(x)} \sim x^{3/2}$. This is a multi-valued expression: writing $x = r e^{i\theta}$, we have $x^{3/2} = r^{3/2} e^{i(3/2)\theta}$, and following one full loop around $\infty$ on the Riemann sphere (equivalently, one loop around $0$ in the $x$-plane) sends $\theta \to \theta + 2\pi$, hence $x^{3/2} \to x^{3/2} \cdot e^{3\pi i} = -x^{3/2}$. So $+\sqrt{f}$ and $-\sqrt{f}$ swap. A continuous path on the curve cannot jump between sheets away from a shared point, so $\infty$ must itself be a shared point.
+- **The point $x = \infty$**: near infinity, $\sqrt{f(x)} \sim x^{3/2}$. Writing $x = r e^{i\theta}$, this is $r^{3/2} e^{i(3/2)\theta}$, and following one full loop around $\infty$ on the Riemann sphere (equivalently, one loop around $0$ in the $x$-plane) sends $\theta \to \theta + 2\pi$, hence $x^{3/2} \to x^{3/2} \cdot e^{3\pi i} = -x^{3/2}$. So $+\sqrt{f}$ and $-\sqrt{f}$ swap. A continuous path on the curve cannot jump between sheets away from a shared point, so $\infty$ must itself be a shared point.
 
-So the elliptic curve, seen as a subset of $(x, y)$-space, is two copies of the Riemann sphere joined at $e_1, e_2, e_3, \infty$.
+The elliptic curve, seen as a subset of $(x, y)$-space, is **two copies of the Riemann sphere joined at $e_1, e_2, e_3, \infty$.**
 
-**From four joining points to genus 1.** A two-to-one cover of the sphere joined at $2n$ points is a surface of genus $n - 1$ (Riemann–Hurwitz; for two sheets the count is immediate: each pair of joining points contributes one "handle"). Four joining points give $n = 2$, hence genus $1$: a **torus**.
+**Cut-and-paste: the shape is a torus.** Draw a curved arc on the Riemann sphere from $e_1$ to $e_2$, and another arc from $e_3$ to $\infty$. Cut both sheets along these arcs. Then glue the two sheets crosswise: a path that leaves sheet $1$ through one side of the first cut re-emerges on sheet $2$ through the matching side of the same cut, and continues from there. This gluing enforces the sign flip that $y \to -y$ picks up when crossing a branch cut, so continuous curve-paths behave correctly.
 
-A torus has *two* independent nontrivial loops — one going around each of its two "directions." Integrating $dx/y$ around each of these loops gives an independent period:
+Each cut, after gluing, becomes a tube joining the two sheets:
+
+- **First tube** (from cutting along $e_1 e_2$): the two sheets are joined by a short tube whose two circular ends sit on each sheet.
+- **Second tube** (from cutting along $e_3 \infty$): a second tube joins the two sheets.
+
+So the curve is topologically two spheres joined by two tubes. Now simplify:
+
+- Joining two spheres by *one* tube gives (topologically) one sphere: slide one sphere down the tube and the two merge into one.
+- The remaining second tube then has both ends on that single sphere — a bent piece that leaves the sphere at one location and re-enters at another.
+- A sphere with such a tube attached is a **torus** (think of a coffee mug: mug body = sphere, mug handle = tube with both ends on the mug).
+
+**Two families of closed loops on the torus that can't be pulled to a point.** On the torus we have two independent families of closed loops: one family threads through the hole (going around the tube's cross-section), the other goes the long way around the tube. Any closed loop on the torus can be continuously moved on the surface, without breaking or leaving the surface, into some combination: $n_1$ trips around a loop $\gamma_1$ of the first family, then $n_2$ trips around a loop $\gamma_2$ of the second family, for some integers $n_1, n_2$. That's what "two independent families" means concretely.
+
+**The two periods.** Pick one loop $\gamma_1$ from each family and integrate $dx/y$:
 
 $$\omega_1 = \oint_{\gamma_1} \frac{dx}{y}, \qquad \omega_2 = \oint_{\gamma_2} \frac{dx}{y}.$$
 
-**Why $u$ takes values in $\mathbb{C}/\Lambda$, not $\mathbb{C}$.** The integral $u(P) = \int_{\mathcal{O}}^P dx/y$ depends on the path from $\mathcal{O}$ to $P$, not just on $P$. Concretely:
+Any closed loop on the curve is (as above) some combination $n_1 \gamma_1 + n_2 \gamma_2$, and so contributes $n_1 \omega_1 + n_2 \omega_2$ to the integral.
 
-- Any two paths from $\mathcal{O}$ to $P$ differ by a closed loop (walk out along one, back along the other).
-- Every closed loop on the torus can be smoothly deformed on the surface into some integer combination $n_1 \gamma_1 + n_2 \gamma_2$: winding $n_1$ times around $\gamma_1$ (the tube direction) and $n_2$ times around $\gamma_2$ (the hole direction), for some integers $n_1, n_2 \in \mathbb{Z}$. This is the topological content of a torus having "two independent loop directions": the two basic loops generate every closed loop, and no other independent winding directions exist.
-- Hence the integral of $dx/y$ around the loop equals $n_1 \omega_1 + n_2 \omega_2$.
+**$u(P)$ is well-defined only modulo the lattice $\Lambda = \mathbb{Z}\omega_1 + \mathbb{Z}\omega_2$.** The integral $u(P) = \int_{\mathcal{O}}^P dx/y$ depends on the chosen path from $\mathcal{O}$ to $P$. Any two paths from $\mathcal{O}$ to $P$ differ by a closed loop (walk out along one path, back along the other), so the two integrals differ by $n_1 \omega_1 + n_2 \omega_2$ for some $(n_1, n_2) \in \mathbb{Z}^2$. So $u(P)$ is a well-defined element of the quotient
 
-So two path choices give integrals that differ by an element of
+$$\Lambda = \mathbb{Z}\omega_1 + \mathbb{Z}\omega_2, \qquad u(P) \in \mathbb{C}/\Lambda.$$
 
-$$\Lambda = \mathbb{Z}\omega_1 + \mathbb{Z}\omega_2,$$
+**$\omega_1$ and $\omega_2$ are not real multiples of each other.** If instead $\omega_2/\omega_1$ were a real number, then $\mathbb{Z}\omega_1 + \mathbb{Z}\omega_2$ would sit on a single line through the origin in $\mathbb{C}$ — a one-dimensional lattice. The quotient of the two-dimensional $\mathbb{C}$ by a one-dimensional lattice is an infinite cylinder, not a torus. But the curve *is* a torus by the cut-and-paste construction above. So $\omega_1, \omega_2$ span $\mathbb{C}$ as a real vector space; equivalently, their ratio $\tau = \omega_2/\omega_1$ has nonzero imaginary part.
 
-the lattice generated by the two periods. The value $u(P)$ is therefore well-defined only modulo $\Lambda$: it is a coset in $\mathbb{C}/\Lambda$, and different path choices land in different representatives of the same coset.
-
-The two periods are $\mathbb{R}$-linearly independent in $\mathbb{C}$ (equivalently, their ratio $\tau = \omega_2/\omega_1$ has nonzero imaginary part), because the two independent loops on the torus really are independent — otherwise the joining-point count would give the wrong genus.
-
-**Contrast with the circle.** The circle is topologically a *circle*, genus $0$ (a two-to-one cover of the real segment $[-1, 1]$ with two joining points at $\pm 1$, not four). It has one nontrivial loop, one period, and the integral $dx/\sqrt{1 - x^2}$ is singly periodic in the resulting coordinate. The elliptic curve has two *more* joining points (four total), which upgrades the genus from $0$ to $1$ and doubles the number of independent periods.
+The circle picks up only one period because it has only one place where the two sheets meet on the affine part ($x = \pm 1$, no branching at infinity for a degree-2 polynomial), and one family of closed loops.
 
 {% include visualization.html src="elliptic-curve-torus.html" title="From the two-sheeted complex curve to a torus and period lattice" %}
 
-### The Weierstrass parameterization
+<div class="guided-fold-start" data-label="The Weierstrass $\wp$-function and the explicit torus $\to$ curve map" data-tone="derivation"></div>
 
 Take the map
 
 $$\Phi: \mathbb{C}/\Lambda \longrightarrow E(\mathbb{C}), \qquad u \longmapsto (\wp(u), \tfrac{1}{2}\wp'(u))$$
 
-where $\wp$ is the **Weierstrass $\wp$-function** associated to $\Lambda$. The definition
+where $\wp$ is the **Weierstrass $\wp$-function** associated to $\Lambda$, defined by the series
 
-$$\wp(u) = \frac{1}{u^2} + \sum_{\omega \in \Lambda \setminus \{0\}} \left[\frac{1}{(u - \omega)^2} - \frac{1}{\omega^2}\right]$$
+$$\wp(u) = \frac{1}{u^2} + \sum_{\omega \in \Lambda \setminus \{0\}} \left[\frac{1}{(u - \omega)^2} - \frac{1}{\omega^2}\right].$$
 
-is not something we need to work with directly. Two properties matter:
+Two properties matter:
 
-1. $\wp$ is defined and complex-differentiable everywhere on $\mathbb{C}$ except at lattice points, where it has a double pole (the sum has an explicit $1/u^2$ blowup there, and every other term is subtracted so the singularities cancel elsewhere). It satisfies $\wp(u + \omega) = \wp(u)$ for all $\omega \in \Lambda$. So it descends to a well-defined function on the quotient $\mathbb{C}/\Lambda$.
-2. $\wp$ and its derivative $\wp'$ satisfy an algebraic relation
+1. **Poles at every lattice point.** As $u$ approaches a lattice point $\omega_0 \in \Lambda$, the summand indexed by $\omega_0$ contains $1/(u - \omega_0)^2$, which blows up. (For $\omega_0 = 0$ the blowup comes from the leading $1/u^2$ term; for a non-zero $\omega_0$ it comes from the $\omega_0$-th summand.) Every other summand stays finite. So $\wp$ is complex-differentiable at every non-lattice $u$, and diverges at every lattice point. Away from lattice points, $\wp$ takes finite complex values that repeat under any lattice translation: $\wp(u + \omega) = \wp(u)$ for all $\omega \in \Lambda$ and all non-lattice $u$. So $\wp$ is a well-defined function $\mathbb{C}/\Lambda \setminus \{0\} \to \mathbb{C}$, with a double pole at the coset of $0$.
+
+2. **Algebraic relation with its derivative.** $\wp$ and $\wp'$ satisfy
 
 $$(\wp')^2 = 4\wp^3 - g_2 \wp - g_3,$$
 
-where $g_2, g_3$ are specific complex numbers computed from $\Lambda$. This is exactly the equation of an elliptic curve (after the substitution $x = \wp$, $y = \wp'/2$, which puts the curve in short Weierstrass form with $a = -g_2/4$, $b = -g_3/4$).
+where $g_2, g_3$ are specific complex numbers computed from $\Lambda$. This is the equation of an elliptic curve after the substitution $x = \wp$, $y = \wp'/2$, which puts the curve in short Weierstrass form with $a = -g_2/4$, $b = -g_3/4$.
 
 So $\Phi$ sends the torus $\mathbb{C}/\Lambda$ bijectively onto the complex points of $E$: $\wp$ is the $x$-coordinate, $\wp'/2$ is the $y$-coordinate, and the group law on $E$ corresponds to ordinary complex addition on $\mathbb{C}/\Lambda$.
 
-**Every complex elliptic curve arises this way.** For any lattice $\Lambda \subset \mathbb{C}$ the construction gives a curve; conversely, for any complex elliptic curve $E$ there is a lattice $\Lambda$ (unique up to $\mathbb{C}^*$-scaling) with $E \cong \mathbb{C}/\Lambda$. The correspondence is a dictionary:
+<div class="guided-fold-end"></div>
+
+**Every complex elliptic curve arises this way.** For any lattice $\Lambda \subset \mathbb{C}$ the construction gives a curve; conversely, for any complex elliptic curve $E$ there is a lattice $\Lambda$ (unique up to $\mathbb{C}^*$-scaling) with $E \cong \mathbb{C}/\Lambda$.
 
 | Elliptic curve $E$ over $\mathbb{C}$ | Torus $\mathbb{C}/\Lambda$ |
 |---|---|
@@ -1251,25 +1259,43 @@ The last row is what the rest of this section unpacks: on the torus side, endomo
 
 ### Endomorphisms as complex multiplication: $\alpha \Lambda \subseteq \Lambda$
 
-An endomorphism of the torus $\mathbb{C}/\Lambda$ that fixes $0$ is a *complex-differentiable* map $\mathbb{C}/\Lambda \to \mathbb{C}/\Lambda$ preserving $0$ — "complex-differentiable" being the natural notion of smoothness for a function of a complex variable, meaning the derivative exists as a complex limit. Any such map lifts to a complex-differentiable map $\mathbb{C} \to \mathbb{C}$ preserving $0$ — but a complex-differentiable map $\mathbb{C} \to \mathbb{C}$ that sends the lattice $\Lambda$ into itself must be $\mathbb{C}$-linear: $u \mapsto \alpha u$ for some fixed $\alpha \in \mathbb{C}$. (A general complex-differentiable map wouldn't fix $\Lambda$; the linearity is forced by "the map must send lattice points to lattice points on the nose, and the origin to the origin.") The extra condition ensuring that $u \mapsto \alpha u$ descends to a map $\mathbb{C}/\Lambda \to \mathbb{C}/\Lambda$ is exactly
+An **endomorphism** of $E$ is an isogeny $\phi: E \to E$: a group homomorphism given by rational functions ([§ 8](#sec-8)). Transported to the torus side by the map $\Phi$ from the previous subsection, it becomes a map $\mathbb{C}/\Lambda \to \mathbb{C}/\Lambda$:
+
+- **Start on the torus:** pick a coset $u \in \mathbb{C}/\Lambda$.
+- **Move to the curve:** apply $\Phi$ to get a point $\Phi(u) \in E(\mathbb{C})$.
+- **Apply the endomorphism:** apply $\phi$ to move to $\phi(\Phi(u)) \in E(\mathbb{C})$.
+- **Return to the torus:** apply $\Phi^{-1}$ to land back in $\mathbb{C}/\Lambda$.
+
+Since $\Phi$ carries the group law of $E$ to ordinary addition on $\mathbb{C}/\Lambda$, and $\phi$ is a group homomorphism on $E$, the composite $\Phi^{-1} \circ \phi \circ \Phi$ is a group homomorphism $\mathbb{C}/\Lambda \to \mathbb{C}/\Lambda$. And since $\phi$ sends $\mathcal{O} \to \mathcal{O}$ and $\Phi(0) = \mathcal{O}$, the composite sends $0 \to 0$.
+
+**Lifting to $\mathbb{C}$ and forcing the linear form $u \mapsto \alpha u$.** Both $\Phi$ and $\phi$ are given by convergent power series in their local variables (Weierstrass $\wp$ series, curve coordinates); the composite has the same regularity. So the transported map is a *holomorphic* map $\mathbb{C}/\Lambda \to \mathbb{C}/\Lambda$ sending $0 \to 0$. Locally on $\mathbb{C}$, this holomorphic map has a lift $f: \mathbb{C} \to \mathbb{C}$ with $f(0) = 0$ and
+
+$$f(u + \omega) \equiv f(u) \pmod{\Lambda} \quad \text{for every } \omega \in \Lambda.$$
+
+Both $f$ and its shift agree modulo $\Lambda$, so the difference $f(u + \omega) - f(u)$ is a continuous function of $u$ whose values all lie in the discrete set $\Lambda$. A continuous map from a connected domain to a discrete set is constant, so this difference is a fixed lattice element depending only on $\omega$, call it $c(\omega)$:
+
+$$f(u + \omega) = f(u) + c(\omega) \qquad \text{for all } u \in \mathbb{C}, \omega \in \Lambda.$$
+
+Differentiate both sides: $f'(u + \omega) = f'(u)$. So the derivative $f'$ is periodic under $\Lambda$: it takes the same values on the fundamental parallelogram as on the whole of $\mathbb{C}$. That parallelogram is a bounded closed region, and $f'$ is continuous there, so $f'$ is bounded on all of $\mathbb{C}$. A bounded holomorphic function on all of $\mathbb{C}$ is a constant — take a small disk around any point, use that $|f'|$ is bounded to show the higher Taylor coefficients must vanish. So $f'$ is a fixed complex number $\alpha$, and
+
+$$f(u) = \alpha u + f(0) = \alpha u.$$
+
+**The condition to land back on the torus.** For $u \mapsto \alpha u$ to define a map $\mathbb{C}/\Lambda \to \mathbb{C}/\Lambda$ — i.e., for the value $\alpha u$ to be well-defined modulo $\Lambda$ given $u$ modulo $\Lambda$ — we need $\alpha \omega \in \Lambda$ whenever $\omega \in \Lambda$:
 
 $$\alpha \Lambda \subseteq \Lambda.$$
 
-**Connecting $\alpha$ to the endomorphism $\phi$.** Given $\phi: E \to E$ (a rational map from [§ 8](#sec-8)), we transport it to the torus side using $\Phi$: for a torus point $u \in \mathbb{C}/\Lambda$, apply $\Phi$ to reach the curve, apply $\phi$ to move within the curve, then apply $\Phi^{-1}$ to return to the torus. This defines a map $\mathbb{C}/\Lambda \to \mathbb{C}/\Lambda$ — the same endomorphism $\phi$, but expressed in the torus coordinate $u$.
+**Uniqueness of $\alpha$.** If two multipliers $\alpha, \alpha'$ gave the same map $\mathbb{C}/\Lambda \to \mathbb{C}/\Lambda$, then $(\alpha - \alpha')u \in \Lambda$ for every $u \in \mathbb{C}$. Take $u = \epsilon$ for a small non-lattice complex number: $(\alpha - \alpha')\epsilon$ is a lattice point, but as $\epsilon \to 0$ this tends to $0$; the only lattice point arbitrarily close to $0$ is $0$ itself, so $(\alpha - \alpha') = 0$.
 
-The transported map fixes $0$ ($\Phi$ sends $0 \to \mathcal{O}$, $\phi$ fixes $\mathcal{O}$, $\Phi^{-1}$ sends $\mathcal{O} \to 0$) and is complex-differentiable ($\Phi$ and $\phi$ both are, and complex differentiability is preserved under composition). By the previous paragraph, any such map on $\mathbb{C}/\Lambda$ is multiplication by some $\alpha \in \mathbb{C}$ with $\alpha \Lambda \subseteq \Lambda$. That $\alpha$ is the complex number attached to $\phi$; equivalently, $\alpha$ is the unique element of $\mathbb{C}$ satisfying
+**Ring isomorphism.** The correspondence $\phi \leftrightarrow \alpha_\phi$ respects both addition and composition:
 
-$$\Phi(\alpha u) = \phi(\Phi(u)) \qquad \text{for all } u \in \mathbb{C}/\Lambda.$$
+- **Sum.** If $\phi_1 \leftrightarrow \alpha_1$ and $\phi_2 \leftrightarrow \alpha_2$, then $(\phi_1 + \phi_2)$ acts on the torus by $u \mapsto \alpha_1 u + \alpha_2 u = (\alpha_1 + \alpha_2)u$, so $\phi_1 + \phi_2 \leftrightarrow \alpha_1 + \alpha_2$.
+- **Composition.** $(\phi_1 \circ \phi_2)$ acts by $u \mapsto \alpha_1(\alpha_2 u) = (\alpha_1 \alpha_2)u$, so $\phi_1 \circ \phi_2 \leftrightarrow \alpha_1 \alpha_2$.
 
-Every endomorphism $\phi$ has exactly one such $\alpha$, and the correspondence is a ring isomorphism:
-
-$$\phi + \psi \leftrightarrow \alpha_\phi + \alpha_\psi, \qquad \phi \circ \psi \leftrightarrow \alpha_\phi \cdot \alpha_\psi.$$
-
-So the endomorphism ring $\text{End}(E)$, an abstract algebraic object, becomes a *subring of $\mathbb{C}$* — a very concrete linear-algebra object.
+So $\text{End}(E)$ is realized as a subring of $\mathbb{C}$ under the correspondence $\phi \leftrightarrow \alpha_\phi$.
 
 ### The integer matrix: why $\alpha \Lambda \subseteq \Lambda$ forces integer entries
 
-The condition $\alpha \Lambda \subseteq \Lambda$ says: $\alpha \omega_1$ and $\alpha \omega_2$ are elements of $\Lambda$. But $\Lambda = \mathbb{Z}\omega_1 + \mathbb{Z}\omega_2$ by definition — every element of $\Lambda$ is an integer combination of the two basis vectors. So there exist integers $m, n, p, q$ with
+The condition $\alpha \Lambda \subseteq \Lambda$ says: $\alpha \omega_1$ and $\alpha \omega_2$ are elements of $\Lambda$. But every element of $\Lambda = \mathbb{Z}\omega_1 + \mathbb{Z}\omega_2$ has a *unique* expansion as an integer combination of $\omega_1$ and $\omega_2$ — that is what it means for $(\omega_1, \omega_2)$ to generate $\Lambda$ with integer coefficients. So there exist unique integers $m, n, p, q$ with
 
 $$\alpha \omega_1 = m \omega_1 + n \omega_2, \qquad \alpha \omega_2 = p \omega_1 + q \omega_2,$$
 
@@ -1277,13 +1303,19 @@ and this can be written as a matrix equation:
 
 $$\alpha \begin{pmatrix} \omega_1 \\ \omega_2 \end{pmatrix} = \begin{pmatrix} m & n \\ p & q \end{pmatrix} \begin{pmatrix} \omega_1 \\ \omega_2 \end{pmatrix}.$$
 
-The entries $m, n, p, q$ are *forced* to be integers by the definition of $\Lambda$ — no continuity or symmetry argument is needed; it's the definition of the lattice. Any element of $\Lambda$ has a unique expansion as an integer combination of $\omega_1, \omega_2$ (that's what a $\mathbb{Z}$-basis means), so the coefficients read off are integers by construction. So every endomorphism $\phi$ of $E$ corresponds to a $2 \times 2$ integer matrix, and this correspondence respects both addition (sum of endomorphisms $\leftrightarrow$ sum of matrices) and composition (composition of endomorphisms $\leftrightarrow$ matrix product):
+Every endomorphism $\phi$ of $E$ corresponds to a $2 \times 2$ integer matrix, and (from the ring isomorphism above) the correspondence respects both addition and composition:
 
 $$\phi \mapsto \begin{pmatrix} m & n \\ p & q \end{pmatrix} \in M_2(\mathbb{Z}), \qquad M_2(\mathbb{Z}) := \{2 \times 2 \text{ matrices with integer entries}\}.$$
 
-Not every integer matrix arises this way: the matrix must correspond to a valid $\alpha \in \mathbb{C}$, which imposes one extra constraint (the two rows must be consistent with the *same* $\alpha$; see the CM discussion below).
+**Not every integer matrix arises this way.** The two rows of the matrix must be consistent with the *same* $\alpha$. Dividing the first row equation by $\omega_1$ gives $\alpha = m + n\tau$ where $\tau = \omega_2/\omega_1$; dividing the second by $\omega_1$ gives $\alpha \tau = p + q\tau$. Eliminating $\alpha$:
 
-**Restricting to $n$-torsion.** On the torus side $[n]$ is $u \mapsto n u$, so a torus point $u$ is $n$-torsion iff $n u \in \Lambda$, i.e., iff $u = \omega / n$ for some $\omega \in \Lambda$. Collect these: they form the scaled-down lattice
+$$n \tau^2 + (m - q) \tau - p = 0. \tag{$\star$}\label{eq:tau-quadratic}$$
+
+The two rows are consistent iff $\tau$ satisfies this quadratic. Whenever $n \neq 0$, this forces $\tau$ to be a specific complex quadratic irrational — determined by three integers $(n, m-q, -p)$. So $\Lambda$ admits a non-integer endomorphism precisely when $\tau$ is a root of some integer quadratic; those are the CM lattices covered in [§ 15B](#sec-15b) and enumerated below. The generic $\tau$ satisfies no such equation, and the only integer matrices consistent with the same $\alpha$ have $n = 0$ and $m = q$: they are the scalar matrices $\begin{pmatrix} m & 0 \\ 0 & m \end{pmatrix}$, corresponding to $\alpha = m \in \mathbb{Z}$.
+
+**$[n]$ acts by $u \mapsto n u$ on the torus.** The identity endomorphism $[1]$ has torus lift $u \mapsto u$ (both sides fix every point), so $\alpha_{[1]} = 1$. Iterating and using the ring isomorphism: $\alpha_{[n]} = n \alpha_{[1]} = n$ for every integer $n$. So $[n]$ on the torus is multiplication by the integer $n$, and its matrix is $\begin{pmatrix} n & 0 \\ 0 & n \end{pmatrix}$.
+
+**Restricting to $n$-torsion.** A torus point $u$ is $n$-torsion iff $n u \in \Lambda$, iff $u = \omega / n$ for some $\omega \in \Lambda$. Collect these: they form the scaled-down lattice
 
 $$\tfrac{1}{n} \Lambda = \big\{ \tfrac{j}{n} \omega_1 + \tfrac{k}{n} \omega_2 : j, k \in \mathbb{Z} \big\},$$
 
@@ -1291,27 +1323,40 @@ which contains $\Lambda$ itself as a sublattice. Since $u$ is only meaningful mo
 
 $$E[n] = \tfrac{1}{n} \Lambda \,/\, \Lambda,$$
 
-parameterized by pairs $(j/n, k/n)$ with $j, k \in \{0, 1, \ldots, n-1\}$ — a rank-$2$ module over $\mathbb{Z}/n\mathbb{Z}$. Multiplication by $\alpha$ acts on $(j/n)\omega_1 + (k/n)\omega_2$ by the *same* integer matrix $\begin{pmatrix} m & n \\ p & q \end{pmatrix}$, reduced mod $n$. So the Tate-module picture ([§ 11](#sec-11) Picture 2) agrees with the lattice picture: the matrix on $E[n]$ is the reduction mod $n$ of the integer matrix on $\Lambda$.
+parameterized by pairs $(j/n, k/n)$ with $j, k \in \{0, 1, \ldots, n-1\}$: it is $(\mathbb{Z}/n\mathbb{Z})^2$ as a group, with basis $\{\omega_1/n, \omega_2/n\}$. Multiplication by $\alpha$ acts on $(j/n)\omega_1 + (k/n)\omega_2$ by the *same* integer matrix $\begin{pmatrix} m & n \\ p & q \end{pmatrix}$, reduced mod $n$. So the Tate-module picture ([§ 11](#sec-11) Picture 2) agrees with the lattice picture: the matrix on $E[n]$ is the reduction mod $n$ of the integer matrix on $\Lambda$.
 
-**Degree = determinant, revisited.** On $\mathbb{C}/\Lambda$, the map $u \mapsto \alpha u$ has kernel $\{u : \alpha u \in \Lambda\}/\Lambda = \alpha^{-1}\Lambda / \Lambda$. This kernel has size equal to the index $[\Lambda : \alpha \Lambda]$, which for a rank-$2$ lattice map with integer matrix $M$ is $|\det M|$ (from ordinary linear algebra: the change of volume of a lattice fundamental parallelogram under a linear map is the absolute value of the determinant). By [§ 10](#sec-10), for a separable isogeny the kernel size equals the degree. So $\deg \phi = |\det M_\phi|$ — the identity we established over finite fields via matrix action on torsion now falls out of ordinary Euclidean geometry on the torus.
+**Degree = determinant, revisited.** Take an isogeny $\phi \leftrightarrow \alpha$, and compute its degree as the size of its kernel (valid for separable isogenies, [§ 10](#sec-10)):
 
-### The $j$-invariant as a coordinate on grid shapes
+- **Kernel description.** The map $u \mapsto \alpha u$ on $\mathbb{C}/\Lambda$ kills $u$ iff $\alpha u \in \Lambda$, iff $u \in \alpha^{-1}\Lambda$. So $\ker = \alpha^{-1}\Lambda / \Lambda$.
+- **Sublattice ratio.** The lattice $\alpha \Lambda \subseteq \Lambda$ has some finite index in $\Lambda$: that is, the tiles $\Lambda/\alpha\Lambda$ finitely partition each tile of $\Lambda$. Multiplication by $\alpha^{-1}$ scales the whole picture and gives the same count of cosets, so $|\alpha^{-1}\Lambda / \Lambda| = |\Lambda / \alpha \Lambda|$.
+- **Volume ratio $=$ determinant.** Applying the matrix $M = \begin{pmatrix} m & n \\ p & q \end{pmatrix}$ to the basis $(\omega_1, \omega_2)$ scales the area of the basis parallelogram by $|\det M|$ (standard formula: a $2 \times 2$ linear map scales areas by the absolute value of its determinant). So $|\Lambda / \alpha \Lambda| = |\det M|$.
+- **Conclusion.** $\deg \phi = |\det M_\phi|$.
 
-Two lattices $\Lambda$ and $\Lambda'$ give isomorphic elliptic curves if and only if one is a complex rescaling of the other: $\Lambda' = c \Lambda$ for some $c \in \mathbb{C}^*$. Scaling by $c$ doesn't change the *shape* of the grid; only the shape matters. So the space of elliptic curves over $\mathbb{C}$ is the space of lattices modulo scaling.
+The identity that we obtained over finite fields via matrix action on torsion ([§ 11](#sec-11)) reappears here on the complex-analytic side as an area-ratio.
 
-Given any lattice $\Lambda = \mathbb{Z}\omega_1 + \mathbb{Z}\omega_2$, rescale by $c = 1/\omega_1$: the new lattice is $\mathbb{Z} + \mathbb{Z}\tau$ where $\tau = \omega_2/\omega_1$. So every lattice is (up to rescaling) determined by a single complex number $\tau$ with $\text{Im}(\tau) \neq 0$ — the ratio of periods. Conventionally we take $\text{Im}(\tau) > 0$ (upper half-plane).
+### The $j$-invariant on the torus side
 
-The **$j$-invariant** is a function $j: \{\tau : \text{Im}(\tau) > 0\} \to \mathbb{C}$ that assigns to each lattice-shape a complex number, in such a way that
+Recall from [§ 8](#sec-8) that two short Weierstrass curves $y^2 = x^3 + ax + b$ and $y^2 = x^3 + a'x + b'$ describe the same elliptic curve — the same points, the same group law, related by a change of variables — precisely when there is a nonzero $u$ with $a' = a/u^4$, $b' = b/u^6$. Call this the **rescaling equivalence** on curves.
 
-$$j(\tau) = j(\tau') \iff \text{the lattices } \mathbb{Z} + \mathbb{Z}\tau \text{ and } \mathbb{Z} + \mathbb{Z}\tau' \text{ describe the same elliptic curve.}$$
+On the torus side, rescaling the lattice by a nonzero complex number $c$ — replacing $\Lambda$ by $c\Lambda = \mathbb{Z}(c\omega_1) + \mathbb{Z}(c\omega_2)$ — gives the same rescaling equivalence:
 
-Concretely, the analytic formula is $j(\tau) = 1728 \cdot g_2^3 / (g_2^3 - 27 g_3^2)$ where $g_2, g_3$ are the coefficients of the Weierstrass equation associated to $\tau$; on plugging in and clearing, this is the same $j$ as the algebraic one:
+- The Weierstrass series $\wp$ satisfies $\wp_{c\Lambda}(cu) = c^{-2} \wp_\Lambda(u)$ (both sides have a double pole at the origin with the same leading behavior after rescaling; the identity follows term-by-term).
+- Differentiating: $\wp'_{c\Lambda}(cu) = c^{-3} \wp'_\Lambda(u)$.
+- So the coefficients $g_2, g_3$ of the algebraic relation $(\wp')^2 = 4\wp^3 - g_2 \wp - g_3$ transform as $g_2 \to c^{-4} g_2$, $g_3 \to c^{-6} g_3$, which is exactly the $(a, b) \to (a/u^4, b/u^6)$ transformation from [§ 8](#sec-8) with $u = c$.
+
+So the curves attached to $\Lambda$ and $c\Lambda$ differ by a $(u^4, u^6)$ rescaling — the same curve up to the equivalence of [§ 8](#sec-8). The equivalence class of elliptic curves is therefore parameterized by lattices *modulo* the rescaling $\Lambda \mapsto c\Lambda$.
+
+**Reducing every lattice to a single complex number $\tau$.** Given any $\Lambda = \mathbb{Z}\omega_1 + \mathbb{Z}\omega_2$ built from the two periods $\omega_1, \omega_2$ (the two loop integrals introduced above), take $c = 1/\omega_1$. The rescaled lattice is $\mathbb{Z} + \mathbb{Z}\tau$ where $\tau = \omega_2/\omega_1$. So every lattice is equivalent to one of the form $\mathbb{Z} + \mathbb{Z}\tau$ with $\text{Im}(\tau) \neq 0$ (using that $\omega_1, \omega_2$ are not real multiples of each other, derived above). Convention: multiply one basis element by $-1$ if needed to arrange $\text{Im}(\tau) > 0$ (upper half-plane).
+
+The **$j$-invariant** is a function $j: \{\tau : \text{Im}(\tau) > 0\} \to \mathbb{C}$ that assigns to each $\tau$ a complex number, in such a way that
+
+$$j(\tau) = j(\tau') \iff \mathbb{Z} + \mathbb{Z}\tau \text{ and } \mathbb{Z} + \mathbb{Z}\tau' \text{ describe the same curve up to rescaling equivalence.}$$
+
+The formula from the lattice side is $j(\tau) = 1728 \cdot g_2^3 / (g_2^3 - 27 g_3^2)$, with $g_2, g_3$ the coefficients from the $\wp$-relation. Substituting $a = -g_2/4$, $b = -g_3/4$ (the Weierstrass-form dictionary from the previous subsection) yields the algebraic expression from [§ 8](#sec-8):
 
 $$j = 1728 \cdot \frac{4a^3}{4a^3 + 27b^2}.$$
 
-So the $j$-invariant is a coordinate on the space of grid shapes: two grids give the same $j$ iff they describe the same curve.
-
-**Why does the algebraic $j$ formula separate curves?** The invariance under $(a, b) \to (a/u^4, b/u^6)$ ([§ 8](#sec-8)'s derivation) is the *same* invariance as $\tau \to \tau$ under rescaling of $\Lambda$: both are saying "isomorphic curves have the same shape." The concrete $j$ formula was chosen so that it's a *bijection* between isomorphism classes and complex numbers.
+**Why the algebraic $j$ formula separates curves.** The invariance of the algebraic $j$ under $(a, b) \to (a/u^4, b/u^6)$ ([§ 8](#sec-8)'s derivation) is the same invariance as $\tau \to \tau$ under lattice rescaling $\Lambda \to c\Lambda$ (translation of the same equivalence relation from curves to lattices, by the calculation above). The specific numerical coefficient $1728$ was chosen so the resulting function $\tau \mapsto j(\tau)$ is a bijection from equivalence classes to $\mathbb{C}$.
 
 ### The change-of-basis: $\tau \to \frac{a\tau + b}{c\tau + d}$
 
@@ -1327,44 +1372,69 @@ The set of such matrices — $2 \times 2$ integer matrices with determinant $1$ 
 
 $$j(M \cdot \tau) = j(\tau) \quad \text{for every change-of-basis matrix } M.$$
 
-**Visualization: the upper half-plane and its fundamental domain.** Grouping the values of $\tau$ that describe the same lattice into equivalence classes under this change-of-basis action, we can pick one representative from each class. Every equivalence class has a unique representative in the region
+**Canonical representatives: the fundamental domain.** To pick one $\tau$ per equivalence class, use the freedom in choosing the basis $(\omega_1, \omega_2)$ of $\Lambda$. Two choices tighten the region $\tau$ can live in:
 
-$$\mathcal{F} = \left\{\tau = x + iy : |x| \leq \tfrac{1}{2}, \ y > 0, \ |\tau| \geq 1\right\},$$
+- **Shortest basis vector as $\omega_1$.** Pick $\omega_1$ to be a shortest nonzero element of $\Lambda$: $|\omega_1| \leq |\omega|$ for every $\omega \in \Lambda \setminus \{0\}$. Then pick $\omega_2$ to be a shortest element of $\Lambda$ *not* in $\mathbb{Z}\omega_1$: $|\omega_2| \leq |\omega|$ for every $\omega \in \Lambda \setminus \mathbb{Z}\omega_1$.
+- **Orient so $\text{Im}(\tau) > 0$.** Swap $\omega_2 \to -\omega_2$ if needed.
 
-called the **fundamental domain**.
+*Bound $|\tau| \geq 1$.* Since $\omega_2 \in \Lambda \setminus \{0\}$, minimality of $\omega_1$ gives $|\omega_2| \geq |\omega_1|$, hence
+
+$$|\tau| = \frac{|\omega_2|}{|\omega_1|} \geq 1.$$
+
+*Bound $|\text{Re}(\tau)| \leq 1/2$.* Since $\omega_2 \pm \omega_1$ lies in $\Lambda \setminus \mathbb{Z}\omega_1$ (still not a multiple of $\omega_1$), minimality of $\omega_2$ gives $|\omega_2 \pm \omega_1| \geq |\omega_2|$. Squaring:
+
+$$|\omega_2 \pm \omega_1|^2 = |\omega_2|^2 \pm 2\,\text{Re}(\omega_2 \overline{\omega_1}) + |\omega_1|^2 \geq |\omega_2|^2,$$
+
+so $\pm 2\,\text{Re}(\omega_2 \overline{\omega_1}) \geq -|\omega_1|^2$. Divide through by $2|\omega_1|^2$:
+
+$$\pm \frac{\text{Re}(\omega_2 \overline{\omega_1})}{|\omega_1|^2} \geq -\frac{1}{2}.$$
+
+The left side is $\pm \text{Re}(\omega_2/\omega_1) = \pm \text{Re}(\tau)$, so $|\text{Re}(\tau)| \leq 1/2$.
+
+Both bounds together carve out the **fundamental domain**
+
+$$\mathcal{F} = \left\{\tau = x + iy : |x| \leq \tfrac{1}{2}, \ y > 0, \ |\tau| \geq 1\right\}.$$
+
+Every lattice-shape has a representative in $\mathcal{F}$ (from the shortest-basis choice above), and this representative is unique (up to boundary identifications where the inequalities are equalities). The $j$-invariant becomes a bijection $j: \mathcal{F} \to \mathbb{C}$, giving each shape a numerical name.
 
 {% include visualization.html src="fundamental-domain.html" title="The fundamental domain of SL₂(ℤ) on the upper half-plane" %}
 
-Every lattice shape is represented by exactly one $\tau \in \mathcal{F}$, so $\mathcal{F}$ parameterizes the space of elliptic curves over $\mathbb{C}$. The $j$-invariant becomes a bijection $j: \mathcal{F} \to \mathbb{C}$, giving each shape a numerical name.
+<div class="guided-fold-start" data-label="Enumerating CM lattices via reduced forms" data-tone="derivation"></div>
 
-Two lattices in the fundamental domain are the same iff they are literally the same $\tau$; this is why $j$ separates isomorphism classes.
+The compatibility condition $\eqref{eq:tau-quadratic}$ derived above says: a lattice $\Lambda$ admits a non-integer endomorphism precisely when $\tau = \omega_2/\omega_1$ satisfies an integer quadratic
 
-### Fundamental domain and reduced quadratic forms
+$$A\tau^2 + B\tau + C = 0, \qquad B^2 - 4AC = -D < 0. \tag{$\star\star$}\label{eq:cm-quadratic}$$
 
-Suppose we want to classify lattices whose $\tau$ satisfies a specific integer quadratic equation
+with $(A, B, C) = (n, m-q, -p)$ in the notation of that derivation. The negative discriminant is forced by $\text{Im}(\tau) \neq 0$: a real $\tau$ would collapse the lattice to a line, contradicting the two-independent-periods result. Such a lattice is a **CM lattice** by the order of discriminant $-D$; the associated curves are the ones covered in [§ 15B](#sec-15b).
 
-$$A\tau^2 + B\tau + C = 0, \qquad B^2 - 4AC = -D < 0.$$
+**One triple $(A, B, C)$ per lattice-with-endomorphism.** Under a change of lattice basis with matrix $M = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$, $\tau$ transforms as $\tau \mapsto (a\tau + b)/(c\tau + d)$; a direct substitution into $\eqref{eq:cm-quadratic}$ shows the coefficient triple transforms as $(A, B, C) \mapsto (A', B', C')$ with the *same* discriminant $-D$. So two triples with the same discriminant describe the same lattice-with-endomorphism iff they lie in the same equivalence class under this integer-matrix action. The number of classes is the **class number** $h(-D)$.
 
-Such a $\tau$ is the parameter of a lattice with an *extra* endomorphism (see [§ 15B](#sec-15b): these are exactly the lattices with complex multiplication by the order of discriminant $-D$). The quadratic form $(A, B, C)$ determines $\tau$ uniquely via the quadratic formula, and a change of basis of the lattice corresponds to a change of the quadratic form under the same $2 \times 2$ integer-matrix action as above.
+**Solving $\eqref{eq:cm-quadratic}$ for $\tau$.** Applying the standard quadratic formula to $A\tau^2 + B\tau + C = 0$ and picking the root with positive imaginary part gives
 
-Under a basis change, the quadratic form $(A, B, C)$ transforms to a new form $(A', B', C')$ with the *same* discriminant $-D$. Two forms with the same discriminant correspond to the same lattice-with-endomorphism if and only if they lie in the same equivalence class under the change-of-basis action. The number of classes is the **class number** $h(-D)$.
+$$\tau = \frac{-B + i\sqrt{D}}{2A}, \qquad \text{Re}(\tau) = -\frac{B}{2A}, \qquad \text{Im}(\tau) = \frac{\sqrt{D}}{2A}.$$
 
-**Placing $\tau$ in the fundamental domain gives a canonical reduced form.** The conditions $|\text{Re}\,\tau| \leq \tfrac{1}{2}$ and $|\tau|^2 \geq 1$ translate directly into conditions on the coefficients:
+**Placing $\tau$ in the fundamental domain gives one canonical triple per class.** The fundamental-domain bounds $|\text{Re}(\tau)| \leq 1/2$ and $|\tau|^2 \geq 1$ derived above translate directly into bounds on $(A, B, C)$:
 
-From $\tau = (-B + i\sqrt{D})/(2A)$: $\text{Re}(\tau) = -B/(2A)$. The bound $|\text{Re}(\tau)| \leq 1/2$ gives $|B| \leq A$.
+- $|\text{Re}(\tau)| \leq 1/2$ gives $|-B/(2A)| \leq 1/2$, i.e., $|B| \leq A$.
+- $|\tau|^2 = \text{Re}(\tau)^2 + \text{Im}(\tau)^2 = (B^2 + D)/(4A^2) = C/A$ (using $D = 4AC - B^2$), so $|\tau|^2 \geq 1$ gives $A \leq C$.
 
-Compute $|\tau|^2 = \text{Re}(\tau)^2 + \text{Im}(\tau)^2 = B^2/(4A^2) + D/(4A^2) = (B^2 + D)/(4A^2)$. Since $D = 4AC - B^2$, this simplifies to $|\tau|^2 = C/A$. The bound $|\tau|^2 \geq 1$ gives $A \leq C$.
+Combined: a **reduced triple** satisfies $|B| \leq A \leq C$. Every equivalence class under the change-of-basis action contains exactly one such triple.
 
-Combined: **the reduced quadratic form** satisfies $|B| \leq A \leq C$. Every equivalence class under the change-of-basis action contains exactly one reduced form.
+**The search for reduced triples terminates.** From $D = 4AC - B^2 \geq 4A^2 - A^2 = 3A^2$ (using $C \geq A$ and $B^2 \leq A^2$), we get $A \leq \sqrt{D/3}$. So enumeration is a triple loop:
 
-**Finiteness: the search for reduced forms terminates.** From $D = 4AC - B^2 \geq 4A^2 - A^2 = 3A^2$ (using $C \geq A$ and $B^2 \leq A^2$), we get $A \leq \sqrt{D/3}$. So the enumeration of reduced forms of discriminant $-D$ is a triple loop:
 1. $A = 1, 2, \ldots, \lfloor \sqrt{D/3} \rfloor$;
-2. For each $A$, $B = -A, -A+1, \ldots, A$;
-3. For each $(A, B)$, $C = (B^2 + D)/(4A)$, kept only if it's a positive integer with $C \geq A$.
+2. For each $A$: $B = -A, -A+1, \ldots, A$;
+3. For each $(A, B)$: $C = (B^2 + D)/(4A)$, kept only if it is a positive integer with $C \geq A$.
 
-Each valid triple is one class. For $D = 3$: $A = 1$, $B = -1, 0, 1$; only $B = -1$ gives $C = 1$ (integer) with $C \geq A$; and $B = 1$ gives $C = 1$ too, but is equivalent to $B = -1$ up to sign. Result: $h(-3) = 1$, one class. This class corresponds to the CM by the Eisenstein integers $\mathbb{Z}[\omega]$ ([§ 15B](#sec-15b)) — the type of CM secp256k1 has.
+Each valid triple is one class. For $D = 3$: $A = 1$, and among $B = -1, 0, 1$, only $B = -1$ gives $C = 1$ (integer) with $C \geq A$; $B = 1$ gives $C = 1$ too but is equivalent up to sign. Result: $h(-3) = 1$. This one class corresponds to CM by the Eisenstein integers $\mathbb{Z}[\omega]$ ([§ 15B](#sec-15b)) — the type of CM that secp256k1 has.
 
-The class number $h(-D)$ is the number of curves (up to isomorphism over $\mathbb{C}$) with CM by the order of discriminant $-D$. The **Hilbert class polynomial** $H_D(x) = \prod_{[A,B,C]} (x - j(\tau_{A,B,C}))$ has these $j$-values as its roots and is a polynomial with *integer* coefficients — a fact whose deep meaning is that the CM curves live over algebraic number fields, and their $j$-invariants are algebraic integers. This is the entry point to the analytic theory of CM curves used in Elkies' explicit isogeny computation and in constructing pairing-friendly curves.
+The class number $h(-D)$ is the number of curves (up to rescaling equivalence) with CM by the order of discriminant $-D$. Writing $\tau(A, B, C) = (-B + i\sqrt{D})/(2A)$ for the root of a reduced triple, the **Hilbert class polynomial**
+
+$$H_D(x) = \prod_{\text{reduced } (A,B,C)} \bigl(x - j\bigl(\tau(A, B, C)\bigr)\bigr)$$
+
+has these $j$-values as its roots and turns out to have *integer* coefficients — a deep fact meaning that CM curves live over algebraic number fields and their $j$-invariants are algebraic integers. This is the entry point to the analytic theory of CM curves used in Elkies' explicit isogeny computation and in constructing pairing-friendly curves.
+
+<div class="guided-fold-end"></div>
 
 ---
 
