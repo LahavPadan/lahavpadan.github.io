@@ -557,15 +557,15 @@ The relevant process or threads can be located in several ways:
 
 **Block WinRM in the firewall.** For example:
 
-```text
+~~~text
 netsh advfirewall firewall set rule name="Windows Remote Management (HTTP-In)" new enable=no
-```
+~~~
 
 **Remove or alter the forwarding subscription.** The subscription XML defines which events are forwarded and the destination channel on the collector. A subscription can be deleted with:
 
-```text
+~~~text
 wecutil delete-subscription <SUBSCRIPTION_NAME>
-```
+~~~
 
 Failures appear in `Microsoft-Windows-Forwarding/Operational`; Event ID 102 is one example.
 
@@ -678,9 +678,9 @@ These techniques interfere with collection before the data becomes a stable `.et
 
 Use either:
 
-```text
+~~~text
 wevtutil.exe cl "ChannelName"
-```
+~~~
 
 or Event Viewer → right-click the channel → **Clear Log**.
 
@@ -716,9 +716,9 @@ Logger Session definitions can appear under:
 
 A manifest-based Provider can register `MessageFileName` and `ResourceFileName` under:
 
-```text
+~~~text
 HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WINEVT\Publishers\{PROVIDER_GUID}
-```
+~~~
 
 ![Resolving a provider GUID through the `WINEVT\Publishers` registry area](assets/20-velociraptor-publisher-guid-registry.png)
 

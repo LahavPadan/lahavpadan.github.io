@@ -62,10 +62,10 @@ This is why Prefetch speeds up **cold** launches but has essentially no effect o
 
 Enable/disable:
 
-```
+~~~
 HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters\EnablePrefetcher
   0 = disabled, 1 = app only, 2 = boot only, 3 = both
-```
+~~~
 
 ### Contents of a .pf file
 
@@ -112,9 +112,9 @@ Windows 7 auto-disabled Prefetch on SSDs (random-read cost negligible → trace 
 
 Attackers routinely wipe Prefetch:
 
-```
+~~~
 del /F /Q C:\Windows\Prefetch\*.pf
-```
+~~~
 
 Detection: deletion events on `%SystemRoot%\Prefetch\` from anything other than `SYSTEM`/`TrustedInstaller` are anomalous. Even after deletion, folder cardinality vs baseline is diagnostic — a nearly-empty Prefetch folder on a machine with weeks of uptime is a strong signal.
 
@@ -222,9 +222,9 @@ Uses a USB flash drive, SD card, or other removable device as a cache tier for m
 
 Installs a single file at the device root:
 
-```
+~~~
 \ReadyBoost.sfcache
-```
+~~~
 
 - Encrypted with **AES-128** operating on chunks of cached data.
 - Key is machine-specific, stored under `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\EMDMgmt`, DPAPI-protected.
@@ -250,9 +250,9 @@ Uses a **RAM-resident** cache during boot to accelerate the boot process. Despit
 
 Its action plan is stored as a binary blob in the registry:
 
-```
+~~~
 HKLM\SYSTEM\CurrentControlSet\Services\rdyboost\Parameters\BootPlan
-```
+~~~
 
 **What's inside a BootPlan.** An ordered list of file regions predicted to be read during the boot sequence, derived from past boot traces (the `.fx` files below). At boot, `RdyBoost` reads the plan and issues those reads *ahead of* when the boot code demands them, populating a RAM cache that boot-time reads then hit.
 

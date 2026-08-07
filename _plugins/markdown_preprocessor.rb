@@ -148,18 +148,30 @@ module LahavBlog
     end
 
     # Fenced code is reproduced verbatim; everything else is handed to the
-    # block for rewriting.
+    # block for rewriting. The final blank line of a prose run is preserved
+    # across the yield so the blank line separating prose from the next fence
+    # survives — otherwise `prose.join("\n")` and the downstream `lines(chomp:
+    # true)` in pad_display_blocks drop that terminator, and kramdown then
+    # reads the fence marker as part of the paragraph rather than an opening.
     def self.rewrite_outside_fences(content)
       output = []
       prose = []
       fence = nil
 
+      flush_prose = lambda do
+        next if prose.empty?
+
+        trailing_blank = prose.last == '' ? '' : nil
+        output << yield(prose.join("\n"))
+        output << trailing_blank unless trailing_blank.nil?
+        prose = []
+      end
+
       content.lines(chomp: true).each do |line|
         match = FENCE.match(line)
 
         if fence.nil? && match
-          output << yield(prose.join("\n")) unless prose.empty?
-          prose = []
+          flush_prose.call
           fence = match[2]
           output << line
         elsif fence
@@ -170,7 +182,7 @@ module LahavBlog
         end
       end
 
-      output << yield(prose.join("\n")) unless prose.empty?
+      flush_prose.call
       result = output.join("\n")
       content.end_with?("\n") ? "#{result}\n" : result
     end

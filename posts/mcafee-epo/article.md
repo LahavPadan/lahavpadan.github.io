@@ -70,7 +70,7 @@ The Java servlet stack from 2007, the SPIPE protocol from 1998, and the 3DES-obf
 
 **VSE stored exclusions in the clear on disk and in the registry.** The on-access-scan configuration lived at readable keys such as:
 
-```
+~~~
 reg query HKLM\SOFTWARE\McAfee\AVSolution\ODS\541* /v exclusions
 reg query HKLM\SOFTWARE\McAfee\AVSolution\OAS\EXCLUSION_EXCLUDE_OAS_PROCESS_GROUP_DEFAULT /v exclusions
 reg query HKLM\SOFTWARE\McAfee\AVSolution\OAS\EXCLUSION_EXCLUDE_OAS_PROCESS_GROUP_HIGH /v exclusions
@@ -78,7 +78,7 @@ reg query HKLM\SOFTWARE\McAfee\AVSolution\OAS\EXCLUSION_EXCLUDE_OAS_PROCESS_GROU
 reg query HKLM\SOFTWARE\McAfee\AVSolution\OAS\OAS_PROCESS_GROUP_DEFAULT /v exclusions
 reg query HKLM\SOFTWARE\McAfee\AVSolution\OAS\OAS_PROCESS_GROUP_HIGH /v exclusions
 reg query HKLM\SOFTWARE\McAfee\AVSolution\OAS\OAS_PROCESS_GROUP_LOW /v exclusions
-```
+~~~
 
 A local unprivileged process could enumerate the exclusion list and stage payloads to excluded paths. VSE also stored console-user hashes accessible to a normal-privileged process on the endpoint (in `SITELIST.XML` and related files); the Metasploit module `post/windows/gather/credentials/mcafee_vse_hashdump` codifies the extraction. ENS moved this material behind kernel-protected paths and, for endpoint-console interactions, out of the registry entirely.
 
@@ -188,9 +188,9 @@ When a managed McAfee Agent issues a `GET /Software/Current/VSCANENG1000/Engine/
 
 Talos's TALOS-2016-0229 disclosed a forwarding pivot. A **second** servlet — `EPODataChannelRedirectServlet` mapped at `/dcRedirect/dataChannelMsg.dc` — accepts a POST and internally calls:
 
-```java
+~~~java
 getRequestDispatcher("/receiveDataChannelMsg.dcp").forward(req, resp);
-```
+~~~
 
 Tomcat then runs `EPODataChannelServlet.doPost()` with the same request, but the dispatch is an internal forward rather than a fresh external request, so the servlet-container authentication filter that normally guards `/receiveDataChannelMsg.dcp` does not fire. The redirect servlet is unauthenticated by design (it accepts messages from agent side channels), and it forwards to an endpoint that assumes it is protected.
 
@@ -232,9 +232,9 @@ An AH does **not** run:
 
 Registry check:
 
-```
+~~~
 HKLM\SOFTWARE\Mcafee\ePolicy Orchestrator\Agent  →  IsSuperAgent
-```
+~~~
 
 A non-zero value means the local `macmnsvc.exe` is running the SuperAgent code paths.
 
@@ -267,9 +267,9 @@ Dependencies inside the driver graph: **`mfehidk.sys`** is the "link" driver tha
 
 The endpoint agent processes talk to each other and to loaded plug-ins over named pipes with GUID-and-PID-encoded names:
 
-```
+~~~
 \\.\pipe\ma_<guid>_<pid>_...
-```
+~~~
 
 `masvc.exe` is the server end of most of these. Any process that wants to speak to the agent — DLP's `fcag.exe`, ENS's `mfehcs.exe`, TIE, MAR — opens a client end and speaks a McAfee-defined RPC frame. The GUID/PID naming lets multiple product plug-ins co-exist without namespace collisions.
 
@@ -343,9 +343,9 @@ The extension `.z` is a McAfee convention: it does **not** mean raw zlib. The on
 
 All McAfee packages are signed. `smpubkey.bin` is distributed in the agent's keystore so it can verify catalogs and packages before installation. The encryption over the CAB uses a hardcoded 3DES-ECB key:
 
-```
+~~~
 key = SHA.new(b'<!@#$%^>').digest() + bytearray(4)
-```
+~~~
 
 The same hardcoded key wraps `catalog.z`, `PkgCatalog.z`, and (as § 8 noted) parts of the SPIPE registration packets. Encryption is obfuscation, not security — the DSA-1024 / RSA-2048 signature is the integrity gate.
 
@@ -472,9 +472,9 @@ An ePO **plugin** has two sides: a server-side **extension** (console UI, policy
 
 Endpoint registry key:
 
-```
+~~~
 HKLM\SOFTWARE\McAfee\ePolicy Orchestrator\Application Plugins
-```
+~~~
 
 Each subkey is one installed plugin. Some plugins also have an `active` / `online` value under their plugin key (DLP in particular).
 
@@ -503,9 +503,9 @@ Running `msiexec /x {GUID}` without additional parameters prompts the client for
 - The console derives a time-locked, 64-bit / hexadecimal **Uninstall Key** (Release Code) that expires within a 60-minute window.
 - The response is supplied locally through the agent UI or appended to the Windows Installer command via CLI parameters:
 
-```
+~~~
 msiexec.exe /x {DLP-Product-GUID} UNINSTALL_KEY="<Generated_Release_Code>" /qn /norestart
-```
+~~~
 
 This prevents a low-privileged local user (or malware) from uninstalling protection by running the `Uninstall Command` — the plugin refuses to uninstall without a code only the ePO admin can derive.
 
@@ -748,12 +748,12 @@ This two-tier split lets an environment install the DLP extension on the ePO ser
 
 The named pipes registered under `fcag.exe`:
 
-```
+~~~
 \\.\pipe\AgentServicePipe
 \\.\pipe\HdlpDiagServicePipe
 \\.\pipe\PropertiesRetrieverPipe0
 \\.\pipe\TextExtractorPipe
-```
+~~~
 
 `TextExtractorPipe` is the fast path between `fcag.exe` and the sandboxed `fcagte.exe`. `HdlpDiagServicePipe` is the diagnostic channel used by DLP's local reporting tools.
 
@@ -990,13 +990,13 @@ The EDR product ePO manages was announced in 2018 as **MVISION EDR** and renamed
 
 Event correlation is done by trace IDs. Fields that appear when tracing an event across ePO logs:
 
-```
+~~~
 parentTraceId
 traceId
 maTrace          — McAfee Agent trace identifier
 some..guid       — usually the AgentGUID or a session-scoped GUID
 av               — Antivirus verdict field, present for TP-originated events
-```
+~~~
 
 The `parentTraceId`/`traceId` pair stitches a single behavioral chain — process → child process → file write → network connection — into an EDR case in the console.
 

@@ -451,7 +451,7 @@ This is an RB-level question. The DCI answers it with a bitmap or a compact repr
 
 The time and frequency axes together define the resource grid. Below is one **subframe** at RE granularity, drawn for one RB in an "ordinary" subframe (not subframe 0 or 5, which carry additional broadcast signals — treated separately below). Each column is one OFDM symbol (71.4 μs); each row is one of the 12 subcarriers of this RB (15 kHz spacing). Every cell is one **RE**.
 
-```
+~~~
 Slot boundary is between symbol 6 and symbol 7 (each slot = 7 symbols = 0.5 ms).
 
                ┌── slot 0 (0.5 ms) ──────┐   ┌── slot 1 (0.5 ms) ──────┐
@@ -478,7 +478,7 @@ Legend:  R = CRS pilot (Cell Reference Signal)
          P = PDCCH region cell (may be PDCCH, PCFICH, PHICH, or unused)
          D = PDSCH data cell
          . = not carrying anything for this RB in this subframe
-```
+~~~
 
 **What CFI is.** **CFI (Control Format Indicator)** is a 2-bit value the eNodeB sends *at the beginning of every subframe* announcing how many OFDM symbols the control region occupies. CFI ∈ {1, 2, 3}. In this drawing CFI = 3, so symbols 0–2 are the control region and symbols 3–13 are the data region. When the cell is lightly loaded the eNodeB will pick CFI = 1 or 2; when many small allocations need announcing it picks CFI = 3. The CFI is itself carried on **PCFICH**, which sits in fixed known RE positions of symbol 0 (§ 11.2) so the UE can decode CFI before it knows anything else about the subframe.
 
@@ -498,7 +498,7 @@ Legend:  R = CRS pilot (Cell Reference Signal)
 
 **Subframes 0 and 5 are different.** They additionally carry the synchronization signals. In FDD, in the middle 6 RBs (i.e., the 72 subcarriers centered on the DC carrier), symbols 5 and 6 of slot 0 (of subframe 0 or 5) carry SSS and PSS respectively — see the diagram below of that special RB:
 
-```
+~~~
      What the middle-6-RBs region looks like in subframe 0 (FDD):
 
      subcarrier 66 ─┐   the 72 subcarriers centered on DC
@@ -512,7 +512,7 @@ Legend:  R = CRS pilot (Cell Reference Signal)
 
 Subframe 0 also carries PBCH in symbols 0-3 of slot 1 (symbols 7-10) of the middle 6 RBs.
 Subframe 5 has PSS/SSS in the same places but no PBCH.
-```
+~~~
 
 Outside the middle 6 RBs of subframes 0 and 5, no RB ever carries PSS/SSS or PBCH — the top-of-section diagram, drawn for one arbitrary RB in an ordinary subframe, correctly shows none.
 
@@ -831,7 +831,7 @@ Concretely: the UE sees the downlink frame boundary at some local time $t_0^{\te
 
 The eNodeB fixes this by commanding TA = $2\tau$: "transmit $2\tau$ seconds before the downlink boundary you see." Then the UE's uplink leaves at $t_0^{\text{UE}} - 2\tau$, propagates $\tau$, and arrives at $t_0^{\text{eNB}}$, aligned.
 
-```
+~~~
 Time axis (eNodeB's clock)
 
    Downlink boundary sent at t₀^eNB
@@ -851,7 +851,7 @@ Time axis (eNodeB's clock)
                             ─── propagation τ ────→
                                                     │
                                                     Uplink arrives at t₀^eNB  ← ALIGNED
-```
+~~~
 
 ### 10.1. Why timing advance is a real problem
 
@@ -1200,7 +1200,7 @@ The two-step *SR → tiny grant → BSR → real grant* is what the LTE uplink d
 
 A **BSR (Buffer Status Report)** is a MAC control element specifying, per **Logical Channel Group** (LCG — a group of logical channels sharing a QoS bucket), how many bytes the UE has waiting to send:
 
-```
+~~~
 BSR format (short BSR, 1 byte):
    ┌──────────┬────────────────────┐
    │ LCG ID   │ Buffer Size Index  │
@@ -1211,7 +1211,7 @@ BSR format (long BSR, 3 bytes):
    ┌────────┬────────┬────────┬────────┐
    │ LCG 0  │ LCG 1  │ LCG 2  │ LCG 3  │  (6 bit each, buffer-size indices)
    └────────┴────────┴────────┴────────┘
-```
+~~~
 
 The **Buffer Size Index** is a 6-bit look-up into a table of 64 quantized buffer-size ranges (from 0 bytes up to ~150 KB); the UE reports the smallest index whose range covers its actual buffer. This gives the scheduler a coarse but sufficient sense of how much to grant.
 
@@ -1442,11 +1442,11 @@ Every layer in LTE has an identifier at the right point on all three axes. That 
 
 The **International Mobile Subscriber Identity (IMSI)** is a 15-digit decimal number burned onto the SIM at manufacture, uniquely identifying the subscriber worldwide. Format:
 
-```
+~~~
 IMSI = │ MCC │ MNC │       MSIN       │
         3 dig  2 or 3   9 or 10 digits
               digits
-```
+~~~
 
 - **MCC (Mobile Country Code)** — 3 digits, ITU-assigned. Israel = 425, US = 310–316, Germany = 262.
 - **MNC (Mobile Network Code)** — 2 or 3 digits, assigned by each country's regulator. Combined with MCC, MCC+MNC = the **PLMN identity** (Public Land Mobile Network). Cellcom Israel = 42502, Pelephone = 42503.
@@ -1466,12 +1466,12 @@ The IMSI is used *inside* the network as the primary key into the HSS database. 
 
 After a successful attach, the MME issues a **Globally Unique Temporary Identity (GUTI)** to the UE. The UE uses this in all subsequent NAS messaging in place of the IMSI. Its structure is deliberately nested:
 
-```
+~~~
 GUTI = │  MCC  │  MNC  │  MME Group ID  │  MME Code  │      M-TMSI     │
         3 dig    2/3 dig    16 bits         8 bits           32 bits
        └───── PLMN ID ────┘└──── MME identity within the PLMN ───┘└ within MME ┘
        └──────────────── GUMMEI ─────────────────────────┘└─── M-TMSI ────┘
-```
+~~~
 
 Two sub-identities are worth naming separately:
 
@@ -1543,7 +1543,7 @@ Now the identifiers describing the *network topology*, not the UEs:
 
 **How ECGI, TAI, and PCI relate for one cell:**
 
-```
+~~~
               ┌─────────────── PLMN (MCC+MNC) ──────────────┐
               │                                              │
               │   ┌──────── TAI = PLMN + TAC ────────┐       │
@@ -1556,7 +1556,7 @@ Now the identifiers describing the *network topology*, not the UEs:
               │   └───────────────────────────────────────────┘
               │                                                │
               └────────────────────────────────────────────────┘
-```
+~~~
 
 PCI is what the UE reads from the air first (it doesn't yet know PLMN); ECGI/TAI come later from SIB1 (which needs PCI-derived pilots to demodulate). The physical layer uses PCI to distinguish cells from radio measurements; the network layer uses ECGI and TAI to identify cells in signalling messages.
 
@@ -1661,11 +1661,11 @@ A **dedicated bearer** is a supplementary bearer on top of an existing PDN conne
 
 **A TFT is a list of packet filters, each with a precedence number.** For the VoLTE audio dedicated bearer, a downlink TFT typically looks like:
 
-```
+~~~
 Precedence 1:  IF (source_IP == 172.16.42.10 AND source_port == 20040
                   AND protocol == UDP)
                THEN route to dedicated bearer (EPS Bearer ID 7)
-```
+~~~
 
 The source IP and port 20040 are the other endpoint's RTP stream. Any packet arriving at the PGW's SGi with these headers is placed onto the dedicated bearer's downlink S5 tunnel; every other packet on this UE's IP falls through to the default bearer. On uplink, the UE's IP stack does the same lookup: outgoing RTP packets (with matching source IP/port) go to the dedicated bearer's uplink DRB; everything else (SIP signalling, DNS, whatever else the UE runs on the IMS IP) goes to the default bearer's DRB.
 
@@ -1795,7 +1795,7 @@ Two properties of this construction matter:
 
 Now the full hierarchy, with FC codes and input parameters spelled out:
 
-```
+~~~
                        K
              (128-bit, SIM and HSS only)
                        │
@@ -1831,7 +1831,7 @@ Now the full hierarchy, with FC codes and input parameters spelled out:
                     K_RRCenc        K_RRCint        K_UPenc
                     (128-bit)       (128-bit)       (128-bit)
                     UE ↔ eNodeB     UE ↔ eNodeB     UE ↔ eNodeB
-```
+~~~
 
 Two things to note about the tree that matter operationally:
 
@@ -1917,7 +1917,7 @@ The initial attach is where all the pieces so far come together. It is not one e
 
 ### 19.2. The message flow
 
-```
+~~~
 UE                eNodeB              MME              HSS         SGW/PGW       PCRF
  |                    |                 |               |             |            |
  | Msg1 (PRACH)       |                 |               |             |            |
@@ -1994,7 +1994,7 @@ UE                eNodeB              MME              HSS         SGW/PGW      
  |                    |                 |               |             |            |
  |=== DEFAULT BEARER ACTIVE — USER DATA CAN NOW FLOW ================================|
  v                    v                 v               v             v            v
-```
+~~~
 
 ### 19.3. The piggybacked PDN Connectivity Request
 
@@ -2037,7 +2037,7 @@ This is the topology of the EPC core, with each interface's protocol and purpose
 
 ### 20.1. The full picture
 
-```
+~~~
    ┌──────┐  S1-MME (SCTP + S1AP)     ┌──────┐   S11 (UDP + GTP-C)   ┌─────┐
    │ eNB  │─────────────────────────>│ MME  │─────────────────────>│ SGW │
    └──┬───┘                           └───┬──┘                       └──┬──┘
@@ -2056,7 +2056,7 @@ This is the topology of the EPC core, with each interface's protocol and purpose
                                                                      └──────┘
 
    X2 (SCTP + X2AP): eNB <── direct ──> eNB, for fast handovers
-```
+~~~
 
 ### 20.2. S1: the eNodeB-to-core split
 
@@ -2248,7 +2248,7 @@ The S-CSCF evaluates iFCs at the start of every session and re-evaluates on defi
 
 **The full CSCF-chain routing.** For a call from Alice (home operator A) to Bob (home operator B):
 
-```
+~~~
 Alice's UE
     ↓ (SIP INVITE)
 Alice's P-CSCF (in Alice's visited network — could be operator A or C)
@@ -2264,7 +2264,7 @@ Bob's S-CSCF (operator B)
 Bob's P-CSCF (visited network for Bob)
     ↓
 Bob's UE
-```
+~~~
 
 Every reply (100 Trying, 180 Ringing, 200 OK, ACK) reverses the chain. The CSCFs on each side are stateful — they remember the session and route replies without re-lookup.
 
@@ -2350,7 +2350,7 @@ All this happens in under 200 ms, giving the caller the impression that the call
 
 Assume both UEs are already registered to IMS (their IMS default bearers are up, and they have SIP REGISTER state at their respective S-CSCFs).
 
-```
+~~~
 Caller UE                                                      Callee UE
     |                                                              |
     | INVITE (SIP + SDP offer)                                     |
@@ -2389,7 +2389,7 @@ Caller UE                                                      Callee UE
     | Gx: RAR (PCRF: release the dedicated bearer)                 |
     | Bearer torn down                                             |
     v                                                              v
-```
+~~~
 
 ### 22.8. Codec negotiation
 
