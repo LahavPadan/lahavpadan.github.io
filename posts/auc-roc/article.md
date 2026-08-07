@@ -1,12 +1,14 @@
 ## Scoring classifiers
 
 A binary classifier assigns each input to one of two classes:
+
 * **Positive ($P$)**
 * **Negative ($N$)**
 
 Some classifiers output a hard label directly. Others output a **real-valued score $S(x)$** representing confidence that $x$ is positive, and turn that score into a prediction via a threshold: predict positive iff $S(x) \geq t$.
 
 Working with scores instead of hard labels has **two key advantages**:
+
 1. **Ranking Information:** The score carries information about how much more positive $x_a$ looks than $x_b$—data that a hard label throws away.
 2. **Post-Training Threshold Tuning:** We can tune the threshold after training:
    * **Raising $t$** predicts fewer positives (fewer false alarms, more missed detections).
@@ -16,6 +18,7 @@ A single scoring model gives us a whole family of hard classifiers, one for each
 
 ### Origin of the Name
 The name **"receiver operating characteristic"** comes from radar signal detection in the 1940s:
+
 * The **receiver** was the radar receiver.
 * Its **operating characteristic** was the trade-off between detecting real echoes and mistaking noise for echoes.
 
@@ -36,8 +39,10 @@ The complement of **specificity**—the fraction of negatives we mislabel:
 $$\text{FPR}(t) = \frac{\text{FP}}{\text{FP} + \text{TN}} = \frac{1}{|N|} \sum_{x \in N} \mathbb{I}\{S(x) \geq t\}$$
 
 ROC analysis splits the dataset into two completely isolated buckets:
+
 * **Bucket 1: The Positives ($P$)**
 * **Bucket 2: The Negatives ($N$)**
+
 Each rate is calculated strictly inside its own bucket, completely blind to what happens in the other.
 
 > **Key Property:** Doubling the number of negatives leaves FPR alone—the numerator and denominator scale together. That is why ROC analysis works well when one class dominates (e.g., fraud detection or anomaly detection, where positives may be a fraction of a percent of the data and a global accuracy metric would rate an "always predict negative" classifier at 99.9%).
@@ -47,6 +52,7 @@ Each rate is calculated strictly inside its own bucket, completely blind to what
 ## Sweeping the threshold
 
 As $t$ moves from $+\infty$ down to $-\infty$:
+
 * At $t = +\infty$, nothing is predicted positive, so $\text{TPR} = \text{FPR} = 0$.
 * At $t = -\infty$, everything is predicted positive, so $\text{TPR} = \text{FPR} = 1$.
 * Lowering $t$ can only add samples to the "predicted positive" set, never remove any, so TPR and FPR both increase (weakly) as $t$ falls.
@@ -57,6 +63,7 @@ The curve traced in the $(\text{FPR}, \text{TPR})$ plane as $t$ sweeps is the **
 Between two consecutive observed scores $S(x_{(i)}) < S(x_{(i+1)})$, no sample crosses the threshold, so TPR and FPR stay put. The ROC curve is a **step function** with breakpoints only at the $N$ observed score values. We only need to evaluate $(\text{FPR}, \text{TPR})$ at those $N$ thresholds—everything in between is copies.
 
 Sort the samples in decreasing order of score: $S(x_{(1)}) \geq S(x_{(2)}) \geq \dots \geq S(x_{(N)})$. Setting $t = S(x_{(k)})$ predicts the top $k$ scored samples as positive. Growing $k$ from $0$ to $N$ one sample at a time:
+
 * If $x_{(k)}$ has true label **positive**: $\text{TPR}$ ticks up by $1/|P|$ — we step **up**, $\text{FPR}$ unchanged.
 * If $x_{(k)}$ has true label **negative**: $\text{FPR}$ ticks up by $1/|N|$ — we step **right**, $\text{TPR}$ unchanged.
 
@@ -71,6 +78,7 @@ So we can draw the ROC curve by walking down the sorted list: **step up for each
 The walk depends only on the **order** of samples by score, not on the score values. Any strictly increasing transformation $S \to f(S)$ (a logistic squash, a rank transform, an exponential) preserves every pairwise ordering, produces the identical walk, and yields the identical ROC curve. The curve captures **rank quality**—how well the score separates positives from negatives—and is blind to what the scores actually are.
 
 That other property of a scoring classifier—whether the scores themselves are meaningful—is called **calibration**:
+
 * A classifier is **calibrated** when, among samples assigned score $s$, a fraction $s$ actually belong to the positive class.
 * The **calibration curve** plots the score against the observed positive fraction (binned by score); perfect calibration is the diagonal $y = x$.
 
@@ -93,6 +101,7 @@ Rank quality and calibration are independent: a classifier can rank perfectly wh
 ## AUC as area — which area?
 
 The ROC curve gives us a whole family of operating points—one $(F(t), T(t))$ pair per threshold. Summarising this family with a scalar requires reducing the two-dimensional trajectory to one number *without* picking a threshold first, since deferring that choice is the reason we drew the curve:
+
 * Reading $T$ at a single fixed $t$ throws the rest of the curve away.
 * Averaging $T$ over $t$ depends on the scale of $t$—and the curve is invariant to that scale, so the summary should be too.
 
@@ -101,6 +110,7 @@ What is left is to average $T$ over something the curve does see: **it sees $F$*
 $$\int_0^1 T \, dF$$
 
 which is exactly the area between the curve and the $F$-axis. This gives AUC a direct reading: **the average detection rate, averaged uniformly over the allowed false-alarm rate**. 
+
 * A classifier that catches many positives while spending little false-alarm budget has $T$ high whenever $F$ is small—the curve sits near the top-left and the integral is large. 
 * A classifier that only reaches high $T$ after spending most of its budget keeps $T$ small until $F$ is close to $1$, and the integral is small. 
 
@@ -161,6 +171,7 @@ This counts the proportion of pairs where the positive outranks the negative out
 
 #### 2. Handling Ties
 When $x_+$ and $x_-$ share a score, the walk moves diagonally, creating a trapezoid that decomposes into:
+
 * **Rectangle:** The height $T_k$ reached before the tie (width $1/|N|$).
 * **Triangle:** Sitting on top with width $1/|N|$, height $1/|P|$, and area $1/(2\,|P|\,|N|)$.
 
