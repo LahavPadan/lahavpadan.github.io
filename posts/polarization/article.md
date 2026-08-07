@@ -120,8 +120,6 @@ The density is the only piece that differs between linear and angular momentum. 
 
 ### Energy per unit volume
 
-{% include visualization.html src="polarization-energy-momentum-transfer.html" title="From polarized-field energy to force and torque on a target" %}
-
 Take a length of the beam of cross-sectional area $A$. In time $\Delta t$, the energy that crosses a fixed cross-section is
 
 $$U = P\,\Delta t, \label{eq:5-2}\tag{5.2}$$
