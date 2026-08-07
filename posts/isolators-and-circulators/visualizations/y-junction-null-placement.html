@@ -259,11 +259,18 @@ h1 {
   display: grid;
   grid-template-columns: minmax(0, 1.28fr) minmax(290px, .72fr);
   min-width: 0;
+  align-items: start;
+}
+/* Keep the explanatory proof under the drawing so the tall readout does not
+   force an empty grid-filled column beside it. */
+.visual-stack {
+  min-width: 0;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
 }
 .diagram-panel {
   min-width: 0;
   padding: clamp(14px, 2.4vw, 24px);
-  border-right: 1px solid var(--border);
   background:
     linear-gradient(var(--border) 1px, transparent 1px),
     linear-gradient(90deg, var(--border) 1px, transparent 1px),
@@ -297,6 +304,7 @@ h1 {
 .svg-status { font-size: 12px; font-weight: 800; letter-spacing: .02em; }
 .svg-axis-label { font-size: 13px; font-weight: 700; }
 .svg-angle-label { font-size: 14px; font-weight: 800; fill: var(--accent-ink); }
+.rotation-label-bg { fill: color-mix(in srgb, var(--surface) 96%, transparent); stroke: var(--border); }
 .readout {
   min-width: 0;
   background: var(--surface);
@@ -404,8 +412,6 @@ h1 {
   font: .82rem/1.55 var(--sans);
 }
 .geometry {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
   border-top: 1px solid var(--border);
 }
 .geometry__proof,
@@ -413,8 +419,12 @@ h1 {
   min-width: 0;
   padding: clamp(18px, 2.8vw, 28px);
 }
-.geometry__proof { border-right: 1px solid var(--border); }
-.geometry h2 {
+.geometry__proof {
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.geometry__proof h2,
+.geometry__routes h2 {
   margin: 0 0 13px;
   font: 800 .74rem/1.2 var(--sans);
   letter-spacing: .075em;
@@ -428,7 +438,7 @@ h1 {
 }
 .proof-step {
   min-width: 0;
-  padding: 13px 14px;
+  padding: 11px 12px;
   background: var(--surface-muted);
 }
 .proof-step + .proof-step { border-left: 1px solid var(--border); }
@@ -447,7 +457,7 @@ h1 {
   overflow-wrap: anywhere;
 }
 .proof-conclusion {
-  margin: 13px 0 0;
+  margin: 11px 0 0;
   padding-left: 13px;
   border-left: 3px solid var(--accent);
   color: var(--ink);
@@ -513,10 +523,9 @@ h1 {
   .controls { grid-template-columns: 1fr; }
   .control-group + .control-group { border-left: 0; border-top: 1px solid var(--border); }
   .main { grid-template-columns: 1fr; }
-  .diagram-panel { border-right: 0; border-bottom: 1px solid var(--border); }
+  .visual-stack { border-right: 0; }
   .diagram-shell { aspect-ratio: 1.28 / 1; max-height: 520px; }
-  .geometry { grid-template-columns: 1fr; }
-  .geometry__proof { border-right: 0; border-bottom: 1px solid var(--border); }
+  .readout { border-top: 1px solid var(--border); }
 }
 @media (max-width: 560px) {
   body { padding: 8px; }
@@ -564,6 +573,7 @@ h1 {
 </div>
 </div>
 <div class="main">
+<div class="visual-stack">
 <section aria-label="Ferrite disk and dipole field pattern" class="diagram-panel">
 <div class="diagram-shell">
 <svg aria-labelledby="diskTitle diskDesc" id="diskSvg" role="img" viewbox="0 0 640 540">
@@ -593,7 +603,7 @@ h1 {
 <line class="port-flow" marker-end="url(#arrowInput)" stroke="var(--input)" stroke-dasharray="none" stroke-linecap="round" stroke-width="3" x1="535.00" x2="484.00" y1="270.00" y2="270.00"></line>
 <circle class="port-cap" cx="538.00" cy="270.00" fill="var(--surface)" r="6" stroke="var(--input)" stroke-width="2"></circle>
 <text class="svg-label svg-port-name" text-anchor="middle" x="571.00" y="275.00">P1</text>
-<text class="svg-label svg-port-angle svg-muted" text-anchor="middle" x="571.00" y="293.00">φ1 = 0°</text>
+<text class="svg-label svg-port-angle svg-muted" text-anchor="middle" x="571.00" y="293.00">φ₁ = 0°</text>
 <rect class="status-bg" fill="var(--surface)" height="22" rx="5" stroke="var(--input)" width="54.00" x="482.00" y="259.00"></rect>
 <text class="svg-label svg-status" fill="var(--input)" text-anchor="middle" x="509.00" y="274.00">INPUT</text>
 </g><g data-port="P3">
@@ -601,7 +611,7 @@ h1 {
 <line class="port-flow" stroke="var(--isolated)" stroke-dasharray="5 5" stroke-linecap="round" stroke-width="3" x1="238.00" x2="212.50" y1="127.97" y2="83.80"></line>
 <circle class="port-cap" cx="211.00" cy="81.21" fill="var(--surface)" r="6" stroke="var(--isolated)" stroke-width="2"></circle>
 <text class="svg-label svg-port-name" text-anchor="middle" x="194.50" y="57.63">P3</text>
-<text class="svg-label svg-port-angle svg-muted" text-anchor="middle" x="194.50" y="75.63">φ3 = 120°</text>
+<text class="svg-label svg-port-angle svg-muted" text-anchor="middle" x="194.50" y="75.63">φ₃ = 120°</text>
 <rect class="status-bg" fill="var(--surface-muted)" height="22" rx="5" stroke="var(--isolated)" width="75.60" x="187.70" y="95.32"></rect>
 <text class="svg-label svg-status" fill="var(--isolated)" text-anchor="middle" x="225.50" y="110.32">ISOLATED</text>
 </g><g data-port="P2">
@@ -609,12 +619,15 @@ h1 {
 <line class="port-flow" marker-end="url(#arrowOutput)" stroke="var(--output)" stroke-dasharray="none" stroke-linecap="round" stroke-width="3" x1="238.00" x2="212.50" y1="412.03" y2="456.20"></line>
 <circle class="port-cap" cx="211.00" cy="458.79" fill="var(--surface)" r="6" stroke="var(--output)" stroke-width="2"></circle>
 <text class="svg-label svg-port-name" text-anchor="middle" x="194.50" y="492.37">P2</text>
-<text class="svg-label svg-port-angle svg-muted" text-anchor="middle" x="194.50" y="510.37">φ2 = 240°</text>
+<text class="svg-label svg-port-angle svg-muted" text-anchor="middle" x="194.50" y="510.37">φ₂ = 240°</text>
 <rect class="status-bg" fill="var(--surface)" height="22" rx="5" stroke="var(--output)" width="61.20" x="194.90" y="422.68"></rect>
 <text class="svg-label svg-status" fill="var(--output)" text-anchor="middle" x="225.50" y="437.68">OUTPUT</text>
 </g></g>
 <path d="M 424.00 270.00 A 104 104 0 0 0 410.07 218.00" fill="none" id="rotationArc" marker-end="url(#arrowAngle)" stroke="var(--accent)" stroke-width="2.2"></path>
-<text class="svg-label svg-angle-label" id="rotationLabel" text-anchor="middle" x="443.64" y="240.87">α = +30°</text>
+<g id="rotationLabelGroup">
+<rect class="rotation-label-bg" height="24" id="rotationLabelBg" rx="5" width="88" x="399.64" y="226.87"></rect>
+<text class="svg-label svg-angle-label" id="rotationLabel" text-anchor="middle" x="443.64" y="242.87">φₐ = 30°</text>
+</g>
 <g transform="translate(320 270)">
 <circle fill="var(--surface)" r="30" stroke="var(--border-strong)" stroke-width="1.5"></circle>
 <text class="svg-label" font-size="25" font-weight="800" id="biasSymbol" text-anchor="middle" x="0" y="3">⊙</text>
@@ -629,6 +642,25 @@ h1 {
 </svg>
 </div>
 </section>
+<section class="geometry__proof">
+<h2>Why the required rotation is 30°</h2>
+<div class="proof-steps">
+<div class="proof-step">
+<span class="proof-step__label">Port spacing</span>
+<span class="proof-step__math">φ<sub>target</sub> − φ<sub>in</sub> = 120°</span>
+</div>
+<div class="proof-step">
+<span class="proof-step__label">Dipole geometry</span>
+<span class="proof-step__math">φ<sub>null</sub> − φ<sub>a</sub> = 90°</span>
+</div>
+<div class="proof-step">
+<span class="proof-step__label">Required shift</span>
+<span class="proof-step__math">α = 120° − 90° = 30°</span>
+</div>
+</div>
+<p class="proof-conclusion">Rotating the antinode axis by +30° rotates the nodal diameter by the same +30°. Reversing the bias changes α to −30°, so the other neighboring port lies on the null.</p>
+</section>
+</div>
 <aside aria-live="polite" class="readout"><section class="readout__block">
 <h2 class="readout__title">Port angles</h2>
 <p class="formula">φ<sub>1</sub> = 0°,   φ<sub>3</sub> = 120°,   φ<sub>2</sub> = 240°.</p>
@@ -659,24 +691,6 @@ h1 {
 </aside>
 </div>
 <div class="geometry">
-<section class="geometry__proof">
-<h2>Why the required rotation is 30°</h2>
-<div class="proof-steps">
-<div class="proof-step">
-<span class="proof-step__label">Port spacing</span>
-<span class="proof-step__math">φ<sub>target</sub> − φ<sub>in</sub> = 120°</span>
-</div>
-<div class="proof-step">
-<span class="proof-step__label">Dipole geometry</span>
-<span class="proof-step__math">φ<sub>null</sub> − φ<sub>a</sub> = 90°</span>
-</div>
-<div class="proof-step">
-<span class="proof-step__label">Required shift</span>
-<span class="proof-step__math">α = 120° − 90° = 30°</span>
-</div>
-</div>
-<p class="proof-conclusion">Rotating the antinode axis by +30° rotates the nodal diameter by the same +30°. Reversing the bias changes α to −30°, so the other neighboring port lies on the null.</p>
-</section>
 <section class="geometry__routes">
 <h2 id="routeHeading">Same bias, all three inputs</h2>
 <div class="route-grid" id="routeGrid">
@@ -736,6 +750,24 @@ h1 {
   function fmtAngle(angle) {
     const n = normalize(angle);
     return `${Math.round(n)}°`;
+  }
+
+  function portPhiLabel(name) {
+    const labels = { P1: 'φ₁', P2: 'φ₂', P3: 'φ₃' };
+    return `${labels[name]} = ${ports[name].angle}°`;
+  }
+
+  function positionRotationLabel(x, y, text) {
+    const label = document.getElementById('rotationLabel');
+    const bg = document.getElementById('rotationLabelBg');
+    label.textContent = text;
+    label.setAttribute('x', x);
+    label.setAttribute('y', y + 4);
+    const width = Math.max(74, text.length * 8.4 + 18);
+    bg.setAttribute('x', x - width / 2);
+    bg.setAttribute('y', y - 12);
+    bg.setAttribute('width', width);
+    bg.setAttribute('height', 24);
   }
 
   function fieldValue(portAngle, axisAngle) {
@@ -819,7 +851,7 @@ h1 {
       const angleText = createSvg('text', {
         class: 'svg-label svg-port-angle svg-muted', x: label.x, y: label.y + 23, 'text-anchor': 'middle'
       });
-      angleText.textContent = `φ${name.slice(1)} = ${port.angle}°`;
+      angleText.textContent = portPhiLabel(name);
       const statusBg = createSvg('rect', { class: 'status-bg', rx: 5, fill: 'var(--surface)', stroke: 'var(--border)' });
       const status = createSvg('text', { class: 'svg-label svg-status', 'text-anchor': 'middle' });
 
@@ -1032,20 +1064,15 @@ h1 {
     setLine(document.getElementById('nodeAxis'), nodeAngle, 154);
 
     const arc = document.getElementById('rotationArc');
-    const rotationLabel = document.getElementById('rotationLabel');
     if (state.bias === 0) {
       arc.setAttribute('d', '');
-      rotationLabel.textContent = 'α = 0°';
-      const labelPoint = point(inputAngle + 16, 112);
-      rotationLabel.setAttribute('x', labelPoint.x);
-      rotationLabel.setAttribute('y', labelPoint.y);
+      const labelPoint = point(inputAngle + 18, 128);
+      positionRotationLabel(labelPoint.x, labelPoint.y, `φₐ = ${fmtAngle(axisAngle)}`);
     } else {
       arc.setAttribute('d', arcPath(inputAngle, axisAngle, 104));
       const mid = inputAngle + alpha / 2;
-      const labelPoint = point(mid, 128);
-      rotationLabel.textContent = `α = ${alpha > 0 ? '+' : '−'}30°`;
-      rotationLabel.setAttribute('x', labelPoint.x);
-      rotationLabel.setAttribute('y', labelPoint.y + 4);
+      const labelPoint = point(mid, 148);
+      positionRotationLabel(labelPoint.x, labelPoint.y, `φₐ = ${fmtAngle(axisAngle)}`);
     }
 
     placeAxisLabel(
