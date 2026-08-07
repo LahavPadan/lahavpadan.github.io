@@ -124,7 +124,7 @@ Take a length of the beam of cross-sectional area $A$. In time $\Delta t$, the e
 
 $$U = P\,\Delta t, \label{eq:5-2}\tag{5.2}$$
 
-where $P = |\vec S|\,A$; since $|\vec S|$ is the energy flux (power per unit area, by the definition $\eqref{eq:4-1}$ of $\vec S$).
+where $P = |\vec S|\,A$; since $|\vec S|$ is the energy flux (power per unit area, by the definition $\vec S = \vec E \times \vec H$ $\eqref{eq:4-1}$).
 
 This energy travels at speed $c$, so at any instant it occupies a volume $A\,c\,\Delta t$. Therefore, the energy per unit volume is:
 
@@ -163,7 +163,7 @@ $$\text{linear momentum per unit volume} = \frac{|\vec S|}{c^2}, \label{eq:5-5}\
 
 directed along $\hat z$ (from [§ 1](#sec-1), $\vec S = \vec E \times \vec H$ lies along $\hat z$).
 
-Feeding $\eqref{eq:5-5}$ into the density-rate-Newton chain — multiply the momentum density by $c \cdot A$ to get the momentum rate through a cross-section, and identify that rate with $\vec F$ via $\eqref{eq:5-1}$ — gives
+Feeding $\eqref{eq:5-5}$ into the density-rate-Newton chain — multiply the momentum density by $c \cdot A$ to get the momentum rate through a cross-section, and identify that rate with $\vec F$ via Newton's law $\vec F = d\vec p/dt$ $\eqref{eq:5-1}$ — gives
 
 $$\vec F = \frac{|\vec S|}{c^2}\cdot c \cdot A\,\hat z = \frac{|\vec S|\,A}{c}\,\hat z = \frac{P}{c}\,\hat z. \label{eq:5-6}\tag{5.6}$$
 
@@ -177,7 +177,7 @@ Think of the wave as a stream of quanta (photons), each with energy $\hbar\omega
 
 A circularly polarized photon carries angular momentum $\pm\hbar$ along its direction of motion, with the sign fixed by the direction of rotation. Write $\sigma = \pm 1$ for that sign — the **helicity**. This is a result from quantum mechanics.
 
-Divide the energy density $\eqref{eq:5-3}$ by the per-photon energy $\hbar\omega$ to get the number of photons per unit volume:
+Divide the energy density $|\vec S|/c$ $\eqref{eq:5-3}$ by the per-photon energy $\hbar\omega$ to get the number of photons per unit volume:
 
 $$n = \frac{1}{\hbar\omega}\cdot \frac{|\vec S|}{c} = \frac{|\vec S|}{\hbar\omega\,c}. \label{eq:5-7}\tag{5.7}$$
 
@@ -185,13 +185,15 @@ Each of those $n$ photons contributes $\sigma\hbar$ along $\hat z$ to the angula
 
 $$n \cdot \sigma\hbar = \sigma\, \frac{|\vec S|}{\omega\,c}. \label{eq:5-8}\tag{5.8}$$
 
-Note that $\hbar$ cancels: the ratio of angular momentum to energy per photon is $\hbar/(\hbar\omega) = 1/\omega$, already $\hbar$-free. Multiplying by the classical energy density $\eqref{eq:5-3}$ contributes no further $\hbar$. The photon picture served only as bookkeeping for how the wave's energy density partitions into angular momentum density.
+Note that $\hbar$ cancels: the ratio of angular momentum to energy per photon is $\hbar/(\hbar\omega) = 1/\omega$, already $\hbar$-free. Multiplying by the classical energy density $|\vec S|/c$ $\eqref{eq:5-3}$ contributes no further $\hbar$. The photon picture served only as bookkeeping for how the wave's energy density partitions into angular momentum density.
 
 *What happens for a linearly polarized wave?*
 
 A linear polarization is an equal superposition of the two circular polarizations. Take a wave polarized along $\hat x$ with amplitude $E$:
 
 $$\vec E_{\rm lin}(t) = E \cos(\omega t)\, \hat x.$$
+
+<div class="guided-fold-start" data-label="Superposing the two circular polarizations" data-tone="derivation"></div>
 
 Write the two circular waves — one with each helicity — with equal amplitudes and add them:
 
@@ -205,17 +207,21 @@ so
 
 $$\vec E_{\rm lin} = \frac{1}{\sqrt 2}\big(\vec E_+ + \vec E_-\big). \label{eq:5-9}\tag{5.9}$$
 
-The two circular components have equal amplitude, so the two helicities are populated equally. Their contributions to $\eqref{eq:5-8}$ have opposite sign and cancel to zero. No angular momentum is available to transfer; the E-vector oscillates on one line and never rotates.
+The two circular components have equal amplitude, so the two helicities are populated equally.
+
+<div class="guided-fold-end"></div>
+
+Their contributions to the angular momentum per unit volume $\sigma|\vec S|/(\omega c)$ $\eqref{eq:5-8}$ have opposite sign and cancel to zero. No angular momentum is available to transfer; the E-vector oscillates on one line and never rotates.
 
 *What about circular polarization?*
 
-One helicity fills the whole population, and $\eqref{eq:5-8}$ gives the full angular momentum density. Feeding it into the density-rate-Newton chain — multiply by $c \cdot A$ to get the angular momentum rate through a cross-section, and identify with $\vec\tau$ via $\eqref{eq:5-1}$ — gives
+One helicity fills the whole population, and $\eqref{eq:5-8}$ gives the full angular momentum density $\sigma|\vec S|/(\omega c)$. Feeding it into the density-rate-Newton chain — multiply by $c \cdot A$ to get the angular momentum rate through a cross-section, and identify with $\vec\tau$ via $\vec\tau = d\vec L/dt$ $\eqref{eq:5-1}$ — gives
 
 $$\vec\tau = \sigma\, \frac{|\vec S|}{\omega c}\cdot c \cdot A\,\hat z = \sigma\, \frac{|\vec S|\,A}{\omega}\,\hat z = \sigma\, \frac{P}{\omega}\,\hat z. \label{eq:5-10}\tag{5.10}$$
 
-The sign flips with the direction of rotation. For a given $P$, the force $\eqref{eq:5-6}$ is unchanged; the torque appears only in the circular case, and points along or against $\hat z$ according to the helicity.
+The sign flips with the direction of rotation. For a given $P$, the force $\vec F = (P/c)\hat z$ $\eqref{eq:5-6}$ is unchanged; the torque appears only in the circular case, and points along or against $\hat z$ according to the helicity.
 
-Elliptical polarization mixes the two helicities unequally, with the split set by the axial ratio. Its angular momentum density interpolates smoothly between zero — the linear case, the two helicities cancelling by $\eqref{eq:5-9}$ — and the full circular value $\eqref{eq:5-8}$.
+Elliptical polarization mixes the two helicities unequally, with the split set by the axial ratio. Its angular momentum density interpolates smoothly between zero — the linear case, the two helicities cancelling by $\vec E_{\rm lin} = (\vec E_+ + \vec E_-)/\sqrt 2$ $\eqref{eq:5-9}$ — and the full circular value $\sigma|\vec S|/(\omega c)$ $\eqref{eq:5-8}$.
 
 That is the picture for a pure sinusoidal wave in empty space. What changes for pulsed waves, or once the wave enters a material?
 

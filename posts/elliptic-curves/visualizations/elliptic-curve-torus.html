@@ -131,7 +131,19 @@ h1{margin:0 0 10px;font-family:var(--font-display);font-size:clamp(30px,4vw,46px
 .note strong{color:var(--ink)}
 .note.warm{border-left-color:var(--gold);background:color-mix(in srgb,var(--gold) 11%,var(--surface))}
 .caption{font-family:var(--font-ui);font-size:12.5px;line-height:1.62;color:var(--faint);margin-top:9px}
-svg{display:block;width:100%;height:auto;overflow:visible}
+
+/*
+  Only size the visualization's own SVGs responsively.
+  MathJax also renders mathematics as SVG; applying width:100% to those
+  SVGs is what caused the enormous cropped mathematical glyphs.
+*/
+svg:not(mjx-container svg){
+  display:block;
+  width:100%;
+  height:auto;
+  overflow:visible;
+}
+
 .legend{display:flex;gap:15px;flex-wrap:wrap;margin-top:10px;font-family:var(--font-ui);font-size:12.5px;color:var(--muted)}
 .legend span{display:flex;align-items:center;gap:7px}
 .legend i{width:11px;height:11px;border-radius:50%;display:inline-block;flex:0 0 auto}
@@ -274,11 +286,8 @@ svg{display:block;width:100%;height:auto;overflow:visible}
               <line x1="555" y1="132" x2="555" y2="225"/>
             </g>
             <g fill="var(--red)">
-              <!-- x-axis markers at e_i, ∞ -->
               <circle cx="205" cy="346" r="5"/><circle cx="310" cy="346" r="5"/><circle cx="421" cy="346" r="5"/><circle cx="555" cy="346" r="5"/>
-              <!-- upper-sheet endpoint of each meeting -->
               <circle cx="205" cy="149" r="5.5"/><circle cx="310" cy="151" r="5.5"/><circle cx="421" cy="156" r="5.5"/><circle cx="555" cy="132" r="5.5"/>
-              <!-- lower-sheet endpoint of each meeting -->
               <circle cx="205" cy="245" r="5.5"/><circle cx="310" cy="248" r="5.5"/><circle cx="421" cy="265" r="5.5"/><circle cx="555" cy="225" r="5.5"/>
             </g>
             <g font-size="19" fill="var(--ink)" font-family="Lora, Georgia, Times New Roman, serif" font-style="italic">
@@ -592,7 +601,15 @@ svg{display:block;width:100%;height:auto;overflow:visible}
   }
 
   function addMarker(defs, id, color) {
-    const marker = el("marker", {id, viewBox:"0 0 10 10", refX:"8.4", refY:"5", markerWidth:"5.5", markerHeight:"5.5", orient:"auto-start-reverse"});
+    const marker = el("marker", {
+      id,
+      viewBox:"0 0 10 10",
+      refX:"8.4",
+      refY:"5",
+      markerWidth:"5.5",
+      markerHeight:"5.5",
+      orient:"auto-start-reverse"
+    });
     marker.appendChild(el("path", {d:"M0 0 L10 5 L0 10 z", fill:color}));
     defs.appendChild(marker);
   }
@@ -620,8 +637,10 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     svg.appendChild(defs);
 
     const shadow = el("ellipse", {
-      cx:cfg.cx, cy:large ? 378 : 174,
-      rx:large ? 218 : 80, ry:large ? 25 : 10,
+      cx:cfg.cx,
+      cy:large ? 378 : 174,
+      rx:large ? 218 : 80,
+      ry:large ? 25 : 10,
       fill:"rgba(20,27,35,.13)"
     });
     svg.appendChild(shadow);
@@ -629,6 +648,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     const gamma1 = [];
     const gamma2 = [];
     let backGroup = null;
+
     if (cycles) {
       const N = 260;
       for (let i = 0; i < N; i++) {
@@ -636,28 +656,79 @@ svg{display:block;width:100%;height:auto;overflow:visible}
         gamma1.push(torusSample(.58, t, cfg));
         gamma2.push(torusSample(t, -.03, cfg));
       }
+
       backGroup = el("g");
+
       const backStyle = (color) => ({
-        fill:"none", stroke:color, "stroke-width":"5", "stroke-linecap":"round", "stroke-linejoin":"round",
-        "stroke-dasharray":"10 9", opacity:".62"
+        fill:"none",
+        stroke:color,
+        "stroke-width":"5",
+        "stroke-linecap":"round",
+        "stroke-linejoin":"round",
+        "stroke-dasharray":"10 9",
+        opacity:".62"
       });
-      for (const seg of contiguousSegments(gamma1, (a,b) => (a.normal[2] + b.normal[2]) / 2 <= 0)) backGroup.appendChild(el("path", {d:pathFrom(seg), ...backStyle("var(--blue)")}));
-      for (const seg of contiguousSegments(gamma2, (a,b) => (a.normal[2] + b.normal[2]) / 2 <= 0)) backGroup.appendChild(el("path", {d:pathFrom(seg), ...backStyle("var(--orange)")}));
+
+      for (const seg of contiguousSegments(
+        gamma1,
+        (a,b) => (a.normal[2] + b.normal[2]) / 2 <= 0
+      )) {
+        backGroup.appendChild(
+          el("path", {
+            d:pathFrom(seg),
+            ...backStyle("var(--blue)")
+          })
+        );
+      }
+
+      for (const seg of contiguousSegments(
+        gamma2,
+        (a,b) => (a.normal[2] + b.normal[2]) / 2 <= 0
+      )) {
+        backGroup.appendChild(
+          el("path", {
+            d:pathFrom(seg),
+            ...backStyle("var(--orange)")
+          })
+        );
+      }
     }
 
     const quads = [];
     const light = [-.35, -.45, .82];
+
     for (let i = 0; i < uCount; i++) {
       const u0 = 2 * Math.PI * i / uCount;
       const u1 = 2 * Math.PI * (i + 1) / uCount;
+
       for (let j = 0; j < vCount; j++) {
         const v0 = 2 * Math.PI * j / vCount;
         const v1 = 2 * Math.PI * (j + 1) / vCount;
-        const p = [torusSample(u0,v0,cfg),torusSample(u1,v0,cfg),torusSample(u1,v1,cfg),torusSample(u0,v1,cfg)];
-        const n = torusSample((u0+u1)/2,(v0+v1)/2,cfg).normal;
+
+        const p = [
+          torusSample(u0,v0,cfg),
+          torusSample(u1,v0,cfg),
+          torusSample(u1,v1,cfg),
+          torusSample(u0,v1,cfg)
+        ];
+
+        const n = torusSample(
+          (u0+u1)/2,
+          (v0+v1)/2,
+          cfg
+        ).normal;
+
         if (n[2] <= -.04) continue;
-        const diffuse = Math.max(0, n[0]*light[0] + n[1]*light[1] + n[2]*light[2]);
+
+        const diffuse = Math.max(
+          0,
+          n[0]*light[0] +
+          n[1]*light[1] +
+          n[2]*light[2]
+        );
+
         const mix = Math.round(19 + 43 * diffuse);
+
         quads.push({
           depth:p.reduce((s,q)=>s+q.depth,0)/4,
           d:pathFrom(p,true),
@@ -665,38 +736,112 @@ svg{display:block;width:100%;height:auto;overflow:visible}
         });
       }
     }
+
     quads.sort((a,b)=>a.depth-b.depth);
-    const mesh = el("g", {"stroke":"color-mix(in srgb,var(--teal) 28%,var(--line))","stroke-width":large?".46":".34","stroke-linejoin":"round"});
-    for (const q of quads) mesh.appendChild(el("path", {d:q.d, fill:q.fill}));
+
+    const mesh = el("g", {
+      "stroke":"color-mix(in srgb,var(--teal) 28%,var(--line))",
+      "stroke-width":large?".46":".34",
+      "stroke-linejoin":"round"
+    });
+
+    for (const q of quads) {
+      mesh.appendChild(
+        el("path", {
+          d:q.d,
+          fill:q.fill
+        })
+      );
+    }
+
     svg.appendChild(mesh);
+
     if (backGroup) svg.appendChild(backGroup);
 
     if (cycles) {
       const frontGroup = el("g");
+
       const frontStyle = (color) => ({
-        fill:"none", stroke:color, "stroke-width":"5.4", "stroke-linecap":"round", "stroke-linejoin":"round"
+        fill:"none",
+        stroke:color,
+        "stroke-width":"5.4",
+        "stroke-linecap":"round",
+        "stroke-linejoin":"round"
       });
-      for (const seg of contiguousSegments(gamma1, (a,b) => (a.normal[2] + b.normal[2]) / 2 > 0)) frontGroup.appendChild(el("path", {d:pathFrom(seg), ...frontStyle("var(--blue)")}));
-      for (const seg of contiguousSegments(gamma2, (a,b) => (a.normal[2] + b.normal[2]) / 2 > 0)) frontGroup.appendChild(el("path", {d:pathFrom(seg), ...frontStyle("var(--orange)")}));
+
+      for (const seg of contiguousSegments(
+        gamma1,
+        (a,b) => (a.normal[2] + b.normal[2]) / 2 > 0
+      )) {
+        frontGroup.appendChild(
+          el("path", {
+            d:pathFrom(seg),
+            ...frontStyle("var(--blue)")
+          })
+        );
+      }
+
+      for (const seg of contiguousSegments(
+        gamma2,
+        (a,b) => (a.normal[2] + b.normal[2]) / 2 > 0
+      )) {
+        frontGroup.appendChild(
+          el("path", {
+            d:pathFrom(seg),
+            ...frontStyle("var(--orange)")
+          })
+        );
+      }
 
       function addArrow(samples, color, markerId) {
         let best = 0;
-        for (let i = 1; i < samples.length; i++) if (samples[i].normal[2] > samples[best].normal[2]) best = i;
+
+        for (let i = 1; i < samples.length; i++) {
+          if (samples[i].normal[2] > samples[best].normal[2]) {
+            best = i;
+          }
+        }
+
         const a = samples[(best - 4 + samples.length) % samples.length];
         const b = samples[(best + 4) % samples.length];
-        frontGroup.appendChild(el("path", {
-          d:`M${a.x.toFixed(2)},${a.y.toFixed(2)} L${b.x.toFixed(2)},${b.y.toFixed(2)}`,
-          fill:"none", stroke:color, "stroke-width":"5.4", "stroke-linecap":"round",
-          "marker-end":`url(#${markerId})`
-        }));
+
+        frontGroup.appendChild(
+          el("path", {
+            d:`M${a.x.toFixed(2)},${a.y.toFixed(2)} L${b.x.toFixed(2)},${b.y.toFixed(2)}`,
+            fill:"none",
+            stroke:color,
+            "stroke-width":"5.4",
+            "stroke-linecap":"round",
+            "marker-end":`url(#${markerId})`
+          })
+        );
       }
-      addArrow(gamma1,"var(--blue)",`${svg.id}-arrow-blue`);
-      addArrow(gamma2,"var(--orange)",`${svg.id}-arrow-orange`);
+
+      addArrow(
+        gamma1,
+        "var(--blue)",
+        `${svg.id}-arrow-blue`
+      );
+
+      addArrow(
+        gamma2,
+        "var(--orange)",
+        `${svg.id}-arrow-orange`
+      );
+
       svg.appendChild(frontGroup);
     }
 
     if (!large) {
-      const label = el("text", {x:"130",y:"210","text-anchor":"middle","font-size":"12",fill:"var(--muted)","font-family":"Inter,Segoe UI,sans-serif"});
+      const label = el("text", {
+        x:"130",
+        y:"210",
+        "text-anchor":"middle",
+        "font-size":"12",
+        fill:"var(--muted)",
+        "font-family":"Inter,Segoe UI,sans-serif"
+      });
+
       label.textContent = "the gap is now the central hole";
       svg.appendChild(label);
     }
@@ -704,34 +849,69 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 
   function addTextLabel(svg, x, y, textValue, color, anchor = "start") {
     const group = el("g");
-    const text = el("text", {x,y,"text-anchor":anchor,"font-size":"18",fill:color,"font-family":"Lora, Georgia, Times New Roman, serif","font-style":"italic"});
-    // Parse "ω_1", "u_{12}" etc into text + <tspan baseline-shift=sub> segments
-    // so subscripts render as proper subscripts rather than inline glyphs.
+
+    const text = el("text", {
+      x,
+      y,
+      "text-anchor":anchor,
+      "font-size":"18",
+      fill:color,
+      "font-family":"Lora, Georgia, Times New Roman, serif",
+      "font-style":"italic"
+    });
+
+    // Parse "ω_1", "u_{12}" etc into text + <tspan baseline-shift=sub>
+    // segments so subscripts render as proper subscripts rather than
+    // inline glyphs.
     const parts = textValue.split(/(_\{[^}]+\}|_[A-Za-z0-9])/g);
+
     for (const p of parts) {
       if (!p) continue;
+
       if (p.startsWith("_{") && p.endsWith("}")) {
-        const sub = el("tspan", {"baseline-shift":"sub","font-size":"0.72em"});
+        const sub = el("tspan", {
+          "baseline-shift":"sub",
+          "font-size":"0.72em"
+        });
         sub.textContent = p.slice(2,-1);
         text.appendChild(sub);
       } else if (p.startsWith("_")) {
-        const sub = el("tspan", {"baseline-shift":"sub","font-size":"0.72em"});
+        const sub = el("tspan", {
+          "baseline-shift":"sub",
+          "font-size":"0.72em"
+        });
         sub.textContent = p.slice(1);
         text.appendChild(sub);
       } else {
         text.appendChild(document.createTextNode(p));
       }
     }
+
     group.appendChild(text);
     svg.appendChild(group);
+
     const box = text.getBBox();
-    const rect = el("rect", {x:(box.x-7).toFixed(1),y:(box.y-4).toFixed(1),width:(box.width+14).toFixed(1),height:(box.height+8).toFixed(1),rx:"7",fill:"var(--panel)",stroke:"var(--line)","stroke-width":"1",opacity:".96"});
+
+    const rect = el("rect", {
+      x:(box.x-7).toFixed(1),
+      y:(box.y-4).toFixed(1),
+      width:(box.width+14).toFixed(1),
+      height:(box.height+8).toFixed(1),
+      rx:"7",
+      fill:"var(--panel)",
+      stroke:"var(--line)",
+      "stroke-width":"1",
+      opacity:".96"
+    });
+
     group.insertBefore(rect,text);
+
     return group;
   }
 
   function renderLattice(svg) {
     svg.replaceChildren();
+
     const defs = el("defs");
     addMarker(defs,"lattice-arrow-blue","var(--blue)");
     addMarker(defs,"lattice-arrow-orange","var(--orange)");
@@ -740,73 +920,343 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     const O = {x:104,y:426};
     const a = {x:146,y:0};
     const b = {x:70,y:-112};
-    const P = (m,n) => ({x:O.x+m*a.x+n*b.x,y:O.y+m*a.y+n*b.y});
 
-    const axes = el("g", {stroke:"var(--ink)","stroke-width":"1.35",fill:"none"});
+    const P = (m,n) => ({
+      x:O.x+m*a.x+n*b.x,
+      y:O.y+m*a.y+n*b.y
+    });
+
+    const axes = el("g", {
+      stroke:"var(--ink)",
+      "stroke-width":"1.35",
+      fill:"none"
+    });
+
     axes.appendChild(el("path", {d:"M62 446 H690"}));
     axes.appendChild(el("path", {d:"M62 446 V42"}));
-    axes.appendChild(el("path", {d:"M690 446 l-10 -5 v10 z",fill:"var(--ink)",stroke:"none"}));
-    axes.appendChild(el("path", {d:"M62 42 l-5 10 h10 z",fill:"var(--ink)",stroke:"none"}));
-    svg.appendChild(axes);
-    const re = el("text", {x:"700",y:"452","font-size":"15",fill:"var(--ink)","font-family":"Inter,Segoe UI,sans-serif"}); re.textContent="Re(u)"; svg.appendChild(re);
-    const im = el("text", {x:"36",y:"32","font-size":"15",fill:"var(--ink)","font-family":"Inter,Segoe UI,sans-serif"}); im.textContent="Im(u)"; svg.appendChild(im);
+    axes.appendChild(el("path", {
+      d:"M690 446 l-10 -5 v10 z",
+      fill:"var(--ink)",
+      stroke:"none"
+    }));
+    axes.appendChild(el("path", {
+      d:"M62 42 l-5 10 h10 z",
+      fill:"var(--ink)",
+      stroke:"none"
+    }));
 
-    const grid = el("g", {stroke:"var(--line-strong)","stroke-width":"1.15","stroke-dasharray":"5 5",fill:"none"});
-    for (let n=0;n<=3;n++) grid.appendChild(el("path", {d:pathFrom([P(0,n),P(3,n)])}));
-    for (let m=0;m<=3;m++) grid.appendChild(el("path", {d:pathFrom([P(m,0),P(m,3)])}));
+    svg.appendChild(axes);
+
+    const re = el("text", {
+      x:"700",
+      y:"452",
+      "font-size":"15",
+      fill:"var(--ink)",
+      "font-family":"Inter,Segoe UI,sans-serif"
+    });
+    re.textContent="Re(u)";
+    svg.appendChild(re);
+
+    const im = el("text", {
+      x:"36",
+      y:"32",
+      "font-size":"15",
+      fill:"var(--ink)",
+      "font-family":"Inter,Segoe UI,sans-serif"
+    });
+    im.textContent="Im(u)";
+    svg.appendChild(im);
+
+    const grid = el("g", {
+      stroke:"var(--line-strong)",
+      "stroke-width":"1.15",
+      "stroke-dasharray":"5 5",
+      fill:"none"
+    });
+
+    for (let n=0;n<=3;n++) {
+      grid.appendChild(
+        el("path", {
+          d:pathFrom([P(0,n),P(3,n)])
+        })
+      );
+    }
+
+    for (let m=0;m<=3;m++) {
+      grid.appendChild(
+        el("path", {
+          d:pathFrom([P(m,0),P(m,3)])
+        })
+      );
+    }
+
     svg.appendChild(grid);
 
-    const cell = [P(0,0),P(1,0),P(1,1),P(0,1)];
-    svg.appendChild(el("path", {d:pathFrom(cell,true),fill:"var(--blue-soft)",stroke:"var(--blue)","stroke-width":"1.7","stroke-dasharray":"6 5"}));
+    const cell = [
+      P(0,0),
+      P(1,0),
+      P(1,1),
+      P(0,1)
+    ];
 
-    const points = el("g", {fill:"color-mix(in srgb,var(--ink) 48%,var(--panel))"});
-    for (let n=0;n<=3;n++) for (let m=0;m<=3;m++) {
-      const q=P(m,n); points.appendChild(el("circle", {cx:q.x,cy:q.y,r:"4.4"}));
+    svg.appendChild(
+      el("path", {
+        d:pathFrom(cell,true),
+        fill:"var(--blue-soft)",
+        stroke:"var(--blue)",
+        "stroke-width":"1.7",
+        "stroke-dasharray":"6 5"
+      })
+    );
+
+    const points = el("g", {
+      fill:"color-mix(in srgb,var(--ink) 48%,var(--panel))"
+    });
+
+    for (let n=0;n<=3;n++) {
+      for (let m=0;m<=3;m++) {
+        const q=P(m,n);
+        points.appendChild(
+          el("circle", {
+            cx:q.x,
+            cy:q.y,
+            r:"4.4"
+          })
+        );
+      }
     }
+
     svg.appendChild(points);
 
-    const vector1 = el("path", {d:pathFrom([O,P(1,0)]),stroke:"var(--blue)","stroke-width":"3.5",fill:"none","stroke-linecap":"round","marker-end":"url(#lattice-arrow-blue)"});
-    const vector2 = el("path", {d:pathFrom([O,P(0,1)]),stroke:"var(--orange)","stroke-width":"3.5",fill:"none","stroke-linecap":"round","marker-end":"url(#lattice-arrow-orange)"});
+    const vector1 = el("path", {
+      d:pathFrom([O,P(1,0)]),
+      stroke:"var(--blue)",
+      "stroke-width":"3.5",
+      fill:"none",
+      "stroke-linecap":"round",
+      "marker-end":"url(#lattice-arrow-blue)"
+    });
+
+    const vector2 = el("path", {
+      d:pathFrom([O,P(0,1)]),
+      stroke:"var(--orange)",
+      "stroke-width":"3.5",
+      fill:"none",
+      "stroke-linecap":"round",
+      "marker-end":"url(#lattice-arrow-orange)"
+    });
+
     svg.append(vector1,vector2);
-    addTextLabel(svg,O.x+a.x*.5,O.y+34,"ω_1","var(--blue)","middle");
-    addTextLabel(svg,O.x+b.x*.5-25,O.y+b.y*.5-7,"ω_2","var(--orange)","middle");
 
-    const u0 = {x:O.x+.34*a.x+.34*b.x,y:O.y+.34*a.y+.34*b.y};
-    const u1 = {x:u0.x+a.x,y:u0.y+a.y};
-    const u2 = {x:u0.x+b.x,y:u0.y+b.y};
-    const u12 = {x:u0.x+a.x+b.x,y:u0.y+a.y+b.y};
+    addTextLabel(
+      svg,
+      O.x+a.x*.5,
+      O.y+34,
+      "ω_1",
+      "var(--blue)",
+      "middle"
+    );
 
-    const translations = el("g", {fill:"none","stroke-width":"2.35","stroke-dasharray":"7 6","stroke-linecap":"round"});
-    translations.appendChild(el("path", {d:pathFrom([u0,u1]),stroke:"var(--blue)","marker-end":"url(#lattice-arrow-blue)"}));
-    translations.appendChild(el("path", {d:pathFrom([u0,u2]),stroke:"var(--orange)","marker-end":"url(#lattice-arrow-orange)"}));
-    translations.appendChild(el("path", {d:pathFrom([u1,u12]),stroke:"var(--orange)",opacity:".72"}));
-    translations.appendChild(el("path", {d:pathFrom([u2,u12]),stroke:"var(--blue)",opacity:".72"}));
+    addTextLabel(
+      svg,
+      O.x+b.x*.5-25,
+      O.y+b.y*.5-7,
+      "ω_2",
+      "var(--orange)",
+      "middle"
+    );
+
+    const u0 = {
+      x:O.x+.34*a.x+.34*b.x,
+      y:O.y+.34*a.y+.34*b.y
+    };
+
+    const u1 = {
+      x:u0.x+a.x,
+      y:u0.y+a.y
+    };
+
+    const u2 = {
+      x:u0.x+b.x,
+      y:u0.y+b.y
+    };
+
+    const u12 = {
+      x:u0.x+a.x+b.x,
+      y:u0.y+a.y+b.y
+    };
+
+    const translations = el("g", {
+      fill:"none",
+      "stroke-width":"2.35",
+      "stroke-dasharray":"7 6",
+      "stroke-linecap":"round"
+    });
+
+    translations.appendChild(
+      el("path", {
+        d:pathFrom([u0,u1]),
+        stroke:"var(--blue)",
+        "marker-end":"url(#lattice-arrow-blue)"
+      })
+    );
+
+    translations.appendChild(
+      el("path", {
+        d:pathFrom([u0,u2]),
+        stroke:"var(--orange)",
+        "marker-end":"url(#lattice-arrow-orange)"
+      })
+    );
+
+    translations.appendChild(
+      el("path", {
+        d:pathFrom([u1,u12]),
+        stroke:"var(--orange)",
+        opacity:".72"
+      })
+    );
+
+    translations.appendChild(
+      el("path", {
+        d:pathFrom([u2,u12]),
+        stroke:"var(--blue)",
+        opacity:".72"
+      })
+    );
+
     svg.appendChild(translations);
 
-    const copies = el("g", {fill:"var(--ink)",stroke:"var(--panel)","stroke-width":"2"});
-    for (const q of [u0,u1,u2,u12]) copies.appendChild(el("circle", {cx:q.x,cy:q.y,r:"6.3"}));
+    const copies = el("g", {
+      fill:"var(--ink)",
+      stroke:"var(--panel)",
+      "stroke-width":"2"
+    });
+
+    for (const q of [u0,u1,u2,u12]) {
+      copies.appendChild(
+        el("circle", {
+          cx:q.x,
+          cy:q.y,
+          r:"6.3"
+        })
+      );
+    }
+
     svg.appendChild(copies);
 
-    addTextLabel(svg,u0.x-10,u0.y+31,"u","var(--ink)","middle");
-    addTextLabel(svg,u1.x+13,u1.y+7,"u + ω_1","var(--blue)","start");
-    addTextLabel(svg,u2.x-8,u2.y-18,"u + ω_2","var(--orange)","middle");
-    addTextLabel(svg,u12.x+12,u12.y-12,"u + ω_1 + ω_2","var(--ink)","start");
+    addTextLabel(
+      svg,
+      u0.x-10,
+      u0.y+31,
+      "u",
+      "var(--ink)",
+      "middle"
+    );
 
-    const cellLabel = el("text", {x:(O.x+a.x*.74+b.x*.48),y:(O.y+a.y*.74+b.y*.48-4),"text-anchor":"middle","font-size":"13",fill:"var(--blue)","font-family":"Inter,Segoe UI,sans-serif","font-weight":"700"});
+    addTextLabel(
+      svg,
+      u1.x+13,
+      u1.y+7,
+      "u + ω_1",
+      "var(--blue)",
+      "start"
+    );
+
+    addTextLabel(
+      svg,
+      u2.x-8,
+      u2.y-18,
+      "u + ω_2",
+      "var(--orange)",
+      "middle"
+    );
+
+    addTextLabel(
+      svg,
+      u12.x+12,
+      u12.y-12,
+      "u + ω_1 + ω_2",
+      "var(--ink)",
+      "start"
+    );
+
+    const cellLabel = el("text", {
+      x:(O.x+a.x*.74+b.x*.48),
+      y:(O.y+a.y*.74+b.y*.48-4),
+      "text-anchor":"middle",
+      "font-size":"13",
+      fill:"var(--blue)",
+      "font-family":"Inter,Segoe UI,sans-serif",
+      "font-weight":"700"
+    });
+
     cellLabel.textContent="one repeating cell";
     svg.appendChild(cellLabel);
 
-    const quotient = el("g", {transform:"translate(82,58)"});
-    quotient.appendChild(el("rect", {x:"0",y:"0",width:"168",height:"103",rx:"13",fill:"var(--panel)",stroke:"var(--line)"}));
-    const q1=el("text",{x:"15",y:"25","font-size":"12.5",fill:"var(--muted)","font-family":"Inter,Segoe UI,sans-serif"});q1.textContent="identify every translated copy";quotient.appendChild(q1);
-    const q2=el("text",{x:"15",y:"59","font-size":"29",fill:"var(--blue)","font-family":"Lora, Georgia, Times New Roman, serif","font-style":"italic"});q2.textContent="ℂ / Λ";quotient.appendChild(q2);
-    const q3=el("text",{x:"15",y:"85","font-size":"12.5",fill:"var(--muted)","font-family":"Inter,Segoe UI,sans-serif"});q3.textContent="one point per lattice cell";quotient.appendChild(q3);
+    const quotient = el("g", {
+      transform:"translate(82,58)"
+    });
+
+    quotient.appendChild(
+      el("rect", {
+        x:"0",
+        y:"0",
+        width:"168",
+        height:"103",
+        rx:"13",
+        fill:"var(--panel)",
+        stroke:"var(--line)"
+      })
+    );
+
+    const q1=el("text",{
+      x:"15",
+      y:"25",
+      "font-size":"12.5",
+      fill:"var(--muted)",
+      "font-family":"Inter,Segoe UI,sans-serif"
+    });
+    q1.textContent="identify every translated copy";
+    quotient.appendChild(q1);
+
+    const q2=el("text",{
+      x:"15",
+      y:"59",
+      "font-size":"29",
+      fill:"var(--blue)",
+      "font-family":"Lora, Georgia, Times New Roman, serif",
+      "font-style":"italic"
+    });
+    q2.textContent="ℂ / Λ";
+    quotient.appendChild(q2);
+
+    const q3=el("text",{
+      x:"15",
+      y:"85",
+      "font-size":"12.5",
+      fill:"var(--muted)",
+      "font-family":"Inter,Segoe UI,sans-serif"
+    });
+    q3.textContent="one point per lattice cell";
+    quotient.appendChild(q3);
+
     svg.appendChild(quotient);
   }
 
-  renderTorus(document.getElementById("torus-mini"), {large:false,cycles:false});
-  renderTorus(document.getElementById("torus-large"), {large:true,cycles:true});
-  renderLattice(document.getElementById("period-lattice"));
+  renderTorus(
+    document.getElementById("torus-mini"),
+    {large:false,cycles:false}
+  );
+
+  renderTorus(
+    document.getElementById("torus-large"),
+    {large:true,cycles:true}
+  );
+
+  renderLattice(
+    document.getElementById("period-lattice")
+  );
 })();
 </script>
 
@@ -822,13 +1272,17 @@ svg{display:block;width:100%;height:auto;overflow:visible}
    don't send a message on every animation frame. */
 (() => {
   const root = document.documentElement;
+
   const syncTheme = () => {
     try {
       const theme = window.parent.document.documentElement.dataset.theme;
-      if (theme) root.dataset.theme = theme; else root.removeAttribute("data-theme");
+      if (theme) root.dataset.theme = theme;
+      else root.removeAttribute("data-theme");
     } catch (_) {}
   };
+
   let lastReported = 0;
+
   const report = () => {
     /* Measure the article content itself rather than body/documentElement.
        body.scrollHeight and root.scrollHeight both include the viewport's
@@ -839,34 +1293,53 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     const target = document.querySelector(".viz") || document.body;
     const rect = target.getBoundingClientRect();
     const height = Math.max(1, Math.ceil(rect.bottom + window.scrollY));
+
     /* De-dup identical reports without any accumulating fudge. The parent
        has its own hysteresis, but sending fewer messages avoids waking
        its handler needlessly. */
     if (Math.abs(height - lastReported) < 2) return;
+
     lastReported = height;
+
     try {
       window.parent.postMessage(
-        { type: "article-visualization:resize", height },
+        {
+          type: "article-visualization:resize",
+          height
+        },
         window.location.origin
       );
     } catch (_) {}
   };
+
   syncTheme();
+
   try {
-    new MutationObserver(() => { syncTheme(); report(); })
-      .observe(window.parent.document.documentElement, {
+    new MutationObserver(() => {
+      syncTheme();
+      report();
+    }).observe(
+      window.parent.document.documentElement,
+      {
         attributes: true,
         attributeFilter: ["data-theme"],
-      });
+      }
+    );
   } catch (_) {}
+
   window.addEventListener("load", report, { once: true });
+
   /* Deliberately do NOT listen for `resize` on the iframe's own window.
      That event fires whenever the parent applies iframe.style.height,
      which turns any tiny mismatch between our measurement and the
      applied value into a feedback loop that grows on every frame. */
+
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(report).catch(() => {});
+    document.fonts.ready
+      .then(report)
+      .catch(() => {});
   }
+
   if ("ResizeObserver" in window) {
     /* Observe the content, not the body. Watching body reflects the
        viewport (which the parent controls) back into our height
@@ -874,9 +1347,11 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     const target = document.querySelector(".viz") || document.body;
     new ResizeObserver(report).observe(target);
   }
+
   requestAnimationFrame(report);
 })();
 </script>
-  <script src="/assets/js/visualization-frame.js"></script>
+
+<script src="/assets/js/visualization-frame.js"></script>
 </body>
 </html>
