@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 4G
-description: 'From OFDM and 1 ms scheduling to LTE''s flat architecture and core network: how 4G moves data from a phone to the internet.'
+description: My attempt to know it all about an ubiquitous protocol that is surprisingly rarely learned in depth — without turning the explanation into an RFC.
 date: 2026-06-26
 tags:
 - signal-processing
