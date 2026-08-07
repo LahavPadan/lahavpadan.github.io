@@ -396,7 +396,8 @@ The universal machinery is now in place.
 Two further pieces apply what the framework establishes:
 
 - [Bragg Mirrors, Laser Cavities, and Engineered Gratings](/posts/bragg-mirrors-and-lasers/) takes the coupled-mode identification of [§ 2](#sec-2) to the band edges (standing waves, penetration depth, Bragg length) and applies those readings to DBR mirrors, distributed-feedback lasers, and gratings shaped in amplitude or period.
-- [Optical Isolators and Y-Junction Circulators](/posts/isolators-and-circulators/) uses the $\sigma_y$ realization of § 3 to build the two devices that non-reciprocity makes possible.
+- [Optical Isolators and Y-Junction Circulators](/posts/isolators-and-circulators/) uses the $\sigma_y$ realization of [§ 3](#sec-3) to build the two devices that non-reciprocity makes possible.
+
 ## § 1. Background: the Bragg condition {#sec-1}
 
 A **periodic dielectric** has permittivity $\varepsilon(z + \Lambda) = \varepsilon(z)$ for some fixed period $\Lambda$; its average value $\bar\varepsilon$ sets an average refractive index $n_{\text{avg}} = \sqrt{\bar\varepsilon}$, and the deviation of $\varepsilon(z)$ from $\bar\varepsilon$ is the modulation.
@@ -418,10 +419,10 @@ A third wavenumber, $q$, will enter only in [§ 2](#sec-2). It measures how far 
 
 Consider a periodic stack of parallel scattering planes separated by distance $\Lambda$ (perpendicular to the planes). A **monochromatic** wave — one containing only a single frequency, hence a single wavelength $\lambda$ inside the medium — is incident at angle $\theta$ measured from the planes (the traditional Bragg convention; note that this is the angle between the ray and the planes, not the plane normal).
 
-Two waves reflect off two adjacent planes; the wave that penetrates one plane spacing before reflecting travels an extra path of $2\Lambda\sin\theta$ (each in-going leg contributes $\Lambda\sin\theta$). For the two reflections to interfere constructively at the detector, the extra path must equal an integer number of wavelengths:
+- **Path difference.** Two waves reflect off two adjacent planes; the wave that penetrates one plane spacing before reflecting travels an extra path of $2\Lambda\sin\theta$ (each in-going leg contributes $\Lambda\sin\theta$).
+- **Constructive interference.** For the two reflections to interfere constructively at the detector, the extra path must equal an integer number of wavelengths:
 
-$$m\lambda_{\text{medium}} = 2\Lambda\sin\theta, \qquad m = 1, 2, 3, \ldots
-\tag{7}\label{eq:bragg-condition}$$
+$$m\lambda_{\text{medium}} = 2\Lambda\sin\theta, \qquad m = 1, 2, 3, \ldots \tag{7}\label{eq:bragg-condition}$$
 
 Expressing in the vacuum wavelength $\lambda_0 = n_{\text{avg}}\lambda_{\text{medium}}$:
 
@@ -431,16 +432,17 @@ $$m\lambda_0 = 2 n_{\text{avg}} \Lambda \sin\theta.$$
 
 The integer $m$ is the **order** of diffraction. The formula is intuitive but has two limitations:
 
-1. **Discrete-planes assumption.** It treats the reflection as if it happened at discrete planes — a real continuous modulation $\varepsilon(z)$ has no planes to bounce off, and something else must take their place. Picture 3 replaces the planes with Fourier coefficients $\varepsilon_m$: each spatial harmonic of the modulation acts as one "plane" in the sense that its amplitude sets the strength of the $m$-th reflection.
-2. **Missing resonance width.** It fixes only the resonant angle for each $m$ but gives no width in $\lambda$ or $k$ around that resonance — the reader who asks "how far off resonance can a wave be and still reflect?" gets no answer. Picture 3 supplies this too, because the master equation that replaces $m\lambda = 2n_{\text{avg}}\Lambda\sin\theta$ is a matrix equation whose off-diagonal entries $\varepsilon_m$ produce a *range* of $k$ over which the two near-degenerate rows couple strongly; § 2 identifies that range as the stopband and computes its width.
+1. **Discrete-planes assumption.** It treats the reflection as if it happened at discrete planes — a real continuous modulation $\varepsilon(z)$ has no planes to bounce off, and something else must take their place. [Picture 3](#picture-3) replaces the planes with Fourier coefficients $\varepsilon_m$: each spatial harmonic of the modulation acts as one "plane" in the sense that its amplitude sets the strength of the $m$-th reflection.
+2. **Missing resonance width.** It fixes only the resonant angle for each $m$ but gives no width in $\lambda$ or $k$ around that resonance — the reader who asks "how far off resonance can a wave be and still reflect?" gets no answer. [Picture 3](#picture-3) supplies this too, because the master equation that replaces $m\lambda = 2n_{\text{avg}}\Lambda\sin\theta$ is a matrix equation whose off-diagonal entries $\varepsilon_m$ produce a *range* of $k$ over which the two near-degenerate rows couple strongly; [§ 2](#sec-2) identifies that range as the stopband and computes its width.
 
 ### Picture 2: elastic scattering with reciprocal-lattice momentum {#picture-2}
 
 For a monochromatic wave at frequency $\omega$ in a medium of average permittivity $\bar\varepsilon$, the wavevector magnitude is fixed by the dispersion relation $|\mathbf{k}| = \omega\sqrt{\bar\varepsilon}/c \equiv k$.
 
-A scattering process that reflects the wave from wavevector $\mathbf{k}_{\text{in}}$ to $\mathbf{k}_{\text{out}}$ is called **elastic** if $|\mathbf{k}_{\text{out}}| = |\mathbf{k}_{\text{in}}|$: the wavelength is preserved. Here that follows from the medium being time-independent — $\varepsilon(\mathbf{r})$ has no time dependence, so the wave equation is invariant under time translations and the frequency of every mode is conserved. In a homogeneous piece of medium $|\mathbf{k}|$ is fixed by $\omega$ through the dispersion relation, so $|\mathbf{k}_{\text{in}}| = |\mathbf{k}_{\text{out}}|$ follows.
-
-Momentum is different. Continuous translation symmetry, which would conserve linear momentum exactly, is broken: the medium is only invariant under the *discrete* translations $z \to z + \Lambda$. The residue of that broken symmetry is that momentum is conserved only modulo the reciprocal-lattice vector:
+- **Elasticity.** A scattering process that reflects the wave from wavevector $\mathbf{k}_{\text{in}}$ to $\mathbf{k}_{\text{out}}$ is called **elastic** if $|\mathbf{k}_{\text{out}}| = |\mathbf{k}_{\text{in}}|$: the wavelength is preserved.
+  - Here that follows from the medium being time-independent — $\varepsilon(\mathbf{r})$ has no time dependence, so the wave equation is invariant under time translations and the frequency of every mode is conserved.
+  - In a homogeneous piece of medium $|\mathbf{k}|$ is fixed by $\omega$ through the dispersion relation, so $|\mathbf{k}_{\text{in}}| = |\mathbf{k}_{\text{out}}|$ follows.
+- **Momentum conservation.** Continuous translation symmetry, which would conserve linear momentum exactly, is broken: the medium is only invariant under the *discrete* translations $z \to z + \Lambda$. The residue of that broken symmetry is that momentum is conserved only modulo the reciprocal-lattice vector:
 
 $$\mathbf{G}_m = m\, \mathbf{G}_1, \qquad |\mathbf{G}_1| = \frac{2\pi}{\Lambda}, \quad m \in \mathbb{Z},$$
 
@@ -452,7 +454,7 @@ Combined with elasticity $|\mathbf{k}_{\text{out}}| = |\mathbf{k}_{\text{in}}| =
 
 $$m G_1 = 2 k \sin\theta \implies m\lambda_0 = 2 n_{\text{avg}} \Lambda \sin\theta,$$
 
-the same formula as Picture 1.
+the same formula as [Picture 1](#picture-1).
 
 {% include visualization.html src="bragg-reciprocal-lattice.html" title="Elastic reciprocal-lattice scattering construction" %}
 
@@ -465,21 +467,25 @@ This picture assembles [the scalar wave equation for an inhomogeneous medium](#p
 
 The later wave sections specialize the framework of [§ 0](#sec-0) to a spatial wave problem: a wave propagating through a medium whose permittivity varies with position. This refresher derives the equation the wave obeys.
 
-Start with the two curl equations of Maxwell in a linear, isotropic, source-free medium:
+#### Derivation walkthrough
+
+1. Start with the two curl equations of Maxwell in a linear, isotropic, source-free medium:
 
 $$\nabla \times \mathbf{E} = -\partial_t \mathbf{B}, \qquad \nabla \times \mathbf{H} = \partial_t \mathbf{D}.$$
 
-We assume the material is **nonmagnetic**, meaning its permeability equals the vacuum value $\mathbf{B} = \mu_0 \mathbf{H}$. This holds for every dielectric medium discussed in [the Bloch-theorem refresher](#picture-3-bloch-theorem), [§ 1](#sec-1)–[§ 4](#sec-4), and the device applications of [Bragg Mirrors, Laser Cavities, and Engineered Gratings](/posts/bragg-mirrors-and-lasers/) (glasses, semiconductors, transparent dielectrics), because atomic magnetic moments cannot follow the electromagnetic field at $10^{14}$ Hz — the same inertial cutoff that will reappear in [§ 3](#sec-3) when we ask why ferromagnetic resonance dies at optical frequencies. [§ 3](#sec-3) is the one section in which $\mu \neq \mu_0$ matters.
+2. We assume the material is **nonmagnetic**, meaning its permeability equals the vacuum value $\mathbf{B} = \mu_0 \mathbf{H}$. This holds for every dielectric medium discussed in [the Bloch-theorem refresher](#picture-3-bloch-theorem), [§ 1](#sec-1)–[§ 4](#sec-4), and the device applications of [Bragg Mirrors, Laser Cavities, and Engineered Gratings](/posts/bragg-mirrors-and-lasers/) (glasses, semiconductors, transparent dielectrics), because atomic magnetic moments cannot follow the electromagnetic field at $10^{14}$ Hz — the same inertial cutoff that will reappear in [§ 3](#sec-3) when we ask why ferromagnetic resonance dies at optical frequencies. [§ 3](#sec-3) is the one section in which $\mu \neq \mu_0$ matters.
 
-Take the curl of Faraday's law, substitute Ampère's law, and use $\mathbf{D} = \varepsilon_0 \varepsilon(\mathbf{r}) \mathbf{E}$:
+3. Take the curl of Faraday's law, substitute Ampère's law, and use $\mathbf{D} = \varepsilon_0 \varepsilon(\mathbf{r}) \mathbf{E}$:
 
 $$\nabla \times (\nabla \times \mathbf{E}) = -\mu_0 \partial_t (\nabla \times \mathbf{H}) = -\mu_0 \varepsilon_0 \varepsilon\, \partial_t^2 \mathbf{E}.$$
 
-For a time-harmonic field $\mathbf{E}(\mathbf{r}, t) = \mathbf{E}(\mathbf{r})\, e^{-i\omega t}$, the double time derivative gives $-\omega^2$. The curl-of-curl identity is:
+4. For a time-harmonic field $\mathbf{E}(\mathbf{r}, t) = \mathbf{E}(\mathbf{r})\, e^{-i\omega t}$, the double time derivative gives $-\omega^2$. The curl-of-curl identity is:
 
 $$\nabla \times (\nabla \times \mathbf{E}) = \nabla(\nabla \cdot \mathbf{E}) - \nabla^2 \mathbf{E}.$$
 
-The first term $\nabla(\nabla \cdot \mathbf{E})$ vanishes for a homogeneous medium (Gauss's law $\nabla \cdot \mathbf{D} = 0$ combined with constant $\varepsilon$ gives $\nabla \cdot \mathbf{E} = 0$), but not for a $\varepsilon(\mathbf{r})$ that varies: an inhomogeneous $\varepsilon$ generates polarization-charge gradients that give $\mathbf{E}$ a nonzero longitudinal component, and dropping this term is a real approximation.
+5. The first term $\nabla(\nabla \cdot \mathbf{E})$ vanishes for a homogeneous medium (Gauss's law $\nabla \cdot \mathbf{D} = 0$ combined with constant $\varepsilon$ gives $\nabla \cdot \mathbf{E} = 0$), but not for a $\varepsilon(\mathbf{r})$ that varies: an inhomogeneous $\varepsilon$ generates polarization-charge gradients that give $\mathbf{E}$ a nonzero longitudinal component, and dropping this term is a real approximation.
+
+#### Valid simplification conditions
 
 Restrict to two situations in which dropping it is legitimate:
 
@@ -490,12 +496,13 @@ Under these conditions the wave equation reduces to a **scalar Helmholtz equatio
 
 $$\frac{d^2 E(z)}{dz^2} + \frac{\omega^2}{c^2}\, \varepsilon(z)\, E(z) = 0, \qquad c^2 \equiv \frac{1}{\mu_0 \varepsilon_0}.$$
 
-This is the equation that governs [the Bloch-theorem refresher](#picture-3-bloch-theorem) and §§ 1–10.
+This is the equation that governs [the Bloch-theorem refresher](#picture-3-bloch-theorem) and [§§ 1–10](#sec-1).
 
 <span id="picture-3-permittivity"></span>
 
-**The physical content of $
-arepsilon(z)$.** Matter is composed of positive nuclei and negative electron clouds; an electric field displaces the clouds relative to the nuclei by a small distance, producing induced electric dipoles. Each atom carries a tiny dipole moment $\mathbf{p}_{\text{atom}}$ pointing from displaced negative center to fixed positive center.
+#### The physical content of $\varepsilon(z)$
+
+Matter is composed of positive nuclei and negative electron clouds; an electric field displaces the clouds relative to the nuclei by a small distance, producing induced electric dipoles. Each atom carries a tiny dipole moment $\mathbf{p}_{\text{atom}}$ pointing from displaced negative center to fixed positive center.
 
 Aggregate over many atoms per unit volume, and define the **polarization density**:
 
@@ -520,7 +527,9 @@ Later mentions of "modulation $\Delta\varepsilon$" in a photonic device refer li
 
 <span id="picture-3-refractive-index"></span>
 
-**Refractive index and complex response.** The **refractive index** is $n(\mathbf{r}) = \sqrt{\varepsilon(\mathbf{r})}$. For a plane wave $E \propto e^{ikz}$ in a homogeneous medium, the Helmholtz equation gives $k = n\omega/c$, so the phase velocity is $c/n$: a wave slows by the factor $n$ inside a dense dielectric.
+#### Refractive index and complex response
+
+The **refractive index** is $n(\mathbf{r}) = \sqrt{\varepsilon(\mathbf{r})}$. For a plane wave $E \propto e^{ikz}$ in a homogeneous medium, the Helmholtz equation gives $k = n\omega/c$, so the phase velocity is $c/n$: a wave slows by the factor $n$ inside a dense dielectric.
 
 When the medium absorbs or amplifies, $\varepsilon$ acquires an imaginary part; the causal link between its real and imaginary parts (the Kramers–Kronig relations) is derived in [Bragg Mirrors, Laser Cavities, and Engineered Gratings](/posts/bragg-mirrors-and-lasers/#sec-2-3-1), where it directly constrains index-coupled and gain-coupled DFB design.
 
@@ -536,7 +545,9 @@ with the crucial feature that the differential operator $\mathcal{L}$ commutes w
 
 <span id="picture-3-bloch-waves"></span>
 
-**Bloch waves and the translation operator.** Look for solutions on which $T_\Lambda$ acts by a scalar: $\psi(z + \Lambda) = \lambda\, \psi(z)$. For the solution to be bounded on the whole real line, $|\lambda| = 1$ (iterating $T_\Lambda^N$ multiplies by $\lambda^N$; anything with $|\lambda| \neq 1$ diverges at one end). Write $\lambda = e^{ik\Lambda}$ with $k$ real (any complex number of modulus 1 has this form for some real phase; $k$ carries units of inverse length).
+#### Bloch waves and the translation operator
+
+Look for solutions on which $T_\Lambda$ acts by a scalar: $\psi(z + \Lambda) = \lambda\, \psi(z)$. For the solution to be bounded on the whole real line, $|\lambda| = 1$ (iterating $T_\Lambda^N$ multiplies by $\lambda^N$; anything with $|\lambda| \neq 1$ diverges at one end). Write $\lambda = e^{ik\Lambda}$ with $k$ real (any complex number of modulus 1 has this form for some real phase; $k$ carries units of inverse length).
 
 The functional equation $\psi(z + \Lambda) = e^{ik\Lambda}\psi(z)$ has solutions of the form:
 
@@ -548,46 +559,56 @@ The parameter $k$ is called the **Bloch wavenumber** or **crystal momentum**; th
 
 <span id="picture-3-completeness"></span>
 
-**Completeness of Bloch solutions.** The claim: for a medium with $\varepsilon(z + \Lambda) = \varepsilon(z)$, every solution of the second-order wave equation $\mathcal{L}\, E = 0$ is a linear combination of at most two Bloch waves. This is nontrivial — the periodicity is what makes it true, and the argument requires that both $\mathcal{L}$ and $T_\Lambda$ act on the same solution space. Three steps:
+#### Completeness of Bloch solutions
+
+The claim: for a medium with $\varepsilon(z + \Lambda) = \varepsilon(z)$, every solution of the second-order wave equation $\mathcal{L}\, E = 0$ is a linear combination of at most two Bloch waves. This is nontrivial — the periodicity is what makes it true, and the argument requires that both $\mathcal{L}$ and $T_\Lambda$ act on the same solution space. Three steps:
 
 <span id="picture-3-step-1"></span>
 
-**Step 1 — the solution space is two-dimensional.**
-For a linear second-order ODE, specifying the initial values $E(0)$ and $E'(0)$ uniquely determines $E(z)$ everywhere (existence and uniqueness for linear ODEs). Solutions form a two-dimensional vector space, parameterized by these two initial values — the same two-dimensional space in which the transfer matrix $T$ of [§ 5](#sec-5) will act.
+**Step 1 — the solution space is two-dimensional.** For a linear second-order ODE, specifying the initial values $E(0)$ and $E'(0)$ uniquely determines $E(z)$ everywhere (existence and uniqueness for linear ODEs). Solutions form a two-dimensional vector space, parameterized by these two initial values — the same two-dimensional space in which the transfer matrix $T$ of [§ 5](#sec-5) will act.
 
 <span id="picture-3-step-2"></span>
 
-**Step 2 — commuting operators send solutions to solutions.**
-Because $\varepsilon(z)$ is periodic, $\mathcal{L}$ and $T_\Lambda$ commute: shifting a periodic-coefficient ODE by one period gives an ODE with the *same* coefficients. Applying $T_\Lambda$ to a solution $E$ of $\mathcal{L}\, E = 0$ then gives another solution:
+**Step 2 — commuting operators send solutions to solutions.** Because $\varepsilon(z)$ is periodic, $\mathcal{L}$ and $T_\Lambda$ commute: shifting a periodic-coefficient ODE by one period gives an ODE with the *same* coefficients. Applying $T_\Lambda$ to a solution $E$ of $\mathcal{L}\, E = 0$ then gives another solution:
 
 $$\mathcal{L}(T_\Lambda E) = T_\Lambda(\mathcal{L} E) = T_\Lambda(0) = 0.$$
 
 So $T_\Lambda$ maps the solution space into itself.
 
-A basic fact about commuting operators: **any family of matrices that commute with each other can be simultaneously diagonalized**. Concretely, if $A$ and $B$ commute, there exists a basis in which both are diagonal, and therefore a common set of eigenvectors — every eigenvector of $A$ is an eigenvector of $B$, and vice versa.
+<span id="picture-3-step-3"></span>
 
-So here, since $\mathcal L$ and $T_\Lambda$ commute, we can find their eigenvectors together: restrict $T_\Lambda$ to the two-dimensional solution space of $\mathcal L$ (Step 1), where it acts as a $2 \times 2$ matrix; diagonalize that matrix; each of its two eigenvectors is simultaneously a solution of the wave equation and a Bloch eigenvector of $T_\Lambda$.
+**Step 3 — simultaneous diagonalization.** A basic fact about commuting operators: **any family of matrices that commute with each other can be simultaneously diagonalized**. Concretely, if $A$ and $B$ commute, there exists a basis in which both are diagonal, and therefore a common set of eigenvectors — every eigenvector of $A$ is an eigenvector of $B$, and vice versa.
+
+So here, since $\mathcal L$ and $T_\Lambda$ commute, we can find their eigenvectors together: restrict $T_\Lambda$ to the two-dimensional solution space of $\mathcal L$ ([Step 1](#picture-3-step-1)), where it acts as a $2 \times 2$ matrix; diagonalize that matrix; each of its two eigenvectors is simultaneously a solution of the wave equation and a Bloch eigenvector of $T_\Lambda$.
+
+#### Properties of the unitary operator $T_\Lambda$
 
 One more structural fact worth stating explicitly: $T_\Lambda$ is a **unitary** operator. It just relabels $z \to z + \Lambda$, permuting the values of a function without changing any of them, so it preserves the norm of any function it acts on. Two consequences from linear algebra:
 
 1. The eigenvalues of a unitary matrix all have $|\lambda| = 1$.
 2. Eigenvectors of a unitary matrix at distinct eigenvalues are orthogonal, so the two Bloch waves at distinct eigenvalues of $T_\Lambda$ are orthogonal to each other.
 
-<span id="picture-3-step-3"></span>
+**The two eigenvalues.**
 
-**Step 3 — two eigenvalues.**
-Any $2 \times 2$ matrix has two eigenvalues (over $\mathbb{C}$). For a lossless medium, the argument of the previous subsection fixes $|\lambda| = 1$ on both. In general, both roots satisfy $\lambda_1 \lambda_2 = \det T_\Lambda$; [§ 5](#sec-5) will show $\det T_\Lambda = 1$ from a conservation law.
+Any $2 \times 2$ matrix has two eigenvalues (over $\mathbb{C}$). For a lossless medium, the argument of the previous subsection fixes $|\lambda| = 1$ on both. In general, both roots satisfy:
 
-Together these imply that in a lossless medium either:
+$$\lambda_1 \lambda_2 = \det T_\Lambda.$$
 
-- Both eigenvalues have $|\lambda| = 1$ (a **band**).
-- They are real reciprocals with $\lambda_2 = 1/\lambda_1$ (a **gap**, where one solution grows exponentially with $z$ and the other decays).
+*(Note: [§ 5](#sec-5) will show $\det T_\Lambda = 1$ from a conservation law).*
 
-Each eigenvalue produces one Bloch-form solution, and their linear combinations span the whole two-dimensional solution space. When both eigenvalues coincide at $\pm 1$, the two eigenvectors merge; this happens exactly at the top and bottom of each stopband and corresponds to the standing waves worked out in [Bragg Mirrors, Laser Cavities, and Engineered Gratings](/posts/bragg-mirrors-and-lasers/#sec-1-1). That coincidence is the special "double root" case where $\text{tr}(T_\Lambda) = \pm 2$ with $\det = 1$.
+Together, these conditions imply that in a lossless medium either:
+- **Band:** Both eigenvalues have $|\lambda| = 1$.
+- **Gap:** They are real reciprocals with $\lambda_2 = 1/\lambda_1$ (where one solution grows exponentially with $z$ and the other decays).
+
+Each eigenvalue produces one Bloch-form solution, and their linear combinations span the entire two-dimensional solution space.
+
+- **Double-root case.** When both eigenvalues coincide at $\pm 1$, the two eigenvectors merge. This happens exactly at the top and bottom of each stopband, corresponding to the standing waves worked out in [Bragg Mirrors, Laser Cavities, and Engineered Gratings](/posts/bragg-mirrors-and-lasers/#sec-1-1). This special coincidence occurs where $\text{tr}(T_\Lambda) = \pm 2$ with $\det = 1$.
 
 <span id="picture-3-reciprocal-lattice"></span>
 
-**Reciprocal-lattice equivalence.** Because $u(z)$ is periodic, expand it in a Fourier series:
+**Reciprocal-lattice equivalence.**
+
+Because $u(z)$ is periodic, expand it in a Fourier series:
 
 $$u(z) = \sum_{n \in \mathbb{Z}} u_n\, e^{i n G z}, \qquad G \equiv 2\pi/\Lambda.$$
 
@@ -595,25 +616,38 @@ Then:
 
 $$\psi(z) = e^{ikz} u(z) = \sum_n u_n\, e^{i(k + nG) z}.$$
 
-The Bloch wave at wavenumber $k$ is a superposition of plane waves at wavenumbers $k + nG$ for all integers $n$. This is best read as **aliasing**: on a lattice with period $\Lambda$, one cannot tell a wave of wavenumber $k$ apart from waves of wavenumber $k + nG$, because they agree at every position $z = m\Lambda$ (any two differ there by $e^{inG \cdot m\Lambda} = e^{in\cdot 2\pi m} = 1$).
+The Bloch wave at wavenumber $k$ is a superposition of plane waves at wavenumbers $k + nG$ for all integers $n$.
 
-Every wavenumber $k$ and every wavenumber $k + nG$ leave the same footprint on the lattice, and the medium cannot distinguish between them. Formally: $e^{i(k+G)z}\cdot u(z) = e^{ikz}\cdot [e^{iGz} u(z)]$ and $e^{iGz}u(z)$ is another $\Lambda$-periodic function, so the "Bloch wave at $k+G$" is the same Bloch wave as at $k$ — different labels for the same object.
+- **Aliasing effect.** On a lattice with period $\Lambda$, one cannot distinguish a wave of wavenumber $k$ from waves of wavenumber $k + nG$, because they agree at every position $z = m\Lambda$ (any two differ there by $e^{inG \cdot m\Lambda} = e^{in\cdot 2\pi m} = 1$).
+- **Physical implication.** Every wavenumber $k$ and $k + nG$ leave the same footprint on the lattice, and the medium cannot distinguish between them. Formally:
 
-So **$k$ is defined modulo $G$**: the natural domain is the **first Brillouin zone** $k \in (-\pi/\Lambda, \pi/\Lambda]$, or by convention $[0, G)$. In dispersion plots, the free-space parabola $\omega = ck$ (which was one-to-one) gets **folded** back into the Brillouin zone at each crossing of $k = \pm\pi/\Lambda$ — an aliasing artifact of the periodicity, and the geometric mechanism that later opens gaps at the Brillouin-zone boundaries $k = \pm\pi/\Lambda$.
+$$e^{i(k+G)z}\cdot u(z) = e^{ikz}\cdot [e^{iGz} u(z)].$$
+
+Since $e^{iGz}u(z)$ is another $\Lambda$-periodic function, the "Bloch wave at $k+G$" is the exact same Bloch wave as at $k$ — merely different labels for the same object.
+
+**Domain definition.**
+- **$k$ is defined modulo $G$.** The natural domain is the **first Brillouin zone** $k \in (-\pi/\Lambda, \pi/\Lambda]$, or by convention $[0, G)$.
+- **Folding.** In dispersion plots, the free-space parabola $\omega = ck$ (which was one-to-one) gets **folded** back into the Brillouin zone at each crossing of $k = \pm\pi/\Lambda$. This aliasing artifact of periodicity is the geometric mechanism that opens gaps at the Brillouin-zone boundaries $k = \pm\pi/\Lambda$.
 
 <span id="picture-3-band-structure"></span>
 
-**Band structure and the group velocity.** For each $k$ in the Brillouin zone, the eigenvalue problem has a discrete set of allowed frequencies $\{\omega_n(k)\}$ indexed by a **band number** $n = 0, 1, 2, \ldots$ — sweep $k$, and each $n$ traces a curve $\omega_n(k)$ called a **band curve**; all such curves together are called the **band structure**.
+**Band structure and group velocity.**
 
-- For a **homogeneous medium** ($\varepsilon = \text{const}$), the band curves are straight lines $\omega = \pm ck/\sqrt{\varepsilon}$ folded into the Brillouin zone.
-- For a **periodic medium**, the curves bend near the Brillouin-zone edge, and gaps open where no real $k$ gives a real $\omega$: this is the non-propagating regime $|\delta| < \kappa$ of the hyperbola $q^2 = \delta^2 - \kappa^2$ from [§ 0.6](#sec-0-6) appearing in its wave-mechanical guise.
+For each $k$ in the Brillouin zone, the eigenvalue problem has a discrete set of allowed frequencies $\{\omega_n(k)\}$ indexed by a **band number** $n = 0, 1, 2, \ldots$. Sweeping $k$ traces a curve $\omega_n(k)$ called a **band curve**; all such curves together form the **band structure**.
 
-The group velocity of a localized wave centered at $k$ is $v_g = d\omega_n/dk$, whose interpretation was fixed once in [§ 0.7](#sec-0-7): nonzero and near the material speed far from the [gap](#defn-gap), vanishing at the band edges, imaginary inside the gap.
+- **Homogeneous medium** ($\varepsilon = \text{const}$): Band curves are straight lines $\omega = \pm ck/\sqrt{\varepsilon}$ folded into the Brillouin zone.
+- **Periodic medium**: Curves bend near the Brillouin-zone edge, and gaps open where no real $k$ gives a real $\omega$. This represents the non-propagating regime $|\delta| < \kappa$ of the hyperbola $q^2 = \delta^2 - \kappa^2$ from [§ 0.6](#sec-0-6) appearing in its wave-mechanical guise.
+
+**Group velocity ($v_g = d\omega_n/dk$).**
+- **Far from the gap.** Nonzero and near the material speed.
+- **At band edges.** Vanishes ($v_g = 0$).
+- **Inside the gap.** Purely imaginary.
 
 <div class="guided-fold-end"></div>
 
+**Derivation of the master equation.**
 
-Bloch's theorem tells us that any solution of the wave equation in a periodic medium has the form $E(z) = e^{ikz} u(z)$ with $u(z)$ periodic under $z\to z+\Lambda$. Fourier-expand $u$ on one period $[0, \Lambda]$,
+Bloch's theorem states that any solution of the wave equation in a periodic medium has the form $E(z) = e^{ikz} u(z)$ with $u(z)$ periodic under $z\to z+\Lambda$. Fourier-expand $u$ on one period $[0, \Lambda]$,
 
 $$u(z)=\sum_{n\in\mathbb Z}E_n\,e^{inG_1 z},\qquad G_1=2\pi/\Lambda,$$
 
@@ -637,6 +671,8 @@ $$\left[(k+nG_1)^2 - \frac{\omega^2}{c^2}\bar\varepsilon\right] E_n \;=\; \frac{
 
 This is the **master equation**: an infinite system of linear equations [coupling](#defn-coupling) the $E_n$'s to one another through the Fourier coefficients of the modulation.
 
+**Matrix representation.**
+
 Written as an infinite matrix, with rows and columns indexed by $n$, the left side puts the discrepancies $D_n \equiv (k+nG_1)^2 - (\omega/c)^2\bar\varepsilon$ on the diagonal (measuring how far the wavenumber $k + nG_1$ of that row is from what the dispersion relation would allow in the average medium at frequency $\omega$), and the right side puts the modulation-coupling entries $\varepsilon_{n-n'}$ (times $(\omega/c)^2$) in the off-diagonals:
 
 $$\begin{pmatrix}
@@ -649,23 +685,23 @@ $$\begin{pmatrix}
 
 The diagonal $D_n$ measures how much Fourier mode $n$ fails to satisfy the plane-wave dispersion relation in the average medium at the driving frequency $\omega$; the off-diagonal $\varepsilon_p$ is the coupling between mode $n$ and mode $n - p$, which physically transfers a wavenumber shift $pG_1$ between the two through the modulation. This is the same structure as the $2\times 2$ of [§ 0](#sec-0), extended to infinitely many modes and populated by a specific mechanism: the periodic index modulation.
 
-Coefficient by coefficient, the Bragg condition emerges as the resonance condition of this matrix: it is the value of $k$ at which two of the diagonals $D_n = (k+nG_1)^2 - (\omega/c)^2\bar\varepsilon$ vanish simultaneously. For $D_0 = D_m = 0$ (some $m \neq 0$) both to hold, $k^2 = (k+mG_1)^2 = (\omega/c)^2\bar\varepsilon$; the first equality forces $k+mG_1 = \pm k$, i.e., $k = -mG_1/2$. For $m = -1$ this reads $k = G_1/2 = \pi/\Lambda$, and the corresponding frequency $\omega = ck/\sqrt{\bar\varepsilon}$ satisfies $\lambda_{\text{medium}} = 2\Lambda$ — exactly the classical Bragg condition of Picture 1 at $\theta = 90°$. [§ 2](#sec-2) makes this quantitative by keeping only the two near-resonant modes.
+Coefficient by coefficient, the Bragg condition emerges as the resonance condition of this matrix: it is the value of $k$ at which two of the diagonals $D_n = (k+nG_1)^2 - (\omega/c)^2\bar\varepsilon$ vanish simultaneously. For $D_0 = D_m = 0$ (some $m \neq 0$) both to hold, $k^2 = (k+mG_1)^2 = (\omega/c)^2\bar\varepsilon$; the first equality forces $k+mG_1 = \pm k$, i.e., $k = -mG_1/2$. For $m = -1$ this reads $k = G_1/2 = \pi/\Lambda$, and the corresponding frequency $\omega = ck/\sqrt{\bar\varepsilon}$ satisfies $\lambda_{\text{medium}} = 2\Lambda$ — exactly the classical Bragg condition of [Picture 1](#picture-1) at $\theta = 90°$. [§ 2](#sec-2) makes this quantitative by keeping only the two near-resonant modes.
 
 ### Same object, three pictures {#same-object-three-pictures}
 
-The three pictures agree because the underlying object is the same: the Fourier decomposition of $\varepsilon(z)$. Picture 1 treats the modulation as discrete planes (a Fourier series with all $m$); Picture 2 labels the reciprocal-lattice vectors by $m$; Picture 3 works directly with the Fourier coefficients $\varepsilon_m$. Each picture makes a different question easy:
+The three pictures agree because the underlying object is the same: the Fourier decomposition of $\varepsilon(z)$. [Picture 1](#picture-1) treats the modulation as discrete planes (a Fourier series with all $m$); [Picture 2](#picture-2) labels the reciprocal-lattice vectors by $m$; [Picture 3](#picture-3) works directly with the Fourier coefficients $\varepsilon_m$. Each picture makes a different question easy:
 
-- **Picture 1 (path difference)** — *what geometry?* the angle where the constructive-interference condition is met for a given $m$.
-- **Picture 2 (momentum conservation)** — *why integer $m$?* $m$ labels which reciprocal-lattice vector is invoked.
-- **Picture 3 (Fourier convolution)** — *how strong?* the amplitude of the $m$-th order is set by $\varepsilon_m$, the $m$-th Fourier coefficient of the modulation profile.
+- **[Picture 1](#picture-1) (path difference)** — *what geometry?* the angle where the constructive-interference condition is met for a given $m$.
+- **[Picture 2](#picture-2) (momentum conservation)** — *why integer $m$?* $m$ labels which reciprocal-lattice vector is invoked.
+- **[Picture 3](#picture-3) (Fourier convolution)** — *how strong?* the amplitude of the $m$-th order is set by $\varepsilon_m$, the $m$-th Fourier coefficient of the modulation profile.
 
-The pattern of nonzero $\varepsilon_m$ is called the **structure factor** of the modulation. The angle at which order $m$ diffracts is fixed by the geometric condition $m\lambda_0 = 2 n_{\text{avg}}\Lambda\sin\theta$ from Pictures 1 and 2: it involves the period $\Lambda$ and the order $m$, but not the shape of $\varepsilon(z)$ within one period. What the shape controls — through $\varepsilon_m$ — is whether that geometric resonance actually couples the incident wave to the reflected wave, and if so how strongly. If $\varepsilon_m = 0$ for some order, then Picture 3 shows that the coupling term $(\omega/c)^2\varepsilon_m E_{n-m}$ vanishes for that order and the reflection at that angle is zero even though the geometry is satisfied. For a purely sinusoidal modulation $\varepsilon(z) = \bar\varepsilon + \varepsilon_1\cos(G_1 z)$, only $\varepsilon_{\pm 1}$ are nonzero and only the first-order reflection exists. For a square-wave modulation (as in a real [distributed Bragg reflector](/posts/bragg-mirrors-and-lasers/#sec-1)), $\varepsilon_m \propto 1/m$ for odd $m$ and vanishes for even $m$, so odd orders reflect and even orders do not.
+The pattern of nonzero $\varepsilon_m$ is called the **structure factor** of the modulation. The angle at which order $m$ diffracts is fixed by the geometric condition $m\lambda_0 = 2 n_{\text{avg}}\Lambda\sin\theta$ from [Picture 1](#picture-1) and [Picture 2](#picture-2): it involves the period $\Lambda$ and the order $m$, but not the shape of $\varepsilon(z)$ within one period. What the shape controls — through $\varepsilon_m$ — is whether that geometric resonance actually couples the incident wave to the reflected wave, and if so how strongly. If $\varepsilon_m = 0$ for some order, then [Picture 3](#picture-3) shows that the coupling term $(\omega/c)^2\varepsilon_m E_{n-m}$ vanishes for that order and the reflection at that angle is zero even though the geometry is satisfied. For a purely sinusoidal modulation $\varepsilon(z) = \bar\varepsilon + \varepsilon_1\cos(G_1 z)$, only $\varepsilon_{\pm 1}$ are nonzero and only the first-order reflection exists. For a square-wave modulation (as in a real [distributed Bragg reflector](/posts/bragg-mirrors-and-lasers/#sec-1)), $\varepsilon_m \propto 1/m$ for odd $m$ and vanishes for even $m$, so odd orders reflect and even orders do not.
 
 ### When Bragg cannot work: two ways to fail {#bragg-failure-modes}
 
-Bragg reflection into a specific direction requires two conditions simultaneously: (1) the geometry $m\lambda = 2n_{\text{avg}}\Lambda\sin\theta$ must hold for some integer $m$, and (2) the corresponding $\varepsilon_m$ must be nonzero. What we care about below is the incident wave sent straight back along its own path, because that is the process the two-mode analysis of § 2 will keep. In the convention of Picture 1 the angle $\theta$ is measured from the planes, so a wave propagating perpendicular to the planes has $\theta = 90°$: it goes in normal to the layers, and back-reflection returns it out along the same normal.
+Bragg reflection into a specific direction requires two conditions simultaneously: (1) the geometry $m\lambda = 2n_{\text{avg}}\Lambda\sin\theta$ must hold for some integer $m$, and (2) the corresponding $\varepsilon_m$ must be nonzero. What we care about below is the incident wave sent straight back along its own path, because that is the process the two-mode analysis of [§ 2](#sec-2) will keep. In the convention of [Picture 1](#picture-1) the angle $\theta$ is measured from the planes, so a wave propagating perpendicular to the planes has $\theta = 90°$: it goes in normal to the layers, and back-reflection returns it out along the same normal.
 
-Set the geometry with $\sin\theta = 1$: the Bragg condition becomes $m\lambda_{\text{medium}} = 2\Lambda$, or $m = 2\Lambda/\lambda_{\text{medium}}$. When the wavelength is much larger than the period, this ratio is much less than one — no positive integer $m$ satisfies the geometry, and there is no back-reflection at any angle for the average-medium wave. The master equation of Picture 3 lets us ask a sharper question: even if the geometry could be satisfied by picking a large integer $m$, would the reflection actually happen? Two independent effects rule it out.
+Set the geometry with $\sin\theta = 1$: the Bragg condition becomes $m\lambda_{\text{medium}} = 2\Lambda$, or $m = 2\Lambda/\lambda_{\text{medium}}$. When the wavelength is much larger than the period, this ratio is much less than one — no positive integer $m$ satisfies the geometry, and there is no back-reflection at any angle for the average-medium wave. The master equation of [Picture 3](#picture-3) lets us ask a sharper question: even if the geometry could be satisfied by picking a large integer $m$, would the reflection actually happen? Two independent effects rule it out.
 
 Take an optical wavelength $\lambda_0 = 500\,\text{nm}$ striking a crystal with atomic-plane spacing $a \approx 0.3\,\text{nm}$; the geometry would require $m = \lambda_0/(2n_{\text{avg}}\, a) \approx 833$.
 
@@ -687,7 +723,7 @@ $$|A|^2 = N + \big|\sum_j e^{i m G_1 z_j}\big|^2\, e^{-m^2 G_1^2 u^2} - N \cdot 
 
 The constructive piece — the "Bragg peak" — is the middle term: the noise-free intensity multiplied by the **Debye–Waller factor**
 
-$$e^{-m^2 G_1^2\, u^2}$$
+$$e^{-m^2 G_1^2\, u^2}.$$
 
 — a Gaussian in $m^2$. For $m = 833$, $G_1 = 2\pi/a$, and $u = 0.01\,\text{nm}$, the exponent is of order $10^5$: the constructive piece is washed out to zero and only the incoherent $N$ remains.
 
@@ -695,66 +731,94 @@ $$e^{-m^2 G_1^2\, u^2}$$
 
 <span id="failure-2"></span>
 
-**Failure 2 — the layers are too dense compared to a wavelength.** Freeze the planes in place ($u \to 0$), removing Failure 1 entirely. The reflection still vanishes, for a purely geometric reason. In the medium, a wavelength spans $\lambda_{\text{medium}}/a \approx 2m \approx 1666$ atomic layers. A reflection from the layer at depth $z$ and a reflection from the layer at depth $z + \lambda_{\text{medium}}/4$ differ in round-trip path by $\lambda_{\text{medium}}/2$, so their contributions cancel exactly. That partner layer sits $\lambda_{\text{medium}}/(4a) \approx m/2 \approx 416$ layers below the first, well inside the same wavelength: the pairing is between layers of the same physical crystal, not between distant regions. Every layer in the first quarter-wavelength has a canceling partner in the next quarter-wavelength, and the two quarter-wavelengths together cover half a wavelength. Extending this pairing over the full 1500 layers under a single wavelength, the reflection integrates to zero even with the planes completely still.
+**Failure 2 — the layers are too dense compared to a wavelength.**
+
+Freeze the planes in place ($u \to 0$), removing [Failure 1](#failure-1) entirely. The reflection still vanishes, for a purely geometric reason. In the medium, a wavelength spans $\lambda_{\text{medium}}/a \approx 2m \approx 1666$ atomic layers. A reflection from the layer at depth $z$ and a reflection from the layer at depth $z + \lambda_{\text{medium}}/4$ differ in round-trip path by $\lambda_{\text{medium}}/2$, so their contributions cancel exactly. That partner layer sits $\lambda_{\text{medium}}/(4a) \approx m/2 \approx 416$ layers below the first, well inside the same wavelength: the pairing is between layers of the same physical crystal, not between distant regions. Every layer in the first quarter-wavelength has a canceling partner in the next quarter-wavelength, and the two quarter-wavelengths together cover half a wavelength. Extending this pairing over the full 1500 layers under a single wavelength, the reflection integrates to zero even with the planes completely still.
 
 <span id="failure-conclusion"></span>
 
-**Two failure modes, one conclusion.** When $\lambda \gg \Lambda$, no order of the modulation reflects the wave. That the wave still propagates — through what would otherwise be a complicated periodic medium — is a consequence of the same master equation. With no near-degenerate pair of rows to couple, every off-diagonal term $(\omega/c)^2 \varepsilon_m E_{n-m}$ in the master equation of Picture 3 divides by a large detuning $D_n \sim k^2 \neq (\omega/c)^2\bar\varepsilon$ before feeding back, and every $E_n$ with $n \neq 0$ is suppressed by $\varepsilon_m/(D_n \cdot c^2/\omega^2)$ relative to $E_0$. What survives is the single diagonal row $D_0 E_0 = 0$, which reads $k^2 = (\omega/c)^2\bar\varepsilon$ — the dispersion relation of a homogeneous medium with permittivity $\bar\varepsilon$. The modulation is invisible; only its average survives.
+**Two failure modes, one conclusion.**
 
-Optical Bragg mirrors bypass both failures by *engineering* $\Lambda$ to match the wavelength: a multilayer stack with $\Lambda \sim \lambda_0/(2 n_{\text{avg}})$ is designed to reflect at $m = 1$. Failure 1 is suppressed because at $m = 1$ the Debye–Waller exponent $m^2 G_1^2 u^2$ is smaller than at $m = 833$ by a factor of $833^2$; even for the same $u$ the exponent is now of order $10^{-1}$ rather than $10^{5}$. Failure 2 is suppressed because at $m = 1$ the modulation period *is* half a wavelength, and no canceling partner layer exists within one modulation cell — the two adjacent layers of the stack differ in round-trip path by exactly one wavelength and add constructively. §§ 2–10 are the theory of this engineered $m = 1$ regime.
+When $\lambda \gg \Lambda$, no order of the modulation reflects the wave. That the wave still propagates — through what would otherwise be a complicated periodic medium — is a consequence of the same master equation. With no near-degenerate pair of rows to couple, every off-diagonal term $(\omega/c)^2 \varepsilon_m E_{n-m}$ in the master equation of [Picture 3](#picture-3) divides by a large detuning $D_n \sim k^2 \neq (\omega/c)^2\bar\varepsilon$ before feeding back, and every $E_n$ with $n \neq 0$ is suppressed by $\varepsilon_m/(D_n \cdot c^2/\omega^2)$ relative to $E_0$. What survives is the single diagonal row $D_0 E_0 = 0$, which reads $k^2 = (\omega/c)^2\bar\varepsilon$ — the dispersion relation of a homogeneous medium with permittivity $\bar\varepsilon$. The modulation is invisible; only its average survives.
+
+Optical Bragg mirrors bypass both failures by *engineering* $\Lambda$ to match the wavelength: a multilayer stack with $\Lambda \sim \lambda_0/(2 n_{\text{avg}})$ is designed to reflect at $m = 1$. [Failure 1](#failure-1) is suppressed because at $m = 1$ the Debye–Waller exponent $m^2 G_1^2 u^2$ is smaller than at $m = 833$ by a factor of $833^2$; even for the same $u$ the exponent is now of order $10^{-1}$ rather than $10^{5}$. [Failure 2](#failure-2) is suppressed because at $m = 1$ the modulation period *is* half a wavelength, and no canceling partner layer exists within one modulation cell — the two adjacent layers of the stack differ in round-trip path by exactly one wavelength and add constructively. [§§ 2–10](#sec-2) are the theory of this engineered $m = 1$ regime.
+
 ## § 2. Coupled-mode theory: the framework realized in a periodic dielectric {#sec-2}
 
-The master equation of [§ 1](#sec-1) was an infinite system: one linear equation per Fourier component $E_n$, with each $E_n$ coupled to every other through the modulation coefficients $\varepsilon_m$. [The Bloch-theorem refresher](#picture-3-bloch-theorem) established only that solutions have the form $e^{ikz} u(z)$ with $u$ periodic — nothing about how many Fourier components of $u$ are needed, and generically all of them are nonzero. What makes the periodic medium problem tractable is not Bloch's theorem itself but a *dynamical* observation: for a small modulation amplitude $\Delta\varepsilon/\bar\varepsilon \ll 1$ and a driving wavenumber close to a specific Bragg resonance, only two of the infinitely many Fourier components carry appreciable amplitude. All the others are algebraically small in $\Delta\varepsilon/\bar\varepsilon$ and can be dropped at leading order. The result is a $2 \times 2$ eigenvalue problem in exactly the form of [§ 0](#sec-0), and this section derives it, identifies the framework's $\delta$ and $\kappa$ in terms of the modulation, and reads off the physical consequences by invoking [§ 0.5](#sec-0-5)–[0.7](#sec-0-7).
+The master equation of [§ 1](#sec-1) was an infinite system: one linear equation per Fourier component $E_n$, with each $E_n$ coupled to every other through the modulation coefficients $\varepsilon_m$. [The Bloch-theorem refresher](#picture-3-bloch-theorem) established only that solutions have the form $e^{ikz} u(z)$ with $u$ periodic — nothing about how many Fourier components of $u$ are needed, and generically all of them are nonzero.
+
+What makes the periodic medium problem tractable is not Bloch's theorem itself but a **dynamical observation**:
+
+- For a small modulation amplitude **$\Delta\varepsilon/\bar\varepsilon \ll 1$** and a driving wavenumber close to a specific Bragg resonance, only two of the infinitely many Fourier components carry appreciable amplitude.
+- All the others are algebraically small in $\Delta\varepsilon/\bar\varepsilon$ and can be dropped at leading order.
+
+The result is a **$2 \times 2$ eigenvalue problem** in exactly the form of [§ 0](#sec-0), and this section derives it, identifies the framework's $\delta$ and $\kappa$ in terms of the modulation, and reads off the physical consequences by invoking [§ 0.5](#sec-0-5)–[§ 0.7](#sec-0-7).
 
 ### From cosine modulation to Fourier coefficients {#sec-2-fourier-coefficients}
 
-Start with a real sinusoidal modulation
+Start with a real sinusoidal modulation:
 
 $$\varepsilon(z) = \bar\varepsilon + \Delta\varepsilon\cos(G_1 z), \qquad G_1 = 2\pi/\Lambda,$$
 
-with peak-to-peak modulation depth $\Delta\varepsilon$ small relative to the average $\bar\varepsilon$. Using $\cos\theta = (e^{i\theta} + e^{-i\theta})/2$,
+with peak-to-peak modulation depth $\Delta\varepsilon$ small relative to the average $\bar\varepsilon$. Using $\cos\theta = (e^{i\theta} + e^{-i\theta})/2$:
 
 $$\varepsilon(z) = \bar\varepsilon + \frac{\Delta\varepsilon}{2}\, e^{iG_1 z} + \frac{\Delta\varepsilon}{2}\, e^{-iG_1 z}.$$
 
-Reading off the Fourier coefficients in the notation of [§ 1](#sec-1),
+Reading off the Fourier coefficients in the notation of [§ 1](#sec-1):
 
 $$\varepsilon_0 = \bar\varepsilon, \qquad \varepsilon_{+1} = \varepsilon_{-1} = \frac{\Delta\varepsilon}{2}, \qquad \varepsilon_m = 0 \text{ for } |m| \geq 2.$$
 
-A pure cosine has exactly two nonzero Fourier components (at $\pm 1$), each of amplitude $\Delta\varepsilon/2$; the $m=0$ coefficient $\varepsilon_0$ is the spatial average $\bar\varepsilon$ of the permittivity. Every subsequent formula will treat $\varepsilon_1$ as the peak spatial harmonic of the modulation.
+- A pure cosine has **exactly two nonzero Fourier components** (at $\pm 1$), each of amplitude $\Delta\varepsilon/2$.
+- The $m=0$ coefficient $\varepsilon_0$ is the spatial average $\bar\varepsilon$ of the permittivity.
+- Every subsequent formula will treat $\varepsilon_1$ as the peak spatial harmonic of the modulation.
 
 ### Choosing the reference wavenumber and identifying near-resonant modes {#sec-2-near-resonant-modes}
 
-The two-mode framework of [§ 0](#sec-0) asks for two amplitudes that are nearly equal in frequency under some [coupling](#defn-coupling); here the coupling is the periodic modulation $\varepsilon_1$, and the nearly-equal pair is the forward wave and its reflected backward counterpart. Reciprocal-lattice equivalence tells us that any wavenumber $k$ is coupled to $k+m G_1$ for every integer $m$: the grating can shift the wavenumber by $G_1,2G_1,\ldots$ Reversing the direction — sending $k$ to $-k$ — is achieved by a *single* $G_1$ shift precisely when $-k=k-G_1$, that is, when $k=G_1/2$.
+The two-mode framework of [§ 0](#sec-0) asks for two amplitudes that are nearly equal in frequency under some [coupling](#defn-coupling); here the coupling is the periodic modulation $\varepsilon_1$, and the nearly-equal pair is the forward wave and its reflected backward counterpart.
 
-Define
+- **Reciprocal-lattice equivalence.** Tells us that any wavenumber $k$ is coupled to $k+m G_1$ for every integer $m$ (the grating can shift the wavenumber by $G_1,2G_1,\ldots$).
+- **Reversing direction.** Sending $k$ to $-k$ is achieved by a *single* $G_1$ shift precisely when $-k=k-G_1$, that is, when $k=G_1/2$.
+
+Define:
 
 $$k_B \equiv G_1/2 = \pi/\Lambda.$$
 
-At this value the wavelength in the medium is $\lambda_{\text{medium}} = 2\pi/k_B = 2\Lambda$, and the corresponding vacuum wavelength $\lambda_0 = n_{\text{avg}}\lambda_{\text{medium}} = 2n_{\text{avg}}\Lambda$ is exactly the $m=1$, $\sin\theta = 1$ instance of the Bragg condition $m\lambda_0 = 2n_{\text{avg}}\Lambda\sin\theta$ from Picture 1. Equivalently, $2 k_B = G_1$: one $G_1$ shift takes the forward wave at $+k_B$ to the backward wave at $-k_B$, which is the maximum possible change in wavenumber for a wave of fixed magnitude $k_B$. So a wave with $k \approx k_B$ is shifted by $G_1$ into a wave at $k - G_1 = k - 2k_B \approx -k_B$: the backward wave. Every subsequent formula in this section measures the driving wavenumber $k$ as a deviation from $k_B$, and it is the smallness of that deviation that will justify keeping only two Fourier components of $E$.
+At this value:
+1. Wavelength in the medium is $\lambda_{\text{medium}} = 2\pi/k_B = 2\Lambda$.
+2. Vacuum wavelength $\lambda_0 = n_{\text{avg}}\lambda_{\text{medium}} = 2n_{\text{avg}}\Lambda$ is exactly the $m=1$, $\sin\theta = 1$ instance of the Bragg condition $m\lambda_0 = 2n_{\text{avg}}\Lambda\sin\theta$ from [Picture 1](#picture-1).
+3. Equivalently, **$2 k_B = G_1$**: one $G_1$ shift takes the forward wave at $+k_B$ to the backward wave at $-k_B$, which is the maximum possible change in wavenumber for a wave of fixed magnitude $k_B$.
 
-Two conditions pin down where we are working. First, the frequency is chosen so that a plane wave in the average medium at wavenumber $k_B$ would satisfy the dispersion relation:
+So a wave with $k \approx k_B$ is shifted by $G_1$ into a wave at $k - G_1 = k - 2k_B \approx -k_B$: the backward wave. Every subsequent formula in this section measures the driving wavenumber $k$ as a deviation from $k_B$, and it is the smallness of that deviation that will justify keeping only two Fourier components of $E$.
 
-$$\left(\omega/c\right)^2\bar\varepsilon\approx k_B^2.$$
+#### Two conditions pin down where we are working
 
-Second, the wavenumber sits close to this reference:
+1. **Frequency selection:** The frequency is chosen so that a plane wave in the average medium at wavenumber $k_B$ would satisfy the dispersion relation:
+   $$\left(\omega/c\right)^2\bar\varepsilon\approx k_B^2.$$
+2. **Wavenumber proximity:** The wavenumber sits close to this reference:
+   $$k=k_B+\delta k,\qquad|\delta k|\ll k_B.$$
 
-$$k=k_B+\delta k,\qquad|\delta k|\ll k_B.$$
+Then both the forward wave (row $n=0$, at wavenumber $k \approx +k_B$) and the wave it is coupled to by one $G_1$ shift (row $n=-1$, at wavenumber $k - G_1 \approx -k_B$) sit at wavenumbers whose magnitudes both match the dispersion relation $|k| = \omega\sqrt{\bar\varepsilon}/c$. Every other row does not, and it is that mismatch which will make every other row carry negligible amplitude below.
 
-Then both the forward wave (row $n=0$, at wavenumber $k \approx +k_B$) and the wave it is coupled to by one $G_1$ shift (row $n=-1$, at wavenumber $k - G_1 \approx -k_B$) sit at wavenumbers whose *magnitudes* both match the dispersion relation $|k| = \omega\sqrt{\bar\varepsilon}/c$. Every other row does not, and it is that mismatch which will make every other row carry negligible amplitude below.
+#### Diagonal analysis of the master-equation matrix
 
-With those two conditions in force, examine the master-equation matrix of [§ 1](#sec-1). The diagonal at row $n$ is
+With those two conditions in force, examine the master-equation matrix of [§ 1](#sec-1). The diagonal at row $n$ is:
 
 $$D_n = (k + n G_1)^2 - \frac{\omega^2}{c^2}\bar\varepsilon,$$
 
-the discrepancy between the wavenumber $k + nG_1$ of row $n$ and the wavenumber $\omega\sqrt{\bar\varepsilon}/c$ that would solve the dispersion relation in the average medium at frequency $\omega$. When $D_n$ is small, row $n$ is close to being the equation of a plane wave in the average medium and carries appreciable amplitude; when $D_n$ is large, row $n$ is far from that equation and the amplitude it carries is suppressed by $1/D_n$. Substituting $k \approx k_B$:
+the discrepancy between the wavenumber $k + nG_1$ of row $n$ and the wavenumber $\omega\sqrt{\bar\varepsilon}/c$ that would solve the dispersion relation in the average medium at frequency $\omega$.
 
-- $n = 0$: wavenumber $k$, $D_0 \approx k_B^2 - (\omega/c)^2\bar\varepsilon \approx 0$.
-- $n = -1$: wavenumber $k - G_1 \approx -k_B$, $D_{-1} = (-k_B)^2 - (\omega/c)^2\bar\varepsilon \approx 0$ — because $(-k_B)^2 = k_B^2$, the backward wave has the same $D$.
-- $n = +1$: wavenumber $\approx 3k_B$, $D_{+1} \approx 9k_B^2 - k_B^2 = 8 k_B^2$.
-- $n = -2$: wavenumber $\approx -3k_B$, $D_{-2} \approx 8 k_B^2$.
-- $|n| \geq 2$: $D_n \sim 4 k_B^2 n^2$.
+- When $D_n$ is **small**, row $n$ is close to being the equation of a plane wave in the average medium and carries **appreciable amplitude**.
+- When $D_n$ is **large**, row $n$ is far from that equation and the amplitude it carries is **suppressed by $1/D_n$**.
 
-Only the two diagonals $D_0$ and $D_{-1}$ vanish at $k = k_B$; every other diagonal is of order $k_B^2$. Those two rows are the ones the framework of [§ 0](#sec-0) needs.
+Substituting $k \approx k_B$:
+
+- **$n = 0$:** Wavenumber $k$, $D_0 \approx k_B^2 - (\omega/c)^2\bar\varepsilon \approx 0$.
+- **$n = -1$:** Wavenumber $k - G_1 \approx -k_B$, $D_{-1} = (-k_B)^2 - (\omega/c)^2\bar\varepsilon \approx 0$ — because $(-k_B)^2 = k_B^2$, the backward wave has the same $D$.
+- **$n = +1$:** Wavenumber $\approx 3k_B$, $D_{+1} \approx 9k_B^2 - k_B^2 = 8 k_B^2$.
+- **$n = -2$:** Wavenumber $\approx -3k_B$, $D_{-2} \approx 8 k_B^2$.
+- **$|n| \geq 2$:** $D_n \sim 4 k_B^2 n^2$.
+
+Only the two diagonals **$D_0$ and $D_{-1}$ vanish** at $k = k_B$; every other diagonal is of order $k_B^2$. Those two rows are the ones the framework of [§ 0](#sec-0) needs.
 
 ### The two-wave truncation via amplitude suppression {#sec-2-two-wave-truncation}
 
@@ -766,23 +830,29 @@ Take any off-resonant mode, say $E_{+1}$, and solve its master equation row for 
 
 $$D_{+1}\, E_{+1} \;=\; \frac{\omega^2}{c^2}\left(\varepsilon_1 E_0 + \varepsilon_{-1} E_{+2} + \ldots\right).$$
 
-Since $\varepsilon_m = 0$ for $|m| \geq 2$, only the $\varepsilon_{\pm 1}$ terms survive, [coupling](#defn-coupling) $E_{+1}$ to $E_0$ (via $\varepsilon_1$) and to $E_{+2}$ (via $\varepsilon_{-1}$). At leading order, dropping the further-off-resonant $E_{+2}$,
+Since $\varepsilon_m = 0$ for $|m| \geq 2$, only the $\varepsilon_{\pm 1}$ terms survive, [coupling](#defn-coupling) $E_{+1}$ to $E_0$ (via $\varepsilon_1$) and to $E_{+2}$ (via $\varepsilon_{-1}$). At leading order, dropping the further-off-resonant $E_{+2}$:
 
 $$E_{+1} \;\approx\; \frac{(\omega/c)^2 \varepsilon_1}{D_{+1}} E_0 \;\approx\; \frac{k_B^2 \cdot (\Delta\varepsilon/2)}{\bar\varepsilon \cdot 8 k_B^2} E_0 \;=\; \frac{\Delta\varepsilon}{16\,\bar\varepsilon}\, E_0,$$
 
-using the reference condition $(\omega/c)^2 \bar\varepsilon \approx k_B^2$ fixed at the start of this section. So $E_{+1}$ is smaller than $E_0$ by a factor of $\Delta\varepsilon/(16\bar\varepsilon)$: at $\Delta\varepsilon/\bar\varepsilon = 0.01$, $E_{+1}$ is 1600× smaller than $E_0$, and its contribution to the physics of the two-mode sector is negligible.
+using the reference condition $(\omega/c)^2 \bar\varepsilon \approx k_B^2$ fixed at the start of this section.
 
-The same argument for $E_{-2}$ gives a similar suppression by $\Delta\varepsilon/(16\bar\varepsilon)$; for $E_{+2}$ and $E_{-3}$ the suppression is $\Delta\varepsilon^2/(\bar\varepsilon^2 \cdot O(k_B^4))$ because they only couple to the near-resonant modes at second order in the modulation.
+So $E_{+1}$ is smaller than $E_0$ by a factor of **$\Delta\varepsilon/(16\bar\varepsilon)$**: at $\Delta\varepsilon/\bar\varepsilon = 0.01$, $E_{+1}$ is **1600× smaller** than $E_0$, and its contribution to the physics of the two-mode sector is negligible.
+
+The same argument for $E_{-2}$ gives a similar suppression by **$\Delta\varepsilon/(16\bar\varepsilon)$**; for $E_{+2}$ and $E_{-3}$ the suppression is **$\Delta\varepsilon^2/(\bar\varepsilon^2 \cdot O(k_B^4))$** because they only couple to the near-resonant modes at second order in the modulation.
 
 <div class="guided-fold-end"></div>
 
 In summary, at first order in $\Delta\varepsilon/\bar\varepsilon$, only $E_0$ and $E_{-1}$ carry amplitude; every other $E_n$ is suppressed by at least one power of $\Delta\varepsilon/\bar\varepsilon$ and can be dropped.
 
-Retaining only $E_0$ and $E_{-1}$ in the master-equation matrix — and noting that inside the two-mode block only $\varepsilon_{\pm 1} = \Delta\varepsilon/2$ appears (the $\varepsilon_0 = \bar\varepsilon$ is absorbed into the diagonals) — one gets the **truncated master equation**
+#### Truncated master equation
+
+Retaining only $E_0$ and $E_{-1}$ in the master-equation matrix — and noting that inside the two-mode block only $\varepsilon_{\pm 1} = \Delta\varepsilon/2$ appears (the $\varepsilon_0 = \bar\varepsilon$ is absorbed into the diagonals) — one gets the **truncated master equation**:
 
 $$\begin{pmatrix} k^2 - (\omega/c)^2\bar\varepsilon & \; -(\omega/c)^2\, \Delta\varepsilon/2 \\ -(\omega/c)^2\, \Delta\varepsilon/2 & \; (k - 2k_B)^2 - (\omega/c)^2\bar\varepsilon \end{pmatrix} \begin{pmatrix} E_0 \\ E_{-1} \end{pmatrix} = 0.$$
 
-The off-diagonal is real and symmetric. Its origin is the right-hand side of the master equation of [§ 1](#sec-1), $(\omega/c)^2\sum_{m\neq 0}\varepsilon_m E_{n-m}$: the $(\omega/c)^2$ prefactor multiplies *every* modulation-coupling entry regardless of which two rows it connects, because it comes from the $\varepsilon(z)$ side of the wave equation $E''+(\omega/c)^2\varepsilon(z)E=0$. Inside the two-mode block the only modulation coefficient that survives is $\varepsilon_{-1}=\varepsilon_{+1}=\Delta\varepsilon/2$ (row 0 column $-1$ picks up $\varepsilon_{-1}$; row $-1$ column 0 picks up $\varepsilon_{+1}$; both real and equal by Fourier conjugacy for a real $\varepsilon(z)$), so each off-diagonal entry equals $\varepsilon_1\cdot(\omega/c)^2=(\omega/c)^2\Delta\varepsilon/2$.
+The off-diagonal is real and symmetric. Its origin is the right-hand side of the master equation of [§ 1](#sec-1), $(\omega/c)^2\sum_{m\neq 0}\varepsilon_m E_{n-m}$: the $(\omega/c)^2$ prefactor multiplies *every* modulation-coupling entry regardless of which two rows it connects, because it comes from the $\varepsilon(z)$ side of the wave equation $E''+(\omega/c)^2\varepsilon(z)E=0$.
+
+Inside the two-mode block the only modulation coefficient that survives is $\varepsilon_{-1}=\varepsilon_{+1}=\Delta\varepsilon/2$ (row 0 column $-1$ picks up $\varepsilon_{-1}$; row $-1$ column 0 picks up $\varepsilon_{+1}$; both real and equal by Fourier conjugacy for a real $\varepsilon(z)$), so each off-diagonal entry equals $\varepsilon_1\cdot(\omega/c)^2=(\omega/c)^2\Delta\varepsilon/2$.
 
 ### Identifying $\delta$, $\kappa$, and the § 0 Pauli slots {#sec-2-identification}
 
@@ -793,31 +863,43 @@ D_0=k^2-(\omega/c)^2\bar\varepsilon,\qquad
 D_{-1}=(k-2k_B)^2-(\omega/c)^2\bar\varepsilon,\qquad
 \Omega=-(\omega/c)^2\Delta\varepsilon/2.$$
 
-Any such Hermitian matrix decomposes as $H = c_0 I + c_z \sigma_z + c_x \sigma_x + c_y \sigma_y$, and by inspection of the general form $c_0 I+c_z\sigma_z+c_x\sigma_x+c_y\sigma_y=\begin{pmatrix}c_0+c_z & c_x-ic_y\\ c_x+ic_y & c_0-c_z\end{pmatrix}$ the four coefficients read off as: the half-sum of the diagonals sits in $c_0$ (uniform shift, opens no [gap](#defn-gap)), the half-difference of the diagonals sits in $c_z$ ([detuning](#defn-detuning)), the real part of the off-diagonal sits in $c_x$ (symmetric [coupling](#defn-coupling)), and the imaginary part of the off-diagonal sits in $c_y$ (antisymmetric coupling — zero here).
+Any such Hermitian matrix decomposes as $H = c_0 I + c_z \sigma_z + c_x \sigma_x + c_y \sigma_y$, and by inspection of the general form $c_0 I+c_z\sigma_z+c_x\sigma_x+c_y\sigma_y=\begin{pmatrix}c_0+c_z & c_x-ic_y\\ c_x+ic_y & c_0-c_z\end{pmatrix}$ the four coefficients read off as:
 
-Compute each on the matrix above. The half-sum of the two diagonals is
+- **$c_0$.** Half-sum of the diagonals (uniform shift, opens no [gap](#defn-gap)).
+- **$c_z$.** Half-difference of the diagonals ([detuning](#defn-detuning)).
+- **$c_x$.** Real part of the off-diagonal (symmetric [coupling](#defn-coupling)).
+- **$c_y$.** Imaginary part of the off-diagonal (antisymmetric coupling — zero here).
 
-$$c_0 = \frac{D_0+D_{-1}}{2}=\frac{k^2 + (k - 2k_B)^2}{2} - (\omega/c)^2\bar\varepsilon \approx k_B^2 - (\omega/c)^2\bar\varepsilon \quad \text{(near reference)},$$
+#### Coefficient derivation
 
-which vanishes when the reference condition $(\omega/c)^2\bar\varepsilon = k_B^2$ from the start of this section is met — a uniform shift, irrelevant to the gap. The half-difference is
+1. **Half-sum of diagonals.**
+   $$c_0 = \frac{D_0+D_{-1}}{2}=\frac{k^2 + (k - 2k_B)^2}{2} - (\omega/c)^2\bar\varepsilon \approx k_B^2 - (\omega/c)^2\bar\varepsilon \quad \text{(near reference)},$$
+   which vanishes when the reference condition $(\omega/c)^2\bar\varepsilon = k_B^2$ from the start of this section is met — a uniform shift, irrelevant to the gap.
 
-$$c_z = \frac{D_0-D_{-1}}{2}=\frac{k^2 - (k - 2k_B)^2}{2} = 2k_B(k - k_B) + O((k - k_B)^2) \approx 2 k_B \, \delta, \qquad \boxed{\;\delta \equiv k - k_B.\;}
-\tag{8}\label{eq:delta-bragg}$$
+2. **Half-difference.**
+   $$c_z = \frac{D_0-D_{-1}}{2}=\frac{k^2 - (k - 2k_B)^2}{2} = 2k_B(k - k_B) + O((k - k_B)^2) \approx 2 k_B \, \delta, \qquad \boxed{\;\delta \equiv k - k_B.\;}
+   \tag{8}\label{eq:delta-bragg}$$
+   So the detuning in the framework's sense is proportional to the deviation of the driving wavenumber from the Bragg wavenumber; a linear function that vanishes at exact Bragg.
 
-So the detuning in the framework's sense is proportional to the deviation of the driving wavenumber from the Bragg wavenumber; a linear function that vanishes at exact Bragg.
+3. **Off-diagonal terms.**
+   The off-diagonal is $-(\omega/c)^2\,\Delta\varepsilon/2$: real, so $c_x = -(\omega/c)^2\Delta\varepsilon/2 \approx -k_B^2 \Delta\varepsilon/(2\bar\varepsilon)$ and $c_y = 0$. Dividing $c_x$ by the same $2k_B$ factor that made $c_z$ proportional to $\delta$, one gets the natural coupling coefficient:
+   $$\kappa \equiv \frac{k_B \Delta\varepsilon}{4\bar\varepsilon} = \frac{\pi \Delta n}{\lambda_B},
+   \tag{9}\label{eq:kappa-bragg}$$
+   with $\Delta n = \Delta\varepsilon/(2n_{\text{avg}})$ and $\lambda_B = 2n_{\text{avg}}\Lambda$.
 
-The off-diagonal is $-(\omega/c)^2\,\Delta\varepsilon/2$: real, so $c_x = -(\omega/c)^2\Delta\varepsilon/2 \approx -k_B^2 \Delta\varepsilon/(2\bar\varepsilon)$ and $c_y = 0$. Dividing $c_x$ by the same $2k_B$ factor that made $c_z$ proportional to $\delta$, one gets the natural coupling coefficient
+#### The three Pauli slots for this problem
 
-$$\kappa \equiv \frac{k_B \Delta\varepsilon}{4\bar\varepsilon} = \frac{\pi \Delta n}{\lambda_B},
-\tag{9}\label{eq:kappa-bragg}$$
+- **$c_z \neq 0$** (detuning)
+- **$c_x \neq 0$** (real symmetric coupling from cosine index modulation)
+- **$c_y = 0$**
 
-with $\Delta n = \Delta\varepsilon/(2n_{\text{avg}})$ and $\lambda_B = 2n_{\text{avg}}\Lambda$.
+That $c_y$ vanishes is the same statement as the passive-dielectric grating being **reciprocal**: exchanging the roles of "input" and "output" (running the wave backward) is the same as complex-conjugating the master-equation matrix, and a real symmetric matrix is unchanged by complex conjugation, so a wave that goes from left to right sees the same coupling as a wave from right to left.
 
-**The three Pauli slots for this problem:** $c_z \neq 0$ (detuning), $c_x \neq 0$ (real symmetric coupling from cosine index modulation), $c_y = 0$. That $c_y$ vanishes is the same statement as the passive-dielectric grating being **reciprocal**: exchanging the roles of "input" and "output" (running the wave backward) is the same as complex-conjugating the master-equation matrix, and a real symmetric matrix is unchanged by complex conjugation, so a wave that goes from left to right sees the same coupling as a wave from right to left. A nonzero $c_y$ — which would require an imaginary antisymmetric off-diagonal — would flip sign under complex conjugation and hence break reciprocity. This is the algebraic version of "why passive gratings are time-reversal-symmetric"; [§ 3](#sec-3) exhibits the one class of medium (magnetically biased ferrites) in which $c_y \neq 0$, and [§ 3.6](#sec-3-6) derives the connection to Onsager reciprocity in full.
+A nonzero $c_y$ — which would require an imaginary antisymmetric off-diagonal — would flip sign under complex conjugation and hence break reciprocity. This is the algebraic version of "why passive gratings are time-reversal-symmetric"; [§ 3](#sec-3) exhibits the one class of medium (magnetically biased ferrites) in which $c_y \neq 0$, and [§ 3.6](#sec-3-6) derives the connection to Onsager reciprocity in full.
 
-Same Pauli slots as the coupled pendulum of [§ 0.1](#sec-0-1) (which also had $c_z \neq 0$, $c_x \neq 0$, $c_y = 0$): the mechanical spring and the periodic index modulation play the same algebraic role. That is the entire content of "coupled-mode theory as the framework realized in a periodic dielectric."
+> **Key takeaway:** These are the **same Pauli slots as the coupled pendulum** of [§ 0.1](#sec-0-1) (which also had $c_z \neq 0$, $c_x \neq 0$, $c_y = 0$): the mechanical spring and the periodic index modulation play the exact same algebraic role. That is the entire content of "coupled-mode theory as the framework realized in a periodic dielectric."
 
-Applying the dispersion form of [§ 0.6](#sec-0-6) with these values of $\delta$ and $\kappa$,
+Applying the dispersion form of [§ 0.6](#sec-0-6) with these values of $\delta$ and $\kappa$:
 
 $$\boxed{\;q^2 = \delta^2 - \kappa^2,\;}$$
 
@@ -853,6 +935,7 @@ Higher structure-factor coefficients $\varepsilon_2, \varepsilon_3, \ldots$ ente
 
 - For a **cosine profile**, they are zero and no such corrections arise.
 - For a **square-wave modulation** (as in a fabricated multilayer stack — see [Bragg Mirrors, Laser Cavities, and Engineered Gratings](/posts/bragg-mirrors-and-lasers/#sec-1)), they are present.
+
 ## § 3. Gyromagnetic media: the $\sigma_y$ realization {#sec-3}
 
 The Bragg [detuning](#defn-detuning) $\delta = k - k_B$ and the real [coupling](#defn-coupling) coefficient $\kappa = \pi\Delta n/\lambda_B$ of [§ 2](#sec-2), together with the real-symmetric two-wave matrix that produced them, identify the Bragg grating as an instance of the [§ 0](#sec-0) framework with $c_z \neq 0$, $c_x \neq 0$, and $c_y = 0$.
@@ -1085,9 +1168,10 @@ At the lower edge $\delta = -\kappa$, where $q = 0$, the wave becomes a standing
 *Unlike a one-sided cutoff, the Bragg dispersion has a lower band below the stopband and an upper band above it.*
 
 This single difference is what generates the entire content of [Bragg Mirrors, Laser Cavities, and Engineered Gratings](/posts/bragg-mirrors-and-lasers/). The two Bragg band edges have different real-space standing-wave profiles — one concentrated in the high-index regions of the periodic modulation and one in the low-index regions — and a variational argument fixes which of the two sits at the lower frequency. Their frequency separation is the stopband width $2\kappa v_g$. The penetration depth of a wave into a finite mirror follows from the way an incident wave couples to the evanescent branch of the same hyperbola between the two edges. None of these three readings have counterparts in the one-sided cutoff problems, where a single standing wave at cutoff exhausts the story; [Cutoff phenomena](/posts/cutoff-phenomena/) therefore closes at the corresponding point in its own arc, and [Bragg Mirrors, Laser Cavities, and Engineered Gratings](/posts/bragg-mirrors-and-lasers/) picks up where it leaves off, using the second edge as its central object.
+
 ## § 5. Transfer matrix formalism {#sec-5}
 
-[The scalar-wave-equation refresher](#picture-3-scalar-wave-equation), [the Bloch-theorem refresher](#picture-3-bloch-theorem), Picture 3, and § 2 answered the eigenvalue question in $k$-space: given a frequency $\omega$, what wavenumber $q$ does the periodic medium allow? This section answers the complementary question in $z$-space: given the field $(E, E')$ at one point, what is it at another point? The reformulation is *operational* — it exposes propagation as matrix multiplication — and provides the algorithmic basis for computing reflectivity, transmission, and cascading of finite structures. It also recovers the band structure of Picture 3 and § 2 by a different route: as an eigenvalue problem on the propagation matrix.
+[The scalar-wave-equation refresher](#picture-3-scalar-wave-equation), [the Bloch-theorem refresher](#picture-3-bloch-theorem), [Picture 3](#picture-3), and [§ 2](#sec-2) answered the eigenvalue question in $k$-space: given a frequency $\omega$, what wavenumber $q$ does the periodic medium allow? This section answers the complementary question in $z$-space: given the field $(E, E')$ at one point, what is it at another point? The reformulation is *operational* — it exposes propagation as matrix multiplication — and provides the algorithmic basis for computing reflectivity, transmission, and cascading of finite structures. It also recovers the band structure of [Picture 3](#picture-3) and [§ 2](#sec-2) by a different route: as an eigenvalue problem on the propagation matrix.
 
 ### § 5.1. The local state and the propagation matrix {#sec-5-1}
 
@@ -1159,6 +1243,7 @@ The coupled-mode formalism of [§ 2](#sec-2) and the transfer-matrix formalism o
 | Best for               | Analytical, near-Bragg regime     | Finite structures, numerical   |
 
 The coupled-mode approach is the natural language for analytical work near the Bragg wavelength in the small-modulation regime, giving closed-form expressions for stopband width, Bragg length, and mode structure. The transfer-matrix approach is the natural language for finite devices with strong modulation, aperiodic profiles, chirped or apodized gratings (see [Bragg Mirrors, Laser Cavities, and Engineered Gratings](/posts/bragg-mirrors-and-lasers/#sec-3)), and any numerical calculation of reflectivity or transmission. The two are equivalent in their common domain of validity.
+
 ## § 6. Higher dimensions and neighboring domains {#sec-6}
 
 Every result so far has been 1D: one direction of propagation, one direction of periodicity. Extending to 2D and 3D introduces new phenomena — complete bandgaps, polarization mixing, and the possibility of confining light in air. This section sketches the extensions and closes with the parallel between photonic band structure and its analog in solid-state physics.
@@ -1253,6 +1338,7 @@ Real coupled-mode systems occasionally violate the two-mode assumption. The most
 **Continuous distributions of coupled modes.** When the coupled modes form a continuum (as in the coupling of a discrete cavity mode to a radiation continuum), the two-mode picture gives way to a Fano-resonance analysis. Fano resonances, exhibited as asymmetric spectral features, appear ubiquitously in guided-mode resonance devices, plasmonic structures, and molecular spectra.
 
 Each generalization has its own literature; the *core two-mode formalism* is universal, and that recognizing it in a new system is the first step in analyzing that system.
+
 ## § 7. Summary {#sec-7}
 
 ### The universal thread {#sec-7-universal-thread}
