@@ -683,31 +683,52 @@ $$\begin{pmatrix}
        & \vdots       & \vdots       & \vdots      & \ddots
 \end{pmatrix} \begin{pmatrix} \vdots \\ E_{-1} \\ E_{0} \\ E_{+1} \\ \vdots \end{pmatrix} = 0.$$
 
-The diagonal $D_n$ measures how much Fourier mode $n$ fails to satisfy the plane-wave dispersion relation in the average medium at the driving frequency $\omega$; the off-diagonal $\varepsilon_p$ is the coupling between mode $n$ and mode $n - p$, which physically transfers a wavenumber shift $pG_1$ between the two through the modulation. This is the same structure as the $2\times 2$ of [§ 0](#sec-0), extended to infinitely many modes and populated by a specific mechanism: the periodic index modulation.
+The diagonal $D_n$ measures how much Fourier mode $n$ fails to satisfy the plane-wave dispersion relation in the average medium at the driving frequency $\omega$; the off-diagonal $\varepsilon_p$ is the coupling between mode $n$ and mode $n - p$, which physically transfers a wavenumber shift $pG_1$ between the two through the modulation. This is the same structure as the $2\times 2$ of [§ 0](#sec-0), extended to infinitely many modes and populated by a specific mechanism: **the periodic index modulation**.
 
-Coefficient by coefficient, the Bragg condition emerges as the resonance condition of this matrix: it is the value of $k$ at which two of the diagonals $D_n = (k+nG_1)^2 - (\omega/c)^2\bar\varepsilon$ vanish simultaneously. For $D_0 = D_m = 0$ (some $m \neq 0$) both to hold, $k^2 = (k+mG_1)^2 = (\omega/c)^2\bar\varepsilon$; the first equality forces $k+mG_1 = \pm k$, i.e., $k = -mG_1/2$. For $m = -1$ this reads $k = G_1/2 = \pi/\Lambda$, and the corresponding frequency $\omega = ck/\sqrt{\bar\varepsilon}$ satisfies $\lambda_{\text{medium}} = 2\Lambda$ — exactly the classical Bragg condition of [Picture 1](#picture-1) at $\theta = 90°$. [§ 2](#sec-2) makes this quantitative by keeping only the two near-resonant modes.
+Coefficient by coefficient, the **Bragg condition** emerges as the resonance condition of this matrix: it is the value of $k$ at which two of the diagonals $D_n = (k+nG_1)^2 - (\omega/c)^2\bar\varepsilon$ vanish simultaneously. 
+
+* For $D_0 = D_m = 0$ (some $m \neq 0$) both to hold:
+  $$k^2 = (k+mG_1)^2 = (\omega/c)^2\bar\varepsilon$$
+* **Geometric constraint:** The first equality forces $k+mG_1 = \pm k$, i.e., $k = -mG_1/2$. 
+* **First-order resonance ($m = -1$):** This reads $k = G_1/2 = \pi/\Lambda$.
+* **Classical equivalence:** The corresponding frequency $\omega = ck/\sqrt{\bar\varepsilon}$ satisfies $\lambda_{\text{medium}} = 2\Lambda$ — exactly the classical Bragg condition of [Picture 1](#picture-1) at $\theta = 90°$.
+
+[§ 2](#sec-2) makes this quantitative by keeping only the two near-resonant modes.
 
 ### Same object, three pictures {#same-object-three-pictures}
 
-The three pictures agree because the underlying object is the same: the Fourier decomposition of $\varepsilon(z)$. [Picture 1](#picture-1) treats the modulation as discrete planes (a Fourier series with all $m$); [Picture 2](#picture-2) labels the reciprocal-lattice vectors by $m$; [Picture 3](#picture-3) works directly with the Fourier coefficients $\varepsilon_m$. Each picture makes a different question easy:
+The three pictures agree because the underlying object is the same: **the Fourier decomposition of $\varepsilon(z)$**. [Picture 1](#picture-1) treats the modulation as discrete planes (a Fourier series with all $m$); [Picture 2](#picture-2) labels the reciprocal-lattice vectors by $m$; [Picture 3](#picture-3) works directly with the Fourier coefficients $\varepsilon_m$. Each picture makes a different question easy:
 
 - **[Picture 1](#picture-1) (path difference)** — *what geometry?* the angle where the constructive-interference condition is met for a given $m$.
 - **[Picture 2](#picture-2) (momentum conservation)** — *why integer $m$?* $m$ labels which reciprocal-lattice vector is invoked.
 - **[Picture 3](#picture-3) (Fourier convolution)** — *how strong?* the amplitude of the $m$-th order is set by $\varepsilon_m$, the $m$-th Fourier coefficient of the modulation profile.
 
-The pattern of nonzero $\varepsilon_m$ is called the **structure factor** of the modulation. The angle at which order $m$ diffracts is fixed by the geometric condition $m\lambda_0 = 2 n_{\text{avg}}\Lambda\sin\theta$ from [Picture 1](#picture-1) and [Picture 2](#picture-2): it involves the period $\Lambda$ and the order $m$, but not the shape of $\varepsilon(z)$ within one period. What the shape controls — through $\varepsilon_m$ — is whether that geometric resonance actually couples the incident wave to the reflected wave, and if so how strongly. If $\varepsilon_m = 0$ for some order, then [Picture 3](#picture-3) shows that the coupling term $(\omega/c)^2\varepsilon_m E_{n-m}$ vanishes for that order and the reflection at that angle is zero even though the geometry is satisfied. For a purely sinusoidal modulation $\varepsilon(z) = \bar\varepsilon + \varepsilon_1\cos(G_1 z)$, only $\varepsilon_{\pm 1}$ are nonzero and only the first-order reflection exists. For a square-wave modulation (as in a real [distributed Bragg reflector](/posts/bragg-mirrors-and-lasers/#sec-1)), $\varepsilon_m \propto 1/m$ for odd $m$ and vanishes for even $m$, so odd orders reflect and even orders do not.
+The pattern of nonzero $\varepsilon_m$ is called the **structure factor** of the modulation. 
+
+* **Diffraction Angle:** The angle at which order $m$ diffracts is fixed by the geometric condition $m\lambda_0 = 2 n_{\text{avg}}\Lambda\sin\theta$ from [Picture 1](#picture-1) and [Picture 2](#picture-2): it involves the period $\Lambda$ and the order $m$, but **not** the shape of $\varepsilon(z)$ within one period. 
+* **Coupling Strength:** What the shape controls — through $\varepsilon_m$ — is whether that geometric resonance actually couples the incident wave to the reflected wave, and if so how strongly.
+
+> **Key Rule:** If $\varepsilon_m = 0$ for some order, then [Picture 3](#picture-3) shows that the coupling term $(\omega/c)^2\varepsilon_m E_{n-m}$ vanishes for that order and the reflection at that angle is zero **even though the geometry is satisfied**.
+
+* **Pure Sinusoidal Modulation ($\varepsilon(z) = \bar\varepsilon + \varepsilon_1\cos(G_1 z)$):** Only $\varepsilon_{\pm 1}$ are nonzero and only the first-order reflection exists.
+* **Square-Wave Modulation (Real [distributed Bragg reflector](/posts/bragg-mirrors-and-lasers/#sec-1)):** $\varepsilon_m \propto 1/m$ for odd $m$ and vanishes for even $m$, so odd orders reflect and even orders do not.
 
 ### When Bragg cannot work: two ways to fail {#bragg-failure-modes}
 
-Bragg reflection into a specific direction requires two conditions simultaneously: (1) the geometry $m\lambda = 2n_{\text{avg}}\Lambda\sin\theta$ must hold for some integer $m$, and (2) the corresponding $\varepsilon_m$ must be nonzero. What we care about below is the incident wave sent straight back along its own path, because that is the process the two-mode analysis of [§ 2](#sec-2) will keep. In the convention of [Picture 1](#picture-1) the angle $\theta$ is measured from the planes, so a wave propagating perpendicular to the planes has $\theta = 90°$: it goes in normal to the layers, and back-reflection returns it out along the same normal.
+Bragg reflection into a specific direction requires **two conditions simultaneously**:
 
-Set the geometry with $\sin\theta = 1$: the Bragg condition becomes $m\lambda_{\text{medium}} = 2\Lambda$, or $m = 2\Lambda/\lambda_{\text{medium}}$. When the wavelength is much larger than the period, this ratio is much less than one — no positive integer $m$ satisfies the geometry, and there is no back-reflection at any angle for the average-medium wave. The master equation of [Picture 3](#picture-3) lets us ask a sharper question: even if the geometry could be satisfied by picking a large integer $m$, would the reflection actually happen? Two independent effects rule it out.
+1. **Geometry:** $m\lambda = 2n_{\text{avg}}\Lambda\sin\theta$ must hold for some integer $m$.
+2. **Structure Factor:** The corresponding $\varepsilon_m$ must be nonzero.
 
-Take an optical wavelength $\lambda_0 = 500\,\text{nm}$ striking a crystal with atomic-plane spacing $a \approx 0.3\,\text{nm}$; the geometry would require $m = \lambda_0/(2n_{\text{avg}}\, a) \approx 833$.
+What we care about below is the incident wave sent straight back along its own path, because that is the process the two-mode analysis of [§ 2](#sec-2) will keep. In the convention of [Picture 1](#picture-1) the angle $\theta$ is measured from the planes, so a wave propagating perpendicular to the planes has $\theta = 90°$: it goes in normal to the layers, and back-reflection returns it out along the same normal.
+
+Set the geometry with $\sin\theta = 1$: the Bragg condition becomes $m\lambda_{\text{medium}} = 2\Lambda$, or $m = 2\Lambda/\lambda_{\text{medium}}$. When the wavelength is much larger than the period, this ratio is much less than one — no positive integer $m$ satisfies the geometry, and there is no back-reflection at any angle for the average-medium wave.
+
+The master equation of [Picture 3](#picture-3) lets us ask a sharper question: even if the geometry could be satisfied by picking a large integer $m$ (take an optical wavelength $\lambda_0 = 500\,\text{nm}$ striking a crystal with atomic-plane spacing $a \approx 0.3\,\text{nm}$; the geometry would require $m = \lambda_0/(2n_{\text{avg}}\, a) \approx 833$), would the reflection actually happen? Two independent effects rule it out:
 
 <span id="failure-1"></span>
 
-**Failure 1 — the planes are not stationary.**
+**Failure 1 — The planes are not stationary**
 
 The derivation of the structure factor $\varepsilon_m$ assumed each plane sits at a fixed position $z_j = j\Lambda$. Real atomic planes do not: at any temperature — including absolute zero, where quantum zero-point motion persists — each plane fluctuates about its nominal position, and the constructive summation of reflections from the $j$-th plane is degraded by the accumulated phase noise from these fluctuations. Write the position of plane $j$ as $z_j + \Delta_j$ with $\Delta_j$ a small random offset independent from plane to plane, and let $u$ denote the typical size of $\Delta_j$ — concretely, its standard deviation, so that $\langle \Delta_j\rangle = 0$ and $\langle \Delta_j^2\rangle = u^2$. For atomic crystals at room temperature $u$ is of order $0.01\,\text{nm}$.
 
@@ -715,15 +736,15 @@ The derivation of the structure factor $\varepsilon_m$ assumed each plane sits a
 
 The wave scattered off plane $j$ carries a phase factor $e^{i m G_1 (z_j + \Delta_j)}$; the $z_j$ part is the constructive Bragg phase and the $\Delta_j$ part is the noise. The scattered amplitude summed over $N$ planes is
 
-$$A \propto \sum_j e^{i m G_1 z_j}\, e^{i m G_1 \Delta_j}.$$
+$$A \propto \sum_j e^{i m G_1 z_j}\, e^{i m G_1 \Delta_j}$$
 
 The observed intensity is $|A|^2 = \sum_{j,\ell} e^{i m G_1(z_j - z_\ell)} \langle e^{i m G_1(\Delta_j - \Delta_\ell)}\rangle$, where the angle brackets are the ensemble average over the fluctuations. For independent Gaussian-distributed $\Delta_j$ with mean zero and variance $u^2$, the average of $e^{i m G_1 \Delta_j}$ is $e^{-\frac12 m^2 G_1^2 u^2}$ (moment-generating function of a Gaussian). The cross-terms $j \neq \ell$ pick up two independent averages, giving $e^{-m^2 G_1^2 u^2}$; the diagonal terms $j = \ell$ give 1 and contribute incoherently. Splitting the sum,
 
-$$|A|^2 = N + \big|\sum_j e^{i m G_1 z_j}\big|^2\, e^{-m^2 G_1^2 u^2} - N \cdot e^{-m^2 G_1^2 u^2}.$$
+$$|A|^2 = N + \big|\sum_j e^{i m G_1 z_j}\big|^2\, e^{-m^2 G_1^2 u^2} - N \cdot e^{-m^2 G_1^2 u^2}$$
 
 The constructive piece — the "Bragg peak" — is the middle term: the noise-free intensity multiplied by the **Debye–Waller factor**
 
-$$e^{-m^2 G_1^2\, u^2}.$$
+$$e^{-m^2 G_1^2\, u^2}$$
 
 — a Gaussian in $m^2$. For $m = 833$, $G_1 = 2\pi/a$, and $u = 0.01\,\text{nm}$, the exponent is of order $10^5$: the constructive piece is washed out to zero and only the incoherent $N$ remains.
 
@@ -731,17 +752,34 @@ $$e^{-m^2 G_1^2\, u^2}.$$
 
 <span id="failure-2"></span>
 
-**Failure 2 — the layers are too dense compared to a wavelength.**
+**Failure 2 — The layers are too dense compared to a wavelength**
 
-Freeze the planes in place ($u \to 0$), removing [Failure 1](#failure-1) entirely. The reflection still vanishes, for a purely geometric reason. In the medium, a wavelength spans $\lambda_{\text{medium}}/a \approx 2m \approx 1666$ atomic layers. A reflection from the layer at depth $z$ and a reflection from the layer at depth $z + \lambda_{\text{medium}}/4$ differ in round-trip path by $\lambda_{\text{medium}}/2$, so their contributions cancel exactly. That partner layer sits $\lambda_{\text{medium}}/(4a) \approx m/2 \approx 416$ layers below the first, well inside the same wavelength: the pairing is between layers of the same physical crystal, not between distant regions. Every layer in the first quarter-wavelength has a canceling partner in the next quarter-wavelength, and the two quarter-wavelengths together cover half a wavelength. Extending this pairing over the full 1500 layers under a single wavelength, the reflection integrates to zero even with the planes completely still.
+Freeze the planes in place ($u \to 0$), removing [Failure 1](#failure-1) entirely. The reflection still vanishes, for a purely geometric reason:
+
+* In the medium, a wavelength spans $\lambda_{\text{medium}}/a \approx 2m \approx 1666$ atomic layers.
+* A reflection from the layer at depth $z$ and a reflection from the layer at depth $z + \lambda_{\text{medium}}/4$ differ in round-trip path by $\lambda_{\text{medium}}/2$, so their contributions **cancel exactly**.
+* That partner layer sits $\lambda_{\text{medium}}/(4a) \approx m/2 \approx 416$ layers below the first, well inside the same wavelength: the pairing is between layers of the same physical crystal, not between distant regions.
+
+Every layer in the first quarter-wavelength has a canceling partner in the next quarter-wavelength, and the two quarter-wavelengths together cover half a wavelength. Extending this pairing over the full 1500 layers under a single wavelength, the reflection integrates to zero even with the planes completely still.
 
 <span id="failure-conclusion"></span>
 
-**Two failure modes, one conclusion.**
+**Two failure modes, one conclusion**
 
-When $\lambda \gg \Lambda$, no order of the modulation reflects the wave. That the wave still propagates — through what would otherwise be a complicated periodic medium — is a consequence of the same master equation. With no near-degenerate pair of rows to couple, every off-diagonal term $(\omega/c)^2 \varepsilon_m E_{n-m}$ in the master equation of [Picture 3](#picture-3) divides by a large detuning $D_n \sim k^2 \neq (\omega/c)^2\bar\varepsilon$ before feeding back, and every $E_n$ with $n \neq 0$ is suppressed by $\varepsilon_m/(D_n \cdot c^2/\omega^2)$ relative to $E_0$. What survives is the single diagonal row $D_0 E_0 = 0$, which reads $k^2 = (\omega/c)^2\bar\varepsilon$ — the dispersion relation of a homogeneous medium with permittivity $\bar\varepsilon$. The modulation is invisible; only its average survives.
+When $\lambda \gg \Lambda$, no order of the modulation reflects the wave. That the wave still propagates — through what would otherwise be a complicated periodic medium — is a consequence of the same master equation:
 
-Optical Bragg mirrors bypass both failures by *engineering* $\Lambda$ to match the wavelength: a multilayer stack with $\Lambda \sim \lambda_0/(2 n_{\text{avg}})$ is designed to reflect at $m = 1$. [Failure 1](#failure-1) is suppressed because at $m = 1$ the Debye–Waller exponent $m^2 G_1^2 u^2$ is smaller than at $m = 833$ by a factor of $833^2$; even for the same $u$ the exponent is now of order $10^{-1}$ rather than $10^{5}$. [Failure 2](#failure-2) is suppressed because at $m = 1$ the modulation period *is* half a wavelength, and no canceling partner layer exists within one modulation cell — the two adjacent layers of the stack differ in round-trip path by exactly one wavelength and add constructively. [§§ 2–10](#sec-2) are the theory of this engineered $m = 1$ regime.
+1. **Off-Diagonal Suppression:** With no near-degenerate pair of rows to couple, every off-diagonal term $(\omega/c)^2 \varepsilon_m E_{n-m}$ in the master equation of [Picture 3](#picture-3) divides by a large detuning $D_n \sim k^2 \neq (\omega/c)^2\bar\varepsilon$ before feeding back.
+2. **Mode Elimination:** Every $E_n$ with $n \neq 0$ is suppressed by $\varepsilon_m/(D_n \cdot c^2/\omega^2)$ relative to $E_0$.
+3. **Effective Medium:** What survives is the single diagonal row $D_0 E_0 = 0$, which reads $k^2 = (\omega/c)^2\bar\varepsilon$ — the dispersion relation of a homogeneous medium with permittivity $\bar\varepsilon$.
+
+The modulation is invisible; only its average survives.
+
+Optical Bragg mirrors bypass both failures by *engineering* $\Lambda$ to match the wavelength: a multilayer stack with $\Lambda \sim \lambda_0/(2 n_{\text{avg}})$ is designed to reflect at $m = 1$. 
+
+* **Failure 1 Mitigated:** [Failure 1](#failure-1) is suppressed because at $m = 1$ the Debye–Waller exponent $m^2 G_1^2 u^2$ is smaller than at $m = 833$ by a factor of $833^2$; even for the same $u$ the exponent is now of order $10^{-1}$ rather than $10^{5}$.
+* **Failure 2 Mitigated:** [Failure 2](#failure-2) is suppressed because at $m = 1$ the modulation period *is* half a wavelength, and no canceling partner layer exists within one modulation cell — the two adjacent layers of the stack differ in round-trip path by exactly one wavelength and add constructively.
+
+[§§ 2–10](#sec-2) are the theory of this engineered $m = 1$ regime.
 
 ## § 2. Coupled-mode theory: the framework realized in a periodic dielectric {#sec-2}
 
