@@ -438,7 +438,7 @@ There are two types of feature importance:
 
 ## # 4. Global Interpretation
 
-Throughout ## 4–5, write an input as
+Throughout # 4–5, write an input as
 
 $$
 x=(x_j,x_{-j}),

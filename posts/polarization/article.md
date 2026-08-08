@@ -227,7 +227,7 @@ That is the picture for a pure sinusoidal wave in empty space. What changes for 
 
 ## # 6. Beyond a pure sinusoidal wave in vacuum {#sec-6}
 
-The picture built in ## [1](#sec-1)–[5](#sec-5) assumes a pure sinusoidal wave in vacuum. Two departures from that setting matter for what follows.
+The picture built in # [1](#sec-1)–[5](#sec-5) assumes a pure sinusoidal wave in vacuum. Two departures from that setting matter for what follows.
 
 **A pulsed wave.** A femtosecond laser pulse turns on for a few cycles and then off; a radar pulse turns on for microseconds. In both, the field is
 

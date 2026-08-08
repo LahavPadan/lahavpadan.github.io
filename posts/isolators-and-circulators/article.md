@@ -143,7 +143,7 @@ The microwave workhorse is yttrium iron garnet Y$_3$Fe$_5$O$_{12}$, a synthetic 
 
 ### # 3.3. Garnets at optical frequencies {#sec-3-3}
 
-At optical frequencies the microwave mechanism does not work: magnetic moments in a solid can precess at $\sim 30$ GHz, not at the $200$ THz of a telecom photon, and they cannot follow the field. Optical Faraday rotation instead comes from the [shift of bound-electron oscillation frequencies under the bias](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-3-7), which produces a tensor with the same $(\mu, -i\kappa_P;\; i\kappa_P, \mu)$ shape as the microwave case, appearing as a permittivity rather than a permeability. The device physics of ## 1–2 carries over unchanged.
+At optical frequencies the microwave mechanism does not work: magnetic moments in a solid can precess at $\sim 30$ GHz, not at the $200$ THz of a telecom photon, and they cannot follow the field. Optical Faraday rotation instead comes from the [shift of bound-electron oscillation frequencies under the bias](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-3-7), which produces a tensor with the same $(\mu, -i\kappa_P;\; i\kappa_P, \mu)$ shape as the microwave case, appearing as a permittivity rather than a permeability. The device physics of # 1–2 carries over unchanged.
 
 Two optical materials dominate:
 

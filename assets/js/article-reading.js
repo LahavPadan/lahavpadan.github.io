@@ -230,7 +230,7 @@
       activeIndex = index;
 
       var chapter = chapters[index];
-      if (number) number.textContent = '# ' + chapter.dataset.chapterNumber;
+      if (number) number.textContent = chapter.dataset.chapterNumber;
       if (title) title.textContent = chapter.dataset.chapterTitle;
       highlight(index);
     }

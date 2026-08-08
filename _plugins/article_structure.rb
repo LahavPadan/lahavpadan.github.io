@@ -214,7 +214,7 @@ module LahavBlog
         chapter.attr['data-chapter-number'] = number
         chapter.attr['data-chapter-title'] = plain
         heading.children.replace([
-          span('chapter-heading__number', "# #{number}"),
+          span('chapter-heading__number', number),
           span('chapter-heading__title', title)
         ])
 
@@ -241,6 +241,7 @@ module LahavBlog
 
         chapter.children.each do |child|
           if heading?(child, 3)
+            strip_marker_prefix(child)
             child.attr['data-guided-subsection'] = 'true'
             current = block('section', { 'class' => 'article-subsection' }, [child])
             grouped << current
@@ -255,6 +256,17 @@ module LahavBlog
 
         chapter.children.replace(grouped)
         subsections
+      end
+
+      # Chapter headings get split into number+title spans by finish_chapter,
+      # so the "# " marker never survives to the render. Subsection headings
+      # aren't rewritten that way — their raw text renders as-is — so the
+      # marker has to be stripped from the leading text node before the
+      # heading is recorded in the TOC or shipped to the page.
+      def strip_marker_prefix(heading)
+        first_text = heading.children.find { |child| child.type == :text }
+        return unless first_text
+        first_text.value = first_text.value.sub(/\A#\s+/, '')
       end
 
       # -- element helpers -------------------------------------------------

@@ -496,7 +496,7 @@ Under these conditions the wave equation reduces to a **scalar Helmholtz equatio
 
 $$\frac{d^2 E(z)}{dz^2} + \frac{\omega^2}{c^2}\, \varepsilon(z)\, E(z) = 0, \qquad c^2 \equiv \frac{1}{\mu_0 \varepsilon_0}.$$
 
-This is the equation that governs [the Bloch-theorem refresher](#picture-3-bloch-theorem) and [## 1–10](#sec-1).
+This is the equation that governs [the Bloch-theorem refresher](#picture-3-bloch-theorem) and [# 1–10](#sec-1).
 
 <span id="picture-3-permittivity"></span>
 
@@ -779,7 +779,7 @@ Optical Bragg mirrors bypass both failures by *engineering* $\Lambda$ to match t
 * **Failure 1 Mitigated:** [Failure 1](#failure-1) is suppressed because at $m = 1$ the Debye–Waller exponent $m^2 G_1^2 u^2$ is smaller than at $m = 833$ by a factor of $833^2$; even for the same $u$ the exponent is now of order $10^{-1}$ rather than $10^{5}$.
 * **Failure 2 Mitigated:** [Failure 2](#failure-2) is suppressed because at $m = 1$ the modulation period *is* half a wavelength, and no canceling partner layer exists within one modulation cell — the two adjacent layers of the stack differ in round-trip path by exactly one wavelength and add constructively.
 
-[## 2–10](#sec-2) are the theory of this engineered $m = 1$ regime.
+[# 2–10](#sec-2) are the theory of this engineered $m = 1$ regime.
 
 ## # 2. Coupled-mode theory: the framework realized in a periodic dielectric {#sec-2}
 
@@ -1385,7 +1385,7 @@ Every phenomenon in the sections above is a reading of the same $2 \times 2$ Her
 
 | Setting                        | $c_x$ (σₓ)         | $c_y$ (σᵧ)             | $c_z$ (σ_z)                  | Reference |
 | ------------------------------ | ------------------ | ---------------------- | ---------------------------- | --------- |
-| Coupled mechanical oscillators | mechanical spring  | 0                      | difference of stiffnesses    | [## 0.2–0.3](#sec-0-2) |
+| Coupled mechanical oscillators | mechanical spring  | 0                      | difference of stiffnesses    | [# 0.2–0.3](#sec-0-2) |
 | Bragg grating                  | index modulation   | 0                      | $k - k_B$                    | [# 2](#sec-2) |
 | Biased ferrite                 | 0                  | Polder $\kappa_P$      | 0                            | [# 3](#sec-3)     |
 | Magneto-optic dielectric       | 0                  | Zeeman off-diagonal    | 0                            | [# 3](#sec-3)     |
