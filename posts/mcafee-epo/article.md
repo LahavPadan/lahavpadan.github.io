@@ -2,11 +2,11 @@ McAfee ePO is a centralized policy and reporting server for endpoint security ag
 
 Throughout, **MA** is the McAfee Agent on the endpoint, **AH** is an Agent Handler (an optional intermediate tier), **ePO core** is the central server, and **ENS** / **VSE** / **DLP** / **TIE** / **RSD** are product modules that plug into the ePO framework.
 
-The deepest historical view of ePO internals — the SPIPE crypto, the rogue-agent registration path, the master-repository signing scheme, pivoting from a foothold on the ePO server to every managed endpoint — comes from Jerome Nokin's **epowner** project (2012–2013), packaged as CVE-2013-0140 and CVE-2013-0141 at [github.com/funoverip/epowner](https://github.com/funoverip/epowner), with commentary at [funoverip.net](http://funoverip.net). The specific bugs epowner exploited were in ePO 4.6.0–4.6.5 and the direct exploits do not survive to 5.10, but the internals it documented — the shape of the SPIPE handshake, the `srpubkey`/`reqseckey` roles, the `catalog.z` signing pipeline, the ePO SQL schema — are the same architecture as what ships today. The sitelist password decryption (§ 9.4) is from Jerome Nokin, FXWarChest, and the PowerSploit team; the DLP internals reverse-engineering (§ 17) draws on `mrd0x`'s McAfee Agent zero-day work; the SPIPE DataChannel authentication bypass (§ 3.5) is Cisco Talos's TALOS-2016-0229.
+The deepest historical view of ePO internals — the SPIPE crypto, the rogue-agent registration path, the master-repository signing scheme, pivoting from a foothold on the ePO server to every managed endpoint — comes from Jerome Nokin's **epowner** project (2012–2013), packaged as CVE-2013-0140 and CVE-2013-0141 at [github.com/funoverip/epowner](https://github.com/funoverip/epowner), with commentary at [funoverip.net](http://funoverip.net). The specific bugs epowner exploited were in ePO 4.6.0–4.6.5 and the direct exploits do not survive to 5.10, but the internals it documented — the shape of the SPIPE handshake, the `srpubkey`/`reqseckey` roles, the `catalog.z` signing pipeline, the ePO SQL schema — are the same architecture as what ships today. The sitelist password decryption (# 9.4) is from Jerome Nokin, FXWarChest, and the PowerSploit team; the DLP internals reverse-engineering (# 17) draws on `mrd0x`'s McAfee Agent zero-day work; the SPIPE DataChannel authentication bypass (# 3.5) is Cisco Talos's TALOS-2016-0229.
 
 ---
 
-## § 1. Lineage
+## # 1. Lineage
 
 ### 1.1. Network Associates → McAfee → Intel → McAfee LLC → Trellix
 
@@ -60,7 +60,7 @@ The Java servlet stack from 2007, the SPIPE protocol from 1998, and the 3DES-obf
 
 ---
 
-## § 2. Endpoint agent lineage: VSE and ENS
+## # 2. Endpoint agent lineage: VSE and ENS
 
 **VirusScan Enterprise (VSE, 8.x)** was the McAfee AV shipping through ~2018. **Endpoint Security (ENS, 10.x)** replaced it. Two OS-level changes forced the switch.
 
@@ -84,13 +84,13 @@ A local unprivileged process could enumerate the exclusion list and stage payloa
 
 ### 2.2. What ENS is architecturally
 
-ENS is a set of modules that share the ePO management plane and run as one process family on the endpoint: **ENS Threat Prevention** (the AV core, `mfetp.exe`), **ENS Firewall** (`mfefirek.sys` kernel + user-mode components), **ENS Web Control**, plus optional add-ons (**ENS Adaptive Threat Protection**, **ENS Exploit Prevention**). The scanning engine underneath all of them is called **AMCore** (drivers `mfencbdc.sys` for AMCore main, `mfencrk.sys` for the rootkit scanner) and its content updates come as versioned **DAT v3** packages via the ePO repositories (§ 9).
+ENS is a set of modules that share the ePO management plane and run as one process family on the endpoint: **ENS Threat Prevention** (the AV core, `mfetp.exe`), **ENS Firewall** (`mfefirek.sys` kernel + user-mode components), **ENS Web Control**, plus optional add-ons (**ENS Adaptive Threat Protection**, **ENS Exploit Prevention**). The scanning engine underneath all of them is called **AMCore** (drivers `mfencbdc.sys` for AMCore main, `mfencrk.sys` for the rootkit scanner) and its content updates come as versioned **DAT v3** packages via the ePO repositories (# 9).
 
-The sub-component of ENS that matters for reverse engineering is **HookCore** (§ 16.1), which does user-mode API interception. VSE had the same thing under the **HIPS** brand; ENS reimplemented it.
+The sub-component of ENS that matters for reverse engineering is **HookCore** (# 16.1), which does user-mode API interception. VSE had the same thing under the **HIPS** brand; ENS reimplemented it.
 
 ---
 
-## § 3. The ePO stack in three tiers
+## # 3. The ePO stack in three tiers
 
 ### 3.1. The three tiers
 
@@ -111,27 +111,27 @@ The core runs the admin console, the event parser, the policy engine, and holds 
 | Port      | Direction     | Purpose                                                        | Notes                                                                            |
 | --------- | ------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | **TCP 8443** | Console → Core | Admin console (HTTPS to Tomcat)                                 | Java Servlet `j_security_check` login; TLS via `keystore.bin`                    |
-| **TCP 443**  | Agent → AH/Core | SPIPE over HTTPS (`/spipe/agent`, `/spipe/pkg`, `/spipe/event`) | HTTPS transport; inner body is SPIPE-encoded (§ 8)                              |
+| **TCP 443**  | Agent → AH/Core | SPIPE over HTTPS (`/spipe/agent`, `/spipe/pkg`, `/spipe/event`) | HTTPS transport; inner body is SPIPE-encoded (# 8)                              |
 | **TCP 80** or **TCP 8081** | Agent → repo | HTTP GET for repository content                    | Not encrypted — content packages are signature-protected                         |
-| **TCP 8081** | AH/Core → Agent, SuperAgent → Agent | Wake-up call to force an ASCI                | Broadcast to **UDP 8082** by SuperAgents in the segment (§ 6)                    |
+| **TCP 8081** | AH/Core → Agent, SuperAgent → Agent | Wake-up call to force an ASCI                | Broadcast to **UDP 8082** by SuperAgents in the segment (# 6)                    |
 | **TCP 8082** | SuperAgent → Agent (broadcast) | Wake-up broadcast to a whole segment            | Reduces N point-to-point wake-ups to one broadcast                                |
-| **TCP 8883** | Agent / TIE → DXL broker | MQTT over TLS (DXL bus)                                    | Persistent connection (§ 15)                                                     |
+| **TCP 8883** | Agent / TIE → DXL broker | MQTT over TLS (DXL bus)                                    | Persistent connection (# 15)                                                     |
 | **TCP 8444** | (historic) direct RSD Sensor → ePO | Legacy direct channel used by RSD 4.7 and earlier | Superseded — RSD now routes through the McAfee Agent DataChannel                 |
-| **UDP 8431** | Sensor ↔ Sensor | RSD sensor-election multicast (§ 18)                        | Configurable per RSD policy                                                       |
+| **UDP 8431** | Sensor ↔ Sensor | RSD sensor-election multicast (# 18)                        | Configurable per RSD policy                                                       |
 
 ### 3.3. Three transport planes
 
-1. **HTTP** — carries **content**: DAT and AMCore content packages, engine binaries, product packages, agent updates. All plaintext from a repository; integrity is enforced by the DSA/RSA signature over the catalog (§ 9.3).
+1. **HTTP** — carries **content**: DAT and AMCore content packages, engine binaries, product packages, agent updates. All plaintext from a repository; integrity is enforced by the DSA/RSA signature over the catalog (# 9.3).
 
-2. **SPIPE over HTTPS** — carries **control**: policies (server → agent), events (agent → server), and properties (agent → server). Doubly protected: outer TLS (Tomcat's `keystore.bin`) plus inner SPIPE encryption (agent/server RSA + 3DES) plus signature (§ 8).
+2. **SPIPE over HTTPS** — carries **control**: policies (server → agent), events (agent → server), and properties (agent → server). Doubly protected: outer TLS (Tomcat's `keystore.bin`) plus inner SPIPE encryption (agent/server RSA + 3DES) plus signature (# 8).
 
 3. **SMB** — carries **evidence**. DLP-captured file evidence is written to an evidence share over SMB, not through the SPIPE plane, because the payloads are large.
 
-The DXL bus (§ 15) is a fourth plane in ENS-era deployments — MQTT pub/sub between agents, brokers, and TIE, distinct from the client-server planes above.
+The DXL bus (# 15) is a fourth plane in ENS-era deployments — MQTT pub/sub between agents, brokers, and TIE, distinct from the client-server planes above.
 
 ---
 
-## § 4. ePO core: request routing
+## # 4. ePO core: request routing
 
 ### 4.1. Apache + `mod_epo` + `naimserv.dll`
 
@@ -141,7 +141,7 @@ The ePO server is a two-process front: **Apache (`httpd`)** for HTTPS terminatio
 
 - **`naimserv.dll`** ("Network Associates Interface Manager Server") — parses the SPIPE inner request. Calls `NAISIGN` for RSA unwrap plus DSA/RSA signature verification, decrypts the 3DES/AES payload, decompresses, and hands the resulting properties XML / events / package upstream.
 
-- **`mod_eporepo.dll`** — the Apache module that serves repository content on `/Software/*` (§ 4.4).
+- **`mod_eporepo.dll`** — the Apache module that serves repository content on `/Software/*` (# 4.4).
 
 The SPIPE plug-ins live in Apache rather than Tomcat because the SPIPE decode is cheap CPU work and does not need the JVM. The Tomcat side handles anything that requires application logic — policies, reports, the console.
 
@@ -160,7 +160,7 @@ Everything under `/spipe/*` and `/Software/*` goes to Apache; everything under t
 | `/SoftwareMgmt/*` (Master Repository / Extensions / Licensing), e.g. `/SoftwareMgmt/enterLicenseKey.do`                                                                                                               | Tomcat — admin console                     | The license key page has a `returnURL` GET parameter that was abused in **CVE-2021-23888** (see [blog.vibri.us](https://blog.vibri.us/CVE-2021-23888-McAfee-ePolicy-Orchestrator-HTML-Injection/))                                                                                                                                                                                    |
 | `/PolicyMgmt/*` (Policy Catalog), e.g. `/PolicyMgmt/policyDetailsCard.do`                                                                                                                                             | Tomcat — admin console                     | Policy Catalog reflected XSS in **CVE-2020-7318**                                                                                                                                                                                                                                                                                                                                    |
 | `/remote/*` (Web API): `/remote/core.help`, `/remote/core.executeQuery`, `/remote/core.listTables`, `/remote/core.listDatatypes`, `/remote/system.findGroups`, `/remote/system.importSystem`                          | Tomcat — Web API                           | Documented at [docs.trellix.com](https://docs.trellix.com/bundle/trellix-epolicy-orchestrator-on-prem-web-api-scripting-reference-guide/page/UUID-8df5c181-2be6-8b3e-f562-e5b292a385ca.html). Example: `https://servername:8443/remote/core.executeQuery?target=OrionTaskLogTaskMessage&select=(select OrionTaskLogTask.Name OrionTaskLogTaskMessage.Message)&joinTables=OrionTaskLogTask` |
-| DataChannel **processing**: `/receiveDataChannelMsg.dcp`<br>DataChannel **redirect**: `/dcRedirect/dataChannelMsg.dc`                                                                                                | Apache + `mod_epo.dll` + `naimserv.dll`, plus Tomcat servlets | HTTPS POST, SPIPE-encoded body. The redirect endpoint is a Tomcat servlet class `com.mcafee.epo.dataChannel.servlet.redirect.EPODataChannelRedirectServlet` (see § 4.5)                                                                                                                                                                                                             |
+| DataChannel **processing**: `/receiveDataChannelMsg.dcp`<br>DataChannel **redirect**: `/dcRedirect/dataChannelMsg.dc`                                                                                                | Apache + `mod_epo.dll` + `naimserv.dll`, plus Tomcat servlets | HTTPS POST, SPIPE-encoded body. The redirect endpoint is a Tomcat servlet class `com.mcafee.epo.dataChannel.servlet.redirect.EPODataChannelRedirectServlet` (see # 4.5)                                                                                                                                                                                                             |
 
 ### 4.3. Admin console: authentication and where credentials live
 
@@ -198,11 +198,11 @@ The fix (delivered in a subsequent ePO update) added an explicit authentication 
 
 ---
 
-## § 5. Agent Handler
+## # 5. Agent Handler
 
 An Agent Handler terminates SPIPE from agents, forwards to SQL, and serves repository content — nothing else.
 
-- **Terminates SPIPE from agents.** All the crypto in § 8 runs on the AH. From the agent's perspective, an AH is indistinguishable from the ePO core; the same `srpubkey.bin` verifies its keying and the same DSA/RSA challenges apply.
+- **Terminates SPIPE from agents.** All the crypto in # 8 runs on the AH. From the agent's perspective, an AH is indistinguishable from the ePO core; the same `srpubkey.bin` verifies its keying and the same DSA/RSA challenges apply.
 - **Talks directly to SQL.** For routine things — events, property updates, policy fetch — the AH opens a direct connection to the ePO database. Its `db.properties` file holds SQL connection info; the secret is DPAPI-encrypted under `LOCAL_SYSTEM`. An attacker with `LOCAL_SYSTEM` on the AH host can decrypt it and reach SQL directly.
 - **Serves repository content via HTTP** with lazy caching, pulling content from the Master Repository when a client asks for it.
 - **Issues ePO-initiated wake-up calls.** When an admin clicks "Wake Up Agents" in the console, the core delegates the outbound TCP/8081 connection to each endpoint to an AH. The AH walks its list of target agents and opens a TCP/8081 connection to each.
@@ -215,7 +215,7 @@ An AH does **not** run:
 
 ---
 
-## § 6. SuperAgent and Peer-to-Peer content distribution
+## # 6. SuperAgent and Peer-to-Peer content distribution
 
 `macmnsvc.exe` (registered as the `McAfeeFramework` "Common Services" service) hosts the SuperAgent functionality. A SuperAgent is a regular McAfee Agent with the "Convert to SuperAgent" flag set in its policy — the same `macmnsvc.exe` binary runs everywhere; the policy flag turns on the extra roles.
 
@@ -240,18 +240,18 @@ A non-zero value means the local `macmnsvc.exe` is running the SuperAgent code p
 
 ---
 
-## § 7. McAfee Agent internals: services, drivers, and ASCI
+## # 7. McAfee Agent internals: services, drivers, and ASCI
 
 ### 7.1. The two services
 
 - **`masvc.exe`** (registered as `McAfeeFramework`) — the primary McAfee Agent service. It performs property collection, policy enforcement, scheduling, ASCI invocation, and update sessions.
-- **`macmnsvc.exe`** (`McAfeeFramework` "Common Services") — hosts the SuperAgent code paths, the P2P listener, and inter-agent RPC over named pipes (§ 7.3).
+- **`macmnsvc.exe`** (`McAfeeFramework` "Common Services") — hosts the SuperAgent code paths, the P2P listener, and inter-agent RPC over named pipes (# 7.3).
 
 ### 7.2. ASCI: the heartbeat
 
 **ASCI (Agent-Server Communication Interval)** is the client-initiated heartbeat. Every hour by default, `masvc.exe` opens an HTTPS connection to its assigned AH (or the ePO core) over TCP/443 and runs the SPIPE handshake. During ASCI the agent sends up its collected properties and any queued events, and pulls down policy or task updates.
 
-Wake-up calls (§ 5.1, § 6.1) are the server-initiated trigger to force an out-of-schedule ASCI without waiting for the natural interval. They are how the admin-visible "Apply Policy" and "Deploy Software" actions get pushed to endpoints in minutes instead of the next ASCI cycle.
+Wake-up calls (# 5.1, # 6.1) are the server-initiated trigger to force an out-of-schedule ASCI without waiting for the natural interval. They are how the admin-visible "Apply Policy" and "Deploy Software" actions get pushed to endpoints in minutes instead of the next ASCI cycle.
 
 ### 7.3. The kernel driver stack
 
@@ -275,7 +275,7 @@ The endpoint agent processes talk to each other and to loaded plug-ins over name
 
 ---
 
-## § 8. SPIPE: the wire protocol
+## # 8. SPIPE: the wire protocol
 
 ### 8.1. What SPIPE actually is
 
@@ -297,7 +297,7 @@ Details drawn from Talos's [TALOS-2016-0229 report](https://talosintelligence.co
 
 - **`SequenceNumber`** — replay-prevention counter. Increments per ASCI; ePO rejects out-of-order updates. Only effective if the server enforces it; ePO 4.6 accepted stale values (one of the doors epowner walked through).
 
-- **`ServerKeyHash`** — the SHA hash of ePO's public key (`srpubkey.bin`). The agent embeds this in requests so the server can select the correct private key when multiple key rails coexist (1024-bit and 2048-bit rails both live on the server; see § 8.3).
+- **`ServerKeyHash`** — the SHA hash of ePO's public key (`srpubkey.bin`). The agent embeds this in requests so the server can select the correct private key when multiple key rails coexist (1024-bit and 2048-bit rails both live on the server; see # 8.3).
 
 - **`AgentGuid`** — the agent's assigned identity, issued by ePO on first successful registration. Before that, the agent uses a temporary GUID it generated for itself.
 
@@ -311,7 +311,7 @@ The `ServerKeyHash` field tells the server *which* rail this specific message is
 
 ---
 
-## § 9. Repositories and packages
+## # 9. Repositories and packages
 
 ### 9.1. The content pipeline, top to bottom
 
@@ -321,7 +321,7 @@ Content flows from McAfee's public CDN down to the endpoint through a fixed chai
 2. **Poll ePO Master Catalog (in the ePO DB)** — an admin server task pulls updates from step 1 into the ePO DB metadata.
 3. **"Check in" to the ePO Master Repository (on-disk on the ePO server)** — `C:\Program Files (x86)\McAfee\ePolicy Orchestrator\DB\Software\Current\` (and `Previous\` for rollback). This is the admin decision point.
 4. **Replicate to Distributed Repositories (UNC / HTTP / SuperAgent)** — these mirror subsets of the Master Repository. Replication is scheduled or triggered by the admin.
-5. **Pull by endpoint** — the McAfee Agent uses its `siteList.xml` (§ 9.4) to pick the closest reachable repo and pulls content from it.
+5. **Pull by endpoint** — the McAfee Agent uses its `siteList.xml` (# 9.4) to pick the closest reachable repo and pulls content from it.
 
 ### 9.2. Package types
 
@@ -347,7 +347,7 @@ All McAfee packages are signed. `smpubkey.bin` is distributed in the agent's key
 key = SHA.new(b'<!@#$%^>').digest() + bytearray(4)
 ~~~
 
-The same hardcoded key wraps `catalog.z`, `PkgCatalog.z`, and (as § 8 noted) parts of the SPIPE registration packets. Encryption is obfuscation, not security — the DSA-1024 / RSA-2048 signature is the integrity gate.
+The same hardcoded key wraps `catalog.z`, `PkgCatalog.z`, and (as # 8 noted) parts of the SPIPE registration packets. Encryption is obfuscation, not security — the DSA-1024 / RSA-2048 signature is the integrity gate.
 
 Server side: `catalog.xml` → `.cab.tmp` → `.cab` (signed with `smseckey`) → `.z` (3DES-wrapped). Agent side: pull the `.z`, unwrap the 3DES with the hardcoded key, verify the signature via `smpubkey` selected by `key_hash`, extract the XML.
 
@@ -369,7 +369,7 @@ Related registry entry: `HKLM\SOFTWARE\McAfee\Endpoint\Common\Certs → AMCore`.
 
 `siteList.xml` is an ordered list of repositories with weights and priorities. The list typically contains: ePO master, distributed repos (SuperAgent Distributed Repositories, HTTP repos, UNC repos), and `McAfeeHttp` / `McAfeeFtp` fallbacks that point at the public McAfee update CDN.
 
-The agent obtains `siteList.xml` from two places: from policies (delivered via SPIPE during ASCI), and during initial agent bootstrap via `FramePkg.exe` (§ 22). The assigned Agent Handler or SuperAgent is written into `HKLM\SOFTWARE\Mcafee\ePolicy Orchestrator\Agent → ePOServerList`.
+The agent obtains `siteList.xml` from two places: from policies (delivered via SPIPE during ASCI), and during initial agent bootstrap via `FramePkg.exe` (# 22). The assigned Agent Handler or SuperAgent is written into `HKLM\SOFTWARE\Mcafee\ePolicy Orchestrator\Agent → ePOServerList`.
 
 Runtime lookup, when the agent needs content:
 
@@ -406,14 +406,14 @@ Even where `siteList.xml`'s file ACL is tight, an executable with an over-permis
 
 ---
 
-## § 10. Keys
+## # 10. Keys
 
-Every ePO deployment holds three families of keys. All are provisioned at agent installation time — for a normal McAfee Agent, by the `FramePkg.exe` installer process (§ 22). ePO supports an optional PKI infrastructure on top; it is not mandatory.
+Every ePO deployment holds three families of keys. All are provisioned at agent installation time — for a normal McAfee Agent, by the `FramePkg.exe` installer process (# 22). ePO supports an optional PKI infrastructure on top; it is not mandatory.
 
 ### 10.1. ASSC keys — Agent-Server Secure Communication
 
 - **`srpubkey.bin`** + **`srseckey.bin`** — the server's RSA-1024 key pair.
-- **`sr2048pubkey.bin`** + **`sr2048seckey.bin`** — the server's RSA-2048 key pair. Both rails coexist; the `ServerKeyHash` field (§ 8.2) selects which is used per message.
+- **`sr2048pubkey.bin`** + **`sr2048seckey.bin`** — the server's RSA-2048 key pair. Both rails coexist; the `ServerKeyHash` field (# 8.2) selects which is used per message.
 - **`reqseckey.bin`** — the agent-side key used for request signing.
 
 Open question: is `reqseckey.bin` a standalone symmetric key, or the private counterpart of a public–private key pair? `FramePkg.exe` writes only `reqseckey.bin` to the agent — no corresponding `reqpubkey.bin`. The most consistent story with epowner's crypto module is that `reqseckey.bin` is treated as a DSA private key whose public counterpart is derived on the server from the agent's registration record. Not proven from binaries; no McAfee document states it cleanly.
@@ -423,7 +423,7 @@ Open question: is `reqseckey.bin` a standalone symmetric key, or the private cou
 - **`smseckey.bin`** — server-side, holds the signing private key ("sm" = **S**oftware **M**anagement).
 - **`smpubkey.bin`** — the corresponding public key, distributed to all agents and distributed repos in their keystores. Verifies `catalog.z` and `PkgCatalog.z` signatures.
 
-These are the keys the § 9.3 signing pipeline uses. Rotating `smseckey` requires re-signing every package and re-distributing `smpubkey` to every agent — which is why in practice this rotation is rare.
+These are the keys the # 9.3 signing pipeline uses. Rotating `smseckey` requires re-signing every package and re-distributing `smpubkey` to every agent — which is why in practice this rotation is rare.
 
 ### 10.3. Tomcat / ePO console TLS
 
@@ -431,11 +431,11 @@ These are the keys the § 9.3 signing pipeline uses. Rotating `smseckey` require
 
 ### 10.4. The keystore layout on disk
 
-The database side holds the keystore records in the SQL `Keystore` table (§ 11.1); the disk side holds the actual binary key files. Anyone with `LOCAL_SYSTEM` on the ePO server can read `smseckey.bin`, `srseckey.bin`, and the `db.properties` DPAPI-encrypted SQL credentials — meaning the security boundary on the ePO server is `LOCAL_SYSTEM`, not any application-level ACL. This is what CVE-2024-4844 (the `orion.keystore` password disclosure) made concretely exploitable.
+The database side holds the keystore records in the SQL `Keystore` table (# 11.1); the disk side holds the actual binary key files. Anyone with `LOCAL_SYSTEM` on the ePO server can read `smseckey.bin`, `srseckey.bin`, and the `db.properties` DPAPI-encrypted SQL credentials — meaning the security boundary on the ePO server is `LOCAL_SYSTEM`, not any application-level ACL. This is what CVE-2024-4844 (the `orion.keystore` password disclosure) made concretely exploitable.
 
 ---
 
-## § 11. The ePO database
+## # 11. The ePO database
 
 ### 11.1. Two databases per server
 
@@ -460,11 +460,11 @@ The **DAL (Data Abstraction Layer)** is the middleware for the Event Parser: it 
 8. **`EPOSyncDir`** — AD/LDAP sync targets: `server`, `authServer`, `authUser`, `authPassword`. Service-account credentials for AD-synced OUs.
 9. **`EPOEvents`** (lives in `ePO_<servername>_Events`) — threat and audit events from products. `AgentGUID`, `ThreatName`, `ThreatType`, `ThreatEventID`, `ThreatCategory`, `ThreatSeverity`, `AnalyzerDetectionMethod`, `ThreatActionTaken`, `TargetFileName`, `TargetHostName`, `SourceProcessName`, and more.
 
-SQL access to `ePO_<servername>` exposes policy, agent inventory, and — via `OrionUsers` and `OrionDirectoryAdministrator` — credential material for lateral movement (sometimes reversible obfuscation, sometimes hash cracking). In the epowner playbook (§ 22.4), the first move after registering a rogue agent is elevation to SQL access.
+SQL access to `ePO_<servername>` exposes policy, agent inventory, and — via `OrionUsers` and `OrionDirectoryAdministrator` — credential material for lateral movement (sometimes reversible obfuscation, sometimes hash cracking). In the epowner playbook (# 22.4), the first move after registering a rogue agent is elevation to SQL access.
 
 ---
 
-## § 12. Plugins: ENS, DLP, TIE, Drive Encryption
+## # 12. Plugins: ENS, DLP, TIE, Drive Encryption
 
 ### 12.1. What a plugin is
 
@@ -511,11 +511,11 @@ This prevents a low-privileged local user (or malware) from uninstalling protect
 
 Why an *identification code* rather than a shared password: a single shared password would let one compromised admin credential disable protection on every host. Binding the response to the endpoint's identification code and current policy revision means a captured response cannot be replayed on a different host, and cannot be replayed on the same host after the policy revision changes.
 
-§ 17.3 covers DLP's variant (challenge–response bypass and uninstall codes) — same mechanism, with more granular time windows and code lengths configurable per-policy.
+# 17.3 covers DLP's variant (challenge–response bypass and uninstall codes) — same mechanism, with more granular time windows and code lengths configurable per-policy.
 
 ---
 
-## § 13. Self-protection and VTP
+## # 13. Self-protection and VTP
 
 ### 13.1. What VTP is
 
@@ -558,7 +558,7 @@ Both bypass the same way: the signature check is authoritative, but the *identit
 
 ---
 
-## § 14. Host Firewall: ENS-FW and its drivers
+## # 14. Host Firewall: ENS-FW and its drivers
 
 ### 14.1. Adaptive mode, stateful FTP, stateful SIP
 
@@ -586,7 +586,7 @@ Both anchor to the Windows Filtering Platform (WFP) but at different layers:
 
 ---
 
-## § 15. TIE and DXL
+## # 15. TIE and DXL
 
 ### 15.1. What TIE stores
 
@@ -635,7 +635,7 @@ MQTT topic naming follows McAfee's tree convention: `/mcafee/{event|service}/{pr
 
 ---
 
-## § 16. Hooks: HookCore (ENS) and hdlphook (DLP)
+## # 16. Hooks: HookCore (ENS) and hdlphook (DLP)
 
 Two user-mode hooking engines coexist on the modern endpoint. Both inject a DLL into every process and patch prologues of NT-level APIs to route calls through a McAfee callback. They differ in origin, in which products load them, and in their kernel-driver plumbing.
 
@@ -674,7 +674,7 @@ Inline trampoline hooking has a fundamental limit: the trampoline lives in the t
 
 DLP configures `hdlphook.sys` with its list of allowed hook DLLs (the `fcag*.dll` set below) and signs the configuration with McAfee's Verisign / DigiCert code-signing certificate. The driver uses two Windows kernel APIs to accomplish injection:
 
-- **`PsSetCreateProcessNotifyRoutine(Ex)`** — callback fires on every process creation. `hdlphook` uses this to allocate per-process bookkeeping and section memory, and to decide whether to inject at all (based on the application-template list — § 16.3).
+- **`PsSetCreateProcessNotifyRoutine(Ex)`** — callback fires on every process creation. `hdlphook` uses this to allocate per-process bookkeeping and section memory, and to decide whether to inject at all (based on the application-template list — # 16.3).
 
 - **`PsSetLoadImageNotifyRoutine`** — callback fires on every image (DLL) map. `hdlphook` waits until `ntdll` and `kernel32` are mapped in the new process, then calls `KeInitializeApc` / `KeInsertQueueApc` to queue a kernel-to-user APC that runs `LdrLoadDll` / `NtMapViewOfSection` in user-mode context to map the McAfee hook DLL.
 
@@ -708,7 +708,7 @@ The user-mode hooks capture what the application is doing at the API level. The 
 
 ---
 
-## § 17. DLP internals
+## # 17. DLP internals
 
 ### 17.1. Lineage and process family
 
@@ -716,7 +716,7 @@ DLP is part of the **2008 Reconnex acquisition**. The `fcag` prefix is a Fidelis
 
 - **`fcag*`** — user-mode processes and services.
 - **`hdlp*`** — kernel-mode drivers.
-- **Application templates** (§ 16.3) — ePO policy objects that select what gets inspected.
+- **Application templates** (# 16.3) — ePO policy objects that select what gets inspected.
 
 An `fcags.exe` strings dump (from a hybrid-analysis sample: [b4254e5d2b46...](https://hybrid-analysis.com/sample/b4254e5d2b461800c3aa457a786eecf8384291f23f4d0df7e2bf747a3700ac19/5cae47eb028838410c30a805)) is a starting point for reverse engineering the internal command tokens.
 
@@ -744,7 +744,7 @@ This two-tier split lets an environment install the DLP extension on the ePO ser
 | **`fcagte.exe`**                                                                                                                           | Text Extractor (sandboxed)          | The out-of-process text-extraction subprocess. Given any file (Word, Excel, PDF, ZIP, image, etc.), it parses / cracks the format and returns plain text for `fcag.exe` to classify. It runs in a separate process because cracking complex or untrusted file formats is risky — if a malformed PDF crashes the parser, the main agent stays up. |
 | **`fcagmt.dll`**                                                                                                                           | Manual tagging shell extension      | Right-click → "Tag" / "Untag" in Explorer. Registered as `fcagmt.dll` added to Windows Explorer under the name "DLP Manual Tagging".                                                                                                                                                                                                     |
 | **`hdlphook.dll`**                                                                                                                         | User-mode hook DLL loader            | Injected into apps (browsers, Office, mail, etc.). Intercepts API calls — clipboard, screen-capture, file open / save, network sends — and routes them to `fcag.exe` for policy decision. The `hdlp` prefix is the legacy "Host DLP" name.                                                                                                |
-| **`hdlphook.sys`** / **`hdlpdrv.sys`** / **`hdlpctrl.sys`** / **`hdlpdbk.sys`** (device blocking) / **`hdlpevnt.sys`** (event channel)      | Kernel-mode drivers                  | File-system minifilter plus low-level device / process callbacks. The DLP minifilter is what enforces blocks on file open / write to removable media. `hdlphook.sys` itself is the madCodeHook rebrand (§ 16.2).                                                                                                                          |
+| **`hdlphook.sys`** / **`hdlpdrv.sys`** / **`hdlpctrl.sys`** / **`hdlpdbk.sys`** (device blocking) / **`hdlpevnt.sys`** (event channel)      | Kernel-mode drivers                  | File-system minifilter plus low-level device / process callbacks. The DLP minifilter is what enforces blocks on file open / write to removable media. `hdlphook.sys` itself is the madCodeHook rebrand (# 16.2).                                                                                                                          |
 
 The named pipes registered under `fcag.exe`:
 
@@ -761,7 +761,7 @@ The named pipes registered under `fcag.exe`:
 
 ### 17.3. Bypass, uninstall, and the Help Desk mechanism
 
-**DLP Help Desk** is the ePO console extension that generates the overrides described in § 12.3, specifically for DLP. From the product documentation:
+**DLP Help Desk** is the ePO console extension that generates the overrides described in # 12.3, specifically for DLP. From the product documentation:
 
 ![DLP Help Desk overview in the ePO console](assets/images/dlp-help-desk-overview.png)
 
@@ -771,7 +771,7 @@ The named pipes registered under `fcag.exe`:
 
 **Policy bypass** flips the DLP agent from enforce mode to **monitor-only mode** — events are still logged and sent to ePO, but all block / encrypt / quarantine actions are suppressed. Traffic is monitored rather than blocked, according to existing rules. Both the endpoint operator and the system administrator receive messages about the bypass status when it is enabled and disabled — the operator by a pop-up, the administrator by an event entry in the Operational Event List.
 
-**Client uninstall.** The McAfee DLP Endpoint client is protected from unauthorised removal. It is typically uninstalled by an administrator using McAfee ePO, but the field-uninstall path via Add or Remove Programs uses the challenge-response mechanism (§ 12.3) so the endpoint operator can uninstall with the right override code.
+**Client uninstall.** The McAfee DLP Endpoint client is protected from unauthorised removal. It is typically uninstalled by an administrator using McAfee ePO, but the field-uninstall path via Add or Remove Programs uses the challenge-response mechanism (# 12.3) so the endpoint operator can uninstall with the right override code.
 
 The mechanics of a bypass:
 
@@ -832,7 +832,7 @@ DLP captures at trigger time and encrypts to the evidence store. The store grows
 
 ---
 
-## § 18. Rogue System Detection (RSD)
+## # 18. Rogue System Detection (RSD)
 
 RSD is the ePO sub-product that finds unmanaged endpoints on the network by passive listening plus active probing. Managed McAfee Agent endpoints elect a subset of themselves as **sensors**; sensors report findings back through the normal MA→AH channel.
 
@@ -907,23 +907,23 @@ Port 8444 is still exposed by ePO for some administrative endpoints; its role in
 
 ---
 
-## § 19. Permission Sets and administrative surface
+## # 19. Permission Sets and administrative surface
 
 ePO assigns **permission sets** as bundles of specific permissions. A permission set is an M:N relationship between users (in `OrionUsers`) and product actions (defined by the installed extensions), stored in `OrionPermissionSetUser`.
 
 Notable ones:
 
 - **Read-only permission** — dashboard and report visibility, no writes.
-- **Master repository check-in permission** — allows an operator to upload packages to the ePO repository. Packages must carry a valid signature; a warning is shown at check-in for anything not signed by McAfee (§ 9.3).
-- **DLP Help Desk** — permission included with the DLP extension, unlocking the Help Desk console described in § 17.3.
+- **Master repository check-in permission** — allows an operator to upload packages to the ePO repository. Packages must carry a valid signature; a warning is shown at check-in for anything not signed by McAfee (# 9.3).
+- **DLP Help Desk** — permission included with the DLP extension, unlocking the Help Desk console described in # 17.3.
 
-The DLP extension exposes the same three actions as independently grantable permissions: **Quarantine Release**, **Policy Bypass**, and **Client Uninstall**. This mirrors the three override types shown in § 17.3.
+The DLP extension exposes the same three actions as independently grantable permissions: **Quarantine Release**, **Policy Bypass**, and **Client Uninstall**. This mirrors the three override types shown in # 17.3.
 
 An admin granted DLP Help Desk can issue Bypass codes on demand, which flips DLP into monitor-mode on the target endpoint for hours to weeks. In deployments where DLP is the outbound-data-loss control, DLP Help Desk is equivalent to the ability to disable that control and should be treated with the same care as full ePO admin.
 
 ---
 
-## § 20. PPL, shell extension, minifilter altitudes
+## # 20. PPL, shell extension, minifilter altitudes
 
 ### 20.1. PPL — Protected Process Light
 
@@ -944,7 +944,7 @@ DLP registers a shell extension with a specific CLSID so its right-click menu ap
 - CLSID `{BB95DD2C-8D74-4D48-80D4-681549F47188}`.
 - `HKCR\CLSID\{BB95DD2C-8D74-4D48-80D4-681549F47188}\InprocServer32` = `C:\Program Files\McAfee\DLP\Agent\fcagmt.dll`.
 
-Shell extensions on Windows are always registered as `InprocServer32` — Explorer loads them into its own process. `fcagmt.dll` in `explorer.exe` then calls into `fcag.exe` via the `AgentServicePipe` named pipe (§ 17.2) to actually perform the tag or untag operation.
+Shell extensions on Windows are always registered as `InprocServer32` — Explorer loads them into its own process. `fcagmt.dll` in `explorer.exe` then calls into `fcag.exe` via the `AgentServicePipe` named pipe (# 17.2) to actually perform the tag or untag operation.
 
 ### 20.3. Minifilter altitudes
 
@@ -984,9 +984,9 @@ The full minifilter altitude bands, with their `LoadOrderGroup` names, altitude 
 
 ---
 
-## § 21. EDR: from MVISION EDR to Trellix EDR
+## # 21. EDR: from MVISION EDR to Trellix EDR
 
-The EDR product ePO manages was announced in 2018 as **MVISION EDR** and renamed **Trellix EDR** after the STG merger. It attaches to the **DXL** broker (§ 15.2), which lets a single detection be published as a signal that both TIE and EDR consume without either being coupled to the other.
+The EDR product ePO manages was announced in 2018 as **MVISION EDR** and renamed **Trellix EDR** after the STG merger. It attaches to the **DXL** broker (# 15.2), which lets a single detection be published as a signal that both TIE and EDR consume without either being coupled to the other.
 
 Event correlation is done by trace IDs. Fields that appear when tracing an event across ePO logs:
 
@@ -1002,7 +1002,7 @@ The `parentTraceId`/`traceId` pair stitches a single behavioral chain — proces
 
 ---
 
-## § 22. Agent installation bootstrap and epowner
+## # 22. Agent installation bootstrap and epowner
 
 Every ePO deployment gains its first endpoint via `FramePkg.exe`. Every piece of key material and every trust decision the endpoint makes for the rest of its lifetime is derived from what happens in the first few seconds of that installation.
 
@@ -1019,7 +1019,7 @@ Reference: the [Dr.Web sandbox capture of a modern FramePkg.exe run](https://vms
    - macOS: `/private/var/McAfee/agent/`
    - Linux: `/opt/McAfee/agent/`
 
-4. **`msiexec.exe /i MFEagent_x64.msi ADDLOCAL=Main,Agent,Svc_x64 SITELISTINFO=<TEMP> ...`** installs all binaries into `C:\Program Files\McAfee\Agent\`, registers `masvc`, `mfemms`, `McAfeeFramework` services, drops drivers (`mfehidk.sys` and the rest of the § 7.3 driver table) into `C:\Windows\System32\drivers\`, and creates HKLM entries:
+4. **`msiexec.exe /i MFEagent_x64.msi ADDLOCAL=Main,Agent,Svc_x64 SITELISTINFO=<TEMP> ...`** installs all binaries into `C:\Program Files\McAfee\Agent\`, registers `masvc`, `mfemms`, `McAfeeFramework` services, drops drivers (`mfehidk.sys` and the rest of the # 7.3 driver table) into `C:\Windows\System32\drivers\`, and creates HKLM entries:
 
    - `HKLM\SYSTEM\CurrentControlSet\Services\masvc → ImagePath = "C:\Program Files\McAfee\Agent\masvc.exe" /ServiceStart`
    - `HKLM\SYSTEM\CurrentControlSet\Services\mfemms → ImagePath = "%CommonProgramFiles%\McAfee\SystemCore\mfemms.exe"`
@@ -1049,7 +1049,7 @@ Anyone with a legitimate `FramePkg.exe` from a given ePO server has, therefore, 
 
 ### 22.3. The `maconfig.exe` local-privilege-escalation surface (mrd0x)
 
-The `maconfig.exe` executable that step 3 above invokes is the same tool with the `-getsiteinfo` mode that `mrd0x` used in a low-privileged local attack against the deployed McAfee Agent. The screenshot in § 9.4 (the terminal capture where `maconfig.exe -getsiteinfo` succeeds from a copied folder) is the concrete artefact; the analysis is in the [mrd0x blog](https://mrd0x.com/discovering-mcafee-products-zero-day-vulnerabilities/).
+The `maconfig.exe` executable that step 3 above invokes is the same tool with the `-getsiteinfo` mode that `mrd0x` used in a low-privileged local attack against the deployed McAfee Agent. The screenshot in # 9.4 (the terminal capture where `maconfig.exe -getsiteinfo` succeeds from a copied folder) is the concrete artefact; the analysis is in the [mrd0x blog](https://mrd0x.com/discovering-mcafee-products-zero-day-vulnerabilities/).
 
 The vulnerability, restated cleanly:
 
@@ -1061,7 +1061,7 @@ This is a straight instance of a "copy-then-run" bypass where the wrong integrit
 
 ### 22.4. epowner: what it did in ePO 4.6
 
-epowner (Jerome Nokin, 2012) chains what the § 22.1–22.2 bootstrap makes possible into attacks against **ePO 4.6.0 – 4.6.5**. The tool is at [github.com/funoverip/epowner](https://github.com/funoverip/epowner); CVE-2013-0140 (pre-auth SQL injection) and CVE-2013-0141 are the vulnerabilities it patched together.
+epowner (Jerome Nokin, 2012) chains what the # 22.1–22.2 bootstrap makes possible into attacks against **ePO 4.6.0 – 4.6.5**. The tool is at [github.com/funoverip/epowner](https://github.com/funoverip/epowner); CVE-2013-0140 (pre-auth SQL injection) and CVE-2013-0141 are the vulnerabilities it patched together.
 
 The playbook:
 
@@ -1077,7 +1077,7 @@ The playbook:
 
 Step 1 worked in 4.6 because the SPIPE registration path did not sufficiently validate state — ePO accepted any well-formed SPIPE packet from an unknown source and created a new agent record. CVE-2013-0140's patch added state validation to the registration path; later releases hardened it further. **The direct exploit does not survive to ePO 5.10.**
 
-The internals epowner documented are still the internals ePO uses: the same `srpubkey`/`reqseckey` roles (§ 8, § 10), the same `catalog.z` signing pipeline (§ 9.3), the same SQL table names (§ 11.2), the same `Software/Current/replica.log` layout (§ 9). The Perl modules worth reading:
+The internals epowner documented are still the internals ePO uses: the same `srpubkey`/`reqseckey` roles (# 8, # 10), the same `catalog.z` signing pipeline (# 9.3), the same SQL table names (# 11.2), the same `Software/Current/replica.log` layout (# 9). The Perl modules worth reading:
 
 - `Epowner/Epo.pm` — the SPIPE crypto.
 - `Epowner/DSA.pm` — the McAfee DSA signature format.
@@ -1085,7 +1085,7 @@ The internals epowner documented are still the internals ePO uses: the same `srp
 
 ---
 
-## § 23. Loose ends
+## # 23. Loose ends
 
 - **The optional PKI infrastructure.** ePO can be configured to use an X.509 PKI for agent-server authentication in addition to the RSA rails. Off by default, deployed rarely, and does not replace `srpubkey.bin` / `reqseckey.bin` — it layers on top.
 

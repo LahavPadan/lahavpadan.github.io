@@ -1092,22 +1092,20 @@ kbd {
 }
 
 .whoami-blog-grid {
-  margin: 0 -12px -12px 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 0;
 }
 
 .whoami-blog-card {
-  display: inline-block;
-  width: calc(50% - 12px);
   min-width: 0;
-  margin: 0 12px 12px 0;
   padding: 14px 15px;
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
   background: var(--surface);
-  vertical-align: top;
   font-size: 1rem;
 }
 
@@ -1173,12 +1171,7 @@ kbd {
 
 @media (max-width: 600px) {
   .whoami-blog-grid {
-    margin-right: 0;
-  }
-
-  .whoami-blog-card {
-    width: 100%;
-    margin-right: 0;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1884,7 +1877,7 @@ kbd {
   min-width: 0;
   max-width: 940px;
 }
-/* When the article has no §-level chapters, post.html omits the rail. The
+/* When the article has no #-level chapters, post.html omits the rail. The
    single remaining child would otherwise fall into the fixed 180–220 px first
    column and end up compressed to that width. Span the whole track and keep
    it left-aligned so its edge lines up with the article header above. */
@@ -2616,11 +2609,11 @@ body.has-lightbox {
 /* ============================================================================
    Cyber posts — flat ETW-concept treatment
    ============================================================================
-   Every post now goes through the guided pipeline, which wraps each `## §…`
+   Every post now goes through the guided pipeline, which wraps each `## #…`
    heading in an .article-chapter section with a big numbered banner heading
    and treats each `###` as a bullet-anchored subsection. That treatment fits
    the mathematical posts well, but the cyber posts want the plainer look from
-   the ETW concept design: `> § N. Title` on a bottom-bordered line, a left
+   the ETW concept design: `> # N. Title` on a bottom-bordered line, a left
    rail on subsections, and no coloured chapter frame.
 
    The rules below override the guided chapter and disclosure styles for
@@ -2667,7 +2660,7 @@ body.has-lightbox {
   padding-top: 0;
 }
 
-/* Concept h2: `> § 0. Introduction` on a bottom-bordered line. */
+/* Concept h2: `> # 0. Introduction` on a bottom-bordered line. */
 .post-page--cyber.post-page--guided .article-chapter > h2 {
   display: block;
   grid-template-columns: none;
@@ -2688,7 +2681,7 @@ body.has-lightbox {
   content: "> ";
   color: var(--post-accent, var(--accent));
 }
-/* Fold the "§ N" span the plugin adds into the flat heading. */
+/* Fold the "# N" span the plugin adds into the flat heading. */
 .post-page--cyber.post-page--guided .chapter-heading__number {
   display: inline;
   padding: 0;
@@ -2815,7 +2808,7 @@ body.has-lightbox {
   background: transparent;
 }
 
-/* Cyber posts do not use the numbered "§ N • Title" sticky indicator. */
+/* Cyber posts do not use the numbered "# N • Title" sticky indicator. */
 .post-page--cyber .reading-status {
   display: none;
 }

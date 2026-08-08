@@ -10,7 +10,7 @@ Which one occurs affects:
 
 All three cases, and everything that distinguishes them, follow from one algebraic fact about the way the electric field is allowed to fluctuate in a plane wave.
 
-## § 1. Why the E-field lives in a plane {#sec-1}
+## # 1. Why the E-field lives in a plane {#sec-1}
 
 Take a plane wave propagating along $\hat z$ in vacuum, so all fields depend on $z$ and $t$ only through the plane-wave factor $e^{i(kz-\omega t)}$. Two of the source-free Maxwell equations are
 
@@ -39,7 +39,7 @@ What survives both is the ratio $E_y/E_x$. **Polarization** is the shape of the 
 
 Split the ratio into its magnitude and phase: an amplitude ratio $|E_y|/|E_x|$ and a relative phase $\varphi = \arg(E_y) - \arg(E_x)$. These are the two knobs, and different combinations of them produce the three cases.
 
-## § 2. Reading the three cases from the parameterization {#sec-2}
+## # 2. Reading the three cases from the parameterization {#sec-2}
 
 Take $E_x, E_y \ge 0$ real and $\varphi$ the relative phase between them, and take the physical field to be the real part of $\eqref{eq:1-3}$. At fixed $z$ (say $z = 0$),
 
@@ -55,7 +55,7 @@ The tip of $\vec E(t)$ traces some curve in the $xy$-plane as $t$ varies. What c
     $$\tan(2\theta_e) = \frac{2 E_x E_y \cos\varphi}{E_x^2 - E_y^2}. \label{eq:2-2}\tag{2.2}$$
     The ratio of the semi-major to semi-minor axis is called the **axial ratio**.
 
-## § 3. What a linear receiver measures {#sec-3}
+## # 3. What a linear receiver measures {#sec-3}
 
 A linear antenna or polarizer aligned with unit vector $\hat a$ in the plane the wave traverses responds *as* the projection $\hat a \cdot \vec E(t)$; its output signal is proportional to that projection and the delivered power to its square, averaged over one wave cycle.
 
@@ -79,7 +79,7 @@ The elliptical case gives *partial* rotational immunity. Aligning with the ellip
 
 This is why polarization-agnostic radio links — satellite-to-ground communication, for example — use circular polarization: rotation of the receiver antenna leaves the coupling unchanged.
 
-## § 4. What the wave is doing to its energy flux {#sec-4}
+## # 4. What the wave is doing to its energy flux {#sec-4}
 
 The instantaneous energy flux of an electromagnetic wave is the Poynting vector
 
@@ -93,11 +93,11 @@ with $\vec H = \vec B/\mu_0$ in vacuum. Its magnitude reads $|\vec E|^2$ up to c
 
 The reason $|\vec E(t)|^2$ is constant for circular polarization is that the two orthogonal linear components carry the wave's energy in quadrature — when one is at its maximum the other is at zero, and vice versa. The Pythagorean identity $\cos^2 + \sin^2 = 1$ is the algebraic form of that statement.
 
-The elliptical case sits between these two: $|\vec E(t)|^2 = E_x^2\cos^2(\omega t) + E_y^2\cos^2(\omega t - \varphi)$, which oscillates at $2\omega$ with a smaller amplitude than the linear case would give for the same average intensity. That $2\omega$ amplitude shrinks toward zero as the polarization approaches circular. The axial ratio controls it just as it controls the rotation-sensitivity of [§ 3](#sec-3).
+The elliptical case sits between these two: $|\vec E(t)|^2 = E_x^2\cos^2(\omega t) + E_y^2\cos^2(\omega t - \varphi)$, which oscillates at $2\omega$ with a smaller amplitude than the linear case would give for the same average intensity. That $2\omega$ amplitude shrinks toward zero as the polarization approaches circular. The axial ratio controls it just as it controls the rotation-sensitivity of [# 3](#sec-3).
 
 Constant energy flux is one physical marker of circular polarization; the other, and the sharper one, is that the wave carries angular momentum. That is what the rotating E-vector really means.
 
-## § 5. Linear and angular momentum {#sec-5}
+## # 5. Linear and angular momentum {#sec-5}
 
 Every wave carries energy and linear momentum; a circularly polarized wave carries angular momentum on top of that. What each does to a target reflects this:
 
@@ -144,7 +144,7 @@ For non-relativistic motion this is small. To leading order the electric part al
 
 $$\vec v \parallel \vec E.$$
 
-But $\vec E$ lies in the plane the wave traverses (from [§ 1](#sec-1)), so $q\vec E$ points transversely and contributes zero momentum along $\hat z$. All of the forward momentum comes from the small magnetic term $q\vec v \times \vec B$. Since $\vec E$ and $\vec B$ are perpendicular within the plane the wave traverses and $\vec v \parallel \vec E$, the cross product $\vec v \times \vec B$ points along $\hat z$ — along the wave's motion.
+But $\vec E$ lies in the plane the wave traverses (from [# 1](#sec-1)), so $q\vec E$ points transversely and contributes zero momentum along $\hat z$. All of the forward momentum comes from the small magnetic term $q\vec v \times \vec B$. Since $\vec E$ and $\vec B$ are perpendicular within the plane the wave traverses and $\vec v \parallel \vec E$, the cross product $\vec v \times \vec B$ points along $\hat z$ — along the wave's motion.
 
 So the charge picks up momentum along $\hat z$. Comparing the rate at which it picks up momentum to the rate at which it picks up energy fixes the density ratio:
 
@@ -161,7 +161,7 @@ So the charge picks up momentum along $\hat z$ at $1/c$ times the rate it picks 
 
 $$\text{linear momentum per unit volume} = \frac{|\vec S|}{c^2}, \label{eq:5-5}\tag{5.5}$$
 
-directed along $\hat z$ (from [§ 1](#sec-1), $\vec S = \vec E \times \vec H$ lies along $\hat z$).
+directed along $\hat z$ (from [# 1](#sec-1), $\vec S = \vec E \times \vec H$ lies along $\hat z$).
 
 Feeding $\eqref{eq:5-5}$ into the density-rate-Newton chain — multiply the momentum density by $c \cdot A$ to get the momentum rate through a cross-section, and identify that rate with $\vec F$ via Newton's law $\vec F = d\vec p/dt$ $\eqref{eq:5-1}$ — gives
 
@@ -225,9 +225,9 @@ Elliptical polarization mixes the two helicities unequally, with the split set b
 
 That is the picture for a pure sinusoidal wave in empty space. What changes for pulsed waves, or once the wave enters a material?
 
-## § 6. Beyond a pure sinusoidal wave in vacuum {#sec-6}
+## # 6. Beyond a pure sinusoidal wave in vacuum {#sec-6}
 
-The picture built in §§ [1](#sec-1)–[5](#sec-5) assumes a pure sinusoidal wave in vacuum. Two departures from that setting matter for what follows.
+The picture built in ## [1](#sec-1)–[5](#sec-5) assumes a pure sinusoidal wave in vacuum. Two departures from that setting matter for what follows.
 
 **A pulsed wave.** A femtosecond laser pulse turns on for a few cycles and then off; a radar pulse turns on for microseconds. In both, the field is
 
@@ -243,7 +243,7 @@ a fast **carrier** at $\omega$ multiplied by a slowly varying **envelope** $A(t)
 
 That the two linear polarizations behave differently in a material is exactly what makes it possible to produce a polarization from unpolarized light, and to transform one polarization into another — the subject of the last two sections.
 
-## § 7. Producing polarization {#sec-7}
+## # 7. Producing polarization {#sec-7}
 
 Ordinary light — sunlight, an incandescent bulb — is **unpolarized**: it is emitted by an enormous number of independent atoms, each producing a short burst with its own randomly oriented polarization. Any detector integrates over vastly many such bursts, and the tallied polarization directions are uniformly spread over the plane the wave traverses. No fixed polarization survives.
 
@@ -289,7 +289,7 @@ The same exponential-selection argument applies to every mode the cavity support
 
 Circular output is almost never produced this way; the natural output of a laser cavity is linearly polarized along a fixed axis. To get circular polarization, the linearly polarized output is fed through a **quarter-wave plate** — the subject of the next section.
 
-## § 8. Manipulating polarization: wave plates {#sec-8}
+## # 8. Manipulating polarization: wave plates {#sec-8}
 
 A wave plate does not filter light; it slows one linear component relative to the other. The material used is one whose refractive index depends on the direction of the E-polarization within it — a property called **birefringence**.
 
@@ -313,11 +313,11 @@ If the two orthogonal directions in the material — call them the fast and slow
 
 $$\Delta\varphi = \frac{\omega d}{c}(n_2 - n_1). \label{eq:8-1}\tag{8.1}$$
 
-Two choices of $d$ recover the transformations of [§ 2](#sec-2).
+Two choices of $d$ recover the transformations of [# 2](#sec-2).
 
 **Quarter-wave plate** ($\Delta\varphi = \pi/2$). What it does to the input depends on the orientation of the input polarization relative to the plate's axes:
 
-- **Input at 45° to the two axes.** Equal amplitudes go into the two components; the plate shifts them $\pi/2$ out of phase; the output has equal amplitudes in two perpendicular directions with a $\pi/2$ phase difference — the recipe for circular polarization from [§ 2](#sec-2).
+- **Input at 45° to the two axes.** Equal amplitudes go into the two components; the plate shifts them $\pi/2$ out of phase; the output has equal amplitudes in two perpendicular directions with a $\pi/2$ phase difference — the recipe for circular polarization from [# 2](#sec-2).
 - **Input at any other angle.** The amplitude split is unequal, so the output is elliptical, with axial ratio set by the input angle.
 
 **Half-wave plate** ($\Delta\varphi = \pi$). It flips the sign of one component and leaves the other alone — a mirror-reflection of the polarization about the fast axis. Rotating a half-wave plate by $\theta$ rotates the transmitted linear polarization by $2\theta$.

@@ -4,7 +4,7 @@
 
 ---
 
-## § 1. The problem 4G was designed to solve {#sec-1}
+## # 1. The problem 4G was designed to solve {#sec-1}
 
 ### 1.1. What broke in 3G {#sec-1-1}
 
@@ -20,11 +20,11 @@
 
 The engineers who designed LTE around 2005–2008 made two decisive architectural changes:
 
-**Turn 1 — Kill CDMA, adopt OFDM.** Instead of overlapping users in the code domain, put them in orthogonal frequency bins. This gives per-bin channel state, per-bin scheduling, and no user-vs-user interference *by construction*. [§ 3](#sec-3) explains why this specifically requires OFDM (and not just "any" multicarrier scheme).
+**Turn 1 — Kill CDMA, adopt OFDM.** Instead of overlapping users in the code domain, put them in orthogonal frequency bins. This gives per-bin channel state, per-bin scheduling, and no user-vs-user interference *by construction*. [# 3](#sec-3) explains why this specifically requires OFDM (and not just "any" multicarrier scheme).
 
 **Turn 2 — Flatten the architecture.** Delete the RNC. Fuse its scheduler into the tower itself. The tower is now the "evolved NodeB" or **eNodeB**, and all real-time radio decisions happen there at the millisecond timescale. The core network no longer touches radio decisions; it handles identity, mobility across large geographies, IP address assignment, and policy.
 
-Every specific choice in LTE — the 1 ms scheduling interval, the 15 kHz subcarrier spacing, the 12-subcarrier resource block, the blind-decoding search-space design — traces back to these two decisions plus one external anchor. [§ 4](#sec-4) shows the anchors.
+Every specific choice in LTE — the 1 ms scheduling interval, the 15 kHz subcarrier spacing, the 12-subcarrier resource block, the blind-decoding search-space design — traces back to these two decisions plus one external anchor. [# 4](#sec-4) shows the anchors.
 
 ### 1.3. The commercial name and what it does not mean {#sec-1-3}
 
@@ -32,7 +32,7 @@ Every specific choice in LTE — the 1 ms scheduling interval, the 15 kHz subcar
 
 ---
 
-## § 2. The flat architecture {#sec-2}
+## # 2. The flat architecture {#sec-2}
 
 ### 2.1. The two subsystems {#sec-2-1}
 
@@ -51,9 +51,9 @@ In 4G the RAN consists of **eNodeBs** and nothing else. Every eNodeB is autonomo
 - The radio front-end (antennas, power amplifiers, low-noise amplifiers).
 - The baseband processor that does FFTs, decodes turbo codes, runs the HARQ state machine.
 - The **MAC scheduler** — a decision engine that, every millisecond, decides which of its currently-attached UEs will transmit or receive on which resource blocks with which modulation.
-- Enough logic to run its half of any handover to a neighbouring eNodeB ([§ 21.3](#sec-21-3)).
+- Enough logic to run its half of any handover to a neighbouring eNodeB ([# 21.3](#sec-21-3)).
 
-Neighbouring eNodeBs talk to each other directly, without the core, over an interface called **X2** ([§ 21.6](#sec-21-6)). This is how a handover between adjacent towers of the same operator completes in tens of milliseconds instead of hundreds.
+Neighbouring eNodeBs talk to each other directly, without the core, over an interface called **X2** ([# 21.6](#sec-21-6)). This is how a handover between adjacent towers of the same operator completes in tens of milliseconds instead of hundreds.
 
 ### 2.3. The EPC: four principal nodes {#sec-2-3}
 
@@ -66,7 +66,7 @@ The core is separated into distinct nodes because the *rate* at which each funct
 | **PGW** | PDN Gateway | Milliseconds (packet forwarding) | Assigns the UE its public IP address, sits at the boundary to the outside world, enforces per-flow policy and billing. "PDN" is "Packet Data Network" — the outside, whether the internet, an IMS network, or a corporate VPN. |
 | **HSS** | Home Subscriber Server | Hours to days (mostly reads) | The subscriber master database. Holds the permanent SIM identity, the shared secret key for authentication, the subscription profile (which services this subscriber is entitled to). |
 
-The MME is what a **VLR** and **MSC** together were in the 2G/3G era, but IP-native. The HSS is what the **HLR** was, but speaks a modern authentication and authorisation protocol (**Diameter** — [§ 20.5](#sec-20-5)) instead of the trust-everyone SS7 signalling system that 2G/3G used.
+The MME is what a **VLR** and **MSC** together were in the 2G/3G era, but IP-native. The HSS is what the **HLR** was, but speaks a modern authentication and authorisation protocol (**Diameter** — [# 20.5](#sec-20-5)) instead of the trust-everyone SS7 signalling system that 2G/3G used.
 
 ### 2.4. Control plane and user plane {#sec-2-4}
 
@@ -75,22 +75,22 @@ Every packet in LTE belongs to one of two conceptual planes:
 - **Control plane** carries *signalling*: "connect this UE," "authenticate this UE," "update this UE's tracking area," "hand this UE over to that neighbour." Kilobits per second per UE, but every message is small, discrete, and often reliability-critical.
 - **User plane** carries *user IP packets*: web browsing, video, VoLTE audio. Gigabits per second in aggregate; reliability is handled by TCP or by the application; the network just forwards.
 
-They are physically separated even between the same two nodes: the eNodeB has a control connection to the MME (**S1-MME**) and, in parallel, a user-plane connection to the SGW (**S1-U**). This is not for the volume difference alone; it is because their operational semantics are different. Signalling wants message-oriented, ordered, retransmit-if-lost delivery; user data wants "just forward" (see [§ 21.2](#sec-21-2) for why the transport protocols differ accordingly).
+They are physically separated even between the same two nodes: the eNodeB has a control connection to the MME (**S1-MME**) and, in parallel, a user-plane connection to the SGW (**S1-U**). This is not for the volume difference alone; it is because their operational semantics are different. Signalling wants message-oriented, ordered, retransmit-if-lost delivery; user data wants "just forward" (see [# 21.2](#sec-21-2) for why the transport protocols differ accordingly).
 
 ### 2.5. Access stratum and non-access stratum {#sec-2-5}
 
 Perpendicular to control-vs-user is a second split unique to cellular architectures: **AS** (Access Stratum) versus **NAS** (Non-Access Stratum). The distinction is *where the message is terminated*, not what it carries:
 
 - **AS messages** are terminated at the eNodeB. The tower reads them, acts on them, does not forward them. These are radio-specific: "give me an uplink grant," "I am about to lose signal, prepare a handover," "increase your transmit power to me."
-- **NAS messages** are terminated at the MME (control plane) or PGW (user plane). The eNodeB forwards them transparently — it holds encrypted NAS packets it cannot read. These are identity- and network-specific: "here is my identity, please authenticate me," "I need an IP address on the `internet` **APN**" (**APN = Access Point Name**, the identifier for one external IP network the operator connects to; see [§ 17.3](#sec-17-3) for how APNs anchor bearers).
+- **NAS messages** are terminated at the MME (control plane) or PGW (user plane). The eNodeB forwards them transparently — it holds encrypted NAS packets it cannot read. These are identity- and network-specific: "here is my identity, please authenticate me," "I need an IP address on the `internet` **APN**" (**APN = Access Point Name**, the identifier for one external IP network the operator connects to; see [# 17.3](#sec-17-3) for how APNs anchor bearers).
 
-The AS/NAS split has direct security consequences ([§ 20](#sec-20)): NAS traffic gets one layer of encryption keyed to a key the MME derives; AS traffic gets a *second* layer keyed to a key the MME hands down to the eNodeB. The two ciphers protect against different adversaries (radio-local vs backhaul).
+The AS/NAS split has direct security consequences ([# 20](#sec-20)): NAS traffic gets one layer of encryption keyed to a key the MME derives; AS traffic gets a *second* layer keyed to a key the MME hands down to the eNodeB. The two ciphers protect against different adversaries (radio-local vs backhaul).
 
 ---
 
-## § 3. Why OFDM: multipath, coherence bandwidth, the CP diagonalization {#sec-3}
+## # 3. Why OFDM: multipath, coherence bandwidth, the CP diagonalization {#sec-3}
 
-Before naming the constants (that comes in [§ 4](#sec-4)), we need to see *why* orthogonal frequency-division multiplexing is the specific waveform that solves the mobile-radio problem — and specifically why the receiver ends up being one complex multiplication per subcarrier.
+Before naming the constants (that comes in [# 4](#sec-4)), we need to see *why* orthogonal frequency-division multiplexing is the specific waveform that solves the mobile-radio problem — and specifically why the receiver ends up being one complex multiplication per subcarrier.
 
 ### 3.1. The multipath problem {#sec-3-1}
 
@@ -124,7 +124,7 @@ For this to be feasible, the subcarrier spacing $\Delta f$ must satisfy
 
 $$\Delta f \ll B_c.$$
 
-With $B_c \approx 200\,\text{kHz}$, a spacing of $\Delta f = 15\,\text{kHz}$ gives roughly $200/15 \approx 13$ subcarriers per coherence bandwidth, which is enough that each subcarrier sees an essentially flat channel. This is where the specific $15\,\text{kHz}$ comes from; [§ 4](#sec-4) shows the other constraints that pin the exact value.
+With $B_c \approx 200\,\text{kHz}$, a spacing of $\Delta f = 15\,\text{kHz}$ gives roughly $200/15 \approx 13$ subcarriers per coherence bandwidth, which is enough that each subcarrier sees an essentially flat channel. This is where the specific $15\,\text{kHz}$ comes from; [# 4](#sec-4) shows the other constraints that pin the exact value.
 
 ### 3.4. The cyclic prefix as diagonalizer — the actual algebra {#sec-3-4}
 
@@ -260,7 +260,7 @@ $15\,\text{kHz}$ sits comfortably in the middle for the design targets of vehicu
 
 ---
 
-## § 4. Where every LTE constant comes from {#sec-4}
+## # 4. Where every LTE constant comes from {#sec-4}
 
 The constants that follow are pinned by four things that live outside LTE itself: silicon (what a 2008 UE turbo decoder could do inside a fixed time budget), inherited standards (UMTS's 3.84 Mcps chip rate, which LTE base stations had to preserve to reuse RF hardware), physical constants (Doppler shifts at vehicular speeds, urban macrocell delay spreads, coherence bandwidth), and divisibility structure (FFT sizes must factor cleanly into the radix multiplications hardware wants). Each subsection below pins its number to one of them.
 
@@ -286,7 +286,7 @@ Forced by $\Delta f = 15\,\text{kHz}$ via $T_u = 1/\Delta f$. The CP length must
 
 Given the OFDM symbol length of $71.4\,\mu\text{s}$, seven symbols occupy $500\,\mu\text{s}$ exactly. There is no separate anchor for "7"; it is the number of symbols that fits into a slot whose length is set by the next constraint.
 
-The slot length itself is 0.5 ms because the subframe is 1 ms ([§ 4.4](#sec-4-4)) and dividing it into two gives HARQ some intra-subframe granularity in scheduling (particularly useful for control-region flexibility).
+The slot length itself is 0.5 ms because the subframe is 1 ms ([# 4.4](#sec-4-4)) and dividing it into two gives HARQ some intra-subframe granularity in scheduling (particularly useful for control-region flexibility).
 
 <div class="guided-fold-start" data-label="Historical context: slot duration in UMTS" data-tone="derivation"></div>
 
@@ -301,7 +301,7 @@ The **transmission time interval (TTI)** is the granularity at which the schedul
 A UE receiving a downlink data block must, before it can acknowledge:
 
 1. Accumulate the full received symbol block.
-2. FFT and equalise it (per-subcarrier scalar equations, [§ 3](#sec-3)).
+2. FFT and equalise it (per-subcarrier scalar equations, [# 3](#sec-3)).
 3. Demap constellation points to soft bits (log-likelihood ratios).
 4. Reverse rate matching, combine with soft buffer if this is a HARQ retransmission.
 5. Run a turbo decoder for 8–10 iterations.
@@ -318,18 +318,18 @@ $\text{TTI} = 1\,\text{ms}$ is the unique choice that fits the 2008 turbo decode
 
 ### 4.5. Radio frame = 10 ms, and the System Frame Number {#sec-4-5}
 
-The radio frame packs 10 subframes at 1 ms each. Every frame is numbered by a counter called the **System Frame Number (SFN)** — this is the cell's master clock, broadcast in the MIB ([§ 9.1](#sec-9-1)) so every UE reading MIB knows what frame number is currently being transmitted.
+The radio frame packs 10 subframes at 1 ms each. Every frame is numbered by a counter called the **System Frame Number (SFN)** — this is the cell's master clock, broadcast in the MIB ([# 9.1](#sec-9-1)) so every UE reading MIB knows what frame number is currently being transmitted.
 
 Every periodic event in LTE is scheduled by writing "this happens on frames where SFN mod $N$ equals $k$." Examples:
 
-- **Paging occasions for a specific UE** ([§ 15.3](#sec-15-3)): SFN mod (DRX cycle in frames) equals a value derived from the UE's **IMSI (International Mobile Subscriber Identity)**, the SIM-burned subscriber identifier; [§ 16.2](#sec-16-2).
+- **Paging occasions for a specific UE** ([# 15.3](#sec-15-3)): SFN mod (DRX cycle in frames) equals a value derived from the UE's **IMSI (International Mobile Subscriber Identity)**, the SIM-burned subscriber identifier; [# 16.2](#sec-16-2).
 - **SIB1 transmission:** SFN mod 8 equals 0 (SIB1 appears every 80 ms, i.e. every 8 frames).
 - **SIB2 transmission:** SFN mod 16 equals a configured offset.
 - **MIB transmission:** every frame, so SFN mod 1 equals 0 (i.e., always).
 
 The SFN is a 10-bit counter, so it wraps every $2^{10} = 1024$ frames, i.e., every $10.24$ seconds. This wrap is unimportant for scheduling — the modular arithmetic against $N \leq 256$ is unaffected — but it does mean that any timing relationship spanning more than $10.24$ seconds must track the wrap separately.
 
-**Why 10 bits and not 16 or 24?** Any longer counter forces more bits into the MIB (which sits on a tiny broadcast channel that must be decodable at very low SNR — [§ 9.1](#sec-9-1)). 10 bits is enough to cover the longest DRX cycle (2.56 s, i.e. 256 frames) with room to spare, and no more.
+**Why 10 bits and not 16 or 24?** Any longer counter forces more bits into the MIB (which sits on a tiny broadcast channel that must be decodable at very low SNR — [# 9.1](#sec-9-1)). 10 bits is enough to cover the longest DRX cycle (2.56 s, i.e. 256 frames) with room to spare, and no more.
 
 <div class="guided-fold-start" data-label="Historical context: the System Frame Number in UMTS" data-tone="derivation"></div>
 
@@ -345,9 +345,9 @@ The number 12 comes from three constraints, all satisfied simultaneously:
 
 1. **Coherence bandwidth.** An RB should be much narrower than $B_c \approx 200\,\text{kHz}$ so the channel is approximately flat across it — one CQI value per RB is then a faithful summary of that RB's channel, which is what the scheduler operates on. 180 kHz sits just at this boundary.
 
-2. **Divisibility.** The 12 subcarriers must divide cleanly into the constellation designs used for MIMO and reference signals. 12 factors as $2^2 \cdot 3$, making it divisible by 2, 3, 4, and 6 — the pilot-spacing values the reference-signal design ([§ 7](#sec-7)) requires.
+2. **Divisibility.** The 12 subcarriers must divide cleanly into the constellation designs used for MIMO and reference signals. 12 factors as $2^2 \cdot 3$, making it divisible by 2, 3, 4, and 6 — the pilot-spacing values the reference-signal design ([# 7](#sec-7)) requires.
 
-3. **Signalling overhead.** LTE bandwidths span from 1.4 MHz (6 RBs) to 20 MHz (100 RBs) — see [§ 4.7](#sec-4-7). If RBs were much smaller than 180 kHz, the number of RBs the scheduler must address per subframe would balloon and each RB-selection bitmap in a DCI would blow past the control-region budget. If much larger, allocation granularity would coarsen unusably at 1.4 MHz. 12 subcarriers keeps the RB count across the whole bandwidth family inside a range a compact bitmap can encode.
+3. **Signalling overhead.** LTE bandwidths span from 1.4 MHz (6 RBs) to 20 MHz (100 RBs) — see [# 4.7](#sec-4-7). If RBs were much smaller than 180 kHz, the number of RBs the scheduler must address per subframe would balloon and each RB-selection bitmap in a DCI would blow past the control-region budget. If much larger, allocation granularity would coarsen unusably at 1.4 MHz. 12 subcarriers keeps the RB count across the whole bandwidth family inside a range a compact bitmap can encode.
 
 ### 4.7. Total bandwidths — 1.4, 3, 5, 10, 15, 20 MHz {#sec-4-7}
 
@@ -376,7 +376,7 @@ This is a purely arithmetic constraint (samples must divide evenly). No physical
 
 ---
 
-## § 5. The resource grid: making abstraction levels explicit {#sec-5}
+## # 5. The resource grid: making abstraction levels explicit {#sec-5}
 
 The grid has five nested time-frequency granularities.
 
@@ -404,7 +404,7 @@ From the smallest atom outward:
 
 - **The subframe level is where scheduling and HARQ live.** Every DCI addresses a subframe; every ACK/NACK is for a subframe.
 
-- **The radio-frame level is where system information broadcasts and paging are scheduled.** MIB repeats every frame; SIBs at multi-frame periodicities; paging on specific frames selected by IMSI (see [§ 16.2](#sec-16-2) for what IMSI is).
+- **The radio-frame level is where system information broadcasts and paging are scheduled.** MIB repeats every frame; SIBs at multi-frame periodicities; paging on specific frames selected by IMSI (see [# 16.2](#sec-16-2) for what IMSI is).
 
 ### 5.3. What lives in the control region vs the data region {#sec-5-3}
 
@@ -412,7 +412,7 @@ Within each subframe, the first 1, 2, or 3 OFDM symbols (at the beginning of the
 
 The control region carries:
 
-- **PDCCH** — the scheduling announcements ([§ 11](#sec-11)).
+- **PDCCH** — the scheduling announcements ([# 11](#sec-11)).
 - **PCFICH** — a 2-bit indicator saying how many symbols wide the control region is (this subframe).
 - **PHICH** — HARQ ACK/NACKs for uplink transmissions.
 - **CRS pilots** — always sprinkled across all symbols including the control region, so the receiver can equalise.
@@ -428,7 +428,7 @@ The width of the control region is dynamic. A cell serving one heavy-video user 
 
 Suppose you are asked: "which subcarriers carry the PDCCH?"
 
-This is an RE-level question. The answer requires knowing which REs in the control region are marked as PDCCH REs (as opposed to CRS REs or PCFICH REs), and the mapping is scattered across the whole bandwidth ([§ 11.2](#sec-11-2) for why scattered).
+This is an RE-level question. The answer requires knowing which REs in the control region are marked as PDCCH REs (as opposed to CRS REs or PCFICH REs), and the mapping is scattered across the whole bandwidth ([# 11.2](#sec-11-2) for why scattered).
 
 Now suppose you are asked: "which resources are allocated to UE $X$'s downlink data?"
 
@@ -471,20 +471,20 @@ Legend:  R = CRS pilot (Cell Reference Signal)
          . = not carrying anything for this RB in this subframe
 ~~~
 
-**What CFI is.** **CFI (Control Format Indicator)** is a 2-bit value the eNodeB sends *at the beginning of every subframe* announcing how many OFDM symbols the control region occupies. CFI ∈ {1, 2, 3}. In this drawing CFI = 3, so symbols 0–2 are the control region and symbols 3–13 are the data region. When the cell is lightly loaded the eNodeB will pick CFI = 1 or 2; when many small allocations need announcing it picks CFI = 3. The CFI is itself carried on **PCFICH**, which sits in fixed known RE positions of symbol 0 ([§ 11.2](#sec-11-2)) so the UE can decode CFI before it knows anything else about the subframe.
+**What CFI is.** **CFI (Control Format Indicator)** is a 2-bit value the eNodeB sends *at the beginning of every subframe* announcing how many OFDM symbols the control region occupies. CFI ∈ {1, 2, 3}. In this drawing CFI = 3, so symbols 0–2 are the control region and symbols 3–13 are the data region. When the cell is lightly loaded the eNodeB will pick CFI = 1 or 2; when many small allocations need announcing it picks CFI = 3. The CFI is itself carried on **PCFICH**, which sits in fixed known RE positions of symbol 0 ([# 11.2](#sec-11-2)) so the UE can decode CFI before it knows anything else about the subframe.
 
-**Reading the diagram against the abstraction hierarchy of [§ 5.1](#sec-5-1):**
+**Reading the diagram against the abstraction hierarchy of [# 5.1](#sec-5-1):**
 
 - Each single cell in the grid = one **RE**. Every RE is one complex modulation symbol carried on one subcarrier during one OFDM-symbol interval.
 - One block of $12 \times 7 = 84$ cells (all 12 subcarriers, first 7 columns) = one **RB** (slot 0's RB). Second block of $12 \times 7$ = second RB.
 - Two RBs stacked in time = a full **subframe pair** for one RB position; called an **RB pair**. Scheduling grants normally address RB pairs rather than single RBs.
 - All 14 columns = one **subframe** (1 ms, one TTI).
 
-**Reading the diagram against the channels of [§ 5.3](#sec-5-3):**
+**Reading the diagram against the channels of [# 5.3](#sec-5-3):**
 
 - **PCFICH** — 16 REs spread across the whole bandwidth in symbol 0. It occupies specific RE positions in exactly four of the RBs of a subframe (not necessarily this one), so an arbitrary RB drawing may not show any PCFICH cell.
-- **PDCCH** — the "P" cells in symbols 0–2. In the actual mapping, PDCCH REGs from one DCI are scattered across the whole bandwidth ([§ 11.2](#sec-11-2)); the "P" cells in this one RB may belong to many different DCIs targeting many different UEs.
-- **CRS** — the "R" cells; four per RB per subframe, at symbols 0, 4, 7, 11. Their subcarrier positions shift by $\text{PCI} \bmod 6$ across cells ([§ 7.1](#sec-7-1)) so neighbouring cells don't pilot the same REs.
+- **PDCCH** — the "P" cells in symbols 0–2. In the actual mapping, PDCCH REGs from one DCI are scattered across the whole bandwidth ([# 11.2](#sec-11-2)); the "P" cells in this one RB may belong to many different DCIs targeting many different UEs.
+- **CRS** — the "R" cells; four per RB per subframe, at symbols 0, 4, 7, 11. Their subcarrier positions shift by $\text{PCI} \bmod 6$ across cells ([# 7.1](#sec-7-1)) so neighbouring cells don't pilot the same REs.
 - **PDSCH** — the "D" cells; user data.
 
 **Subframes 0 and 5 are different.** They additionally carry the synchronization signals. In FDD, in the middle 6 RBs (i.e., the 72 subcarriers centered on the DC carrier), symbols 5 and 6 of slot 0 (of subframe 0 or 5) carry SSS and PSS respectively — see the diagram below of that special RB:
@@ -520,7 +520,7 @@ This is the granularity at which physical-layer scheduling produces output every
 
 ---
 
-## § 6. Uplink asymmetry: SC-FDMA and the shape of PUCCH {#sec-6}
+## # 6. Uplink asymmetry: SC-FDMA and the shape of PUCCH {#sec-6}
 
 Downlink and uplink in LTE use different waveforms. The reason is a hard physical constraint on the mobile.
 
@@ -555,7 +555,7 @@ Now change the subcarrier allocation from contiguous to interleaved (say, every 
 
 The uplink is divided into a large data region (PUSCH — physical uplink shared channel) and a small control region (PUCCH — physical uplink control channel) carrying HARQ ACKs, scheduling requests, and channel-state reports.
 
-Because the UE's uplink must be contiguous ([§ 6.2](#sec-6-2)), and because the PUCCH sits at fixed known positions on every subframe, PUCCH must occupy a fixed frequency region that does not fragment the middle of the band. The choice: put PUCCH at the two edges, so the middle is a single contiguous region available for PUSCH grants.
+Because the UE's uplink must be contiguous ([# 6.2](#sec-6-2)), and because the PUCCH sits at fixed known positions on every subframe, PUCCH must occupy a fixed frequency region that does not fragment the middle of the band. The choice: put PUCCH at the two edges, so the middle is a single contiguous region available for PUSCH grants.
 
 Within a slot, PUCCH also hops between the two edges (top edge in slot 0, bottom edge in slot 1, or vice versa). This is **intra-subframe frequency hopping** — a diversity trick. If one edge of the band is in a fade for a given UE, the other edge is probably not, and the UE's ACK gets two independent tries at reception.
 
@@ -565,19 +565,19 @@ SC-FDMA is often described as "single-carrier from the perspective of the transm
 
 ---
 
-## § 7. Reference signals {#sec-7}
+## # 7. Reference signals {#sec-7}
 
 Reference signals ("pilots") are known symbols the receiver uses to estimate the channel — the complex gain $H[k]$ for each subcarrier — so that the equaliser can invert it. Different reference signals exist for different scopes.
 
-Two preliminaries carry through this whole section and the next. First, *cell* and *eNodeB* have been used almost interchangeably up to now, and from here on the distinction matters: an **eNodeB** is one physical base-station device (one location on the ground, one backhaul link); a **cell** is the coverage footprint of *one sector's* antennas. A typical site has three antenna arrays each pointing outward at 120°, so one eNodeB serves three cells. Everything cell-specific (PCI, CRS pattern, sector broadcast) is separate per sector; everything eNodeB-scoped (the S1-MME association, the X2 links, the eNB ID inside an ECGI — [§ 16.6](#sec-16-6)) is shared across the three cells of one site. When a UE hands over between two sectors of the same eNodeB, only the radio side re-syncs; the S1 anchor does not move. Second, every cell announces a **Physical Cell Identity (PCI)** — one of 504 integers, transmitted implicitly via the PSS/SSS pair. The PCI is the identity used everywhere at the physical layer to distinguish signals from this cell from those of a neighbour. Its full derivation is in [§ 8](#sec-8); the CRS mapping and scrambling seeds below use it as a given.
+Two preliminaries carry through this whole section and the next. First, *cell* and *eNodeB* have been used almost interchangeably up to now, and from here on the distinction matters: an **eNodeB** is one physical base-station device (one location on the ground, one backhaul link); a **cell** is the coverage footprint of *one sector's* antennas. A typical site has three antenna arrays each pointing outward at 120°, so one eNodeB serves three cells. Everything cell-specific (PCI, CRS pattern, sector broadcast) is separate per sector; everything eNodeB-scoped (the S1-MME association, the X2 links, the eNB ID inside an ECGI — [# 16.6](#sec-16-6)) is shared across the three cells of one site. When a UE hands over between two sectors of the same eNodeB, only the radio side re-syncs; the S1 anchor does not move. Second, every cell announces a **Physical Cell Identity (PCI)** — one of 504 integers, transmitted implicitly via the PSS/SSS pair. The PCI is the identity used everywhere at the physical layer to distinguish signals from this cell from those of a neighbour. Its full derivation is in [# 8](#sec-8); the CRS mapping and scrambling seeds below use it as a given.
 
 ### 7.1. Cell-Specific Reference Signal (CRS) — always-on downlink pilots {#sec-7-1}
 
 The CRS is broadcast unconditionally by every eNodeB, in every subframe, across the entire cell bandwidth. Its role:
 
 - **Downlink channel estimation** for every UE in the cell, whether that UE is actively receiving data or just listening for paging.
-- **Cell-quality measurements** for cell reselection and handover decisions. **RSRP (Reference Signal Received Power)** and **RSRQ (Reference Signal Received Quality)** are measured on CRS. Every UE compares CRS from its serving cell and neighbouring cells to decide when to reselect ([§ 21](#sec-21)).
-- **Control-channel demodulation.** By "demodulation" we mean the receiver's task of recovering the transmitted modulation symbols (the QAM constellation points) from the received samples. That task requires knowing the channel response $H[k]$ on every subcarrier where the target signal lives; the receiver estimates $H[k]$ from the pilots and then divides. PDCCH (which carries the DCIs, [§ 11](#sec-11)) is demodulated using CRS — the eNodeB does not send a UE-specific pilot alongside PDCCH, so the UE relies on the CRS it has already been estimating for the whole cell.
+- **Cell-quality measurements** for cell reselection and handover decisions. **RSRP (Reference Signal Received Power)** and **RSRQ (Reference Signal Received Quality)** are measured on CRS. Every UE compares CRS from its serving cell and neighbouring cells to decide when to reselect ([# 21](#sec-21)).
+- **Control-channel demodulation.** By "demodulation" we mean the receiver's task of recovering the transmitted modulation symbols (the QAM constellation points) from the received samples. That task requires knowing the channel response $H[k]$ on every subcarrier where the target signal lives; the receiver estimates $H[k]$ from the pilots and then divides. PDCCH (which carries the DCIs, [# 11](#sec-11)) is demodulated using CRS — the eNodeB does not send a UE-specific pilot alongside PDCCH, so the UE relies on the CRS it has already been estimating for the whole cell.
 
 **Where on the grid the CRS pilots sit.** For a single-antenna cell (single "antenna port," port 0), CRS pilots occupy exactly four OFDM symbols in every subframe: symbols 0, 4, 7, and 11. In each of those symbols, the pilots sit on every 6th subcarrier. The subcarrier positions are given by
 
@@ -589,11 +589,11 @@ where the two additive offsets have specific roles:
 
 - $k_{\text{stagger}}$ is a **within-cell time-varying offset** that shifts the pattern by 3 subcarriers between symbol 0 and symbol 4 (and again between 7 and 11). Concretely, $k_{\text{stagger}} = 0$ in symbols 0 and 7; $k_{\text{stagger}} = 3$ in symbols 4 and 11. Purpose: the pilots in symbol 0 sample the channel at subcarriers $\{v_{\text{shift}}, v_{\text{shift}}+6, v_{\text{shift}}+12, \ldots\}$; the pilots in symbol 4 sample it at $\{v_{\text{shift}}+3, v_{\text{shift}}+9, \ldots\}$. Combining the two symbols, the receiver has channel samples at every 3rd subcarrier — twice the frequency resolution than either symbol alone would give. This makes the between-pilot interpolation much more accurate over frequency-selective channels.
 
-**Timing of the pilots.** The choice of four symbols (0, 4, 7, 11) is set by the Doppler coherence time — the timescale over which the channel gain stays roughly the same (introduced in [§ 3.7](#sec-3-7) as the reciprocal of the maximum Doppler shift). At 350 km/h and 2 GHz carrier, coherence time is $\sim 0.5\,\text{ms}$; the channel changes significantly within one 1 ms subframe. Four pilot symbols distributed across the 14-symbol subframe give the receiver enough samples in the time direction to track a channel that changes across the subframe.
+**Timing of the pilots.** The choice of four symbols (0, 4, 7, 11) is set by the Doppler coherence time — the timescale over which the channel gain stays roughly the same (introduced in [# 3.7](#sec-3-7) as the reciprocal of the maximum Doppler shift). At 350 km/h and 2 GHz carrier, coherence time is $\sim 0.5\,\text{ms}$; the channel changes significantly within one 1 ms subframe. Four pilot symbols distributed across the 14-symbol subframe give the receiver enough samples in the time direction to track a channel that changes across the subframe.
 
 ### 7.2. Demodulation Reference Signal (DMRS) — the pilot that follows the precoder {#sec-7-2}
 
-The CRS estimate is enough for a plain single-antenna transmission, but it stops being usable the moment the eNodeB starts *precoding*. In MIMO downlink ([§ 26.1](#sec-26-1)), the eNodeB multiplies the data stream by a UE-specific precoding matrix $W$ before it hits the antennas. What the UE actually sees is not the physical channel $H$ but the effective channel $HW$. CRS is transmitted from the cell's physical antenna ports without $W$ applied — so it estimates $H$, not $HW$, and cannot demodulate the precoded PDSCH.
+The CRS estimate is enough for a plain single-antenna transmission, but it stops being usable the moment the eNodeB starts *precoding*. In MIMO downlink ([# 26.1](#sec-26-1)), the eNodeB multiplies the data stream by a UE-specific precoding matrix $W$ before it hits the antennas. What the UE actually sees is not the physical channel $H$ but the effective channel $HW$. CRS is transmitted from the cell's physical antenna ports without $W$ applied — so it estimates $H$, not $HW$, and cannot demodulate the precoded PDSCH.
 
 DMRS solves this by embedding a pilot *inside the precoded stream itself*. The same $W$ that multiplies the data multiplies the DMRS, so the receiver's estimate from DMRS is the effective channel $HW$ it needs, with no separate knowledge of $W$ required. That is why DMRS is "UE-specific": each UE gets a different precoding, and each UE gets its own DMRS in the REs of its own PDSCH allocation.
 
@@ -613,25 +613,25 @@ LTE handles this by orthogonalizing SRS transmissions in two dimensions:
 
 - **Frequency multiplexing via combs.** Each SRS uses a **transmission comb** — the sequence occupies only every $K_{\text{TC}}$-th subcarrier of the wideband range. With $K_{\text{TC}} = 2$: comb-0 UEs occupy even-indexed subcarriers within the range, comb-1 UEs occupy odd-indexed. Because different subcarriers are orthogonal in OFDM, both combs coexist in the same OFDM symbol without interference. UE-to-comb assignment is a scheduler decision.
 
-- **Cyclic-shift multiplexing.** Two UEs on the same comb can additionally be separated by giving them different cyclic shifts of the same base sequence (analogous to [§ 10.3](#sec-10-3) for PRACH). Up to 8 UEs can share one comb via cyclic shifts.
+- **Cyclic-shift multiplexing.** Two UEs on the same comb can additionally be separated by giving them different cyclic shifts of the same base sequence (analogous to [# 10.3](#sec-10-3) for PRACH). Up to 8 UEs can share one comb via cyclic shifts.
 
 **Fixed time position.** SRS lives in the *last* OFDM symbol of a subframe (symbol 13). If a UE has been granted PUSCH in that same subframe, its PUSCH is "punctured" — the last symbol is not filled with data but with SRS, and the receiver simply skips that symbol when decoding PUSCH.
 
-**When SRS actually happens.** A subframe is either an SRS subframe (its last symbol is available for SRS from any UE that has been configured to sound there) or it is not. The **cell-wide SRS subframe configuration** — the set of subframes designated as SRS subframes — is broadcast in **SIB2** ([§ 9.3](#sec-9-3)), advertised to every UE as a bitmap or periodicity index. "Aggregate" here means cell-wide: this configuration is the same for all UEs, so all UEs know which subframes might carry any SRS at all. On top of that, each UE has its own per-UE SRS configuration (set individually by RRC) telling it which of those cell-wide SRS subframes *this UE* should transmit its own SRS in, at what comb, at what cyclic shift, over what bandwidth range. Two-level design: the cell says "SRS may happen on these subframes"; RRC per-UE says "you sound on these ones."
+**When SRS actually happens.** A subframe is either an SRS subframe (its last symbol is available for SRS from any UE that has been configured to sound there) or it is not. The **cell-wide SRS subframe configuration** — the set of subframes designated as SRS subframes — is broadcast in **SIB2** ([# 9.3](#sec-9-3)), advertised to every UE as a bitmap or periodicity index. "Aggregate" here means cell-wide: this configuration is the same for all UEs, so all UEs know which subframes might carry any SRS at all. On top of that, each UE has its own per-UE SRS configuration (set individually by RRC) telling it which of those cell-wide SRS subframes *this UE* should transmit its own SRS in, at what comb, at what cyclic shift, over what bandwidth range. Two-level design: the cell says "SRS may happen on these subframes"; RRC per-UE says "you sound on these ones."
 
-**Bonus in TDD:** because the same frequency is used in both directions, the eNodeB can use the SRS-estimated uplink channel *as* the downlink channel — this is **channel reciprocity** and enables downlink beamforming ([§ 26.1](#sec-26-1)) based on uplink measurements alone. In FDD (different frequencies for up and down), reciprocity does not hold and downlink beamforming needs the UE to report the channel estimate via CQI ([§ 7.4](#sec-7-4)).
+**Bonus in TDD:** because the same frequency is used in both directions, the eNodeB can use the SRS-estimated uplink channel *as* the downlink channel — this is **channel reciprocity** and enables downlink beamforming ([# 26.1](#sec-26-1)) based on uplink measurements alone. In FDD (different frequencies for up and down), reciprocity does not hold and downlink beamforming needs the UE to report the channel estimate via CQI ([# 7.4](#sec-7-4)).
 
 ### 7.4. Channel Quality Indicator (CQI) {#sec-7-4}
 
 The UE measures the downlink CRS, estimates its **SINR (signal-to-interference-plus-noise ratio)**, and reports a 4-bit value 0–15 to the eNodeB. Value 15 means "channel is pristine, please use 256-QAM at high code rate." Value 1 means "channel is barely usable, please use QPSK with heavy redundancy."
 
-CQI is one component of **CSI (Channel State Information)**. The other two are **PMI (Precoding Matrix Indicator)** — the UE's recommendation for which precoding weights to use in MIMO transmission ([§ 26.1](#sec-26-1)) — and **RI (Rank Indicator)** — how many independent MIMO streams the UE can decode. Together CQI + PMI + RI let the eNodeB pick modulation, precoding, and rank for the next downlink block to this UE.
+CQI is one component of **CSI (Channel State Information)**. The other two are **PMI (Precoding Matrix Indicator)** — the UE's recommendation for which precoding weights to use in MIMO transmission ([# 26.1](#sec-26-1)) — and **RI (Rank Indicator)** — how many independent MIMO streams the UE can decode. Together CQI + PMI + RI let the eNodeB pick modulation, precoding, and rank for the next downlink block to this UE.
 
 CSI is reported periodically (via PUCCH) or aperiodically on demand (the eNodeB flips a "CSI Request" bit in an uplink grant, and the UE piggybacks a richer CSI report onto the granted PUSCH transmission).
 
 ---
 
-## § 8. Synchronization: how a UE finds a cell and locks to it {#sec-8}
+## # 8. Synchronization: how a UE finds a cell and locks to it {#sec-8}
 
 A powered-on UE with no prior state must discover any cell within radio range, learn where the frame boundary is, learn which cell it is, and get enough parameters to start reading system information. Two special signals — the Primary Synchronization Signal (PSS) and the Secondary Synchronization Signal (SSS) — bootstrap this from nothing.
 
@@ -639,7 +639,7 @@ A powered-on UE with no prior state must discover any cell within radio range, l
 
 The UE knows nothing about local timing when it powers on. It needs to lock onto a coarse timing anchor: "somewhere near here is a 5 ms boundary." PSS is a short (62-subcarrier + DC) waveform transmitted twice per radio frame (every 5 ms) at fixed known positions. The UE correlates the incoming signal against three possible PSS sequences and locates the correlation peak.
 
-Three PSS sequences — call them PSS-0, PSS-1, PSS-2 — are used across the network, generated as length-63 Zadoff-Chu sequences with roots 25, 29, and 34 ([§ 10.2](#sec-10-2) for what a Zadoff-Chu sequence is and its properties). Detecting which of the three a cell transmits identifies the cell's **sector index** within its site (recall from [§ 7.1](#sec-7-1) that one eNodeB usually hosts three cells, one per 120° sector):
+Three PSS sequences — call them PSS-0, PSS-1, PSS-2 — are used across the network, generated as length-63 Zadoff-Chu sequences with roots 25, 29, and 34 ([# 10.2](#sec-10-2) for what a Zadoff-Chu sequence is and its properties). Detecting which of the three a cell transmits identifies the cell's **sector index** within its site (recall from [# 7.1](#sec-7-1) that one eNodeB usually hosts three cells, one per 120° sector):
 
 $$N_{\text{ID}}^{(2)} \in \{0, 1, 2\}, \quad \text{by the lookup} \; 25 \to 0, \; 29 \to 1, \; 34 \to 2.$$
 
@@ -719,7 +719,7 @@ The three-symbol gap gives the TDD receiver time to switch from receive to trans
 
 ### 8.5. Where PSS and SSS sit in frequency — the middle 6 RBs {#sec-8-5}
 
-Regardless of the total LTE bandwidth (1.4 to 20 MHz), PSS and SSS are always transmitted on the **middle 62 subcarriers** (6 RBs' worth) around the DC subcarrier. This means the UE does not need to know the bandwidth to find the sync signals — it can tune to the middle of the channel and always find them there. The bandwidth itself is learned later, from MIB ([§ 9](#sec-9)).
+Regardless of the total LTE bandwidth (1.4 to 20 MHz), PSS and SSS are always transmitted on the **middle 62 subcarriers** (6 RBs' worth) around the DC subcarrier. This means the UE does not need to know the bandwidth to find the sync signals — it can tune to the middle of the channel and always find them there. The bandwidth itself is learned later, from MIB ([# 9](#sec-9)).
 
 ### 8.6. PCI and its use as a scrambling seed {#sec-8-6}
 
@@ -744,7 +744,7 @@ The PCI-based seeding ensures neighbouring cells with different PCIs have decorr
 
 ---
 
-## § 9. System information: MIB, SIB1, SIB2, and above {#sec-9}
+## # 9. System information: MIB, SIB1, SIB2, and above {#sec-9}
 
 After sync, the UE knows PCI and the frame timing. It still does not know the bandwidth, the operator, the tracking area, or how to do random access. That information comes from **system information blocks (SIBs)**, broadcast on the shared data channel with special addressing.
 
@@ -756,7 +756,7 @@ The **Master Information Block (MIB)** carries the minimum needed to bootstrap S
 - **PHICH configuration** (which OFDM symbols carry HARQ feedback for uplink).
 - **Upper 8 bits of the SFN.** The full SFN is 10 bits; MIB carries 8, and the remaining 2 are inferred from which 10 ms frame the MIB was decoded in (MIB repeats every 40 ms, so it appears in four consecutive frames, giving the remaining 2 bits).
 
-MIB is 24 bits total. It is transmitted on the **PBCH (Physical Broadcast Channel)** on the 72 subcarriers centered around the DC subcarrier (the 36 subcarriers immediately above the carrier's centre plus the 36 immediately below — same span as PSS/SSS), in the first 4 OFDM symbols of subframe 0. It repeats every 40 ms. Each of the four repetitions uses a different **redundancy version (RV)** — that is, a different portion of the systematically-punctured turbo-coded output is transmitted. RV 0 through RV 3 are four different puncturing patterns of the same encoded bits; a UE that decodes only one RV gets one view of the codeword and may fail, whereas a UE that captures two or more RVs can soft-combine them ([§ 13.4](#sec-13-4)) and recover the message at much lower SNR. This is why MIB — the very first thing a UE decodes — remains readable at cell edges with poor signal.
+MIB is 24 bits total. It is transmitted on the **PBCH (Physical Broadcast Channel)** on the 72 subcarriers centered around the DC subcarrier (the 36 subcarriers immediately above the carrier's centre plus the 36 immediately below — same span as PSS/SSS), in the first 4 OFDM symbols of subframe 0. It repeats every 40 ms. Each of the four repetitions uses a different **redundancy version (RV)** — that is, a different portion of the systematically-punctured turbo-coded output is transmitted. RV 0 through RV 3 are four different puncturing patterns of the same encoded bits; a UE that decodes only one RV gets one view of the codeword and may fail, whereas a UE that captures two or more RVs can soft-combine them ([# 13.4](#sec-13-4)) and recover the message at much lower SNR. This is why MIB — the very first thing a UE decodes — remains readable at cell edges with poor signal.
 
 ### 9.2. SIB1 — the operator identity and SIB schedule {#sec-9-2}
 
@@ -768,20 +768,20 @@ MIB is 24 bits total. It is transmitted on the **PBCH (Physical Broadcast Channe
 - **Frequency band indicator** — which 3GPP-defined band this cell operates in.
 - **Scheduling of the other SIBs.** SIB1 tells the UE when SIB2, SIB3, etc., will be broadcast. Each SIB has its own periodicity (SIB2 typically every 160 ms, others less often).
 
-The UE reads SIB1 first because it drives the decision of whether to try to attach to this cell at all. If the PLMN is not the UE's own (or an equivalent PLMN — [§ 25.4](#sec-25-4)), and the UE is not roaming-permitted, the UE stops here without wasting battery on more SIBs.
+The UE reads SIB1 first because it drives the decision of whether to try to attach to this cell at all. If the PLMN is not the UE's own (or an equivalent PLMN — [# 25.4](#sec-25-4)), and the UE is not roaming-permitted, the UE stops here without wasting battery on more SIBs.
 
 ### 9.3. SIB2 — how to actually use the cell {#sec-9-3}
 
 **SIB2** contains the parameters the UE needs to communicate with this cell:
 
 - **Uplink frequency and bandwidth.** The absolute uplink carrier frequency (EARFCN — E-UTRA Absolute Radio Frequency Channel Number) and its bandwidth. For most FDD bands the uplink is a fixed offset from the downlink (e.g., 95 MHz below in band 3), but this SIB confirms it.
-- **PRACH configuration** — which subframes carry random-access opportunities, which Zadoff-Chu root sequences, and which preamble format ([§ 10](#sec-10)).
+- **PRACH configuration** — which subframes carry random-access opportunities, which Zadoff-Chu root sequences, and which preamble format ([# 10](#sec-10)).
 - **PUCCH configuration** — where the uplink control channel sits at the band edges.
-- **SRS configuration** — the cell-wide SRS subframe pattern ([§ 7.3](#sec-7-3)).
+- **SRS configuration** — the cell-wide SRS subframe pattern ([# 7.3](#sec-7-3)).
 - **Power control parameters.**
 - **Uplink cyclic shift and reference-signal group hopping** for DMRS and SRS.
 
-Everything a UE needs to run its first uplink transmission ([§ 10](#sec-10)) comes from SIB2. This is why SIB1 must always point to SIB2, and SIB2 must be broadcast on a predictable schedule.
+Everything a UE needs to run its first uplink transmission ([# 10](#sec-10)) comes from SIB2. This is why SIB1 must always point to SIB2, and SIB2 must be broadcast on a predictable schedule.
 
 ### 9.4. Higher SIBs — what each actually carries {#sec-9-4}
 
@@ -789,9 +789,9 @@ Beyond SIB1 and SIB2, the standard defines a family of SIBs each answering one c
 
 <div class="guided-fold-start" data-label="What each higher SIB carries" data-tone="derivation"></div>
 
-- **SIB3** — **cell-reselection parameters for the serving cell.** Thresholds telling an idle UE when to consider hopping to a neighbour: "if RSRP drops below $-115$ dBm, look at neighbours; if the best neighbour's RSRP exceeds serving by more than 3 dB for at least 1 second, reselect." Governs [§ 21.1](#sec-21-1) behaviour.
+- **SIB3** — **cell-reselection parameters for the serving cell.** Thresholds telling an idle UE when to consider hopping to a neighbour: "if RSRP drops below $-115$ dBm, look at neighbours; if the best neighbour's RSRP exceeds serving by more than 3 dB for at least 1 second, reselect." Governs [# 21.1](#sec-21-1) behaviour.
 - **SIB4** — **neighbouring-cell list for intra-frequency reselection.** A list of PCIs on the same carrier frequency that the UE should measure against. Includes per-neighbour reselection biases (some neighbours preferred over others by policy). If SIB4 is absent, the UE assumes any measured neighbour on this frequency is a valid reselection candidate.
-- **SIB5** — **neighbouring-cell list for inter-frequency reselection.** Same idea, but for cells on a different carrier frequency (which the UE cannot detect without an explicit measurement gap — [§ 21.5](#sec-21-5)). Lists the alternate carrier frequencies and their PCIs so the UE knows where to look.
+- **SIB5** — **neighbouring-cell list for inter-frequency reselection.** Same idea, but for cells on a different carrier frequency (which the UE cannot detect without an explicit measurement gap — [# 21.5](#sec-21-5)). Lists the alternate carrier frequencies and their PCIs so the UE knows where to look.
 - **SIB6, SIB7, SIB8** — **reselection to UMTS (SIB6), GSM (SIB7), and CDMA2000 (SIB8)** respectively. Used when an operator's LTE coverage is incomplete and it wants idle UEs to fall back to a legacy generation cleanly. Each carries the target frequency, ARFCN, and cell-quality thresholds for that generation.
 - **SIB9** — **HeNB (Home eNodeB) identity.** The name string of a femtocell (a small residential eNodeB), so the UE displays "MyISP-HomeCell" instead of "eNodeB 42".
 - **SIB10, SIB11** — **ETWS notifications.** ETWS = Earthquake and Tsunami Warning System. SIB10 carries a short "primary" alert (magnitude, epicentre, warning level) so it can be broadcast fastest; SIB11 carries a longer "secondary" message (evacuation instructions, in multiple languages). Every UE reads these unconditionally when the ETWS flag in SIB1 is set.
@@ -806,19 +806,19 @@ Each SIB has its own transmission periodicity (SIB2 typically every 160 ms; SIB3
 
 MIB is on PBCH (its own dedicated channel structure).
 
-**All other SIBs are on PDSCH** — the same shared downlink data channel that carries user data. They are transmitted as ordinary PDSCH transmissions, addressed by a well-known RNTI called **SI-RNTI** (System Information RNTI). Every UE knows the SI-RNTI value. A UE seeking system information runs the blind-decoding procedure ([§ 12](#sec-12)) over PDCCH candidates, attempting to CRC-match each candidate with SI-RNTI. Any match is a scheduling grant for a SIB; the UE then decodes the PDSCH RBs the grant points at, reading the SIB payload.
+**All other SIBs are on PDSCH** — the same shared downlink data channel that carries user data. They are transmitted as ordinary PDSCH transmissions, addressed by a well-known RNTI called **SI-RNTI** (System Information RNTI). Every UE knows the SI-RNTI value. A UE seeking system information runs the blind-decoding procedure ([# 12](#sec-12)) over PDCCH candidates, attempting to CRC-match each candidate with SI-RNTI. Any match is a scheduling grant for a SIB; the UE then decodes the PDSCH RBs the grant points at, reading the SIB payload.
 
 **Why are SIBs on PDSCH and not on their own dedicated broadcast channel like MIB?** MIB gets a dedicated channel (PBCH) because it must be readable *before the UE knows anything about the cell*, including its bandwidth or its scrambling seed. PBCH is designed to be robust at zero-knowledge conditions: fixed frequency (middle 72 subcarriers), fixed subframe (0), fixed length (24 bits), redundancy version accumulation over 40 ms. All that machinery costs precious spectrum in every subframe of every cell.
 
 Once MIB is read, the UE knows the bandwidth and the PCI-derived scrambling. From that point on, adding *any* extra information can be done cheaply as a specially-addressed PDSCH transmission — no new physical channel needed. Reusing PDSCH lets the eNodeB dynamically decide how often to broadcast each SIB (some SIBs every 80 ms, some every second), how much bandwidth to give each transmission (adjust MCS based on cell radius), and skip infrequent SIBs entirely when unused. A dedicated broadcast channel per SIB would waste all that flexibility.
 
 <div class="pull-out" markdown="1">
-**General LTE pattern.** Once the UE has enough context to decode PDSCH, everything that would otherwise be a broadcast channel becomes PDSCH addressed by a well-known RNTI. The same idea shows up in paging (via P-RNTI, [§ 16.5](#sec-16-5)) and RA responses (via RA-RNTI, [§ 10.5](#sec-10-5)).
+**General LTE pattern.** Once the UE has enough context to decode PDSCH, everything that would otherwise be a broadcast channel becomes PDSCH addressed by a well-known RNTI. The same idea shows up in paging (via P-RNTI, [# 16.5](#sec-16-5)) and RA responses (via RA-RNTI, [# 10.5](#sec-10-5)).
 </div>
 
 ---
 
-## § 10. Random access (PRACH): the timing bootstrap {#sec-10}
+## # 10. Random access (PRACH): the timing bootstrap {#sec-10}
 
 The UE is now synchronised to the downlink and has read SIB1 and SIB2. To transmit anything on the uplink, it needs one more thing: a **timing advance (TA)** — an instruction telling it how much *earlier* than the arriving downlink boundary it should transmit, so that its uplink arrives at the eNodeB aligned with the network's clock.
 
@@ -924,7 +924,7 @@ which comfortably accommodates any propagation delay up to about $\pm 400\,\mu\t
 
 The narrower spacing has an additional benefit: 839 tones at 1.25 kHz spacing span $839 \times 1.25\,\text{kHz} \approx 1.05\,\text{MHz}$, which fits inside the 6 RBs (1.08 MHz) that PRACH is allowed to occupy. So a 20 MHz cell reserves just 6 out of 100 RBs for PRACH — 6% of the bandwidth — and the same allocation works for all LTE bandwidths down to 1.4 MHz (where it is 100%, so PRACH consumes the entire cell during PRACH opportunities).
 
-The PRACH cyclic prefix is also unusually long — several tens of microseconds — because it must cover multipath echoes ([§ 3.1](#sec-3-1)) on top of the unknown arrival time, and cannot rely on the eNodeB already knowing the range to this UE.
+The PRACH cyclic prefix is also unusually long — several tens of microseconds — because it must cover multipath echoes ([# 3.1](#sec-3-1)) on top of the unknown arrival time, and cannot rely on the eNodeB already knowing the range to this UE.
 
 ### 10.5. The four messages of contention-based random access {#sec-10-5}
 
@@ -943,7 +943,7 @@ The full random-access procedure has four messages:
   - **Uplink grant.** A small allocation of PUSCH resources for the UE to use in Msg3.
   - **Temporary C-RNTI (Cell RNTI).** A UE identifier that will become permanent (as the UE's ordinary C-RNTI in this cell) if this procedure succeeds.
 
-- **Msg3: RRC Connection Request (or similar).** The UE uses the Msg2 grant to transmit an actual RRC message on PUSCH. This is the first message that includes the UE's identity — either an **S-TMSI** (SAE Temporary Mobile Subscriber Identity — the 40-bit lower portion of a GUTI carrying MME Code + M-TMSI, defined properly in [§ 16.3](#sec-16-3), that survives across attaches within one MME) if the UE has one from a previous session, or the IMSI (International Mobile Subscriber Identity, defined in [§ 16.2](#sec-16-2)) for very-first-time access when no S-TMSI is available yet.
+- **Msg3: RRC Connection Request (or similar).** The UE uses the Msg2 grant to transmit an actual RRC message on PUSCH. This is the first message that includes the UE's identity — either an **S-TMSI** (SAE Temporary Mobile Subscriber Identity — the 40-bit lower portion of a GUTI carrying MME Code + M-TMSI, defined properly in [# 16.3](#sec-16-3), that survives across attaches within one MME) if the UE has one from a previous session, or the IMSI (International Mobile Subscriber Identity, defined in [# 16.2](#sec-16-2)) for very-first-time access when no S-TMSI is available yet.
 
   **Why does contention happen at all?** The 64 PRACH preambles are a *shared resource within the cell*: any UE that decides to do random access picks one of the 64 uniformly at random with no coordination with any other UE. If two UEs happen to pick the same preamble in the same PRACH opportunity, both are undetectable to the eNodeB as separate transmissions — the two ZC waveforms superpose in the air, and the eNodeB sees one correlation peak. Both UEs then read the same Msg2 (Msg2 is addressed by RA-RNTI, which depends only on the PRACH slot, not on which preamble was picked). Both UEs then transmit Msg3 on the *same* PUSCH resource assigned by the shared Msg2. This collision on Msg3 is what "contention" refers to: it is the moment when two UEs' distinct identities have to be resolved into "one wins, others retry." The shared thing is not any secret or key — it is the finite, uncoordinated pool of 64 preamble waveforms.
 
@@ -953,23 +953,23 @@ The full random-access procedure has four messages:
 
 The four-message procedure above is **contention-based**, used when the UE initiates access (booting up, waking from idle, needing to send data after a scheduling gap).
 
-**Contention-free** random access is used when the network already has a relationship with the UE and needs the UE to re-align its timing — most commonly during a handover ([§ 21.3](#sec-21-3)). The target eNodeB, in the handover command sent over X2, reserves one specific PRACH preamble (one of the 64 ZC-derived waveforms) exclusively for this UE — that is, the target eNodeB commits that no other UE will be told to use that particular preamble during a short window. When the UE arrives on the new cell and transmits that unique preamble, no other UE would ever pick it, so there is no collision. Messages 3 and 4 are skipped; the procedure is preamble + RAR only, which cuts handover latency significantly.
+**Contention-free** random access is used when the network already has a relationship with the UE and needs the UE to re-align its timing — most commonly during a handover ([# 21.3](#sec-21-3)). The target eNodeB, in the handover command sent over X2, reserves one specific PRACH preamble (one of the 64 ZC-derived waveforms) exclusively for this UE — that is, the target eNodeB commits that no other UE will be told to use that particular preamble during a short window. When the UE arrives on the new cell and transmits that unique preamble, no other UE would ever pick it, so there is no collision. Messages 3 and 4 are skipped; the procedure is preamble + RAR only, which cuts handover latency significantly.
 
 ---
 
-## § 11. Downlink control-region physical layer {#sec-11}
+## # 11. Downlink control-region physical layer {#sec-11}
 
-Section 13 will describe the *scheduling* — the eNodeB's per-subframe decisions about who transmits what, communicated to UEs via **DCIs (Downlink Control Information messages)** and answered via **UCI (Uplink Control Information reports)**. This section describes only the *physical channels* that carry those messages on the downlink control region, and their atomic units. Readers who want to skip straight to how the scheduler operates can jump to [§ 13](#sec-13) and refer back here for specifics.
+Section 13 will describe the *scheduling* — the eNodeB's per-subframe decisions about who transmits what, communicated to UEs via **DCIs (Downlink Control Information messages)** and answered via **UCI (Uplink Control Information reports)**. This section describes only the *physical channels* that carry those messages on the downlink control region, and their atomic units. Readers who want to skip straight to how the scheduler operates can jump to [# 13](#sec-13) and refer back here for specifics.
 
 ### 11.1. Three channels in the control region {#sec-11-1}
 
-The downlink control region ([§ 5.3](#sec-5-3)) hosts three channels:
+The downlink control region ([# 5.3](#sec-5-3)) hosts three channels:
 
-- **PDCCH (Physical Downlink Control Channel)** — the DCI carrier. Every scheduling event (paging, SIB delivery, RA response, PDSCH grant, PUSCH grant) becomes a DCI on PDCCH. This is what [§ 13](#sec-13) talks about.
+- **PDCCH (Physical Downlink Control Channel)** — the DCI carrier. Every scheduling event (paging, SIB delivery, RA response, PDSCH grant, PUSCH grant) becomes a DCI on PDCCH. This is what [# 13](#sec-13) talks about.
 
-- **PCFICH (Physical Control Format Indicator Channel)** — a 2-bit indicator carrying **CFI ∈ {1, 2, 3}** that announces how many OFDM symbols wide the control region is *in this subframe*. It sits in fixed known positions in symbol 0 of every subframe, so the UE reads it first, before it can find PDCCH. The region size is dynamic ([§ 5.5](#sec-5-5)): light load allows CFI = 1; heavy load with many small allocations may need CFI = 3. Everything else in this section takes CFI as given.
+- **PCFICH (Physical Control Format Indicator Channel)** — a 2-bit indicator carrying **CFI ∈ {1, 2, 3}** that announces how many OFDM symbols wide the control region is *in this subframe*. It sits in fixed known positions in symbol 0 of every subframe, so the UE reads it first, before it can find PDCCH. The region size is dynamic ([# 5.5](#sec-5-5)): light load allows CFI = 1; heavy load with many small allocations may need CFI = 3. Everything else in this section takes CFI as given.
 
-- **PHICH (Physical HARQ Indicator Channel)** — a single ACK/NACK bit per uplink transmission. If the UE transmitted PUSCH in subframe $n$, PHICH for that transmission arrives in subframe $n+4$. This tight timing is what makes uplink HARQ **synchronous** ([§ 13.4](#sec-13-4)): no DCI is needed to point to the ACK — its position is fixed by the PUSCH's position. Multiple PHICH bits are code-division multiplexed onto a small number of REs.
+- **PHICH (Physical HARQ Indicator Channel)** — a single ACK/NACK bit per uplink transmission. If the UE transmitted PUSCH in subframe $n$, PHICH for that transmission arrives in subframe $n+4$. This tight timing is what makes uplink HARQ **synchronous** ([# 13.4](#sec-13-4)): no DCI is needed to point to the ACK — its position is fixed by the PUSCH's position. Multiple PHICH bits are code-division multiplexed onto a small number of REs.
 
 ### 11.2. REG and CCE — the atomic units, and why they are frequency-scattered {#sec-11-2}
 
@@ -990,7 +990,7 @@ $$R = \frac{K}{72 L}$$
 - **$L = 1$** (72 coded bits): high rate, low robustness. Used for UEs near the eNodeB.
 - **$L = 8$** (576 coded bits): rate $\sim 1/8$ or less. Used for cell-edge UEs.
 
-The scheduler picks $L$ per UE per subframe, based on the UE's reported CSI ([§ 7.4](#sec-7-4)) and the eNodeB's own knowledge of that UE's uplink signal quality. The UE does not know in advance which $L$ was chosen — one of the reasons blind decoding ([§ 12](#sec-12)) is necessary.
+The scheduler picks $L$ per UE per subframe, based on the UE's reported CSI ([# 7.4](#sec-7-4)) and the eNodeB's own knowledge of that UE's uplink signal quality. The UE does not know in advance which $L$ was chosen — one of the reasons blind decoding ([# 12](#sec-12)) is necessary.
 
 ### 11.4. The RNTI-masked CRC — addressing without a "To:" field {#sec-11-4}
 
@@ -1006,7 +1006,7 @@ This saves 16 bits of address per DCI — a nontrivial gain when the control reg
 
 ---
 
-## § 12. Blind decoding and search spaces {#sec-12}
+## # 12. Blind decoding and search spaces {#sec-12}
 
 The UE does not know in advance where its DCI is, what aggregation level was used, or which DCI format it will be — but it must still decode it every subframe with a bounded number of attempts.
 
@@ -1099,7 +1099,7 @@ Several effects push the real rate much lower:
 
 ---
 
-## § 13. The scheduling feedback loop: DCI, UCI, HARQ, and timing {#sec-13}
+## # 13. The scheduling feedback loop: DCI, UCI, HARQ, and timing {#sec-13}
 
 Every millisecond, the eNodeB's MAC scheduler is asking: "which UEs will transmit or receive, on which RBs, with what modulation, and what has been acknowledged?" The answer is expressed through a tight feedback loop with two message families — DCI going down, UCI going up — synchronized by a small set of fixed timings. This section is one continuous argument: we start with what the scheduler needs to decide, then derive each piece of the feedback loop that lets it decide.
 
@@ -1108,7 +1108,7 @@ Every millisecond, the eNodeB's MAC scheduler is asking: "which UEs will transmi
 To hand out a downlink grant to a UE, the eNodeB needs to know:
 
 - **Whether the UE has data to send / receive.** Downlink: the eNodeB knows what has arrived at its own S1-U ingress. Uplink: only the UE knows what its OS wants to send; the eNodeB has to be told.
-- **The UE's radio conditions.** **MCS (Modulation and Coding Scheme)** — the choice of constellation size (QPSK, 16-QAM, 64-QAM, 256-QAM) and forward-error-correction code rate — is picked based on the UE's current SNR/SINR. Downlink: the UE measures CRS and reports a suggested MCS via CQI ([§ 7.4](#sec-7-4)). Uplink: the eNodeB measures the UE's SRS or DMRS directly.
+- **The UE's radio conditions.** **MCS (Modulation and Coding Scheme)** — the choice of constellation size (QPSK, 16-QAM, 64-QAM, 256-QAM) and forward-error-correction code rate — is picked based on the UE's current SNR/SINR. Downlink: the UE measures CRS and reports a suggested MCS via CQI ([# 7.4](#sec-7-4)). Uplink: the eNodeB measures the UE's SRS or DMRS directly.
 - **Which HARQ processes are free.** A HARQ process cannot be reused until its previous transmission is acknowledged.
 
 The scheduler is a black-box optimizer (proportional-fair, max-CQI, round-robin — vendor-specific), but the *inputs* it needs are what the standard fixes. Those inputs are the UCI reports. And once the scheduler makes a decision, the *output* is a DCI announcing it.
@@ -1127,7 +1127,7 @@ The scheduler is a black-box optimizer (proportional-fair, max-CQI, round-robin 
 | **3 / 3A** | Group TPC | Bulk power-control commands to a group of UEs | Variable |
 | **4** | UL grant with MIMO | Uplink with multiple layers | 40–60 bits |
 
-Each format's exact bit width depends on the LTE bandwidth (larger bandwidth = more RBs = more bits to encode the allocation) and on the configured transmission mode. **All bit fields are packed with no wasted space**; the eNodeB knows the exact layout, and the UE reconstructs the fields by matching the format-size assumption when it blind-decodes ([§ 12](#sec-12)).
+Each format's exact bit width depends on the LTE bandwidth (larger bandwidth = more RBs = more bits to encode the allocation) and on the configured transmission mode. **All bit fields are packed with no wasted space**; the eNodeB knows the exact layout, and the UE reconstructs the fields by matching the format-size assumption when it blind-decodes ([# 12](#sec-12)).
 
 **Common fields inside a DCI** (varying by format):
 
@@ -1147,7 +1147,7 @@ UCI carries exactly three kinds of information:
 
 - **HARQ ACK/NACK** — 1 bit per received downlink block. "I received your PDSCH at subframe $n$; the CRC checked (ACK) or did not (NACK)." Without this the eNodeB does not know whether to retransmit.
 
-- **Scheduling Request (SR)** — 1 bit on configured occasions (typically every 5–20 ms per UE). "I have uplink data buffered; please grant me PUSCH." The SR is essentially "raise your hand." It carries no volume information; a follow-up **BSR** ([§ 13.6](#sec-13-6)) will.
+- **Scheduling Request (SR)** — 1 bit on configured occasions (typically every 5–20 ms per UE). "I have uplink data buffered; please grant me PUSCH." The SR is essentially "raise your hand." It carries no volume information; a follow-up **BSR** ([# 13.6](#sec-13-6)) will.
 
 - **CSI (Channel State Information) report** — 4 to 20 bits. **CQI** (4 bits: recommended MCS index), **PMI** (Precoding Matrix Indicator, if MIMO), **RI** (Rank Indicator, if MIMO). Periodic (every configured interval) or aperiodic (triggered by a bit in a DCI).
 
@@ -1155,7 +1155,7 @@ UCI carries exactly three kinds of information:
 
 **HARQ (Hybrid ARQ)** is the retransmission machinery. "Hybrid" because it combines forward error correction (turbo codes) with retransmission: the receiver keeps the corrupted first attempt in its "soft buffer" and combines it with the retransmitted version, so the combined LLRs may decode correctly even when neither individual copy would.
 
-There are 8 parallel HARQ processes ([§ 4.4](#sec-4-4) explained why 8). Each is an independent state machine tracking one in-flight block. Between them, they keep the pipeline full while any given block is being acknowledged.
+There are 8 parallel HARQ processes ([# 4.4](#sec-4-4) explained why 8). Each is an independent state machine tracking one in-flight block. Between them, they keep the pipeline full while any given block is being acknowledged.
 
 **Downlink HARQ is asynchronous.** When the eNodeB retransmits a NACKed downlink block, it can do so in *any later subframe*. It is not tied to a fixed retransmission time. To tell the UE "this is a retransmission of process $P$," the eNodeB sends a fresh DCI whose HARQ Process Number field equals $P$ and whose New Data Indicator has not toggled since the previous transmission on that process. The scheduler has full flexibility.
 
@@ -1165,7 +1165,7 @@ Why the asymmetry? The eNodeB wants scheduling flexibility for its own PDSCH (as
 
 ### 13.5. The N+4 rule and how it cascades {#sec-13-5}
 
-The "$n+4$" gap between related events comes from the 3 ms UE processing budget ([§ 4.4](#sec-4-4)), rounded up to whole subframes:
+The "$n+4$" gap between related events comes from the 3 ms UE processing budget ([# 4.4](#sec-4-4)), rounded up to whole subframes:
 
 - Subframe $n$: PDSCH is received.
 - Subframes $n{+}1$ to $n{+}3$: UE processes (demap, turbo decode, CRC check).
@@ -1221,11 +1221,11 @@ The **Buffer Size Index** is a 6-bit look-up into a table of 64 quantized buffer
 
 Four LCGs let the UE distinguish traffic classes: e.g., LCG 0 = signalling (SRB1/2), LCG 1 = VoLTE audio (DRB with QCI 1), LCG 2 = video streaming (DRB with QCI 6), LCG 3 = best-effort (DRB with QCI 9). The scheduler can then prioritize granting to LCGs whose QCIs warrant it.
 
-**When the UE has no PUCCH resources at all** (because it has been idle too long and its PUCCH SR occasion has lapsed), it drops down to the most basic mechanism in LTE — random access via PRACH ([§ 10](#sec-10)) — just to bootstrap the ability to transmit any control message. This is why a UE returning from a long idle period sometimes takes a moment to send data: it is doing a full contention-based PRACH before it can send even the first BSR.
+**When the UE has no PUCCH resources at all** (because it has been idle too long and its PUCCH SR occasion has lapsed), it drops down to the most basic mechanism in LTE — random access via PRACH ([# 10](#sec-10)) — just to bootstrap the ability to transmit any control message. This is why a UE returning from a long idle period sometimes takes a moment to send data: it is doing a full contention-based PRACH before it can send even the first BSR.
 
 ---
 
-## § 14. The protocol stack: what each layer adds {#sec-14}
+## # 14. The protocol stack: what each layer adds {#sec-14}
 
 Every packet in LTE, whether user data or signalling, traverses a stack of layers between the application and the antenna. The layers add different kinds of value; understanding what each adds is the map for reasoning about performance, security, and failure modes.
 
@@ -1242,16 +1242,16 @@ Let us build it from the bottom up.
 
 ### 14.1. PHY — turning bits into radio {#sec-14-1}
 
-PHY is everything from [§ 3](#sec-3) to [§ 11](#sec-11). It takes a block of coded bits, modulates them onto the OFDM resource grid using the assigned RBs and MCS, applies HARQ retransmission if a NACK arrives, and hands the raw byte stream back up. From above, PHY looks like a channel that occasionally loses blocks and gets slower or faster depending on radio conditions.
+PHY is everything from [# 3](#sec-3) to [# 11](#sec-11). It takes a block of coded bits, modulates them onto the OFDM resource grid using the assigned RBs and MCS, applies HARQ retransmission if a NACK arrives, and hands the raw byte stream back up. From above, PHY looks like a channel that occasionally loses blocks and gets slower or faster depending on radio conditions.
 
 ### 14.2. MAC — multiplexing and HARQ management {#sec-14-2}
 
-**MAC (Medium Access Control)** sits between multiple logical data streams (bearers — [§ 17](#sec-17)) and the single PHY layer. Its jobs:
+**MAC (Medium Access Control)** sits between multiple logical data streams (bearers — [# 17](#sec-17)) and the single PHY layer. Its jobs:
 
 - **Multiplexing.** Two logical channels of data flowing to the same UE (say, VoLTE audio and web browsing) share one PHY transmission. MAC packages the bytes from each into a MAC PDU that PHY encodes as one block.
 - **HARQ.** MAC runs the state machine for HARQ retransmissions — one instance per HARQ process, with the soft buffer and the redundancy-version counter.
-- **Scheduling requests and BSR.** MAC-level control PDUs ([§ 13.7](#sec-13-7)) tell the scheduler what to grant.
-- **Random access.** The full PRACH state machine ([§ 10](#sec-10)) is MAC.
+- **Scheduling requests and BSR.** MAC-level control PDUs ([# 13.7](#sec-13-7)) tell the scheduler what to grant.
+- **Random access.** The full PRACH state machine ([# 10](#sec-10)) is MAC.
 
 MAC is where LTE's "quality of service" first begins to matter: the scheduler picks which UE and which logical channel to serve within each grant, applying priorities.
 
@@ -1269,20 +1269,20 @@ RLC operates in three modes: **TM (Transparent Mode)** for signalling that doesn
 
 **PDCP (Packet Data Convergence Protocol)** is the top of the user-plane radio stack (below the IP layer) and simultaneously carries control-plane traffic (RRC and NAS). It does four things:
 
-**(1) Ciphering.** Every user-plane packet is encrypted using $K_{\text{UPenc}}$; every control-plane packet using $K_{\text{RRCenc}}$ ([§ 18](#sec-18)). Ciphering algorithm is one of three (negotiated at NAS Security Mode Command):
+**(1) Ciphering.** Every user-plane packet is encrypted using $K_{\text{UPenc}}$; every control-plane packet using $K_{\text{RRCenc}}$ ([# 18](#sec-18)). Ciphering algorithm is one of three (negotiated at NAS Security Mode Command):
 
 - **EEA0** — null (no encryption; used only for emergency-only bearers or in test setups).
 - **EEA1 (SNOW 3G)** — stream cipher inherited from 3G. Standard elsewhere; less common in modern deployments.
 - **EEA2 (AES-128 in CTR mode)** — the current mainstream choice.
 - **EEA3 (ZUC)** — a Chinese-designed stream cipher; used in some deployments in China.
 
-The ciphering computes a keystream from `(key, COUNT, BEARER, DIRECTION, LENGTH)` and XORs it with the plaintext ([§ 18.4](#sec-18-4) explained why COUNT, BEARER, and DIRECTION all appear in the input).
+The ciphering computes a keystream from `(key, COUNT, BEARER, DIRECTION, LENGTH)` and XORs it with the plaintext ([# 18.4](#sec-18-4) explained why COUNT, BEARER, and DIRECTION all appear in the input).
 
 **(2) Integrity protection.** For control-plane packets, PDCP computes a 32-bit **MAC-I (Message Authentication Code for Integrity)** using an EIA-family algorithm keyed with $K_{\text{RRCint}}$ (or $K_{\text{NASint}}$ for NAS). The MAC-I is appended to the PDCP payload; the receiver recomputes it and drops the packet if the MAC-I does not match. This makes it cryptographically impossible for an attacker to forge or modify RRC or NAS messages.
 
 Algorithm choices: EIA0 (null, emergency only), EIA1 (SNOW 3G MAC), EIA2 (AES-CMAC), EIA3 (ZUC MAC). Same lineage as the encryption algorithms.
 
-User-plane packets are *not* integrity-protected in LTE ([§ 18.7](#sec-18-7)). 5G changed this — 5G's user-plane integrity is optional, but at least the mechanism exists to turn it on.
+User-plane packets are *not* integrity-protected in LTE ([# 18.7](#sec-18-7)). 5G changed this — 5G's user-plane integrity is optional, but at least the mechanism exists to turn it on.
 
 **(3) Robust Header Compression (RoHC).** VoLTE packets have an IP/UDP/RTP header stack that is 40 bytes (IPv4) or 60 bytes (IPv6) attached to every 20 ms of audio. AMR-WB compresses 20 ms of speech to 30–60 bytes, so half or more of every transmitted packet would be header overhead if sent naively. RoHC compresses these headers to 1–3 bytes.
 
@@ -1324,7 +1324,7 @@ At handover the source eNodeB forwards its PDCP buffered packets to the target o
 
 RRC runs over PDCP over RLC over MAC over PHY. It is the topmost layer over the radio; anything above (NAS) is encapsulated within RRC for transport across the radio hop.
 
-The two RRC states — **RRC_IDLE** and **RRC_CONNECTED** — are covered in [§ 15](#sec-15).
+The two RRC states — **RRC_IDLE** and **RRC_CONNECTED** — are covered in [# 15](#sec-15).
 
 ### 14.6. NAS — end-to-end control between UE and core {#sec-14-6}
 
@@ -1333,11 +1333,11 @@ The two RRC states — **RRC_IDLE** and **RRC_CONNECTED** — are covered in [§
 - **EMM (EPS Mobility Management)**: identity, authentication, tracking area updates, attach/detach. Handles the "who is this UE and where does it live" questions.
 - **ESM (EPS Session Management)**: PDN connectivity, bearer setup, IP address assignment. Handles the "what data flows does this UE need" questions.
 
-NAS is what the UE uses to say "I want to attach to the internet APN" or "I am moving into tracking area 42, please update my registration." Every such message is a NAS PDU, encrypted and integrity-protected at NAS layer (with a separate NAS security context, derived from $K_{\text{ASME}}$ — [§ 20](#sec-20)).
+NAS is what the UE uses to say "I want to attach to the internet APN" or "I am moving into tracking area 42, please update my registration." Every such message is a NAS PDU, encrypted and integrity-protected at NAS layer (with a separate NAS security context, derived from $K_{\text{ASME}}$ — [# 20](#sec-20)).
 
 ### 14.7. The AS/NAS split, revisited by the stack {#sec-14-7}
 
-The AS/NAS distinction from [§ 2.5](#sec-2-5) now has a concrete layer meaning:
+The AS/NAS distinction from [# 2.5](#sec-2-5) now has a concrete layer meaning:
 
 - **AS = RRC and below.** The eNodeB reads and acts on these. RRC configuration messages, measurement configurations, HARQ ACK/NACK, everything at PHY/MAC/RLC/PDCP/RRC.
 - **NAS = EMM/ESM.** The eNodeB does not read or understand these. It receives them from the UE, forwards them to the MME on S1-MME; it receives them from the MME and delivers them to the UE on RRC. Encrypted end-to-end with keys the eNodeB does not possess.
@@ -1346,7 +1346,7 @@ This is a fundamental privacy and security guarantee: an attacker with control o
 
 ---
 
-## § 15. UE states: three parallel state machines {#sec-15}
+## # 15. UE states: three parallel state machines {#sec-15}
 
 An LTE UE has *three* state machines running in parallel. They do not always change together, and confusion between them is the source of most misunderstandings about "idle" vs "connected."
 
@@ -1389,7 +1389,7 @@ RRC_IDLE (equivalently ECM_IDLE when EMM is REGISTERED) is the resting state. A 
 
 Exit from RRC_IDLE happens for two distinct reasons:
 
-- **Mobile-Terminated (paging).** The network wants to reach the UE. The MME sends a Paging message to all eNodeBs in the UE's tracking area. Each eNodeB transmits a PDCCH addressed with P-RNTI, containing (in the corresponding PDSCH) a list of GUTIs being paged. A UE that sees its own GUTI initiates PRACH ([§ 10](#sec-10)) to establish an RRC connection so it can receive the incoming call/data.
+- **Mobile-Terminated (paging).** The network wants to reach the UE. The MME sends a Paging message to all eNodeBs in the UE's tracking area. Each eNodeB transmits a PDCCH addressed with P-RNTI, containing (in the corresponding PDSCH) a list of GUTIs being paged. A UE that sees its own GUTI initiates PRACH ([# 10](#sec-10)) to establish an RRC connection so it can receive the incoming call/data.
 
 - **Mobile-Originated (service request).** The UE has data to send (the OS wants to fetch an email, the user opens an app). It initiates PRACH directly, then sends a `NAS: Service Request` message on RRC. This does not require paging — the UE knows it has traffic and simply *wakes itself*.
 
@@ -1428,7 +1428,7 @@ Every time the UE performs an attach, TAU, or service request, the MME may issue
 
 ---
 
-## § 16. Identities: the naming layers {#sec-16}
+## # 16. Identities: the naming layers {#sec-16}
 
 LTE has an unusually large collection of identifiers. The reason for the multiplication is not sloppiness — every identifier answers *one specific "who?" question at one specific layer* — but the reasons for the specific choices (size, scope, lifetime) are not always obvious. This section builds them up from what each layer's constraints are, then shows how they nest.
 
@@ -1458,7 +1458,7 @@ IMSI = | MCC | MNC  |       MSIN       |
 
 The IMSI is used *inside* the network as the primary key into the HSS database. The HSS holds, for each IMSI, the subscriber's shared key $K$, subscription profile (which APNs allowed, which QCIs allowed, whether roaming is enabled), current MME registration, and the phone-number-to-IMSI mapping.
 
-**Why keep IMSI off the air.** The IMSI is transmitted over the air *only when absolutely necessary*: the very first attach when the UE has no GUTI, or when the MME issues an `Identity Request` because it has lost state (rare, but happens on MME failover). Otherwise the UE uses a temporary identity (GUTI). This rule matters: a passive listener who captures a UE's IMSI can correlate its movement over months and across operators. [§ 25.4](#sec-25-4) covers the IMSI catcher weakness — the attack that exists because this rule cannot be perfectly enforced.
+**Why keep IMSI off the air.** The IMSI is transmitted over the air *only when absolutely necessary*: the very first attach when the UE has no GUTI, or when the MME issues an `Identity Request` because it has lost state (rare, but happens on MME failover). Otherwise the UE uses a temporary identity (GUTI). This rule matters: a passive listener who captures a UE's IMSI can correlate its movement over months and across operators. [# 25.4](#sec-25-4) covers the IMSI catcher weakness — the attack that exists because this rule cannot be perfectly enforced.
 
 <div class="guided-fold-start" data-label="Historical context: IMSI continuity across generations" data-tone="derivation"></div>
 
@@ -1520,7 +1520,7 @@ The MME sees only the network-layer identifiers; the physical layer sees only th
 
 ### 16.5. Radio Network Temporary Identifiers (RNTIs) {#sec-16-5}
 
-RNTIs are 16-bit values used to address DCIs on PDCCH. They are *not* transmitted as a "To:" field — they are XOR'd into the DCI's CRC ([§ 11.4](#sec-11-4)). So a UE either sees a DCI addressed to it (CRC checks with its RNTI) or does not (CRC does not check). The 16-bit budget forces careful assignment.
+RNTIs are 16-bit values used to address DCIs on PDCCH. They are *not* transmitted as a "To:" field — they are XOR'd into the DCI's CRC ([# 11.4](#sec-11-4)). So a UE either sees a DCI addressed to it (CRC checks with its RNTI) or does not (CRC does not check). The 16-bit budget forces careful assignment.
 
 | RNTI | Meaning | Value or range | Assigned by | When used |
 |---|---|---|---|---|
@@ -1541,9 +1541,9 @@ RNTIs are 16-bit values used to address DCIs on PDCCH. They are *not* transmitte
 
 Now the identifiers describing the *network topology*, not the UEs:
 
-- **PCI (Physical Cell ID)**: 504 values, broadcast implicitly via the PSS/SSS combination ([§ 8.3](#sec-8-3)). Its uses at the PHY layer:
+- **PCI (Physical Cell ID)**: 504 values, broadcast implicitly via the PSS/SSS combination ([# 8.3](#sec-8-3)). Its uses at the PHY layer:
   - Scrambling seed (so neighbouring cells produce different scrambling sequences and mutual interference decorrelates).
-  - CRS pilot position (which subcarriers carry the reference signals — offset by PCI mod 6, [§ 7.1](#sec-7-1)).
+  - CRS pilot position (which subcarriers carry the reference signals — offset by PCI mod 6, [# 7.1](#sec-7-1)).
   - PRACH root sequence selection (offset by PCI).
 
   PCIs are reused geographically — the same PCI appears in many cells worldwide. **Cell planning** is the process of assigning PCIs to cells so that no two cells with the same PCI are within radio range of each other (a "PCI collision" would break scrambling decorrelation and CRS separation).
@@ -1586,7 +1586,7 @@ PCI is what the UE reads from the air first (it doesn't yet know PLMN); ECGI/TAI
 | Which specific cell is this? | ECGI | Global | Permanent (until decommissioned) |
 | Which tracking area should page this UE? | TAI | Global | Permanent |
 | Which cell (from radio measurements)? | PCI | Neighbourhood-unique | Assigned once per cell |
-| Which SIP identity for VoLTE? | IMPI/IMPU | Global | Semi-permanent ([§ 22](#sec-22)) |
+| Which SIP identity for VoLTE? | IMPI/IMPU | Global | Semi-permanent ([# 22](#sec-22)) |
 
 Reading from the top, each row moves the question one layer down and narrows the scope.
 
@@ -1596,7 +1596,7 @@ Reading from the top, each row moves the question one layer down and narrows the
 
 ---
 
-## § 17. Bearers, QCI, and internal QoS {#sec-17}
+## # 17. Bearers, QCI, and internal QoS {#sec-17}
 
 ### 17.1. What a bearer actually is — as a data structure {#sec-17-1}
 
@@ -1623,7 +1623,7 @@ Here is what a bearer record contains at each node, using an "internet APN, QCI 
 | S1-U TEID (uplink) | 0xA000_0042 | Where to send uplink packets → SGW |
 | Local (eNodeB) TEID (downlink) | 0xB000_0001 | Which TEID incoming downlink packets have |
 | QCI | 9 | Governs the MAC scheduler's priority |
-| ARP | Priority 8, no preempt, vulnerable | [§ 17.4](#sec-17-4) |
+| ARP | Priority 8, no preempt, vulnerable | [# 17.4](#sec-17-4) |
 | RLC / PDCP state | sequence numbers, ciphering keys | Runtime state |
 
 **At the SGW (via S11 from MME):**
@@ -1653,7 +1653,7 @@ Here is what a bearer record contains at each node, using an "internet APN, QCI 
 | UE IP address | 10.42.7.129 | Assigned by PGW; kept as long as PDN connection lives |
 | SGi APN routing | Route to internet peering | Where packets go on the outside |
 | S5 TEID (downlink) | 0xD000_0055 | For downlink packets from external → SGW |
-| TFT (Traffic Flow Template) | (empty for default bearer) | Packet classifier — see [§ 17.2](#sec-17-2) |
+| TFT (Traffic Flow Template) | (empty for default bearer) | Packet classifier — see [# 17.2](#sec-17-2) |
 | QCI, ARP | 9, priority 8 | For any QoS-enforcing hardware on the SGi path |
 | Charging characteristics | Rating group 1, service ID 100 | For billing records |
 
@@ -1670,7 +1670,7 @@ There are also two other radio-bearer types worth naming for completeness:
 - **SRB (Signalling Radio Bearer)** — the radio-hop segment for RRC and NAS control messages. Three exist: SRB0 (unencrypted, for the earliest RRC messages before security setup), SRB1 (RRC and piggybacked NAS after security), SRB2 (NAS-only after security). These are *not* extensions of any end-to-end bearer — they terminate at the eNodeB (SRB1, RRC part) or MME (SRB1 NAS pieces, SRB2 NAS).
 - **DRB** — as above, for user-plane data.
 
-The user-plane naming split (bearer end-to-end, DRB on radio) matches the LTE architectural principle of [§ 2.5](#sec-2-5): the radio hop is one segment; the core is another; each has its own state and can be operated independently.
+The user-plane naming split (bearer end-to-end, DRB on radio) matches the LTE architectural principle of [# 2.5](#sec-2-5): the radio hop is one segment; the core is another; each has its own state and can be operated independently.
 
 ### 17.3. Default vs dedicated bearer {#sec-17-3}
 
@@ -1746,11 +1746,11 @@ For a UE that supports VoLTE, the attach procedure ends with two default bearers
 
 Both connections coexist without either being aware of the other. The UE's IMS/SIP stack binds to IP $B$ and talks to the P-CSCF; the OS's regular IP stack binds to IP $A$ and talks to the internet.
 
-When a VoLTE call starts, the SIP negotiation over bearer 2 produces the RTP endpoints. The P-CSCF authorises this via the PCRF ([§ 22.6](#sec-22-6)), which commands the PGW to spawn a **dedicated bearer** with QCI 1 on top of the same IP $B$, filtered by TFT for the RTP-specific IP-port pairs. Voice packets from that dedicated bearer bypass any queueing that non-real-time IMS signalling might encounter.
+When a VoLTE call starts, the SIP negotiation over bearer 2 produces the RTP endpoints. The P-CSCF authorises this via the PCRF ([# 22.6](#sec-22-6)), which commands the PGW to spawn a **dedicated bearer** with QCI 1 on top of the same IP $B$, filtered by TFT for the RTP-specific IP-port pairs. Voice packets from that dedicated bearer bypass any queueing that non-real-time IMS signalling might encounter.
 
 ---
 
-## § 18. Security architecture: EPS-AKA and the key hierarchy {#sec-18}
+## # 18. Security architecture: EPS-AKA and the key hierarchy {#sec-18}
 
 ### 18.1. The bootstrap problem {#sec-18-1}
 
@@ -1920,7 +1920,7 @@ At handover, the eNodeB security context must transition. The MME calculates fre
 
 ---
 
-## § 19. The initial attach procedure {#sec-19}
+## # 19. The initial attach procedure {#sec-19}
 
 The initial attach is where all the pieces so far come together. It is not one exchange but a sequence of nested procedures, each of which we have already described in isolation. Here it is end-to-end.
 
@@ -2046,11 +2046,11 @@ The default bearer *record* survives the drop to idle — the PGW keeps the IP a
 
 ### 19.6. Attaching to IMS after the first bearer {#sec-19-6}
 
-After the initial attach establishes the internet default bearer (typically QCI 9), the phone's VoLTE client wakes up and realizes it needs a separate connection to the IMS core. Because the UE is already in ECM-CONNECTED, this is a standalone `PDN Connectivity Request` (not piggybacked on Attach). The request explicitly specifies APN = "ims" and QCI 5. The MME processes it, the PGW sets up the bearer, and the UE ends up with a second default bearer to the IMS core, on a *second* IP address, ready for SIP registration ([§ 23](#sec-23)).
+After the initial attach establishes the internet default bearer (typically QCI 9), the phone's VoLTE client wakes up and realizes it needs a separate connection to the IMS core. Because the UE is already in ECM-CONNECTED, this is a standalone `PDN Connectivity Request` (not piggybacked on Attach). The request explicitly specifies APN = "ims" and QCI 5. The MME processes it, the PGW sets up the bearer, and the UE ends up with a second default bearer to the IMS core, on a *second* IP address, ready for SIP registration ([# 23](#sec-23)).
 
 ---
 
-## § 20. The core network interfaces {#sec-20}
+## # 20. The core network interfaces {#sec-20}
 
 This is the topology of the EPC core, with each interface's protocol and purpose spelled out. The reason for the mesh is that each pair of nodes has different rate and semantic requirements.
 
@@ -2094,7 +2094,7 @@ Between the eNodeB and the core there are two logically separate connections: **
 **S5** and **S8** carry both GTP-C (control) and GTP-U (user data) between SGW and PGW. The two names distinguish administrative context:
 
 - **S5**: SGW and PGW in the same operator. Domestic (non-roaming) traffic. Internal fiber, low latency, single security domain.
-- **S8**: SGW and PGW in different operators. Roaming with home-routed traffic ([§ 25](#sec-25)). Crosses the GRX/IPX (a B2B network for carriers), possibly intercontinental. Different security and billing arrangements.
+- **S8**: SGW and PGW in different operators. Roaming with home-routed traffic ([# 25](#sec-25)). Crosses the GRX/IPX (a B2B network for carriers), possibly intercontinental. Different security and billing arrangements.
 
 The protocol on both is identical. The name distinguishes the operational context.
 
@@ -2107,14 +2107,14 @@ The protocol on both is identical. The name distinguishes the operational contex
 - **Insert-Subscriber-Data**: HSS proactively pushes subscription changes to the MME.
 - **Purge-UE**: MME tells HSS "this UE has been idle for a while; you can stop tracking it here."
 
-Diameter was chosen over SS7's MAP (which older networks used) because Diameter has strong authentication of message origin, IP-native transport, and better scalability. SS7 famously has no message-origin authentication, which is exploited routinely ([§ 25.5](#sec-25-5)).
+Diameter was chosen over SS7's MAP (which older networks used) because Diameter has strong authentication of message origin, IP-native transport, and better scalability. SS7 famously has no message-origin authentication, which is exploited routinely ([# 25.5](#sec-25-5)).
 
 ### 20.6. SGi: PGW to external networks {#sec-20-6}
 
 **SGi** is the boundary where the cellular network ends and the outside begins. On the outside are:
 
 - **Internet APN** → BGP peer to the global internet backbone.
-- **IMS APN** → private VLAN to the P-CSCF ([§ 23](#sec-23)).
+- **IMS APN** → private VLAN to the P-CSCF ([# 23](#sec-23)).
 - **Enterprise APNs** → IPsec tunnels to customer VPN gateways.
 
 A single PGW can have multiple SGi attachments. The APN in the UE's PDN Connectivity Request selects which one — the PGW consults an internal routing table: "if the packet came from APN $X$, route it out SGi-$X$."
@@ -2123,7 +2123,7 @@ A single PGW can have multiple SGi attachments. The APN in the UE's PDN Connecti
 
 **X2** is a direct inter-eNodeB interface for coordination that would be too slow if it went through the MME. Two main uses:
 
-- **Handover.** The source eNodeB negotiates the handover with the target directly over X2 ([§ 21.3](#sec-21-3)). Latency: tens of milliseconds. If X2 doesn't exist between two specific eNodeBs (rare, but possible in mixed-vendor deployments), the handover falls back through the MME on S1, which is slower but always available.
+- **Handover.** The source eNodeB negotiates the handover with the target directly over X2 ([# 21.3](#sec-21-3)). Latency: tens of milliseconds. If X2 doesn't exist between two specific eNodeBs (rare, but possible in mixed-vendor deployments), the handover falls back through the MME on S1, which is slower but always available.
 
 - **ICIC / eICIC (Inter-Cell Interference Coordination).** Neighbouring eNodeBs share information about which RBs they are heavily using, so each can schedule its cell-edge users on RBs the neighbours are underusing. This soft coordination improves cell-edge throughput.
 
@@ -2141,7 +2141,7 @@ The reason for a tunneling protocol rather than raw IP routing: as the UE moves 
 
 ---
 
-## § 21. Mobility {#sec-21}
+## # 21. Mobility {#sec-21}
 
 The distinctive challenge of a cellular network is that the UE moves. At vehicular speeds, moving from one cell's coverage to another's happens every few tens of seconds. If every such transition required detaching and reattaching, no active session (call, video stream, TCP connection) would survive.
 
@@ -2151,7 +2151,7 @@ Mobility management has different mechanisms depending on the UE's state and how
 
 An idle UE constantly measures the serving cell's RSRP and the RSRP of neighbouring cells it can detect. When another cell becomes better by some margin (parameters in SIB3–SIB5), the UE "reselects" — it starts monitoring that cell for paging instead of the previous one.
 
-Cell reselection is lightweight: no message to the network, no authentication, no tunnel changes. The UE just switches which cell's CRS/PDCCH it monitors. The MME and PGW know nothing. If the new cell is in the same tracking area (same TAC), no update is needed. If in a different TAC, the UE triggers a TAU ([§ 15.5](#sec-15-5)).
+Cell reselection is lightweight: no message to the network, no authentication, no tunnel changes. The UE just switches which cell's CRS/PDCCH it monitors. The MME and PGW know nothing. If the new cell is in the same tracking area (same TAC), no update is needed. If in a different TAC, the UE triggers a TAU ([# 15.5](#sec-15-5)).
 
 ### 21.2. Measurement events (A1–A6) {#sec-21-2}
 
@@ -2174,7 +2174,7 @@ When an A3 event fires and the target eNodeB is reachable via X2:
 
 2. **Handover Request** (source → target, over X2). Includes the UE's context: security keys ($K_{\text{eNB}}$ derivation info for forward security), bearer configurations (which DRBs exist and their QoS), PDCP state.
 
-3. **Target eNodeB admission control.** Checks if it has capacity. Pre-allocates radio resources: RBs, a fresh C-RNTI, and a **dedicated PRACH preamble** for contention-free access ([§ 10.6](#sec-10-6)).
+3. **Target eNodeB admission control.** Checks if it has capacity. Pre-allocates radio resources: RBs, a fresh C-RNTI, and a **dedicated PRACH preamble** for contention-free access ([# 10.6](#sec-10-6)).
 
 4. **Handover Command** (target → source → UE, over X2 then over the air). The RRC message that tells the UE: "hand yourself over to target cell PCI $X$, use this frequency, use this preamble, use this new C-RNTI."
 
@@ -2204,11 +2204,11 @@ Measurement gaps cost throughput — during the 6 ms of gap, no data flows for t
 
 ### 21.6. Tracking area updates {#sec-21-6}
 
-Covered in [§ 15.5](#sec-15-5). TAU is the mobility mechanism for idle mode: the MME learns which tracking area to page when someone tries to reach the UE.
+Covered in [# 15.5](#sec-15-5). TAU is the mobility mechanism for idle mode: the MME learns which tracking area to page when someone tries to reach the UE.
 
 ---
 
-## § 22. VoLTE and IMS {#sec-22}
+## # 22. VoLTE and IMS {#sec-22}
 
 ### 22.1. Why IMS exists {#sec-22-1}
 
@@ -2220,7 +2220,7 @@ LTE is packet-switched by design; the EPC has no notion of a "voice call." Yet o
 
 IMS has its own identity layer, separate from IMSI/GUTI, because IMS was originally designed to be transport-agnostic (it also runs over WiFi, over 3G, over fixed broadband) and cannot depend on the SIM-issued IMSI. Two identifier types matter:
 
-- **IMPI (IP Multimedia Private Identity)** — one per subscription, in the form of a Network Access Identifier: `username@operator.com`. Used only for authentication with the S-CSCF ([§ 22.3](#sec-22-3)). Never appears in call setup messages — it is the equivalent of a username in an ISP authentication.
+- **IMPI (IP Multimedia Private Identity)** — one per subscription, in the form of a Network Access Identifier: `username@operator.com`. Used only for authentication with the S-CSCF ([# 22.3](#sec-22-3)). Never appears in call setup messages — it is the equivalent of a username in an ISP authentication.
 
 - **IMPU (IP Multimedia Public Identity)** — the address others use to reach this subscriber. A SIP URI: `sip:+972501234567@ims.mnc003.mcc425.3gppnetwork.org` for a phone-number address, or `sip:alice@example.com` for a name-based address.
 
@@ -2237,7 +2237,7 @@ All of these map (in the HSS) to the same one IMPI, hence the same authenticatio
 
 $$\text{IMPI} = \text{IMSI@ims.mnc}\langle\text{MNC}\rangle\text{.mcc}\langle\text{MCC}\rangle\text{.3gppnetwork.org}.$$
 
-For IMSI 425032001234567 (Pelephone), the derived IMPI is `[email protected]`. The operator's HSS is provisioned to recognize this IMPI as the same subscriber whose IMSI it already knows, so the IMS authentication (which is a variant of the same EPS-AKA — [§ 18.2](#sec-18-2) — using the SIM key $K$) succeeds without extra manual setup.
+For IMSI 425032001234567 (Pelephone), the derived IMPI is `[email protected]`. The operator's HSS is provisioned to recognize this IMPI as the same subscriber whose IMSI it already knows, so the IMS authentication (which is a variant of the same EPS-AKA — [# 18.2](#sec-18-2) — using the SIM key $K$) succeeds without extra manual setup.
 
 Once the UE registers, the HSS reveals to the S-CSCF the full list of IMPUs associated with this IMPI. Future incoming calls to any of those IMPUs are routed to this UE.
 
@@ -2247,7 +2247,7 @@ The CSCF (**Call Session Control Function**) is IMS's SIP proxy family. There ar
 
 - **P-CSCF (Proxy-CSCF)** — the fixed first-hop SIP proxy the UE talks to. Lives in the *visited* network (in the roaming case) or the home network (otherwise). Its address is discovered at attach (delivered in the PDN Connectivity Accept for the `ims` APN, either as a P-CSCF IP or via DHCP). All SIP messages the UE emits go here first; all SIP messages destined for the UE are delivered from here. The P-CSCF's specific jobs:
   - **Traffic anchoring** — it's the fixed entry/exit point for the UE, so the network knows where to send messages.
-  - **PCRF triggering** — when a session is established, the P-CSCF talks to the PCRF over the Rx interface ([§ 22.6](#sec-22-6)) to spawn the appropriate dedicated bearer.
+  - **PCRF triggering** — when a session is established, the P-CSCF talks to the PCRF over the Rx interface ([# 22.6](#sec-22-6)) to spawn the appropriate dedicated bearer.
   - **Lawful intercept in the visited network** — the visited operator can eavesdrop on SIP traffic here without needing home-network cooperation.
   - **Header hardening** — strips P-Access-Network-Info headers before forwarding, so the home operator does not learn which specific cell the UE is on (unless a roaming agreement permits sharing).
 
@@ -2429,13 +2429,13 @@ An emergency call (911, 112) bypasses most of the ordinary path:
 - **Attach not required.** A UE with a locked SIM or no SIM at all can still make an emergency call. The attach procedure has a special "emergency attach" mode that skips the HSS authentication step (the network trusts the emergency indication and allocates an emergency-only bearer).
 - **Emergency APN.** A dedicated APN (typically `sos` or `ims.emergency.<operator>`) is used, with QCI 69 (integrity-protected, low-latency, no billing).
 - **Emergency IMS.** A special E-CSCF (Emergency-CSCF) handles the SIP INVITE, routing it based on the UE's location to the nearest Public Safety Answering Point (PSAP).
-- **Preemption.** As covered in [§ 17.4](#sec-17-4), emergency bearers can preempt others in a congested cell.
+- **Preemption.** As covered in [# 17.4](#sec-17-4), emergency bearers can preempt others in a congested cell.
 
 The UE dials 911 from anywhere in the world and it works because the emergency service list is loaded into the UE's OS from the region's regulatory table, and the IMS emergency routing takes it from there — the network cannot refuse an emergency call.
 
 ---
 
-## § 23. Service flows put together {#sec-23}
+## # 23. Service flows put together {#sec-23}
 
 Having built all the pieces, we can now trace the actual services a phone provides.
 
@@ -2443,7 +2443,7 @@ Having built all the pieces, we can now trace the actual services a phone provid
 
 The user opens a browser and requests a URL.
 
-1. **Wakeup.** Phone is in RRC_IDLE. OS realises it has traffic. UE initiates PRACH ([§ 10](#sec-10)), sends `NAS: Service Request`, transitions to RRC_CONNECTED.
+1. **Wakeup.** Phone is in RRC_IDLE. OS realises it has traffic. UE initiates PRACH ([# 10](#sec-10)), sends `NAS: Service Request`, transitions to RRC_CONNECTED.
 2. **DNS.** UE resolves the hostname via DNS. The DNS servers were configured on the UE at attach time (in the `Attach Accept` NAS message, alongside the IP address).
 3. **TCP.** UE opens a TCP connection to the resolved IP. Packet flow: UE → eNodeB (radio, encrypted with $K_{\text{UPenc}}$) → SGW (GTP-U over S1-U) → PGW (GTP-U over S5) → SGi → BGP-routed internet backbone → destination server.
 4. **HTTPS.** TCP carries TLS carries HTTP. The PGW applies CGNAT: the UE's private cellular IP is rewritten to a public IP shared with thousands of other UEs.
@@ -2490,7 +2490,7 @@ The whole flow bypasses ordinary authentication, ordinary billing, and ordinary 
 
 ---
 
-## § 24. Roaming and home routing {#sec-24}
+## # 24. Roaming and home routing {#sec-24}
 
 ### 24.1. VPLMN and HPLMN {#sec-24-1}
 
@@ -2544,7 +2544,7 @@ The switch is entirely on the UE side. The visited network cannot enforce it —
 
 ---
 
-## § 25. Location, tracking, and privacy {#sec-25}
+## # 25. Location, tracking, and privacy {#sec-25}
 
 ### 25.1. Cell-tower trilateration {#sec-25-1}
 
@@ -2552,7 +2552,7 @@ A UE's coarse location can be estimated from which cell it is attached to (each 
 
 - **Cell of origin.** The eNodeB knows where its cells are. If the UE is in cell X, the UE is within X's coverage area.
 - **Signal strength.** RSRP inversely correlates with distance (very roughly, given fading). A UE seeing cell X at $-100$ dBm is farther from X than a UE seeing X at $-80$ dBm.
-- **Timing advance.** The eNodeB knows the TA it has commanded ([§ 10.1](#sec-10-1)). One TA unit is $\sim 0.52\,\mu\text{s}$, corresponding to $\sim 78$ metres of round-trip distance ($\sim 39$ m one-way). So TA gives a coarse distance estimate to $\sim 40$ m.
+- **Timing advance.** The eNodeB knows the TA it has commanded ([# 10.1](#sec-10-1)). One TA unit is $\sim 0.52\,\mu\text{s}$, corresponding to $\sim 78$ metres of round-trip distance ($\sim 39$ m one-way). So TA gives a coarse distance estimate to $\sim 40$ m.
 - **Angle of arrival.** If the eNodeB has multiple antennas per sector, it can measure the direction the UE's uplink is coming from, giving an angle to complement the distance.
 
 With three or more cells' measurements (which requires the UE to be within radio range of three), trilateration gives a horizontal fix to $\sim 100$ m in urban environments, worse in rural.
@@ -2576,12 +2576,12 @@ An **IMSI catcher** (also called a "Stingray") is a rogue eNodeB set up to lure 
 
 1. Attacker sets up a fake eNodeB broadcasting the target PLMN's identity with strong signal (stronger than nearby real eNodeBs).
 2. UEs in range see the fake cell as the best available; they attempt attach.
-3. Attach Request includes IMSI in cleartext (because there is no established security context yet — §[§ 18](#sec-18), 19).
+3. Attach Request includes IMSI in cleartext (because there is no established security context yet — #[# 18](#sec-18), 19).
 4. Fake eNodeB records the IMSI, then either rejects the attach or completes it and downgrades the UE to a weaker generation for further eavesdropping.
 
 Why is this possible? Because the LTE authentication is mutual only *after* the UE reveals its IMSI. The very first message the UE sends is unauthenticated cleartext IMSI. Any device that speaks LTE well enough to broadcast SIB1 can collect IMSIs.
 
-The GUTI mechanism ([§ 16.2](#sec-16-2)) is the partial defence — after the first attach, the UE uses GUTI, and IMSI stays hidden. But: the fake eNodeB can send `NAS: Identity Request (IMSI)` after the initial `Attach Request`, and the UE has no way to know this is malicious — the network legitimately might not recognise the GUTI (if the UE has been off for a long time) and might legitimately need the IMSI.
+The GUTI mechanism ([# 16.2](#sec-16-2)) is the partial defence — after the first attach, the UE uses GUTI, and IMSI stays hidden. But: the fake eNodeB can send `NAS: Identity Request (IMSI)` after the initial `Attach Request`, and the UE has no way to know this is malicious — the network legitimately might not recognise the GUTI (if the UE has been off for a long time) and might legitimately need the IMSI.
 
 5G partially fixes this by encrypting the IMSI-equivalent (SUCI, Subscriber Concealment Identifier) with the home network's public key. LTE cannot be fixed short of network upgrades.
 
@@ -2604,7 +2604,7 @@ The subtlety is that LTE itself is *not* affected: SMS-over-NAS or SMS-over-IMS 
 
 ---
 
-## § 26. Additional physical-layer topics {#sec-26}
+## # 26. Additional physical-layer topics {#sec-26}
 
 ### 26.1. MIMO — spatial multiplexing and diversity {#sec-26-1}
 
@@ -2622,7 +2622,7 @@ Two operating modes:
 
 - **Diversity / beamforming.** Rank of $H = 1$: transmit the same symbol from all antennas with different weights, so the receive antennas see coherent addition. Doesn't increase throughput but increases SNR — useful when $H$ is rank-deficient (line-of-sight rural).
 
-The eNodeB picks between these per subframe based on the RI (Rank Indicator) the UE reports as part of CSI ([§ 7.4](#sec-7-4)).
+The eNodeB picks between these per subframe based on the RI (Rank Indicator) the UE reports as part of CSI ([# 7.4](#sec-7-4)).
 
 LTE supports up to $4 \times 4$ MIMO in Release 8, growing to $8 \times 8$ in later releases. The UE's category (Cat 4, Cat 6, etc.) specifies its MIMO capability.
 
@@ -2644,11 +2644,11 @@ Rayleigh is the default assumption in LTE simulations because it is the worst-ca
 
 ### 26.3. Coherence time {#sec-26-3}
 
-Analogous to coherence bandwidth ([§ 3.2](#sec-3-2)) but in the time direction. If the UE and its environment move at velocity $v$, the channel decorrelates over a timescale
+Analogous to coherence bandwidth ([# 3.2](#sec-3-2)) but in the time direction. If the UE and its environment move at velocity $v$, the channel decorrelates over a timescale
 
 $$T_c \approx \frac{c}{v f_c}$$
 
-(the reciprocal of Doppler shift). At 350 km/h and 2 GHz, $T_c \sim 0.5\,\text{ms}$. This is why CRS pilots must appear at least four times per subframe ([§ 7.1](#sec-7-1)) — one pilot every subframe would miss the mid-subframe channel change.
+(the reciprocal of Doppler shift). At 350 km/h and 2 GHz, $T_c \sim 0.5\,\text{ms}$. This is why CRS pilots must appear at least four times per subframe ([# 7.1](#sec-7-1)) — one pilot every subframe would miss the mid-subframe channel change.
 
 Coherence time affects HARQ efficiency indirectly: if the channel changes between the initial transmission and the retransmission, soft-combining across HARQ processes is less effective (the two blocks were transmitted through different channels).
 
@@ -2712,7 +2712,7 @@ If the phone is off, or in airplane mode, none of this works — the phone is un
 
 ---
 
-## § 27. Closing notes on how to read LTE specifications {#sec-27}
+## # 27. Closing notes on how to read LTE specifications {#sec-27}
 
 The 3GPP specifications for LTE fill several thousand pages, distributed across dozens of TS ("Technical Specification") documents. The key ones and what each covers:
 

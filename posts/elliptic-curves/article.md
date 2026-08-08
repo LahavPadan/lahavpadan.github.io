@@ -5,7 +5,7 @@
 
 ---
 
-## § 0. Finite fields: characteristic, order, and the Frobenius exponent {#sec-0}
+## # 0. Finite fields: characteristic, order, and the Frobenius exponent {#sec-0}
 
 Elliptic curves in cryptography live over finite fields. This section fixes the conventions before the rest of the document uses them.
 
@@ -74,13 +74,13 @@ When we work over the prime field itself — as with secp256k1, P-256, and Curve
 
 ---
 
-## § 1. What an elliptic curve actually is {#sec-1}
+## # 1. What an elliptic curve actually is {#sec-1}
 
 An elliptic curve is a **non-singular cubic** equipped with a distinguished point (the "identity", denoted $\mathcal{O}$) and a group law derived from intersection with lines. "Cubic" can take many algebraic forms; the most familiar is
 
 $$y^2 = x^3 + ax + b$$
 
-(short Weierstrass form), but this is *one canonical normalization*, not the definition. Other equations describing elliptic curves include the **Fermat cubic** $x^3 + y^3 = 1$ (genuinely a degree-3 curve, just not in $y^2 = f(x)$ form) and the **Edwards form** $x^2 + y^2 = 1 + d x^2 y^2$ (a quartic that's birationally equivalent to a cubic — see [§ 16](#sec-16) for the explicit substitution that turns it back into Weierstrass). What makes all of them "the same kind of thing" is not the equation shape but the underlying geometric/group structure. The short Weierstrass form is the convenient working form because it's the simplest to manipulate and most theorems are first stated for it.
+(short Weierstrass form), but this is *one canonical normalization*, not the definition. Other equations describing elliptic curves include the **Fermat cubic** $x^3 + y^3 = 1$ (genuinely a degree-3 curve, just not in $y^2 = f(x)$ form) and the **Edwards form** $x^2 + y^2 = 1 + d x^2 y^2$ (a quartic that's birationally equivalent to a cubic — see [# 16](#sec-16) for the explicit substitution that turns it back into Weierstrass). What makes all of them "the same kind of thing" is not the equation shape but the underlying geometric/group structure. The short Weierstrass form is the convenient working form because it's the simplest to manipulate and most theorems are first stated for it.
 
 Three questions immediately deserve answers:
 
@@ -123,7 +123,7 @@ $$(mx + c)^2 = x^3 + ax + b.$$
 
 This is a cubic in $x$: one $x^3$ term, lower-degree everything else. A cubic polynomial has three roots — possibly all in the base field, possibly some only appearing if you enlarge the field to include certain square roots, but always three counted with multiplicity. Each root gives one intersection point.
 
-(A vertical line $x = x_0$ doesn't fit the form $y = mx + c$. It hits $y^2 = x_0^3 + ax_0 + b$ in two places — at $y = \pm\sqrt{x_0^3 + ax_0 + b}$. To make this still "three intersections," we declare the third intersection to be the **point at infinity**, which lies on every vertical line by convention. We'll see in [§ 10](#sec-10) that this convention is forced once we work in the right coordinate system.)
+(A vertical line $x = x_0$ doesn't fit the form $y = mx + c$. It hits $y^2 = x_0^3 + ax_0 + b$ in two places — at $y = \pm\sqrt{x_0^3 + ax_0 + b}$. To make this still "three intersections," we declare the third intersection to be the **point at infinity**, which lies on every vertical line by convention. We'll see in [# 10](#sec-10) that this convention is forced once we work in the right coordinate system.)
 
 ### Why non-singular: parameterizing away the curve
 
@@ -149,7 +149,7 @@ In either case, the "group" of a singular cubic is something we already know how
 
 ---
 
-## § 2. The singular point: derivation of the discriminant {#sec-2}
+## # 2. The singular point: derivation of the discriminant {#sec-2}
 
 We want a clean algebraic test for singularity. A singular point $P = (x_0, y_0)$ on $F(x, y) = y^2 - x^3 - ax - b = 0$ is defined by three simultaneous conditions: $F = 0$, $\partial F/\partial x = 0$, $\partial F/\partial y = 0$.
 
@@ -200,13 +200,13 @@ The final $/16$ giving $\Delta = -16(4 a^3 + 27 b^2)$ is the one genuinely conve
 
 $$1728 \, \Delta = c_4^3 - c_6^2.$$
 
-Without the $/16$, this would carry a factor of $27648$ instead of $1728 = 12^3$. The $/16$ minimizes the constant. The invariants $c_4, c_6, \Delta$ return in [§ 15A](#sec-15a): over $\mathbb{C}$ they are the natural invariants of an elliptic curve viewed as a torus, and the identity $1728\Delta = c_4^3 - c_6^2$ is the algebraic shadow of a geometric relationship on lattices.
+Without the $/16$, this would carry a factor of $27648$ instead of $1728 = 12^3$. The $/16$ minimizes the constant. The invariants $c_4, c_6, \Delta$ return in [# 15A](#sec-15a): over $\mathbb{C}$ they are the natural invariants of an elliptic curve viewed as a torus, and the identity $1728\Delta = c_4^3 - c_6^2$ is the algebraic shadow of a geometric relationship on lattices.
 
 <div class="guided-fold-end"></div>
 
 ---
 
-## § 4. Reduction to short Weierstrass form {#sec-4}
+## # 4. Reduction to short Weierstrass form {#sec-4}
 
 The general Weierstrass equation
 
@@ -244,7 +244,7 @@ $$Y^2 = X^3 + a X + b.$$
 
 ---
 
-## § 5. Counting points and the trace of Frobenius {#sec-5}
+## # 5. Counting points and the trace of Frobenius {#sec-5}
 
 We work over the finite field $\mathbb{F}_p$ with $p$ elements. We want to count the number of solutions $(x, y) \in \mathbb{F}_p^2$ to $y^2 = f(x) = x^3 + ax + b$, plus the point at infinity.
 
@@ -269,7 +269,7 @@ Check: if $f(x)$ is a nonzero square, $1 + 1 = 2$. If $f(x) = 0$, $1 + 0 = 1$. I
 
 ### Why the Legendre symbol equals $a^{(p-1)/2} \pmod p$
 
-This isn't used until [§ 6](#sec-6), but the fact is short and worth stating where the Legendre symbol first appears. This is **Euler's criterion**, and we'll use it for the Hasse invariant:
+This isn't used until [# 6](#sec-6), but the fact is short and worth stating where the Legendre symbol first appears. This is **Euler's criterion**, and we'll use it for the Hasse invariant:
 
 $$a^{(p-1)/2} \equiv \left(\frac{a}{p}\right) \pmod p.$$
 
@@ -295,13 +295,13 @@ Then $N = p + 1 - t$.
 
 ### What "trace" really refers to
 
-At this stage $t$ is just a sum, named "trace of Frobenius" by stipulation. The actual reason it deserves the name "trace" comes from [§ 13](#sec-13)–14: there is a specific endomorphism of the curve, the Frobenius map $\pi: (x, y) \to (x^q, y^q)$, which acts as a $2 \times 2$ matrix $M_\pi$ on the curve's $\ell$-torsion (for any prime $\ell \neq p$). The trace of *that matrix* — meaning $\text{tr}(M_\pi)$ in the standard linear-algebra sense — turns out to equal exactly the integer $t = q + 1 - N$ defined above. So the name is forced by an equality we'll prove later, not by any informal analogy now.
+At this stage $t$ is just a sum, named "trace of Frobenius" by stipulation. The actual reason it deserves the name "trace" comes from [# 13](#sec-13)–14: there is a specific endomorphism of the curve, the Frobenius map $\pi: (x, y) \to (x^q, y^q)$, which acts as a $2 \times 2$ matrix $M_\pi$ on the curve's $\ell$-torsion (for any prime $\ell \neq p$). The trace of *that matrix* — meaning $\text{tr}(M_\pi)$ in the standard linear-algebra sense — turns out to equal exactly the integer $t = q + 1 - N$ defined above. So the name is forced by an equality we'll prove later, not by any informal analogy now.
 
 ---
 
-## § 6. The Hasse invariant: detecting supersingularity from coefficients alone {#sec-6}
+## # 6. The Hasse invariant: detecting supersingularity from coefficients alone {#sec-6}
 
-A curve over $\mathbb{F}_p$ is called **supersingular** when its trace $t \equiv 0 \pmod{p}$. We'll see in [§ 14](#sec-14) why this is a meaningful definition; for now, we want to compute it from the curve's coefficients without iterating over all $p$ values of $x$.
+A curve over $\mathbb{F}_p$ is called **supersingular** when its trace $t \equiv 0 \pmod{p}$. We'll see in [# 14](#sec-14) why this is a meaningful definition; for now, we want to compute it from the curve's coefficients without iterating over all $p$ values of $x$.
 
 ### Setup
 
@@ -351,7 +351,7 @@ Putting it all together, $t \equiv c_{p-1} \pmod p$, and the curve is supersingu
 
 ---
 
-## § 7. The quadratic twist {#sec-7}
+## # 7. The quadratic twist {#sec-7}
 
 Given an elliptic curve $E: y^2 = f(x)$ over $\mathbb{F}_p$ and a non-square $d \in \mathbb{F}_p^*$, the **quadratic twist** is
 
@@ -394,7 +394,7 @@ Curve25519: the curve order is $8 \cdot \ell$ where $\ell$ is a 252-bit prime. B
 
 ---
 
-## § 8. Maps between curves: from group structure to rational functions {#sec-8}
+## # 8. Maps between curves: from group structure to rational functions {#sec-8}
 
 ### The hierarchy of map types
 
@@ -417,7 +417,7 @@ Before the rational-function story, it helps to fix names on the maps that appea
 
 - **Multiplication-by-$n$**, written $[n]$: the map $P \mapsto P + P + \cdots + P$ ($n$ times). This is an endomorphism. Its kernel — points $P$ with $nP = \mathcal{O}$ — is denoted $E[n]$ and called the **$n$-torsion**.
 - **Frobenius**, $\pi: (x, y) \mapsto (x^q, y^q)$, on a curve defined over $\mathbb{F}_q$. Endomorphism, inseparable, degree $q$. Its fixed points are the $\mathbb{F}_q$-rational points.
-- **Vélu isogenies**: given a finite subgroup $K$ of $E$, there is an explicit isogeny $\phi: E \to E/K$ whose kernel is $K$. The construction (Vélu's formulas) writes down $\phi$ as a rational function with denominator $\prod_{Q \in K \setminus \mathcal{O}} (x - x_Q)$. These are the basic building blocks of isogeny-based cryptography ([§ 22](#sec-22)).
+- **Vélu isogenies**: given a finite subgroup $K$ of $E$, there is an explicit isogeny $\phi: E \to E/K$ whose kernel is $K$. The construction (Vélu's formulas) writes down $\phi$ as a rational function with denominator $\prod_{Q \in K \setminus \mathcal{O}} (x - x_Q)$. These are the basic building blocks of isogeny-based cryptography ([# 22](#sec-22)).
 - **Complex multiplication endomorphisms**: for special curves with extra symmetries, there are endomorphisms beyond $[n]$. For example, on $y^2 = x^3 + ax$ (with $a$ chosen appropriately) the map $(x, y) \mapsto (-x, iy)$ (where $i^2 = -1$) is an endomorphism. The endomorphism ring is then bigger than $\mathbb{Z}$ — it contains $i$. Such curves have [**complex multiplication** (CM)](#complex-multiplication-and-the-glv-method).
 
 ### Why "torsion" is called that
@@ -469,7 +469,7 @@ So an isogeny is exactly: a homomorphism whose $x$-coordinate map $R_1$ is non-c
 
 ---
 
-## § 9. The degree of an isogeny: what it actually counts {#sec-9}
+## # 9. The degree of an isogeny: what it actually counts {#sec-9}
 
 We saw in the previous section that the $x$-coordinate map of $\phi$ can be written as a rational function $P(x)/Q(x)$. What does $\deg(\phi) = \max(\deg P, \deg Q)$ actually mean? Why the max?
 
@@ -518,7 +518,7 @@ The degree of $Q$ is thus controlled by the kernel size: $\deg Q = |\ker(\phi)| 
 
 ---
 
-## § 10. Separability: what the derivative actually detects {#sec-10}
+## # 10. Separability: what the derivative actually detects {#sec-10}
 
 We need to understand: why does the formal derivative test ($R_1'(x) = 0$) tell us whether the kernel size equals the degree?
 
@@ -553,7 +553,7 @@ When $R_1(x) = r_1(x^p)$, the map $\phi$ factors as
 
 $$\phi(x, y) = (r_1(x^p), \ y \cdot R_2(x)).$$
 
-The map $(x, y) \mapsto (x^p, y^p)$ — the **absolute Frobenius** — is itself a homomorphism in characteristic $p$ because $(u + v)^p = u^p + v^p$ (the binomial-coefficient argument, spelled out in [§ 0](#sec-0)). So we can decompose: $\phi = \phi_{\text{sep}} \circ \pi$ where $\pi$ is the absolute Frobenius and $\phi_{\text{sep}}$ is the residual, which is separable because all its $p$-th-power structure has been peeled off.
+The map $(x, y) \mapsto (x^p, y^p)$ — the **absolute Frobenius** — is itself a homomorphism in characteristic $p$ because $(u + v)^p = u^p + v^p$ (the binomial-coefficient argument, spelled out in [# 0](#sec-0)). So we can decompose: $\phi = \phi_{\text{sep}} \circ \pi$ where $\pi$ is the absolute Frobenius and $\phi_{\text{sep}}$ is the residual, which is separable because all its $p$-th-power structure has been peeled off.
 
 This is the **decomposition theorem**: any isogeny factors uniquely as a separable isogeny composed with iterates of Frobenius. The "inseparable degree" of $\phi$ is just $p^r$ where $r$ counts how many times you peeled off a Frobenius.
 
@@ -562,9 +562,9 @@ This is the **decomposition theorem**: any isogeny factors uniquely as a separab
 
 ---
 
-## § 11. Torsion and the algebraic pictures {#sec-11}
+## # 11. Torsion and the algebraic pictures {#sec-11}
 
-Why is an elliptic curve "two-dimensional"? Why does $E[n]$ have size $n^2$? Two algebraic viewpoints — rational functions and $2 \times 2$ matrices acting on torsion — describe the same object and both work over any field. A third viewpoint, complex lattices, gives geometric intuition but requires working over $\mathbb{C}$; it is deferred to [§ 15A](#sec-15a).
+Why is an elliptic curve "two-dimensional"? Why does $E[n]$ have size $n^2$? Two algebraic viewpoints — rational functions and $2 \times 2$ matrices acting on torsion — describe the same object and both work over any field. A third viewpoint, complex lattices, gives geometric intuition but requires working over $\mathbb{C}$; it is deferred to [# 15A](#sec-15a).
 
 ### Picture 1: the rational-function viewpoint
 
@@ -584,11 +584,11 @@ For $[n]$: by induction on the addition formulas, you find $\deg([n]) = n^2$.
 
 The "$n^2$" is just what comes out when you crank the polynomial algebra. The $n^2$ has no deep meaning at this level — it's the answer to the explicit computation. But we want to *understand* why $n^2$, not just compute it.
 
-> **A remark on the third picture.** Over the complex numbers there is a *third* viewpoint on torsion — the curve as a torus $\mathbb{C}/\Lambda$ with $[n]$ acting as multiplication of complex numbers. That viewpoint gives the deepest "why $n^2$" — but it needs machinery (Weierstrass $\wp$, double periodicity, the lattice $\Lambda$) that we haven't built yet. It is developed in [§ 15A](#sec-15a). Everything in this section works over any field, including finite fields where no lattice exists directly.
+> **A remark on the third picture.** Over the complex numbers there is a *third* viewpoint on torsion — the curve as a torus $\mathbb{C}/\Lambda$ with $[n]$ acting as multiplication of complex numbers. That viewpoint gives the deepest "why $n^2$" — but it needs machinery (Weierstrass $\wp$, double periodicity, the lattice $\Lambda$) that we haven't built yet. It is developed in [# 15A](#sec-15a). Everything in this section works over any field, including finite fields where no lattice exists directly.
 
 ### Picture 2: the $2 \times 2$ matrix viewpoint on torsion
 
-We saw in Picture 1 that $\deg([n]) = n^2$. When $n$ is coprime to the characteristic $p$, the map $[n]$ is separable (its derivative $n$ is nonzero in the field), so by [§ 10](#sec-10), $|\ker([n])| = \deg([n]) = n^2$. The kernel of $[n]$ is by definition the $n$-torsion
+We saw in Picture 1 that $\deg([n]) = n^2$. When $n$ is coprime to the characteristic $p$, the map $[n]$ is separable (its derivative $n$ is nonzero in the field), so by [# 10](#sec-10), $|\ker([n])| = \deg([n]) = n^2$. The kernel of $[n]$ is by definition the $n$-torsion
 
 $$E[n] = \{P \in E(\bar{K}) : [n]P = \mathcal{O}\},$$
 
@@ -608,7 +608,7 @@ $$E[\ell] \cong \mathbb{F}_\ell \oplus \mathbb{F}_\ell,$$
 
 a two-dimensional $\mathbb{F}_\ell$-vector space with basis $\{P_1, P_2\}$.
 
-The case $\ell = p$ is exceptional: since $[p]$ is inseparable (its derivative is $p = 0$ in the field), the kernel-size-equals-degree reasoning from [§ 10](#sec-10) fails. It turns out $E[p]$ is either trivial ($\{\mathcal{O}\}$) or a cyclic group of size $p$, depending on the curve; never $(\mathbb{Z}/p)^2$. The two-dimensional structure holds only for $\ell \neq p$, and that is the case we work with from here on.
+The case $\ell = p$ is exceptional: since $[p]$ is inseparable (its derivative is $p = 0$ in the field), the kernel-size-equals-degree reasoning from [# 10](#sec-10) fails. It turns out $E[p]$ is either trivial ($\{\mathcal{O}\}$) or a cyclic group of size $p$, depending on the curve; never $(\mathbb{Z}/p)^2$. The two-dimensional structure holds only for $\ell \neq p$, and that is the case we work with from here on.
 
 #### Endomorphisms act as $2 \times 2$ matrices on $E[n]$
 
@@ -636,7 +636,7 @@ The proof compares two computations of the same set: the number of $\ell^r$-tors
 
 <div class="guided-fold-start" data-label="Carry out the kernel-counting proof" data-tone="proof"></div>
 
-*From $\phi$.* Assume $\phi$ separable — the general case reduces to this. From [§ 10](#sec-10)'s decomposition, $\phi = \phi_{\text{sep}} \circ \pi^k$ where $\pi^k$ is a Frobenius power (purely inseparable, degree $p^k$, trivial kernel). Since $\pi^k$ has trivial kernel, $\ker \phi = \ker \phi_{\text{sep}}$, so counting the kernel of $\phi$ is the same as counting the kernel of $\phi_{\text{sep}}$. For the degree side: $\deg\phi = \deg\phi_{\text{sep}} \cdot p^k$ from multiplicativity. Since $\ell \neq p$, the factor $p^k$ is coprime to $\ell$ — it contributes only a unit modulo $\ell^r$ and drops out of every $\ell$-adic argument. So from here on we may as well assume $\phi = \phi_{\text{sep}}$ and use $|\ker\phi| = \deg\phi$.
+*From $\phi$.* Assume $\phi$ separable — the general case reduces to this. From [# 10](#sec-10)'s decomposition, $\phi = \phi_{\text{sep}} \circ \pi^k$ where $\pi^k$ is a Frobenius power (purely inseparable, degree $p^k$, trivial kernel). Since $\pi^k$ has trivial kernel, $\ker \phi = \ker \phi_{\text{sep}}$, so counting the kernel of $\phi$ is the same as counting the kernel of $\phi_{\text{sep}}$. For the degree side: $\deg\phi = \deg\phi_{\text{sep}} \cdot p^k$ from multiplicativity. Since $\ell \neq p$, the factor $p^k$ is coprime to $\ell$ — it contributes only a unit modulo $\ell^r$ and drops out of every $\ell$-adic argument. So from here on we may as well assume $\phi = \phi_{\text{sep}}$ and use $|\ker\phi| = \deg\phi$.
 
 The part of $\ker\phi$ that lands inside $E[\ell^r]$ consists of points in $\ker\phi$ whose order divides $\ell^r$. Write $\deg\phi = \ell^s \cdot m$ with $\gcd(m, \ell) = 1$. The group $\ker\phi$, being finite abelian of order $\deg\phi$, decomposes uniquely into an $\ell$-part of order $\ell^s$ (elements whose order is a power of $\ell$) and a complementary part of order $m$ (elements whose order is coprime to $\ell$). Only the first part lives inside any $E[\ell^r]$; the second part has orders coprime to $\ell$, so no element of order $m > 1$ is killed by any power of $\ell$. For $r \geq s$, the entire $\ell$-part sits inside $E[\ell^r]$. So
 
@@ -644,7 +644,7 @@ $$\bigl|\ker \phi \cap E[\ell^r]\bigr| = \ell^{\min(r,\ s)} \quad \text{where } 
 
 Here $v_\ell(d)$ denotes the largest power of $\ell$ dividing the integer $d$.
 
-*From the matrix.* Write $M_{\phi, \ell^r} = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$ acting on $E[\ell^r]$ (identified with $(\mathbb{Z}/\ell^r)^2$ via a fixed basis, [§ 11](#sec-11) Picture 2). Compute the kernel directly. Suppose first that at least one entry is coprime to $\ell$ — call it $a$ after swapping rows and columns so it sits in the top-left. Since $a$ is coprime to $\ell$, it is invertible modulo $\ell^r$; row-reduce by subtracting $(c/a) \cdot \text{Row 1}$ from Row 2, getting the upper-triangular form
+*From the matrix.* Write $M_{\phi, \ell^r} = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$ acting on $E[\ell^r]$ (identified with $(\mathbb{Z}/\ell^r)^2$ via a fixed basis, [# 11](#sec-11) Picture 2). Compute the kernel directly. Suppose first that at least one entry is coprime to $\ell$ — call it $a$ after swapping rows and columns so it sits in the top-left. Since $a$ is coprime to $\ell$, it is invertible modulo $\ell^r$; row-reduce by subtracting $(c/a) \cdot \text{Row 1}$ from Row 2, getting the upper-triangular form
 
 $$\begin{pmatrix} a & b \\ 0 & (ad - bc)/a \end{pmatrix} \;=\; \begin{pmatrix} a & b \\ 0 & \det(M)/a \end{pmatrix}.$$
 
@@ -676,34 +676,34 @@ $$\phi^2(P) - [\mathrm{tr}(M)] \phi(P) + [\deg \phi] P = \mathcal{O} \quad \text
 
 The integer $\mathrm{tr}(M)$ is consistent across different $r$ (matrices at level $r+1$ reduce mod $\ell^r$ to matrices at level $r$, so their traces agree mod $\ell^r$); taking $r$ larger than the trace itself, we get a specific integer $t := \mathrm{tr}(M_\phi)$ that doesn't wrap around.
 
-**Independent of $\ell$.** The same integer $t$ comes out no matter which prime $\ell \neq p$ we use. Reason: if $t_\ell$ and $t_{\ell'}$ were the traces obtained via two different primes, then $\phi^2 - [t_\ell] \phi + [\deg \phi]$ vanishes on all $\ell$-power torsion, and $\phi^2 - [t_{\ell'}] \phi + [\deg \phi]$ vanishes on all $\ell'$-power torsion. Both together mean $(t_\ell - t_{\ell'}) \phi$ vanishes on infinitely many torsion points. But $\phi$ is an isogeny, so its $x$-coordinate is a rational function of $x$ with bounded numerator and denominator degrees ([§ 8](#sec-8), [§ 9](#sec-9)). A rational function taking the same value at more points than its total degree is that constant value everywhere — so if $(t_\ell - t_{\ell'}) \phi$ is $\mathcal{O}$ on infinitely many points, it is $\mathcal{O}$ everywhere. If $\phi$ is not the zero endomorphism, this forces $t_\ell = t_{\ell'}$ as integers.
+**Independent of $\ell$.** The same integer $t$ comes out no matter which prime $\ell \neq p$ we use. Reason: if $t_\ell$ and $t_{\ell'}$ were the traces obtained via two different primes, then $\phi^2 - [t_\ell] \phi + [\deg \phi]$ vanishes on all $\ell$-power torsion, and $\phi^2 - [t_{\ell'}] \phi + [\deg \phi]$ vanishes on all $\ell'$-power torsion. Both together mean $(t_\ell - t_{\ell'}) \phi$ vanishes on infinitely many torsion points. But $\phi$ is an isogeny, so its $x$-coordinate is a rational function of $x$ with bounded numerator and denominator degrees ([# 8](#sec-8), [# 9](#sec-9)). A rational function taking the same value at more points than its total degree is that constant value everywhere — so if $(t_\ell - t_{\ell'}) \phi$ is $\mathcal{O}$ on infinitely many points, it is $\mathcal{O}$ everywhere. If $\phi$ is not the zero endomorphism, this forces $t_\ell = t_{\ell'}$ as integers.
 
 So there is a single integer $t_\phi$ — the **trace of $\phi$** — with
 
 $$\phi^2 - t_\phi \phi + \deg(\phi) \cdot [1] = 0 \quad \text{in } \mathrm{End}(E).$$
 
-This is the definition of $t_\phi$; the connection to the dual isogeny ($t_\phi = \phi + \hat\phi$, [§ 12](#sec-12)) and to point-counting for Frobenius ($t_\pi = q + 1 - N$, [§ 14](#sec-14)) both follow from this identity, not the other way around.
+This is the definition of $t_\phi$; the connection to the dual isogeny ($t_\phi = \phi + \hat\phi$, [# 12](#sec-12)) and to point-counting for Frobenius ($t_\pi = q + 1 - N$, [# 14](#sec-14)) both follow from this identity, not the other way around.
 
 #### Everything reduces to $2 \times 2$ linear algebra
 
 Once the matrix viewpoint is in hand, the rest of the theory becomes elementary:
 - **Degree** $= \det(M_\phi)$.
 - **Trace** (in the sense above) $= \text{tr}(M_\phi)$.
-- **Dual isogeny** $=$ adjugate matrix ([§ 12](#sec-12)).
+- **Dual isogeny** $=$ adjugate matrix ([# 12](#sec-12)).
 - **Characteristic polynomial** $= \lambda^2 - \text{tr}(M) \lambda + \det(M)$.
-- **Pairings** $=$ bilinear forms on the matrix ([§ 13](#sec-13)).
+- **Pairings** $=$ bilinear forms on the matrix ([# 13](#sec-13)).
 
 #### Why the matrix is a "high-compression" representation of $\phi$
 
 For the Frobenius map, $\deg(\pi) = q$. If $q \approx 2^{256}$, the polynomial $x^q$ has an exponent of $2^{256}$ — but you can compute $x^q$ mod anything using $\lceil \log_2 q \rceil = 256$ square-and-multiply steps, so Frobenius is the rare "big-degree" polynomial you can evaluate cheaply.
 
-For a **generic isogeny** $\phi$ used in post-quantum cryptography ([§ 22](#sec-22)), the degree can be around $2^{250}$, but $\phi$'s $x$-coordinate map is *not* a single monomial like $x^q$. It's a rational function whose numerator has degree $\sim 2^{250}$ with roughly that many distinct coefficients. Storing $\phi$ as a polynomial is impossible.
+For a **generic isogeny** $\phi$ used in post-quantum cryptography ([# 22](#sec-22)), the degree can be around $2^{250}$, but $\phi$'s $x$-coordinate map is *not* a single monomial like $x^q$. It's a rational function whose numerator has degree $\sim 2^{250}$ with roughly that many distinct coefficients. Storing $\phi$ as a polynomial is impossible.
 
 The matrix on $E[\ell^r]$ (for well-chosen $\ell^r$ of size $\sim 2^{256}$) is only four $\ell$-adic integers — a few tens of bytes. Given a basis of $E[\ell^r]$, the matrix determines how $\phi$ permutes torsion points, and that alone uniquely identifies the massive isogeny. This is what makes isogeny-based schemes representable: the *action on torsion* is compact even when the *rational function* is not.
 
 ---
 
-## § 12. The dual isogeny {#sec-12}
+## # 12. The dual isogeny {#sec-12}
 
 ### Definition via the matrix picture
 
@@ -741,13 +741,13 @@ Beyond the characteristic polynomial and pairings, the dual shows up in several 
 
 1. **The only "near-inverse" we get for an isogeny.** Isogenies don't have inverses (an isogeny of degree > 1 is many-to-one). But $\hat\phi \circ \phi = [\deg \phi]$ — the dual composed with the original is just "multiply by the degree." In groups where the degree is invertible (i.e., coprime to the group order in the slot you care about), this lets you simulate an inverse map.
 
-   **This is the engine of isogeny-based cryptography** ([§ 22](#sec-22)). The schemes SIDH, CSIDH, and SQIsign all work by walking through a graph whose vertices are elliptic curves and whose edges are isogenies. A scalar multiplication in this graph translates to a chain of isogenies $\phi_1, \phi_2, \ldots, \phi_n$. To traverse the chain backwards — for example, to "undo" a step you've taken, or to verify that a chain composes correctly — you use the dual at each step. Without duals, isogeny graphs would be one-way streets, and the schemes would be impossible to construct.
+   **This is the engine of isogeny-based cryptography** ([# 22](#sec-22)). The schemes SIDH, CSIDH, and SQIsign all work by walking through a graph whose vertices are elliptic curves and whose edges are isogenies. A scalar multiplication in this graph translates to a chain of isogenies $\phi_1, \phi_2, \ldots, \phi_n$. To traverse the chain backwards — for example, to "undo" a step you've taken, or to verify that a chain composes correctly — you use the dual at each step. Without duals, isogeny graphs would be one-way streets, and the schemes would be impossible to construct.
 
 2. **It's the "transpose" of an isogeny with respect to the Weil pairing.** The relation $e_n(\phi(P), Q) = e_n(P, \hat\phi(Q))$ shows up wherever you need to factor through a pairing. **Identity-based encryption** (Boneh–Franklin) uses this: encryption involves a pairing $e(P_{\rm pub}, H(\text{id}))$, and security reductions move the secret-key term between slots by replacing it with its dual. **BLS signatures** (Boneh–Lynn–Shacham, used in Ethereum's consensus layer) verify by checking $e(\sigma, G) = e(H(m), \text{pk})$, and the proofs of unforgeability move terms between slots using the dual relationship. So the dual isn't just a curiosity for pairing-based crypto — it's the algebraic tool that makes the security arguments go through.
 
 3. **It builds new isogenies from old.** Given $\phi: E \to E'$, the dual $\hat\phi: E' \to E$ is essentially the only structural map you can construct going back. Composing $\phi$ with $\hat\phi$ gives $[\deg \phi]$; composing $\hat\phi$ with another isogeny gives new isogenies. The whole theory of isogeny graphs (e.g., the **Volcano structure** of supersingular isogeny graphs, used in SIDH) is built on these compositions.
 
-4. **It's what makes additivity of the degree pairing work.** We'll use $\widehat{(\phi + \psi)} = \hat\phi + \hat\psi$ in [§ 13](#sec-13) to derive the pairing formula. The proof is just $\widehat{M + N} = \hat M + \hat N$ at the matrix level — but this is what gives the pairing its bilinearity.
+4. **It's what makes additivity of the degree pairing work.** We'll use $\widehat{(\phi + \psi)} = \hat\phi + \hat\psi$ in [# 13](#sec-13) to derive the pairing formula. The proof is just $\widehat{M + N} = \hat M + \hat N$ at the matrix level — but this is what gives the pairing its bilinearity.
 
 ### Three identities
 
@@ -759,11 +759,11 @@ $$\phi \circ \hat\phi = \hat\phi \circ \phi = [\deg(\phi)],$$
 
 $$\widehat{\phi + \psi} = \hat\phi + \hat\psi.$$
 
-All three come from the same matrix identities for the adjugate. The "trace" here is the trace of $\phi$ as a $2 \times 2$ matrix on the $n$-torsion ([§ 11](#sec-11)); this is the same trace as appears in $N = p + 1 - t$ for Frobenius, as we'll verify in [§ 14](#sec-14).
+All three come from the same matrix identities for the adjugate. The "trace" here is the trace of $\phi$ as a $2 \times 2$ matrix on the $n$-torsion ([# 11](#sec-11)); this is the same trace as appears in $N = p + 1 - t$ for Frobenius, as we'll verify in [# 14](#sec-14).
 
 ---
 
-## § 13. Pairings: what they actually are {#sec-13}
+## # 13. Pairings: what they actually are {#sec-13}
 
 This section demystifies pairings: what the underlying concept is, where it shows up on elliptic curves, and why anyone uses them.
 
@@ -876,7 +876,7 @@ where $\mu_n$ is the group of $n$-th roots of unity in the base field. It has fo
 * **Non-degenerate**: if $e_n(P, Q) = 1$ for all $Q \in E[n]$, then $P = \mathcal{O}$. (No "ghost" torsion points hidden from the pairing.)
 * **Respects field automorphisms**: if $\sigma$ is any automorphism of the base field that fixes the curve's coefficients (e.g., the Frobenius $z \mapsto z^q$, which fixes $\mathbb{F}_q$), then $e_n(\sigma P, \sigma Q) = \sigma(e_n(P, Q))$. In practical terms: the pairing's output transforms the same way under field automorphisms as its inputs. This is what makes pairings well-defined as field-intrinsic operations and not artifacts of coordinate choices.
 
-You can think of it as the "determinant pairing" on $E[n]$. Over $\mathbb{C}$ with the lattice picture ([§ 15A](#sec-15a)): $E[n]$ is generated by $\omega_1/n$ and $\omega_2/n$. The pairing of these two generators is the primitive $n$-th root of unity $e^{2\pi i/n}$, and the pairing of $aP_1 + bP_2$ and $cP_1 + dP_2$ is $e^{2\pi i (ad - bc)/n}$ — literally a determinant exponentiated.
+You can think of it as the "determinant pairing" on $E[n]$. Over $\mathbb{C}$ with the lattice picture ([# 15A](#sec-15a)): $E[n]$ is generated by $\omega_1/n$ and $\omega_2/n$. The pairing of these two generators is the primitive $n$-th root of unity $e^{2\pi i/n}$, and the pairing of $aP_1 + bP_2$ and $cP_1 + dP_2$ is $e^{2\pi i (ad - bc)/n}$ — literally a determinant exponentiated.
 
 That's why it transforms like a determinant under isogenies: an isogeny $\phi$ acts on $E[n]$ by a matrix $M$, and
 
@@ -902,12 +902,12 @@ This is intimidating sounding because of the divisors, but the core idea is just
 
 ---
 
-## § 14. The characteristic polynomial of Frobenius {#sec-14}
+## # 14. The characteristic polynomial of Frobenius {#sec-14}
 
 We've assembled the pieces; now we put them together.
 
 ### The characteristic polynomial
-For any endomorphism $\phi : E \to E$, there is a $2 \times 2$ matrix $M_\phi$ describing its action on any $\ell$-power torsion $E[\ell^r]$ with $\ell$ coprime to $p$ ([§ 11](#sec-11)). Any $2 \times 2$ matrix satisfies its own characteristic polynomial (Cayley–Hamilton):
+For any endomorphism $\phi : E \to E$, there is a $2 \times 2$ matrix $M_\phi$ describing its action on any $\ell$-power torsion $E[\ell^r]$ with $\ell$ coprime to $p$ ([# 11](#sec-11)). Any $2 \times 2$ matrix satisfies its own characteristic polynomial (Cayley–Hamilton):
 
 $$M_\phi^2 - \text{tr}(M_\phi) M_\phi + \det(M_\phi) I = 0.$$
 
@@ -915,7 +915,7 @@ We've seen that $\deg(\phi) = \det(M_\phi)$ and that Tate-module matrices were c
 
 $$\phi^2 - \operatorname{tr}(\phi) \phi + \deg(\phi) \cdot [1] = 0 \quad \text{in } \text{End}(E),$$
 
-where $\operatorname{tr}(\phi)$ is defined as the integer $\operatorname{tr}(M_\phi)$ (which by [§ 11](#sec-11) doesn't depend on which $E[n]$ one uses, provided $n$ is coprime to the characteristic).
+where $\operatorname{tr}(\phi)$ is defined as the integer $\operatorname{tr}(M_\phi)$ (which by [# 11](#sec-11) doesn't depend on which $E[n]$ one uses, provided $n$ is coprime to the characteristic).
 
 ### The Frobenius endomorphism
 
@@ -925,7 +925,7 @@ $$\pi: E \to E, \quad (x, y) \mapsto (x^q, y^q).$$
 
 A few facts to establish:
 
-1. **$\pi$ is a homomorphism**: this follows from $(u + v)^q = u^q + v^q$ in characteristic $p$ (iterate $(u+v)^p = u^p + v^p$ from [§ 0](#sec-0) a total of $k$ times). The chord-and-tangent law involves rational expressions in the coordinates; applying $\pi$ commutes with those expressions because raising to the $q$-th power preserves *both* addition and multiplication in the field. So $\pi(P + Q) = \pi(P) + \pi(Q)$.
+1. **$\pi$ is a homomorphism**: this follows from $(u + v)^q = u^q + v^q$ in characteristic $p$ (iterate $(u+v)^p = u^p + v^p$ from [# 0](#sec-0) a total of $k$ times). The chord-and-tangent law involves rational expressions in the coordinates; applying $\pi$ commutes with those expressions because raising to the $q$-th power preserves *both* addition and multiplication in the field. So $\pi(P + Q) = \pi(P) + \pi(Q)$.
 
 2. **$\pi$ has degree $q$**: the $x$-coordinate map is $x \mapsto x^q$, a polynomial of degree $q$. So $\deg(\pi) = q$.
 
@@ -935,7 +935,7 @@ Plugging $\phi = \pi$, $\deg(\phi) = q$ into the general endomorphism identity f
 
 $$\pi^2 - t \pi + q \cdot [1] = 0 \quad \text{in } \text{End}(E), \tag{14.1}$$
 
-where $t = \operatorname{tr}(M_\pi)$ is the integer trace of Frobenius's action on any $E[\ell]$ (for $\ell$ coprime to $p$). It remains to identify this $t$ with the $t$ from point-counting in [§ 5](#sec-5).
+where $t = \operatorname{tr}(M_\pi)$ is the integer trace of Frobenius's action on any $E[\ell]$ (for $\ell$ coprime to $p$). It remains to identify this $t$ with the $t$ from point-counting in [# 5](#sec-5).
 
 ### Why $t$ here equals the $t$ in $N = q + 1 - t$
 
@@ -947,11 +947,11 @@ A point $(x, y)$ lies in $E(\mathbb{F}_q)$ if and only if its coordinates are fi
 
 $$N_q = |E(\mathbb{F}_q)| = |\ker(\pi - [1])|.$$
 
-The map $\pi - [1]$ is separable: its formal derivative on the $x$-coordinate is the derivative of $x^q - x$, which is $q x^{q-1} - 1 = -1$ (nonzero in the field, since $q \equiv 0$ but $-1 \not\equiv 0 \pmod p$). By [§ 10](#sec-10) (kernel size = degree for separable maps),
+The map $\pi - [1]$ is separable: its formal derivative on the $x$-coordinate is the derivative of $x^q - x$, which is $q x^{q-1} - 1 = -1$ (nonzero in the field, since $q \equiv 0$ but $-1 \not\equiv 0 \pmod p$). By [# 10](#sec-10) (kernel size = degree for separable maps),
 
 $$|\ker(\pi - [1])| = \deg(\pi - [1]).$$
 
-By [§ 11](#sec-11) Picture 2, degree = determinant of the matrix, so
+By [# 11](#sec-11) Picture 2, degree = determinant of the matrix, so
 
 $$\deg(\pi - [1]) = \det(M_\pi - I).$$
 
@@ -971,11 +971,11 @@ Isolating the trace:
 
 $$\text{tr}(M_\pi) = q + 1 - N_q.$$
 
-Comparing with $t = q + 1 - N_q$ from [§ 5](#sec-5): the matrix trace of Frobenius on the torsion equals the trace-from-point-counting. The name "trace of Frobenius" for $t$ is finally justified.
+Comparing with $t = q + 1 - N_q$ from [# 5](#sec-5): the matrix trace of Frobenius on the torsion equals the trace-from-point-counting. The name "trace of Frobenius" for $t$ is finally justified.
 
 <div class="guided-fold-start" data-label="Alternative viewpoint via the degree pairing" data-tone="derivation"></div>
 
-A second, equivalent route: the degree pairing $\langle \phi, \psi \rangle = \deg(\phi - \psi) - \deg(\phi) - \deg(\psi)$ from [§ 13](#sec-13), applied to $\pi$ and $[1]$:
+A second, equivalent route: the degree pairing $\langle \phi, \psi \rangle = \deg(\phi - \psi) - \deg(\phi) - \deg(\psi)$ from [# 13](#sec-13), applied to $\pi$ and $[1]$:
 
 $$\langle \pi, [1] \rangle = \deg(\pi - [1]) - q - 1 = N - q - 1 = -t.$$
 
@@ -1009,9 +1009,9 @@ All six describe the same integer. They serve different purposes:
 
 ### Why $t \equiv 0 \pmod p$ is the definition of supersingular
 
-We promised in [§ 6](#sec-6) that the condition "$t \equiv 0 \pmod p$" — the one detected by the Hasse invariant — is more than a numerical curiosity. Here is what it actually means: it is equivalent to $E[p] = \{\mathcal{O}\}$, an exceptional collapse of the $p$-torsion.
+We promised in [# 6](#sec-6) that the condition "$t \equiv 0 \pmod p$" — the one detected by the Hasse invariant — is more than a numerical curiosity. Here is what it actually means: it is equivalent to $E[p] = \{\mathcal{O}\}$, an exceptional collapse of the $p$-torsion.
 
-**The $p$-torsion has two possible shapes.** For a prime $\ell \neq p$, [§ 11](#sec-11) gave $E[\ell] \cong (\mathbb{Z}/\ell)^2$ by counting $E[\ell] = \ker[\ell]$ and using $|\ker\phi| = \deg\phi$ for separable maps from [§ 10](#sec-10). For $\ell = p$, that route is not available: $[p]$ is inseparable, because $[p] = \pi \circ \hat\pi$ from [§ 12](#sec-12) and $\pi$ is purely inseparable (established above in this section), so the composition inherits inseparability. The kernel-equals-degree step therefore does not apply, and we cannot conclude $|E[p]| = p^2$. Compute $|E[p]|$ directly via the composition $\pi \hat\pi = [\deg \pi] = [p]$ from [§ 12](#sec-12):
+**The $p$-torsion has two possible shapes.** For a prime $\ell \neq p$, [# 11](#sec-11) gave $E[\ell] \cong (\mathbb{Z}/\ell)^2$ by counting $E[\ell] = \ker[\ell]$ and using $|\ker\phi| = \deg\phi$ for separable maps from [# 10](#sec-10). For $\ell = p$, that route is not available: $[p]$ is inseparable, because $[p] = \pi \circ \hat\pi$ from [# 12](#sec-12) and $\pi$ is purely inseparable (established above in this section), so the composition inherits inseparability. The kernel-equals-degree step therefore does not apply, and we cannot conclude $|E[p]| = p^2$. Compute $|E[p]|$ directly via the composition $\pi \hat\pi = [\deg \pi] = [p]$ from [# 12](#sec-12):
 
 $$|E[p]| = |\ker[p]| = |\ker(\pi \circ \hat\pi)| = |\ker \hat\pi|,$$
 
@@ -1019,11 +1019,11 @@ using that $\pi$ has trivial kernel (purely inseparable, degree $p$).
 
 <div class="guided-fold-start" data-label="Why $\deg\hat\pi = p$" data-tone="derivation"></div>
 
-Multiplicativity of degree under composition ([§ 9](#sec-9)) applied to $[p] = \pi \circ \hat\pi$: taking degrees gives $\deg[p] = \deg\pi \cdot \deg\hat\pi$, i.e., $p^2 = p \cdot \deg\hat\pi$, so $\deg\hat\pi = p$.
+Multiplicativity of degree under composition ([# 9](#sec-9)) applied to $[p] = \pi \circ \hat\pi$: taking degrees gives $\deg[p] = \deg\pi \cdot \deg\hat\pi$, i.e., $p^2 = p \cdot \deg\hat\pi$, so $\deg\hat\pi = p$.
 
 <div class="guided-fold-end"></div>
 
-Since $\hat\pi$ has prime degree $p$, its inseparable degree is either $1$ (separable) or $p$ (purely inseparable), and correspondingly $|\ker \hat\pi|$ is either $p$ (separable case, [§ 10](#sec-10) applies to $\hat\pi$ itself) or $1$ (purely inseparable of degree $p$ has trivial kernel):
+Since $\hat\pi$ has prime degree $p$, its inseparable degree is either $1$ (separable) or $p$ (purely inseparable), and correspondingly $|\ker \hat\pi|$ is either $p$ (separable case, [# 10](#sec-10) applies to $\hat\pi$ itself) or $1$ (purely inseparable of degree $p$ has trivial kernel):
 
 $$E[p] \cong \mathbb{Z}/p\mathbb{Z} \quad (\hat\pi \text{ separable, "ordinary" curve}), \qquad E[p] = \{\mathcal{O}\} \quad (\hat\pi \text{ purely inseparable, "supersingular" curve}).$$
 
@@ -1031,9 +1031,9 @@ $$E[p] \cong \mathbb{Z}/p\mathbb{Z} \quad (\hat\pi \text{ separable, "ordinary" 
 
 $$t \equiv 0 \pmod p \quad \Longleftrightarrow \quad \hat\pi \text{ is purely inseparable} \quad \Longleftrightarrow \quad E[p] = \{\mathcal{O}\}.$$
 
-The second equivalence was already shown above. For the first, we chain three separate claims. Each uses only the identity $\pi + \hat\pi = [t]$ and $\pi \circ \hat\pi = [p]$ from [§ 12](#sec-12), together with multiplicativity of degree from [§ 9](#sec-9).
+The second equivalence was already shown above. For the first, we chain three separate claims. Each uses only the identity $\pi + \hat\pi = [t]$ and $\pi \circ \hat\pi = [p]$ from [# 12](#sec-12), together with multiplicativity of degree from [# 9](#sec-9).
 
-*Terminology.* An isogeny $\phi$ **factors through $\pi$** if it can be written as $\pi \circ \psi$ for some isogeny $\psi$. From [§ 10](#sec-10), this is exactly the condition "$\phi$ is inseparable" — the Frobenius decomposition of [§ 10](#sec-10) shows that inseparability comes precisely from an occurrence of $\pi$ as a factor.
+*Terminology.* An isogeny $\phi$ **factors through $\pi$** if it can be written as $\pi \circ \psi$ for some isogeny $\psi$. From [# 10](#sec-10), this is exactly the condition "$\phi$ is inseparable" — the Frobenius decomposition of [# 10](#sec-10) shows that inseparability comes precisely from an occurrence of $\pi$ as a factor.
 
 **Claim 1**: $[t]$ factors through $\pi$ $\iff$ $p \mid t$.
 
@@ -1049,22 +1049,22 @@ Both directions come from rearranging $[t] = \pi + \hat\pi$ using left-distribut
 
 **Claim 3**: $\hat\pi$ factors through $\pi$ $\iff$ $\hat\pi$ is purely inseparable.
 
-By [§ 10](#sec-10), factoring through $\pi$ is the same as being inseparable — one direction is [§ 10](#sec-10)'s decomposition, the other is the observation that $\pi$ itself is purely inseparable, so any composition with $\pi$ on the left carries an inseparable factor. Since $\deg\hat\pi = p$ is prime, "$\hat\pi$ inseparable" means "$\hat\pi$ purely inseparable" (there is no room for a nontrivial separable factor: any decomposition $\hat\pi = \phi_{\text{sep}} \circ \pi$ would need $\deg\phi_{\text{sep}} = 1$, forcing $\phi_{\text{sep}}$ to be an isomorphism).
+By [# 10](#sec-10), factoring through $\pi$ is the same as being inseparable — one direction is [# 10](#sec-10)'s decomposition, the other is the observation that $\pi$ itself is purely inseparable, so any composition with $\pi$ on the left carries an inseparable factor. Since $\deg\hat\pi = p$ is prime, "$\hat\pi$ inseparable" means "$\hat\pi$ purely inseparable" (there is no room for a nontrivial separable factor: any decomposition $\hat\pi = \phi_{\text{sep}} \circ \pi$ would need $\deg\phi_{\text{sep}} = 1$, forcing $\phi_{\text{sep}}$ to be an isomorphism).
 
 **Chaining the three claims**:
 
 $$p \mid t \iff [t] \text{ factors through } \pi \iff \hat\pi \text{ factors through } \pi \iff \hat\pi \text{ purely inseparable} \iff E[p] = \{\mathcal{O}\}.$$
 
-The "$t \equiv 0 \pmod p$" of [§ 6](#sec-6), the "$\hat\pi$ purely inseparable" here, and the "no nontrivial $p$-torsion" of the top of this subsection are three names for the same phenomenon.
+The "$t \equiv 0 \pmod p$" of [# 6](#sec-6), the "$\hat\pi$ purely inseparable" here, and the "no nontrivial $p$-torsion" of the top of this subsection are three names for the same phenomenon.
 
-**Downstream consequences.** Supersingular curves are rare — roughly $p/12$ isomorphism classes over $\overline{\mathbb{F}_p}$ — and have far richer endomorphism rings than ordinary curves: instead of the rank-$2$ commutative ring $\text{End}(E) = \mathbb{Z}[\alpha]$ (an order in an imaginary quadratic field), it becomes a rank-$4$ *non*-commutative ring (an order in a quaternion algebra). This richness makes supersingular curves the natural setting for **isogeny-based post-quantum cryptography** ([§ 22](#sec-22)): the supersingular isogeny graph is highly connected and easy to walk in one direction, hard to reverse. Historically, supersingular curves also appeared in early pairing-based cryptography, until the MOV attack ([§ 18](#sec-18)) exploited their small embedding degree.
+**Downstream consequences.** Supersingular curves are rare — roughly $p/12$ isomorphism classes over $\overline{\mathbb{F}_p}$ — and have far richer endomorphism rings than ordinary curves: instead of the rank-$2$ commutative ring $\text{End}(E) = \mathbb{Z}[\alpha]$ (an order in an imaginary quadratic field), it becomes a rank-$4$ *non*-commutative ring (an order in a quaternion algebra). This richness makes supersingular curves the natural setting for **isogeny-based post-quantum cryptography** ([# 22](#sec-22)): the supersingular isogeny graph is highly connected and easy to walk in one direction, hard to reverse. Historically, supersingular curves also appeared in early pairing-based cryptography, until the MOV attack ([# 18](#sec-18)) exploited their small embedding degree.
 
 ### Frobenius eigenvalues
 The eigenvalues of $M_\pi$ are the roots of the characteristic polynomial (equation (14.1) above, read on the matrix side): $\lambda^2 - t\lambda + q = 0$, i.e.,
 
 $$\lambda = \frac{t \pm \sqrt{t^2 - 4q}}{2}.$$
 
-The Hasse bound $|t| \leq 2\sqrt{q}$ (derived in [§ 13](#sec-13) from Cauchy-Schwarz on the degree pairing) gives $t^2 \leq 4q$, so $t^2 - 4q \leq 0$. The discriminant is non-positive, so the square root is imaginary (or zero), and the roots are complex conjugates:
+The Hasse bound $|t| \leq 2\sqrt{q}$ (derived in [# 13](#sec-13) from Cauchy-Schwarz on the degree pairing) gives $t^2 \leq 4q$, so $t^2 - 4q \leq 0$. The discriminant is non-positive, so the square root is imaginary (or zero), and the roots are complex conjugates:
 
 $$\lambda = \frac{t \pm i\sqrt{4q - t^2}}{2}.$$
 
@@ -1086,7 +1086,7 @@ This means that if we ignore the uniform expansion factor $\sqrt{q}$, the Froben
 
 ---
 
-## § 15. Schoof's algorithm {#sec-15}
+## # 15. Schoof's algorithm {#sec-15}
 
 The problem: compute the trace $t$ of Frobenius for a large elliptic curve. By Hasse, $|t| \leq 2\sqrt{q}$; for $q \approx 2^{256}$, $t$ is roughly a 128-bit number. Direct enumeration over $E(\mathbb{F}_q)$ is infeasible ($2^{256}$ operations).
 
@@ -1138,11 +1138,11 @@ The total cost is polynomial in $\log q$ (rather than $q$ itself), which is the 
 
 ---
 
-## § 15A. The complex-analytic viewpoint: elliptic curves as tori {#sec-15a}
+## # 15A. The complex-analytic viewpoint: elliptic curves as tori {#sec-15a}
 
-The rational-function and Tate-module pictures of [§ 11](#sec-11) both work over any field. Over the complex numbers, a third picture becomes available that is far more geometric: the elliptic curve *is* a torus $\mathbb{C}/\Lambda$, and every algebraic structure on the curve (points, endomorphisms, isogenies, torsion, the $j$-invariant) has a linear-algebra shadow on the lattice $\Lambda$. This section develops that picture from scratch — motivating the elliptic integral, showing that its natural coordinate takes values modulo a lattice, connecting the algebraic $\phi$ to complex multiplication by an $\alpha$, and reinterpreting the $j$-invariant as a function on lattice shapes.
+The rational-function and Tate-module pictures of [# 11](#sec-11) both work over any field. Over the complex numbers, a third picture becomes available that is far more geometric: the elliptic curve *is* a torus $\mathbb{C}/\Lambda$, and every algebraic structure on the curve (points, endomorphisms, isogenies, torsion, the $j$-invariant) has a linear-algebra shadow on the lattice $\Lambda$. This section develops that picture from scratch — motivating the elliptic integral, showing that its natural coordinate takes values modulo a lattice, connecting the algebraic $\phi$ to complex multiplication by an $\alpha$, and reinterpreting the $j$-invariant as a function on lattice shapes.
 
-Nothing in this section is used to prove statements over finite fields (the Tate-module picture handled those in [§ 11](#sec-11)). Its role is to give geometric intuition and to build the language of *complex multiplication* that appears in secp256k1 and drives the GLV method ([§ 15B](#sec-15b)).
+Nothing in this section is used to prove statements over finite fields (the Tate-module picture handled those in [# 11](#sec-11)). Its role is to give geometric intuition and to build the language of *complex multiplication* that appears in secp256k1 and drives the GLV method ([# 15B](#sec-15b)).
 
 ### Motivating the elliptic integral
 
@@ -1259,7 +1259,7 @@ The last row is what the rest of this section unpacks: on the torus side, endomo
 
 ### Endomorphisms as complex multiplication: $\alpha \Lambda \subseteq \Lambda$
 
-An **endomorphism** of $E$ is an isogeny $\phi: E \to E$: a group homomorphism given by rational functions ([§ 8](#sec-8)). Transported to the torus side by the map $\Phi$ from the previous subsection, it becomes a map $\mathbb{C}/\Lambda \to \mathbb{C}/\Lambda$:
+An **endomorphism** of $E$ is an isogeny $\phi: E \to E$: a group homomorphism given by rational functions ([# 8](#sec-8)). Transported to the torus side by the map $\Phi$ from the previous subsection, it becomes a map $\mathbb{C}/\Lambda \to \mathbb{C}/\Lambda$:
 
 - **Start on the torus:** pick a coset $u \in \mathbb{C}/\Lambda$.
 - **Move to the curve:** apply $\Phi$ to get a point $\Phi(u) \in E(\mathbb{C})$.
@@ -1311,7 +1311,7 @@ $$\phi \mapsto \begin{pmatrix} m & n \\ p & q \end{pmatrix} \in M_2(\mathbb{Z}),
 
 $$n \tau^2 + (m - q) \tau - p = 0. \tag{$\star$}\label{eq:tau-quadratic}$$
 
-The two rows are consistent iff $\tau$ satisfies this quadratic. Whenever $n \neq 0$, this forces $\tau$ to be a specific complex quadratic irrational — determined by three integers $(n, m-q, -p)$. So $\Lambda$ admits a non-integer endomorphism precisely when $\tau$ is a root of some integer quadratic; those are the CM lattices covered in [§ 15B](#sec-15b) and enumerated below. The generic $\tau$ satisfies no such equation, and the only integer matrices consistent with the same $\alpha$ have $n = 0$ and $m = q$: they are the scalar matrices $\begin{pmatrix} m & 0 \\ 0 & m \end{pmatrix}$, corresponding to $\alpha = m \in \mathbb{Z}$.
+The two rows are consistent iff $\tau$ satisfies this quadratic. Whenever $n \neq 0$, this forces $\tau$ to be a specific complex quadratic irrational — determined by three integers $(n, m-q, -p)$. So $\Lambda$ admits a non-integer endomorphism precisely when $\tau$ is a root of some integer quadratic; those are the CM lattices covered in [# 15B](#sec-15b) and enumerated below. The generic $\tau$ satisfies no such equation, and the only integer matrices consistent with the same $\alpha$ have $n = 0$ and $m = q$: they are the scalar matrices $\begin{pmatrix} m & 0 \\ 0 & m \end{pmatrix}$, corresponding to $\alpha = m \in \mathbb{Z}$.
 
 **$[n]$ acts by $u \mapsto n u$ on the torus.** The identity endomorphism $[1]$ has torus lift $u \mapsto u$ (both sides fix every point), so $\alpha_{[1]} = 1$. Iterating and using the ring isomorphism: $\alpha_{[n]} = n \alpha_{[1]} = n$ for every integer $n$. So $[n]$ on the torus is multiplication by the integer $n$, and its matrix is $\begin{pmatrix} n & 0 \\ 0 & n \end{pmatrix}$.
 
@@ -1323,28 +1323,28 @@ which contains $\Lambda$ itself as a sublattice. Since $u$ is only meaningful mo
 
 $$E[n] = \tfrac{1}{n} \Lambda \,/\, \Lambda,$$
 
-parameterized by pairs $(j/n, k/n)$ with $j, k \in \{0, 1, \ldots, n-1\}$: it is $(\mathbb{Z}/n\mathbb{Z})^2$ as a group, with basis $\{\omega_1/n, \omega_2/n\}$. Multiplication by $\alpha$ acts on $(j/n)\omega_1 + (k/n)\omega_2$ by the *same* integer matrix $\begin{pmatrix} m & n \\ p & q \end{pmatrix}$, reduced mod $n$. So the Tate-module picture ([§ 11](#sec-11) Picture 2) agrees with the lattice picture: the matrix on $E[n]$ is the reduction mod $n$ of the integer matrix on $\Lambda$.
+parameterized by pairs $(j/n, k/n)$ with $j, k \in \{0, 1, \ldots, n-1\}$: it is $(\mathbb{Z}/n\mathbb{Z})^2$ as a group, with basis $\{\omega_1/n, \omega_2/n\}$. Multiplication by $\alpha$ acts on $(j/n)\omega_1 + (k/n)\omega_2$ by the *same* integer matrix $\begin{pmatrix} m & n \\ p & q \end{pmatrix}$, reduced mod $n$. So the Tate-module picture ([# 11](#sec-11) Picture 2) agrees with the lattice picture: the matrix on $E[n]$ is the reduction mod $n$ of the integer matrix on $\Lambda$.
 
-**Degree = determinant, revisited.** Take an isogeny $\phi \leftrightarrow \alpha$, and compute its degree as the size of its kernel (valid for separable isogenies, [§ 10](#sec-10)):
+**Degree = determinant, revisited.** Take an isogeny $\phi \leftrightarrow \alpha$, and compute its degree as the size of its kernel (valid for separable isogenies, [# 10](#sec-10)):
 
 - **Kernel description.** The map $u \mapsto \alpha u$ on $\mathbb{C}/\Lambda$ kills $u$ iff $\alpha u \in \Lambda$, iff $u \in \alpha^{-1}\Lambda$. So $\ker = \alpha^{-1}\Lambda / \Lambda$.
 - **Sublattice ratio.** The lattice $\alpha \Lambda \subseteq \Lambda$ has some finite index in $\Lambda$: that is, the tiles $\Lambda/\alpha\Lambda$ finitely partition each tile of $\Lambda$. Multiplication by $\alpha^{-1}$ scales the whole picture and gives the same count of cosets, so $|\alpha^{-1}\Lambda / \Lambda| = |\Lambda / \alpha \Lambda|$.
 - **Volume ratio $=$ determinant.** Applying the matrix $M = \begin{pmatrix} m & n \\ p & q \end{pmatrix}$ to the basis $(\omega_1, \omega_2)$ scales the area of the basis parallelogram by $|\det M|$ (standard formula: a $2 \times 2$ linear map scales areas by the absolute value of its determinant). So $|\Lambda / \alpha \Lambda| = |\det M|$.
 - **Conclusion.** $\deg \phi = |\det M_\phi|$.
 
-The identity that we obtained over finite fields via matrix action on torsion ([§ 11](#sec-11)) reappears here on the complex-analytic side as an area-ratio.
+The identity that we obtained over finite fields via matrix action on torsion ([# 11](#sec-11)) reappears here on the complex-analytic side as an area-ratio.
 
 ### The $j$-invariant on the torus side
 
-Recall from [§ 8](#sec-8) that two short Weierstrass curves $y^2 = x^3 + ax + b$ and $y^2 = x^3 + a'x + b'$ describe the same elliptic curve — the same points, the same group law, related by a change of variables — precisely when there is a nonzero $u$ with $a' = a/u^4$, $b' = b/u^6$. Call this the **rescaling equivalence** on curves.
+Recall from [# 8](#sec-8) that two short Weierstrass curves $y^2 = x^3 + ax + b$ and $y^2 = x^3 + a'x + b'$ describe the same elliptic curve — the same points, the same group law, related by a change of variables — precisely when there is a nonzero $u$ with $a' = a/u^4$, $b' = b/u^6$. Call this the **rescaling equivalence** on curves.
 
 On the torus side, rescaling the lattice by a nonzero complex number $c$ — replacing $\Lambda$ by $c\Lambda = \mathbb{Z}(c\omega_1) + \mathbb{Z}(c\omega_2)$ — gives the same rescaling equivalence:
 
 - The Weierstrass series $\wp$ satisfies $\wp_{c\Lambda}(cu) = c^{-2} \wp_\Lambda(u)$ (both sides have a double pole at the origin with the same leading behavior after rescaling; the identity follows term-by-term).
 - Differentiating: $\wp'_{c\Lambda}(cu) = c^{-3} \wp'_\Lambda(u)$.
-- So the coefficients $g_2, g_3$ of the algebraic relation $(\wp')^2 = 4\wp^3 - g_2 \wp - g_3$ transform as $g_2 \to c^{-4} g_2$, $g_3 \to c^{-6} g_3$, which is exactly the $(a, b) \to (a/u^4, b/u^6)$ transformation from [§ 8](#sec-8) with $u = c$.
+- So the coefficients $g_2, g_3$ of the algebraic relation $(\wp')^2 = 4\wp^3 - g_2 \wp - g_3$ transform as $g_2 \to c^{-4} g_2$, $g_3 \to c^{-6} g_3$, which is exactly the $(a, b) \to (a/u^4, b/u^6)$ transformation from [# 8](#sec-8) with $u = c$.
 
-So the curves attached to $\Lambda$ and $c\Lambda$ differ by a $(u^4, u^6)$ rescaling — the same curve up to the equivalence of [§ 8](#sec-8). The equivalence class of elliptic curves is therefore parameterized by lattices *modulo* the rescaling $\Lambda \mapsto c\Lambda$.
+So the curves attached to $\Lambda$ and $c\Lambda$ differ by a $(u^4, u^6)$ rescaling — the same curve up to the equivalence of [# 8](#sec-8). The equivalence class of elliptic curves is therefore parameterized by lattices *modulo* the rescaling $\Lambda \mapsto c\Lambda$.
 
 **Reducing every lattice to a single complex number $\tau$.** Given any $\Lambda = \mathbb{Z}\omega_1 + \mathbb{Z}\omega_2$ built from the two periods $\omega_1, \omega_2$ (the two loop integrals introduced above), take $c = 1/\omega_1$. The rescaled lattice is $\mathbb{Z} + \mathbb{Z}\tau$ where $\tau = \omega_2/\omega_1$. So every lattice is equivalent to one of the form $\mathbb{Z} + \mathbb{Z}\tau$ with $\text{Im}(\tau) \neq 0$ (using that $\omega_1, \omega_2$ are not real multiples of each other, derived above). Convention: multiply one basis element by $-1$ if needed to arrange $\text{Im}(\tau) > 0$ (upper half-plane).
 
@@ -1352,11 +1352,11 @@ The **$j$-invariant** is a function $j: \{\tau : \text{Im}(\tau) > 0\} \to \math
 
 $$j(\tau) = j(\tau') \iff \mathbb{Z} + \mathbb{Z}\tau \text{ and } \mathbb{Z} + \mathbb{Z}\tau' \text{ describe the same curve up to rescaling equivalence.}$$
 
-The formula from the lattice side is $j(\tau) = 1728 \cdot g_2^3 / (g_2^3 - 27 g_3^2)$, with $g_2, g_3$ the coefficients from the $\wp$-relation. Substituting $a = -g_2/4$, $b = -g_3/4$ (the Weierstrass-form dictionary from the previous subsection) yields the algebraic expression from [§ 8](#sec-8):
+The formula from the lattice side is $j(\tau) = 1728 \cdot g_2^3 / (g_2^3 - 27 g_3^2)$, with $g_2, g_3$ the coefficients from the $\wp$-relation. Substituting $a = -g_2/4$, $b = -g_3/4$ (the Weierstrass-form dictionary from the previous subsection) yields the algebraic expression from [# 8](#sec-8):
 
 $$j = 1728 \cdot \frac{4a^3}{4a^3 + 27b^2}.$$
 
-**Why the algebraic $j$ formula separates curves.** The invariance of the algebraic $j$ under $(a, b) \to (a/u^4, b/u^6)$ ([§ 8](#sec-8)'s derivation) is the same invariance as $\tau \to \tau$ under lattice rescaling $\Lambda \to c\Lambda$ (translation of the same equivalence relation from curves to lattices, by the calculation above). The specific numerical coefficient $1728$ was chosen so the resulting function $\tau \mapsto j(\tau)$ is a bijection from equivalence classes to $\mathbb{C}$.
+**Why the algebraic $j$ formula separates curves.** The invariance of the algebraic $j$ under $(a, b) \to (a/u^4, b/u^6)$ ([# 8](#sec-8)'s derivation) is the same invariance as $\tau \to \tau$ under lattice rescaling $\Lambda \to c\Lambda$ (translation of the same equivalence relation from curves to lattices, by the calculation above). The specific numerical coefficient $1728$ was chosen so the resulting function $\tau \mapsto j(\tau)$ is a bijection from equivalence classes to $\mathbb{C}$.
 
 ### The change-of-basis: $\tau \to \frac{a\tau + b}{c\tau + d}$
 
@@ -1405,7 +1405,7 @@ The compatibility condition $\eqref{eq:tau-quadratic}$ derived above says: a lat
 
 $$A\tau^2 + B\tau + C = 0, \qquad B^2 - 4AC = -D < 0. \tag{$\star\star$}\label{eq:cm-quadratic}$$
 
-with $(A, B, C) = (n, m-q, -p)$ in the notation of that derivation. The negative discriminant is forced by $\text{Im}(\tau) \neq 0$: a real $\tau$ would collapse the lattice to a line, contradicting the two-independent-periods result. Such a lattice is a **CM lattice** by the order of discriminant $-D$; the associated curves are the ones covered in [§ 15B](#sec-15b).
+with $(A, B, C) = (n, m-q, -p)$ in the notation of that derivation. The negative discriminant is forced by $\text{Im}(\tau) \neq 0$: a real $\tau$ would collapse the lattice to a line, contradicting the two-independent-periods result. Such a lattice is a **CM lattice** by the order of discriminant $-D$; the associated curves are the ones covered in [# 15B](#sec-15b).
 
 **One triple $(A, B, C)$ per lattice-with-endomorphism.** Under a change of lattice basis with matrix $M = \begin{pmatrix} a & b \\ c & d \end{pmatrix}$, $\tau$ transforms as $\tau \mapsto (a\tau + b)/(c\tau + d)$; a direct substitution into $\eqref{eq:cm-quadratic}$ shows the coefficient triple transforms as $(A, B, C) \mapsto (A', B', C')$ with the *same* discriminant $-D$. So two triples with the same discriminant describe the same lattice-with-endomorphism iff they lie in the same equivalence class under this integer-matrix action. The number of classes is the **class number** $h(-D)$.
 
@@ -1426,7 +1426,7 @@ Combined: a **reduced triple** satisfies $|B| \leq A \leq C$. Every equivalence 
 2. For each $A$: $B = -A, -A+1, \ldots, A$;
 3. For each $(A, B)$: $C = (B^2 + D)/(4A)$, kept only if it is a positive integer with $C \geq A$.
 
-Each valid triple is one class. For $D = 3$: $A = 1$, and among $B = -1, 0, 1$, only $B = -1$ gives $C = 1$ (integer) with $C \geq A$; $B = 1$ gives $C = 1$ too but is equivalent up to sign. Result: $h(-3) = 1$. This one class corresponds to CM by the Eisenstein integers $\mathbb{Z}[\omega]$ ([§ 15B](#sec-15b)) — the type of CM that secp256k1 has.
+Each valid triple is one class. For $D = 3$: $A = 1$, and among $B = -1, 0, 1$, only $B = -1$ gives $C = 1$ (integer) with $C \geq A$; $B = 1$ gives $C = 1$ too but is equivalent up to sign. Result: $h(-3) = 1$. This one class corresponds to CM by the Eisenstein integers $\mathbb{Z}[\omega]$ ([# 15B](#sec-15b)) — the type of CM that secp256k1 has.
 
 The class number $h(-D)$ is the number of curves (up to rescaling equivalence) with CM by the order of discriminant $-D$. Writing $\tau(A, B, C) = (-B + i\sqrt{D})/(2A)$ for the root of a reduced triple, the **Hilbert class polynomial**
 
@@ -1440,7 +1440,7 @@ has these $j$-values as its roots and turns out to have *integer* coefficients �
 
 <a id="complex-multiplication-and-the-glv-method"></a>
 
-## § 15B. Complex multiplication and the GLV method {#sec-15b}
+## # 15B. Complex multiplication and the GLV method {#sec-15b}
 
 Every elliptic curve has the endomorphisms $[n]$ for $n \in \mathbb{Z}$ (multiplication by an integer). A **CM curve** has *more*: extra endomorphisms whose action isn't just repeated addition. These extras come from special algebraic structure in the curve equation — an absent term that opens up a substitution symmetry. Concretely, only two families of curves over prime fields carry practical CM: those with equation $y^2 = x^3 + b$ (CM by $\mathbb{Z}[\omega]$, $j = 0$) and those with equation $y^2 = x^3 + ax$ (CM by $\mathbb{Z}[i]$, $j = 1728$). The first family contains secp256k1 ($y^2 = x^3 + 7$).
 
@@ -1448,7 +1448,7 @@ The practical payoff is the **Gallant-Lambert-Vanstone (GLV) method**: on a curv
 
 ### Why generic curves have $\text{End}(E) = \mathbb{Z}$
 
-Over a random elliptic curve $y^2 = x^3 + ax + b$ (both $a, b$ nonzero and unrelated), the only endomorphisms are the integer multiplications $[n]$. Reason: an endomorphism $\phi(x, y) = (R_1(x), y R_2(x))$ ([§ 8](#sec-8)) that isn't of the form $[n]$ would require the curve equation to admit a nontrivial substitution symmetry — a substitution $x \to \alpha x + \beta$, $y \to \gamma y + \delta$ that preserves the equation. For the generic short Weierstrass form, no such substitution exists other than the trivial identity and the negation $y \to -y$ (which gives $[-1]$).
+Over a random elliptic curve $y^2 = x^3 + ax + b$ (both $a, b$ nonzero and unrelated), the only endomorphisms are the integer multiplications $[n]$. Reason: an endomorphism $\phi(x, y) = (R_1(x), y R_2(x))$ ([# 8](#sec-8)) that isn't of the form $[n]$ would require the curve equation to admit a nontrivial substitution symmetry — a substitution $x \to \alpha x + \beta$, $y \to \gamma y + \delta$ that preserves the equation. For the generic short Weierstrass form, no such substitution exists other than the trivial identity and the negation $y \to -y$ (which gives $[-1]$).
 
 Specific structural constraints on the curve equation are what enable extra endomorphisms:
 - The equation $y^2 = x^3 + b$ has *no* $x^2$ or $x$ term, only $x^3$ and a constant. This is the constraint that enables $\psi(x, y) = (\beta x, y)$ (see below).
@@ -1563,7 +1563,7 @@ For curves without base-field CM (Curve25519, P-256), a similar trick uses the F
 
 ---
 
-## § 16. Curve families and forms {#sec-16}
+## # 16. Curve families and forms {#sec-16}
 
 Different curve forms exist because they have different **computational advantages** — they're not different mathematical objects, just different coordinate systems for the same underlying group.
 
@@ -1645,7 +1645,7 @@ Notes on the design choices:
 
 ---
 
-## § 17. Coordinate systems and the point at infinity {#sec-17}
+## # 17. Coordinate systems and the point at infinity {#sec-17}
 
 ### Affine versus projective
 
@@ -1691,7 +1691,7 @@ In both cases, "infinity" is not a separate exception — it's just where $Z$ va
 
 In Jacobian coordinates, the scaling is more aggressive: $(X : Y : Z)$ corresponds to affine point $x = X/Z^2$, $y = Y/Z^3$. Why this weird convention?
 
-Because in elliptic curve formulas, $x$ has "degree 2" and $y$ has "degree 3" — meaning the substitutions in [§ 15A](#sec-15a) (isomorphism-preserving coordinate changes) that preserve the curve form are $x \to u^2 x$, $y \to u^3 y$. Jacobian coordinates respect this scaling: $(X, Y, Z) \sim (u^2 X, u^3 Y, u Z)$.
+Because in elliptic curve formulas, $x$ has "degree 2" and $y$ has "degree 3" — meaning the substitutions in [# 15A](#sec-15a) (isomorphism-preserving coordinate changes) that preserve the curve form are $x \to u^2 x$, $y \to u^3 y$. Jacobian coordinates respect this scaling: $(X, Y, Z) \sim (u^2 X, u^3 Y, u Z)$.
 
 The practical payoff: in Jacobian coordinates, the addition law has *no inversions* — only multiplications and squarings. Field inversion is expensive (a 256-bit modular inversion is roughly 100× slower than a multiplication), so eliminating it from the inner loop is a massive speedup. Standard ECC implementations use Jacobian coordinates internally and convert back to affine only at the end.
 
@@ -1760,7 +1760,7 @@ So the algorithm is:
 <div class="guided-fold-end"></div>
 ---
 
-## § 18. Practical attacks and defenses {#sec-18}
+## # 18. Practical attacks and defenses {#sec-18}
 
 ### The invalid curve attack on NIST curves
 
@@ -1788,7 +1788,7 @@ The twist attack is the only thing left to worry about, and Curve25519 was desig
 
 ---
 
-## § 19. Schnorr signatures and Ed25519 {#sec-19}
+## # 19. Schnorr signatures and Ed25519 {#sec-19}
 
 ### The Schnorr construction
 
@@ -1826,7 +1826,7 @@ Ed25519 implements Schnorr signatures on Curve25519 (in Edwards form), with two 
 
 ---
 
-## § 21. EC in real protocols: TLS, SSH, signatures {#sec-21}
+## # 21. EC in real protocols: TLS, SSH, signatures {#sec-21}
 
 The previous sections describe the math; here is where it actually shows up in the wild, what the choices were, and what they imply for detection engineering and protocol analysis.
 
@@ -1891,11 +1891,11 @@ Verify: compute $u_1 = h s^{-1}$, $u_2 = r s^{-1}$, then $R' = u_1 G + u_2 Q$. A
 
 3. **Malleability**: if $(r, s)$ is a valid signature, so is $(r, -s \mod n)$. Bitcoin's BIP-0062 mandates low-$s$ canonicalization to prevent transaction-ID malleability attacks.
 
-4. **Curve-specific weaknesses**: small subgroup, invalid curve, twist attacks — all discussed in [§ 18](#sec-18).
+4. **Curve-specific weaknesses**: small subgroup, invalid curve, twist attacks — all discussed in [# 18](#sec-18).
 
 ---
 
-## § 22. Isogeny-based post-quantum cryptography {#sec-22}
+## # 22. Isogeny-based post-quantum cryptography {#sec-22}
 
 Standard ECDH and ECDSA are broken by Shor's algorithm on a sufficiently large quantum computer — the discrete log on $E(\mathbb{F}_q)$ falls to the same algorithm that factors RSA. Post-quantum replacements come from problems that *don't* reduce to abelian group discrete log. Isogeny-based crypto is one family of these: the underlying hard problem is to **find an isogeny between two given elliptic curves**, given that you know the curves but not the path between them.
 
@@ -1934,7 +1934,7 @@ The whole isogeny-graph framework runs on duals. Every edge $\phi: E \to E'$ in 
 
 ---
 
-## § 23. Curves in practice: what you'll actually encounter {#sec-23}
+## # 23. Curves in practice: what you'll actually encounter {#sec-23}
 
 A practical lookup table for which curves you'll see in different ecosystems:
 

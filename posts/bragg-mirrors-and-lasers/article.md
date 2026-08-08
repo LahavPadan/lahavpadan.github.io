@@ -4,13 +4,13 @@ The previous post, [Coupled Modes, Bragg Structures, and Photonic Bandgaps](/pos
 
 Two devices sit at the center of what follows:
 
-- A **distributed Bragg reflector**{:#defn-dbr} (DBR) is a grating used as a wavelength-selective element. It reflects strongly in a narrow band around its design wavelength and transmits outside it. The same object also serves as one of the two mirrors of the laser [cavity](#defn-cavity) built in [§ 4](#sec-4).
+- A **distributed Bragg reflector**{:#defn-dbr} (DBR) is a grating used as a wavelength-selective element. It reflects strongly in a narrow band around its design wavelength and transmits outside it. The same object also serves as one of the two mirrors of the laser [cavity](#defn-cavity) built in [# 4](#sec-4).
 
 - A **distributed-feedback laser**{:#defn-dfb} (DFB) puts the same grating *inside* a [gain](#defn-gain) medium and uses Bragg reflection in place of end mirrors, so the wavelength of the laser is set by the grating rather than by the gain's emission peak.
 
 Everything else developed here — [apodization](#sec-5-1), [chirp](#sec-5-2), [long-period coupling](#sec-5-3), and [quasi-phase matching](#sec-5-4) — is a variation on the same physics with the grating shaped or repurposed.
 
-The results we use from the previous post, all justified in [§ 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4):
+The results we use from the previous post, all justified in [# 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4):
 
 - The grating sits in a medium whose refractive index varies periodically along $z$: $n(z) = n_\text{avg} + \Delta n \cos(2 k_B z)$.
 
@@ -42,7 +42,7 @@ The results we use from the previous post, all justified in [§ 4 of the previou
 
   where $A$ (forward) and $B$ (backward) are slowly-varying on the wavelength scale.
 
-  The two components at $\pm k_B$ are the ones the fundamental grating harmonic $2 k_B$ couples to each other; this two-mode reduction is justified for the sinusoidal modulation in [§ 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4).
+  The two components at $\pm k_B$ are the ones the fundamental grating harmonic $2 k_B$ couples to each other; this two-mode reduction is justified for the sinusoidal modulation in [# 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4).
 
   Non-sinusoidal modulations carry additional Fourier harmonics of $n(z)$, each of which drives its own pair at [higher-order Bragg resonances](#sec-3-2) $k = m k_B$.
 
@@ -72,7 +72,7 @@ The results we use from the previous post, all justified in [§ 4 of the previou
 
 Set the driving spatial wavenumber to the Bragg value, $k = k_B$ — the case of **exact Bragg tuning**{:#defn-bragg-tuning} ($\delta = 0$).
 
-[§ 1](#sec-1) and [§ 2](#sec-2) apply \eqref{eq:hyperbola} at four values of $(\delta, q)$:
+[# 1](#sec-1) and [# 2](#sec-2) apply \eqref{eq:hyperbola} at four values of $(\delta, q)$:
 
 - $\delta = \pm\kappa$ (both stopband edges, $q = 0$): the [two standing waves at $\omega_\pm$](#sec-1-1).
 
@@ -84,15 +84,15 @@ Set the driving spatial wavenumber to the Bragg value, $k = k_B$ — the case of
 
 The remaining sections build on that base:
 
-- [§ 3](#sec-3) turns the sinusoidal grating into a fabricated piecewise-constant stack — the [DBR](#defn-dbr).
+- [# 3](#sec-3) turns the sinusoidal grating into a fabricated piecewise-constant stack — the [DBR](#defn-dbr).
 
-- [§ 4](#sec-4) places the grating against a [gain](#defn-gain) medium: the [DFB](#defn-dfb) laser (grating inside the gain) and the DBR laser (grating in a separate section).
+- [# 4](#sec-4) places the grating against a [gain](#defn-gain) medium: the [DFB](#defn-dfb) laser (grating inside the gain) and the DBR laser (grating in a separate section).
 
-- [§ 5](#sec-5) lets the grating vary along its length.
+- [# 5](#sec-5) lets the grating vary along its length.
 
 ---
 
-## § 1. The two ends of the stopband, $\omega_-$ and $\omega_+$ {#sec-1}
+## # 1. The two ends of the stopband, $\omega_-$ and $\omega_+$ {#sec-1}
 
 Inside the stopband ($|\delta| < \kappa$) \eqref{eq:hyperbola} gives $q^2 < 0$: the field decays exponentially and no wave propagates.
 
@@ -100,7 +100,7 @@ The stopband is bounded above and below in $\omega$ by $\omega_-$ (lower) and $\
 
 We find these two frequencies twice, from complementary starting points: the [coupled-mode framework](#sec-1-1) and the [multilayer stack](#sec-1-3).
 
-### § 1.1. Equal-mixture standing waves {#sec-1-1}
+### # 1.1. Equal-mixture standing waves {#sec-1-1}
 
 At [exact Bragg tuning](#defn-bragg-tuning) the two-mode [coupling](#defn-coupling) matrix has zero diagonal and only the off-diagonal $\pm\kappa$ left.
 
@@ -118,7 +118,7 @@ Both have wavelength $2\pi/k_B = 2\Lambda$: exactly one full oscillation per two
 
 The cosine standing wave peaks where $\cos(2 k_B z)$ peaks, which is where $\varepsilon(z) = n_\text{avg}^2 + \Delta\varepsilon \cos(2 k_B z)$ is largest — that is, in the high-index parts of the modulation. The sine standing wave peaks in the low-index parts.
 
-### § 1.2. Which of $\omega_-$, $\omega_+$ lies lower {#sec-1-2}
+### # 1.2. Which of $\omega_-$, $\omega_+$ lies lower {#sec-1-2}
 
 Both standing waves live at the same wavenumber $k_B$; dispersion sends that single wavenumber to two frequencies, one at each [stopband](#defn-stopband) edge.
 
@@ -160,11 +160,11 @@ The only thing that separates them is the denominator, which depends on how the 
 
 So $\omega_-$ is the cosine standing wave, concentrated in the high-index material, and $\omega_+$ is the sine standing wave, concentrated in the low-index material — the mode concentrated in the high-index material lies at the lower frequency.
 
-### § 1.3. Constructive interface reflection at the Bragg wavelength {#sec-1-3}
+### # 1.3. Constructive interface reflection at the Bragg wavelength {#sec-1-3}
 
 The same $\omega_\pm$ come out of a different picture.
 
-Instead of the [two-Fourier-component truncation](#sec-1-1), take the grating as a stack of layers of piecewise-constant index — the multilayer we will build as a [DBR](#defn-dbr) in [§ 3](#sec-3) — and follow the phase of the individual interface reflections.
+Instead of the [two-Fourier-component truncation](#sec-1-1), take the grating as a stack of layers of piecewise-constant index — the multilayer we will build as a [DBR](#defn-dbr) in [# 3](#sec-3) — and follow the phase of the individual interface reflections.
 
 At normal incidence, an interface from refractive index $n_1$ into refractive index $n_2$ has amplitude reflection coefficient
 
@@ -206,7 +206,7 @@ Away from [exact Bragg tuning](#defn-bragg-tuning) ($\delta \neq 0$), the round-
 
 The rate at which they lose coherence is what sets the stopband width.
 
-### § 1.4. The stopband width, from phase-error accumulation {#sec-1-4}
+### # 1.4. The stopband width, from phase-error accumulation {#sec-1-4}
 
 At $\omega = \omega_B$ (i.e. $\delta = 0$), each layer's round-trip phase is exactly $\pi$ and reflections from all interfaces combine constructively.
 
@@ -218,7 +218,7 @@ Illuminate the same stack at frequency $\omega = 1.01\, \omega_B$ — off by 1%.
 
 $$\phi_\text{RT} = 2 k_i d_i = 2\, (n_i\, \omega / c)\, d_i = \pi\, (\omega/\omega_B) \approx 1.01\, \pi,$$
 
-using $n_i d_i = \lambda_B/4 = \pi c/(2\omega_B)$ from § 1.3. Each layer contributes a phase *error* of $0.01\,\pi \approx 2°$. Small at one layer, but the errors accumulate as the wave works deeper:
+using $n_i d_i = \lambda_B/4 = \pi c/(2\omega_B)$ from # 1.3. Each layer contributes a phase *error* of $0.01\,\pi \approx 2°$. Small at one layer, but the errors accumulate as the wave works deeper:
 
 - After 10 layers: accumulated error $\approx 18°$. Deep and shallow reflections still add roughly in phase.
 
@@ -248,9 +248,9 @@ Since $\kappa/k_B = \Delta n / (2 n_\text{avg})$ from the coupling definition, h
 
 ---
 
-## § 2. Finite gratings: decay length and reflectivity {#sec-2}
+## # 2. Finite gratings: decay length and reflectivity {#sec-2}
 
-### § 2.1. Semi-infinite grating: the decay length $1/\kappa$ {#sec-2-1}
+### # 2.1. Semi-infinite grating: the decay length $1/\kappa$ {#sec-2-1}
 
 At $\delta = 0$, \eqref{eq:hyperbola} gives $q^2 = -\kappa^2$ — the deepest negative value it attains inside the stopband:
 
@@ -264,13 +264,13 @@ The field decays as $e^{-\kappa z}$: amplitude falls by $e$ over $1/\kappa$. Thi
 
 Cut the grating off at $z = L$ instead, and both branches must be kept — the second boundary is what selects the specific combination.
 
-### § 2.2. Finite grating: the reflectivity {#sec-2-2}
+### # 2.2. Finite grating: the reflectivity {#sec-2-2}
 
 Work at $\delta = 0$, as in the [semi-infinite decay analysis](#sec-2-1): the algebra collapses to a single rate $\kappa$, and everywhere else inside the stopband follows by replacing $\kappa$ with $\alpha = \sqrt{\kappa^2 - \delta^2}$ throughout.
 
 <div class="guided-fold-start" data-label="Reduce the coupled-mode equations to a two-boundary transfer matrix" data-tone="derivation"></div>
 
-The coupled-mode equations for the envelopes $A(z)$ (forward, right-going) and $B(z)$ (backward, left-going), derived at [§ 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4), are $dA/dz = i\delta A + i\kappa B$ and $dB/dz = -i\delta B - i\kappa A$.
+The coupled-mode equations for the envelopes $A(z)$ (forward, right-going) and $B(z)$ (backward, left-going), derived at [# 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4), are $dA/dz = i\delta A + i\kappa B$ and $dB/dz = -i\delta B - i\kappa A$.
 
 At $\delta = 0$ the diagonal terms drop and only the off-diagonal coupling remains,
 
@@ -336,7 +336,7 @@ so a grating at [exact Bragg tuning](#defn-bragg-tuning) needs about $3/\kappa$ 
 
 ---
 
-## § 3. The DBR: a Bragg grating in fabricated hardware {#sec-3}
+## # 3. The DBR: a Bragg grating in fabricated hardware {#sec-3}
 
 We take the [sinusoidal grating of the infinite-medium analysis](#sec-1) and replace it with what a real deposition tool produces: a stack of $N$ alternating high-index and low-index layers, each pair a **period**, with the high-index layer of thickness $d_H$ and refractive index $n_H$ and the low-index layer of thickness $d_L$ and refractive index $n_L$.
 
@@ -358,7 +358,7 @@ What changes is that the modulation is now a square wave rather than a cosine, a
 
   [Adding the angle of incidence](#sec-3-3) reshapes the geometry and splits the polarizations.
 
-### § 3.1. Coupling and reflection for a square-wave stack {#sec-3-1}
+### # 3.1. Coupling and reflection for a square-wave stack {#sec-3-1}
 
 The formula $\kappa = (\Delta n / 2 n_\text{avg})\, k_B$, [equation (9) of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#eq:kappa-bragg), was for a *sinusoidal* index modulation.
 
@@ -408,7 +408,7 @@ $$\Delta k = 2\kappa_\text{DBR}, \qquad \frac{\Delta k}{k_B} = \frac{2}{\pi}\, \
 
 *The Fourier expansion picked out only the fundamental. What about the higher harmonics?*
 
-### § 3.2. Higher-order stopbands and the structure factor {#sec-3-2}
+### # 3.2. Higher-order stopbands and the structure factor {#sec-3-2}
 
 The Fourier series of the square-wave modulation only used its fundamental component. But a square wave contains more than that. Fourier-expanding the piecewise-constant modulation gives cosine harmonics at every odd multiple of the fundamental:
 
@@ -430,7 +430,7 @@ Two engineering consequences:
 
 *The stopband positions and widths so far are set by normal-incidence Bragg. Off-normal, the geometry changes both. What is left of the stopband when the wave hits the stack at an angle?*
 
-### § 3.3. Off-normal incidence and Brewster's angle {#sec-3-3}
+### # 3.3. Off-normal incidence and Brewster's angle {#sec-3-3}
 
 Every calculation so far has assumed the wave hits the stack perpendicular to the layers. In many arrangements the wave arrives at an angle instead: a beam entering the stack at some tilt, or a guided mode inside a slab whose $\vec{k}$ points off the stack normal.
 
@@ -536,7 +536,7 @@ What kind of laser does that arrangement produce?*
 
 ---
 
-## § 4. Bragg feedback in lasers: DFB and DBR {#sec-4}
+## # 4. Bragg feedback in lasers: DFB and DBR {#sec-4}
 
 A laser combines a **gain medium**{:#defn-gain}, which amplifies the field, with a **cavity**{:#defn-cavity}, which feeds the field back on itself so that [gain](#defn-gain) accumulates coherently over many round trips.
 
@@ -552,7 +552,7 @@ Two placements decide the device.
 
 First, though: what does a flat-mirror [cavity](#defn-cavity) do, and why does it fail to pick a wavelength?
 
-### § 4.1. Why flat mirrors do not pick a wavelength {#sec-4-1}
+### # 4.1. Why flat mirrors do not pick a wavelength {#sec-4-1}
 
 Take the simplest cavity: a gain-carrying dielectric of length $L$ and refractive index $n_\text{avg}$ (same symbol as the rest of the post — the [periodic index modulation](#sec-1) simply hasn't been switched on yet), bounded by two flat interfaces at which the index steps back to air.
 
@@ -580,7 +580,7 @@ The flat-mirror cavity therefore offers no mirror-level frequency selection. The
 
 - Its peak position is not fixed: drive current and chip temperature both shift the peak during operation, and as the peak moves the winning mode hops with it.
 
-### § 4.2. DFB: the grating co-located with the gain {#sec-4-2}
+### # 4.2. DFB: the grating co-located with the gain {#sec-4-2}
 
 In a [DFB](#defn-dfb), the grating is interleaved with the [gain](#defn-gain) along the whole device: [coupling](#defn-coupling) $\kappa$ and [gain](#defn-gain) $\gamma$ act at every $z$.
 
@@ -596,7 +596,7 @@ at the mode frequency.
 
 In a grating there is no localized planar reflector, but the same round-trip accounting still applies.
 
-A wave at frequency close to a stopband boundary $\omega_\pm$ propagates with group velocity $v_g = d\omega/dq \to 0$ ([§ 0.7 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-0-7)) — the slope of the dispersion curve vanishes at the stopband boundary.
+A wave at frequency close to a stopband boundary $\omega_\pm$ propagates with group velocity $v_g = d\omega/dq \to 0$ ([# 0.7 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-0-7)) — the slope of the dispersion curve vanishes at the stopband boundary.
 
 Slow light accumulates the same round-trip phase over one or two decay lengths $1/\kappa$ that a fast wave would need the full flat-mirror $2L$ for. Two twists follow from this:
 
@@ -616,7 +616,7 @@ Whether a mode sits inside or outside the stopband decides how much of it surviv
 
 - **Inside the stopband ($|\delta| < \kappa$).**
 
-  By \eqref{eq:hyperbola}, $q^2 < 0$; the envelope decays as $e^{-\alpha z}$ with $\alpha = \sqrt{\kappa^2 - \delta^2}$ ([previous post § 0.6](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-0-6)).
+  By \eqref{eq:hyperbola}, $q^2 < 0$; the envelope decays as $e^{-\alpha z}$ with $\alpha = \sqrt{\kappa^2 - \delta^2}$ ([previous post # 0.6](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-0-6)).
 
   Over a grating of length $L$ with $\kappa L \gtrsim 2$, the envelope has decayed to a small fraction of its input at the far end. The [flux-conservation identity](#sec-2-2) $\vert A \vert^2 - \vert B \vert^2 = T$ then gives $R \to 1$.
 
@@ -806,7 +806,7 @@ Two ways to break the $\omega_-/\omega_+$ symmetry *by construction* — i.e. so
 
 *The two constructions above treated $\Delta\varepsilon'$ and $\Delta\varepsilon''$ as independent knobs — one turned all the way off in each case. In a fabricated device, both are turned on simultaneously and cannot be set independently: causality forces a link between them. How tight is the link?*
 
-### § 4.3. Adding a gain component to the modulation {#sec-4-3}
+### # 4.3. Adding a gain component to the modulation {#sec-4-3}
 
 Split $\Delta\varepsilon(z)$ into real and imaginary parts:
 
@@ -884,7 +884,7 @@ An exactly pure index grating and an exactly pure gain grating are idealizations
 
 Design lets us pick the operating point and the grating phase to weight one component over the other, but it does not eliminate the companion response.
 
-### § 4.4. DFB linewidth {#sec-4-4}
+### # 4.4. DFB linewidth {#sec-4-4}
 
 Everything so far treats the DFB as emitting at a single frequency $\omega_B$ (or, before we forced single-mode operation, at $\omega_-$ or $\omega_+$).
 
@@ -894,7 +894,7 @@ This section works out what determines $\Delta\nu$ and why the DFB does well on 
 
 ---
 
-#### § 4.4.1. Linewidth as phase stability {#sec-4-4-1}
+#### # 4.4.1. Linewidth as phase stability {#sec-4-4-1}
 
 The emitted electric field is a complex quantity oscillating at frequency $\omega_B$. Its complex amplitude can be written as
 
@@ -932,11 +932,11 @@ $$\Delta\nu = \frac{1}{2\pi\, \tau_\text{coh}}.$$
 
 <div class="guided-fold-end"></div>
 
-So the question "what is $\Delta\nu$?" is the question "how fast does the phase $\phi(t)$ drift?" The rest of § 4.4 traces where the drift comes from and how big it is.
+So the question "what is $\Delta\nu$?" is the question "how fast does the phase $\phi(t)$ drift?" The rest of # 4.4 traces where the drift comes from and how big it is.
 
 ---
 
-#### § 4.4.2. Photon lifetime {#sec-4-4-2}
+#### # 4.4.2. Photon lifetime {#sec-4-4-2}
 
 Before phase noise, consider the passive cavity — no [gain](#defn-gain), no noise sources — and ask how long a photon injected into the lasing mode survives before it leaves.
 
@@ -970,7 +970,7 @@ Pushing $\kappa L$ up further is what buys long $\tau_p$: each unit of $\kappa L
 
 ---
 
-#### § 4.4.3. Where phase drift comes from: spontaneous vs stimulated emission {#sec-4-4-3}
+#### # 4.4.3. Where phase drift comes from: spontaneous vs stimulated emission {#sec-4-4-3}
 
 The laser is not passive — the [gain](#defn-gain) medium continuously supplies new photons to the mode, replacing the ones that leak or get absorbed. Those new photons are the ones that add phase noise, so how they are supplied matters.
 
@@ -1002,7 +1002,7 @@ with $n_\text{sp} \geq 1$ the **inversion factor**{:#defn-inversion-factor}: $n_
 
 ---
 
-#### § 4.4.4. One spontaneous event, one phase kick {#sec-4-4-4}
+#### # 4.4.4. One spontaneous event, one phase kick {#sec-4-4-4}
 
 What does a single spontaneous emission event do to the mode's phase?
 
@@ -1032,7 +1032,7 @@ Larger $N_\text{ph}$ means each unit-magnitude kick perturbs the phase less — 
 
 ---
 
-#### § 4.4.5. Accumulated phase drift and the linewidth formula {#sec-4-4-5}
+#### # 4.4.5. Accumulated phase drift and the linewidth formula {#sec-4-4-5}
 
 Independent kicks arrive at rate $R_\text{sp} = n_\text{sp}/\tau_p$. Each contributes $1/(2 N_\text{ph})$ to the phase variance. Over time $\tau$, the accumulated variance is
 
@@ -1042,7 +1042,7 @@ Comparing with the diffusion relation $\langle (\phi(t+\tau) - \phi(t))^2 \rangl
 
 $$\frac{1}{\tau_\text{coh}} = \frac{n_\text{sp}}{2\, \tau_p\, N_\text{ph}}.$$
 
-The intracavity photon number is related to the output power. Photons leak out at rate $1/\tau_\text{leak}$ (from § 4.4.2, ignoring absorption for the output-power accounting), each carrying energy $h\nu$, so
+The intracavity photon number is related to the output power. Photons leak out at rate $1/\tau_\text{leak}$ (from # 4.4.2, ignoring absorption for the output-power accounting), each carrying energy $h\nu$, so
 
 $$P_\text{out} = \frac{N_\text{ph}\, h\nu}{\tau_\text{leak}}.$$
 
@@ -1056,7 +1056,7 @@ This is the **Schawlow–Townes linewidth**{:#defn-schawlow-townes}: the fundame
 
 Three dependences to notice:
 
-- $\Delta\nu \propto 1/P_\text{out}$: more output power means a larger $N_\text{ph}$ swamping each unit-magnitude kick. Explicit in the phase-kick geometry of § 4.4.4.
+- $\Delta\nu \propto 1/P_\text{out}$: more output power means a larger $N_\text{ph}$ swamping each unit-magnitude kick. Explicit in the phase-kick geometry of # 4.4.4.
 
 - $\Delta\nu \propto 1/\tau_p^2$: one factor of $\tau_p$ comes from the rate of spontaneous events ($R_\text{sp} \propto 1/\tau_p$), and the second from the intracavity photon number at fixed output power ($N_\text{ph} \propto \tau_p$).
 
@@ -1066,9 +1066,9 @@ Three dependences to notice:
 
 ---
 
-#### § 4.4.6. The linewidth enhancement factor $\alpha_H$ {#sec-4-4-6}
+#### # 4.4.6. The linewidth enhancement factor $\alpha_H$ {#sec-4-4-6}
 
-The Schawlow–Townes formula counts only the *direct* phase kick of § 4.4.4 — the geometric perturbation of the phasor by an added photon.
+The Schawlow–Townes formula counts only the *direct* phase kick of # 4.4.4 — the geometric perturbation of the phasor by an added photon.
 
 In a semiconductor gain medium, there is a second kick that runs through the carrier density and is invisible in a two-level atomic picture.
 
@@ -1104,7 +1104,7 @@ Plugging in gives $\Delta\nu$ of order 1 MHz — orders of magnitude below the f
 
 *The remaining operational question about the [DFB](#defn-dfb): $\Lambda$ (and with it $k_B = \pi/\Lambda$) is set once at fabrication. Can the emission frequency $\omega_B = \pi c/(n_\text{avg}\, \Lambda)$ be moved after the fact, and by how much?*
 
-### § 4.5. Tuning a DFB {#sec-4-5}
+### # 4.5. Tuning a DFB {#sec-4-5}
 
 Tuning a [DFB](#defn-dfb) requires shifting its emission frequency $\omega_B = \pi c/(n_\text{avg}\, \Lambda)$.
 
@@ -1154,7 +1154,7 @@ Temperature and current injection each act on the *whole device*: because the gr
 
 > **Key Takeaway:** The Bragg-wavelength tuning range of a DFB is capped at a few nm — that is the operational reach a DFB gives us on its emission frequency. Wider tuning requires making $\kappa$ and $\gamma$ act in physically distinct sections of the device, so their indices can move independently.
 
-### § 4.6. DBR laser: grating outside the gain {#sec-4-6}
+### # 4.6. DBR laser: grating outside the gain {#sec-4-6}
 
 A **DBR laser** places the [coupling](#defn-coupling) $\kappa$ and the [gain](#defn-gain) $\gamma$ in physically distinct sections along the propagation axis.
 
@@ -1195,7 +1195,7 @@ That independence gives three strategies:
 
 ---
 
-## § 5. Engineered gratings {#sec-5}
+## # 5. Engineered gratings {#sec-5}
 
 Sections 1–4 treated the grating as uniform: constant [coupling](#defn-coupling) $\kappa$ and constant period $\Lambda$.
 
@@ -1203,7 +1203,7 @@ Real gratings can vary either along their length, and the two knobs — spatial 
 
 We cover apodization, chirp, co-propagating coupling, and the extension of the Bragg momentum-conservation argument to nonlinear frequency conversion.
 
-### § 5.1. Apodization: shaping the amplitude {#sec-5-1}
+### # 5.1. Apodization: shaping the amplitude {#sec-5-1}
 
 A uniform grating turns on at $z = 0$ and off at $z = L$: $\kappa$ jumps from zero to $\kappa_0$ at the entrance and back to zero at the exit.
 
@@ -1289,7 +1289,7 @@ A uniform grating whose reflectivity peaks on the target channel would still ret
 
 Apodized fiber Bragg gratings — the smoothing implemented during the two-beam interference exposure that writes the index modulation — routinely push this floor to $-40\,\text{dB}$ or lower, at the price of a main lobe wider than the same-length uniform grating's.
 
-### § 5.2. Chirp: shaping the period {#sec-5-2}
+### # 5.2. Chirp: shaping the period {#sec-5-2}
 
 Every derivation before this subsection assumed a single [Bragg wavenumber](#defn-bragg-wavenumber) $k_B = \pi/\Lambda$ set by a single period $\Lambda$. **Chirp** breaks that: the period varies slowly along the grating,
 
@@ -1313,7 +1313,7 @@ The wave crosses those depths essentially untouched. It reaches the specific dep
 
 $$\lambda_B(z^*) = \lambda.$$
 
-There the phase mismatch is zero, successive periods add coherently, and the local grating acts as a Bragg mirror at that depth — the wave reflects and decays into the deeper grating over the characteristic decay length $1/\kappa$ of [§ 2.1](#sec-2-1).
+There the phase mismatch is zero, successive periods add coherently, and the local grating acts as a Bragg mirror at that depth — the wave reflects and decays into the deeper grating over the characteristic decay length $1/\kappa$ of [# 2.1](#sec-2-1).
 
 Deeper layers, where the local $\lambda_B$ has drifted past $\lambda$, again do nothing. From outside, the wave has turned around at $z^*$ — a wavelength-dependent penetration depth.
 
@@ -1359,17 +1359,17 @@ A related use is intracavity dispersion compensation in femtosecond lasers, wher
 
 The "free propagation" approximation used to derive \eqref{eq:chirp-delay} ignores the last piece of the round trip: as the wave enters the local stopband near $z^*$ and turns around inside it, it slows down and picks up an extra contribution to $\tau(\lambda)$ from that region.
 
-And $D_\text{fiber}$ itself varies with $\lambda$ across the pulse spectrum (second-order dispersion), so matching the CFBG's response over the full bandwidth requires the full transfer-matrix treatment of [§ 8 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-8), with $\alpha$ itself allowed to vary with $z$.
+And $D_\text{fiber}$ itself varies with $\lambda$ across the pulse spectrum (second-order dispersion), so matching the CFBG's response over the full bandwidth requires the full transfer-matrix treatment of [# 8 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-8), with $\alpha$ itself allowed to vary with $z$.
 
 **Underlying picture.**
 
-The mechanism is a direct reading of \eqref{eq:hyperbola} at $\delta = \pm\kappa$: the group velocity $d\omega/dq$ vanishes at the two [stopband](#defn-stopband) boundaries $\omega_\pm$ of [§ 1](#sec-1).
+The mechanism is a direct reading of \eqref{eq:hyperbola} at $\delta = \pm\kappa$: the group velocity $d\omega/dq$ vanishes at the two [stopband](#defn-stopband) boundaries $\omega_\pm$ of [# 1](#sec-1).
 
 Chirping the grating slides that vanishing point in $z$, so different wavelengths reach the boundary at different depths, integrate different accumulated phases along the way, and emerge with the designed group delay.
 
-### § 5.3. Co-propagating coupling and long-period gratings {#sec-5-3}
+### # 5.3. Co-propagating coupling and long-period gratings {#sec-5-3}
 
-The coupled-mode analysis of [§ 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4) handled a *counter*-propagating pair: forward and backward waves along the same waveguide, coupled by a grating with $G_1 = 2 k_B$ that supplies the round-trip momentum kick.
+The coupled-mode analysis of [# 4 of the previous post](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4) handled a *counter*-propagating pair: forward and backward waves along the same waveguide, coupled by a grating with $G_1 = 2 k_B$ that supplies the round-trip momentum kick.
 
 The same formalism applies to a *co*-propagating pair: two guided modes of a waveguide, both moving in the same direction with wavenumbers $k_1 > k_2$, coupled by a grating with $G = k_1 - k_2$.
 
@@ -1399,7 +1399,7 @@ The cladding mode leaks out through the fiber jacket, so from the input's viewpo
 
 These devices are used as gain-flattening filters in erbium-doped fiber amplifiers, and as temperature and strain sensors where the loss-dip wavelength moves with the fiber's environment.
 
-### § 5.4. Quasi-phase matching in nonlinear optics {#sec-5-4}
+### # 5.4. Quasi-phase matching in nonlinear optics {#sec-5-4}
 
 The last application takes the Bragg momentum-conservation argument outside linear wave propagation.
 
@@ -1445,22 +1445,22 @@ The design principle is the [Bragg condition](#defn-bragg-condition) $\lambda_B 
 
 ## Closing
 
-[§ 1](#sec-1) and [§ 2](#sec-2) read \eqref{eq:hyperbola} — the Bragg dispersion $q^2 = \delta^2 - \kappa^2$ — at four operating points:
+[# 1](#sec-1) and [# 2](#sec-2) read \eqref{eq:hyperbola} — the Bragg dispersion $q^2 = \delta^2 - \kappa^2$ — at four operating points:
 
-- $\delta = \pm\kappa$: the two standing waves $\omega_\pm$ and which sits at the lower frequency ([§ 1](#sec-1)).
+- $\delta = \pm\kappa$: the two standing waves $\omega_\pm$ and which sits at the lower frequency ([# 1](#sec-1)).
 
-- $\delta = 0$ inside an infinite medium: the decay scale $1/\kappa$ ([§ 2.1](#sec-2-1)).
+- $\delta = 0$ inside an infinite medium: the decay scale $1/\kappa$ ([# 2.1](#sec-2-1)).
 
 - $\delta = 0$ inside the [stopband](#defn-stopband) with two boundaries: the [finite-mirror reflectivity $\tanh^2(\kappa L)$](#sec-2-2).
 
-[§ 3](#sec-3)–[§ 5](#sec-5) build on that base:
+[# 3](#sec-3)–[# 5](#sec-5) build on that base:
 
-- Piecewise-constant modulation as fabricated hardware: the [DBR](#defn-dbr) ([§ 3](#sec-3)).
+- Piecewise-constant modulation as fabricated hardware: the [DBR](#defn-dbr) ([# 3](#sec-3)).
 
-- Modulation in the presence of [gain](#defn-gain): the [DFB](#defn-dfb) laser and its DBR-laser cousin ([§ 4](#sec-4)).
+- Modulation in the presence of [gain](#defn-gain): the [DFB](#defn-dfb) laser and its DBR-laser cousin ([# 4](#sec-4)).
 
-- Modulation shaped along its length: apodization, chirp, co-propagating [coupling](#defn-coupling), and quasi-phase matching ([§ 5](#sec-5)).
+- Modulation shaped along its length: apodization, chirp, co-propagating [coupling](#defn-coupling), and quasi-phase matching ([# 5](#sec-5)).
 
-The two ingredients that make all of it work were the two-wave truncation of the previous post's [§ 4](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4) and the accessibility of both stopband boundary frequencies $\omega_\pm$.
+The two ingredients that make all of it work were the two-wave truncation of the previous post's [# 4](/posts/coupled-modes-bragg-structures-and-photonic-bandgaps/#sec-4) and the accessibility of both stopband boundary frequencies $\omega_\pm$.
 
 Every device-specific formula in this post follows from those two facts, taken through one universal hyperbola.

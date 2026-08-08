@@ -22,17 +22,35 @@
   }
 
   /**
-   * In-page navigation without a growing history stack.
+   * In-page navigation with one history entry per jump.
    *
-   * A long article holds hundreds of anchor links — every contents entry and
-   * every cross-reference. Followed with their default behaviour, each one
-   * pushes a history entry, so leaving the article means pressing Back once per
-   * section visited instead of once. Here a click scrolls to the target and
-   * rewrites the current entry's URL, so the section stays shareable but Back
-   * returns to whatever came before the article. The scroll itself is a short,
-   * quiet ease, and is skipped entirely when the reader asks for reduced motion.
+   * Each reference click pushes a single entry that carries the anchor id, and
+   * the entry the reader came from is stamped with the scroll position it held
+   * at the moment of the click. Back therefore returns the reader to the exact
+   * spot they were reading, and one more Back leaves the article — no matter
+   * how deep the chain of jumps. The scroll itself centres the target in the
+   * viewport rather than parking it under the header, and is skipped entirely
+   * when the reader asks for reduced motion.
+   *
+   * Scroll restoration is switched to manual so a Back navigation lands where
+   * the entry says, not where the browser guesses; the default heuristic loses
+   * position across hash changes and after the article's layout has settled.
    */
   function wireInPageLinks() {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+    // Seed the entry the reader arrived on: either a shared deep link
+    // (#anchor in the URL) or a plain arrival at the top of the article.
+    var initialHash = decodeURIComponent(location.hash.slice(1));
+    var initialTarget = initialHash ? document.getElementById(initialHash) : null;
+    if (initialTarget) {
+      history.replaceState({ lahavAnchor: initialHash }, '', location.href);
+      // Re-centre: with manual restoration the browser did not auto-jump.
+      window.requestAnimationFrame(function () { scrollToTarget(initialTarget); });
+    } else {
+      history.replaceState({ lahavScroll: window.scrollY }, '', location.href);
+    }
+
     document.addEventListener('click', function (event) {
       if (event.defaultPrevented || event.button !== 0 ||
           event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -46,15 +64,42 @@
       if (!target) return;
 
       event.preventDefault();
+
+      // Stamp the current entry with the reader's pre-click position, then
+      // push a new entry for the anchor. Merging preserves whatever the
+      // current entry already carried (e.g. an lahavAnchor from an earlier
+      // jump), so Forward navigation still resolves correctly.
+      history.replaceState(
+        Object.assign({}, history.state || {}, { lahavScroll: window.scrollY }),
+        '', location.href
+      );
+      history.pushState({ lahavAnchor: id }, '', '#' + id);
       scrollToTarget(target);
-      history.replaceState(null, '', '#' + id);
+    });
+
+    window.addEventListener('popstate', function (event) {
+      var state = event.state;
+      if (!state) return;
+      // A scroll snapshot wins over an anchor: an entry gets both once the
+      // reader has clicked past it, and the snapshot is where they actually
+      // were, not where the anchor lives.
+      if (typeof state.lahavScroll === 'number') {
+        window.scrollTo({
+          top: state.lahavScroll,
+          behavior: prefersReducedMotion() ? 'auto' : 'smooth'
+        });
+        return;
+      }
+      if (state.lahavAnchor) {
+        var target = document.getElementById(state.lahavAnchor);
+        if (target) scrollToTarget(target);
+      }
     });
   }
 
   function scrollToTarget(target) {
-    var top = target.getBoundingClientRect().top + window.scrollY - TOP_OFFSET + 8;
-    window.scrollTo({
-      top: Math.max(0, top),
+    target.scrollIntoView({
+      block: 'center',
       behavior: prefersReducedMotion() ? 'auto' : 'smooth'
     });
     // Move focus for keyboard and screen-reader users without a second jump.
@@ -185,7 +230,7 @@
       activeIndex = index;
 
       var chapter = chapters[index];
-      if (number) number.textContent = '§ ' + chapter.dataset.chapterNumber;
+      if (number) number.textContent = '# ' + chapter.dataset.chapterNumber;
       if (title) title.textContent = chapter.dataset.chapterTitle;
       highlight(index);
     }

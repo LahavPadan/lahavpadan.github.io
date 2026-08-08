@@ -5,6 +5,13 @@ description: About Lahav Padan.
 permalink: /whoami/
 ---
 {% assign profile = site.data.whoami %}
+{%- comment -%}
+Prefer the list fetched at build time by scripts/fetch-spotify-top-artists.cjs.
+Falls back to the hand-maintained list in _data/whoami.yml when the fetch has
+not populated _data/spotify.yml (first deploy, missing secret, or Spotify
+outage), so the widget always renders.
+{%- endcomment -%}
+{% assign spotify_artists = site.data.spotify.spotify_top_artists | default: profile.spotify_top_artists %}
 
 <section class="shell whoami" aria-labelledby="whoami-title">
   <header class="whoami__header">
@@ -47,14 +54,14 @@ permalink: /whoami/
       <p class="music-copy">I like music a lot, and find it soothing. Some of my favorite artists are <a href="https://open.spotify.com/artist/76oY04bOzECod3aGVTDtzu" rel="noopener">Matilda Mann</a>, <a href="https://open.spotify.com/artist/47zz7sob9NUcODy0BTDvKx" rel="noopener">Sade</a>, and <a href="https://open.spotify.com/artist/1A9o3Ljt67pFZ89YtPPL5X" rel="noopener">Snoh Aalegra</a>, although you can also find me headbanging to songs by <a href="https://open.spotify.com/artist/2eUKkTNZsIuZzV95DM0cbt" rel="noopener" lang="he" dir="rtl">עדן בן זקן</a>, <a href="https://open.spotify.com/artist/28jEBK1RysfSUBHFofFflA" rel="noopener" lang="he" dir="rtl">אודיה</a>, and the like.</p>
 
       <div class="spotify-top-artists" aria-label="Top artists on Spotify">
-        <img class="spotify-top-artists__background" src="{{ profile.spotify_top_artists[0].image }}" alt="" aria-hidden="true">
+        <img class="spotify-top-artists__background" src="{{ spotify_artists[0].image }}" alt="" aria-hidden="true">
         <div class="spotify-top-artists__overlay" aria-hidden="true"></div>
 
         <div class="spotify-top-artists__inner">
           <p class="spotify-top-artists__title">Top Artists</p>
 
           <ol class="spotify-top-artists__list">
-            {% for artist in profile.spotify_top_artists %}
+            {% for artist in spotify_artists %}
               <li>
                 <a class="spotify-top-artists__item" href="{{ artist.url }}" rel="noopener">
                   <img class="spotify-top-artists__cover" src="{{ artist.image }}" alt="" width="52" height="52" loading="lazy" decoding="async">

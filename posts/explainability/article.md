@@ -8,7 +8,7 @@
 
 ---
 
-## § 0. Feature Dependence in Linear Regression
+## # 0. Feature Dependence in Linear Regression
 
 Feature-dependence in linear regression is often termed multicollinearity. The OLS (ordinary least squares) solution is:
 
@@ -216,9 +216,9 @@ $$
 
 ---
 
-## § 1. Regularization and Feature Dependence
+## # 1. Regularization and Feature Dependence
 
-Regularization is often introduced as a bias-variance tradeoff — cap the coefficients, accept a bit of bias, gain a lot of variance reduction. Under feature dependence, though, each of the two standard penalties has its own distinctive misbehavior, and the misbehaviors are different enough that combining them (§"Elastic Net Regularization") solves problems neither penalty solves on its own. The next two subsections trace what each penalty does for two archetypal cases of feature dependence — identical features, and linearly dependent-but-not-identical features — and the elastic net section returns to show why the sum of the two penalties has strictly better behavior than either alone.
+Regularization is often introduced as a bias-variance tradeoff — cap the coefficients, accept a bit of bias, gain a lot of variance reduction. Under feature dependence, though, each of the two standard penalties has its own distinctive misbehavior, and the misbehaviors are different enough that combining them (#"Elastic Net Regularization") solves problems neither penalty solves on its own. The next two subsections trace what each penalty does for two archetypal cases of feature dependence — identical features, and linearly dependent-but-not-identical features — and the elastic net section returns to show why the sum of the two penalties has strictly better behavior than either alone.
 
 
 <div class="guided-fold-start" data-label="The geometry of the ℓ₁ constraint" data-tone="derivation"></div>
@@ -365,7 +365,7 @@ Since $\rho \neq  1$, at least one of $\beta_1$ or $\beta_2$ must be zero.
 
 ---
 
-## § 2. Elastic Net Regularization
+## # 2. Elastic Net Regularization
 
 Elastic net is the combined penalty
 
@@ -408,11 +408,11 @@ Cauchy–Schwarz gives $|(x_i - x_j)^\top (y - X\hat\beta)| \leq \|x_i - x_j\| \
 
 ---
 
-## § 3. Feature Importance
+## # 3. Feature Importance
 
 There are two types of feature importance:
 
-1. **Global interpretation** (§"Global Interpretation" ahead). A feature-importance score is attached to the model as a whole and is common to all predictions. These importances are computed from the training set, *offline*, before any test predictions are made. Their roles are:
+1. **Global interpretation** (#"Global Interpretation" ahead). A feature-importance score is attached to the model as a whole and is common to all predictions. These importances are computed from the training set, *offline*, before any test predictions are made. Their roles are:
 
     - **Feature engineering:** Report back to the model engineer how strongly the engineered features influenced the model.
 
@@ -424,9 +424,9 @@ There are two types of feature importance:
 
     - **Uncover unwanted feature dependencies:** Detect dependencies that should not exist in the model's representation.
 
-      > **How?** In permutation feature importance (PFI, §"Permutation Feature Importance"), for instance, a large accuracy decrease can occur because permutation breaks the correlation structure and creates out-of-distribution examples on which the model performs poorly.
+      > **How?** In permutation feature importance (PFI, #"Permutation Feature Importance"), for instance, a large accuracy decrease can occur because permutation breaks the correlation structure and creates out-of-distribution examples on which the model performs poorly.
 
-2. **Local interpretation** (§"Local Interpretation" ahead). This type of feature importance focuses on one prediction. The importances are computed *online*: the model is evaluated repeatedly on perturbed versions of the example to estimate the contribution of each feature.
+2. **Local interpretation** (#"Local Interpretation" ahead). This type of feature importance focuses on one prediction. The importances are computed *online*: the model is evaluated repeatedly on perturbed versions of the example to estimate the contribution of each feature.
 
     Its role is:
 
@@ -436,9 +436,9 @@ There are two types of feature importance:
 
 ---
 
-## § 4. Global Interpretation
+## # 4. Global Interpretation
 
-Throughout §§ 4–5, write an input as
+Throughout ## 4–5, write an input as
 
 $$
 x=(x_j,x_{-j}),
@@ -575,9 +575,9 @@ Meaning that it introduces an extra term - $\sum_{i < j} g_{ij}(x_i, x_j)$, whic
 
 ---
 
-## § 5. Conditional vs Marginal Expectation
+## # 5. Conditional vs Marginal Expectation
 
-Recall the notation from § 4: $x_{-j}$ contains every feature except $x_j$. Every method that "removes" feature $j$ has to answer: *what stands in for the removed value while $x_{-j}$ remains observed?* Two answers have genuinely different meanings.
+Recall the notation from # 4: $x_{-j}$ contains every feature except $x_j$. Every method that "removes" feature $j$ has to answer: *what stands in for the removed value while $x_{-j}$ remains observed?* Two answers have genuinely different meanings.
 
 - **Marginal expectation** — draw the missing feature from its marginal $p(x_j)$, independent of the other features:
 
@@ -604,9 +604,9 @@ There is no way to have both. The two are the same estimator only under independ
 Every local method makes an implicit or explicit choice on this axis:
 
 - **PFI, PDP:** marginal by construction (permute or average over marginals).
-- **LIME:** marginal by default (perturb each feature independently to its baseline). See §"LIME".
-- **Kernel-SHAP:** marginal, by assumption of feature independence. See §"Kernel-SHAP".
-- **SHAP with conditional expectation:** conditional. See §"The SHAP variants" — the formulation is written in terms of the conditional, but sampling from it is what makes practical implementations difficult.
+- **LIME:** marginal by default (perturb each feature independently to its baseline). See #"LIME".
+- **Kernel-SHAP:** marginal, by assumption of feature independence. See #"Kernel-SHAP".
+- **SHAP with conditional expectation:** conditional. See #"The SHAP variants" — the formulation is written in terms of the conditional, but sampling from it is what makes practical implementations difficult.
 
 The "which one is right?" question doesn't have a universal answer — it depends on whether the question we're asking of the model is "how does it use $x_j$ in isolation" (marginal, causal reading) or "what does it associate with $x_j$'s value in the wild" (conditional, observational reading).
 
@@ -641,7 +641,7 @@ A larger increase indicates greater importance. The cost is one full refit per f
 
 ---
 
-## § 6. Local Interpretation
+## # 6. Local Interpretation
 
 ### Baseline and "feature missingness"
 
@@ -649,7 +649,7 @@ Local interpretation methods rely on _online_ evaluations of the model. But an i
 
 The same baseline serves two roles:
 
-- **Reference point for attribution.** Contributions are measured as $f(x) - f(x^{\text{baseline}})$ decomposed across features. Every local method covered here — LIME (§"LIME"), SHAP (§"The SHAP variants"), DeepLIFT (§"DeepLIFT") — is at heart a scheme for splitting this difference into per-feature pieces.
+- **Reference point for attribution.** Contributions are measured as $f(x) - f(x^{\text{baseline}})$ decomposed across features. Every local method covered here — LIME (#"LIME"), SHAP (#"The SHAP variants"), DeepLIFT (#"DeepLIFT") — is at heart a scheme for splitting this difference into per-feature pieces.
 - **Default value for "missing" features.** When we mask feature $i$, we need to replace $x_i$ with something — the baseline value $x_i^{\text{baseline}}$ is what we plug in. This is the operational meaning of "feature missingness" in a model that requires a complete input.
 
 **The choice of baseline changes what "importance" means.** A zero baseline (black image) asks "how much did each feature push the prediction away from a black canvas?" A dataset-mean baseline asks "how much did each feature push the prediction away from the typical example?" A conditional-expectation baseline asks "how much did each feature push the prediction away from what we'd expect given the rest?" These give quantitatively different attributions on the same input, and there is no baseline-free notion of local importance.
@@ -828,7 +828,7 @@ $$
 
 This is a weighted least-squares problem.
 
-**The general solution is** (proved in §"Deriving the General Solution for the Coalition Game"):
+**The general solution is** (proved in #"Deriving the General Solution for the Coalition Game"):
 
 $$
 \phi_j(x)
@@ -881,7 +881,7 @@ To resolve this ambiguity, we take several approaches:
 
 The landscape of SHAP methods and their assumptions goes as follows.
 
-- **Shapley values** (game-theoretic version) require training a fresh model $\hat{f}_S$ for every subset $S$ of features; there are $2^N$ subsets, so this is prohibitive. Even sidestepping the $2^N$ blowup with a Monte-Carlo sample over subsets (§"Monte-Carlo approach for Subset Sampling"), we still need $\hat{f}_S$ for each sampled $S$.
+- **Shapley values** (game-theoretic version) require training a fresh model $\hat{f}_S$ for every subset $S$ of features; there are $2^N$ subsets, so this is prohibitive. Even sidestepping the $2^N$ blowup with a Monte-Carlo sample over subsets (#"Monte-Carlo approach for Subset Sampling"), we still need $\hat{f}_S$ for each sampled $S$.
 
     The Monte-Carlo approach handles the subset explosion; what remains is finding $\hat{f}_S$ without retraining.
 
@@ -1242,7 +1242,7 @@ These are the same weighted least-squares problem. The only differences:
 - **The weighting.** LIME uses a distance kernel $\pi_{x_0}$ (typically RBF around $x_0$). Kernel-SHAP uses the Shapley kernel $\kappa_{|S|}$, which depends only on the *size* of the coalition, not the geometry of $x_0$.
 - **The efficiency constraint.** LIME doesn't impose one; Kernel-SHAP does.
 
-The Shapley kernel is *exactly* the choice that makes the solution to this regression equal the Shapley values. The proof is by matching: derive Shapley values from the axioms (§"Shapley values"), derive the weighted-least-squares (WLS) solution from setting the gradient to zero, and check that the two agree iff $\kappa_{|S|}$ has this specific form.
+The Shapley kernel is *exactly* the choice that makes the solution to this regression equal the Shapley values. The proof is by matching: derive Shapley values from the axioms (#"Shapley values"), derive the weighted-least-squares (WLS) solution from setting the gradient to zero, and check that the two agree iff $\kappa_{|S|}$ has this specific form.
 
 So Kernel-SHAP inherits everything LIME has — the local surrogate, the WLS solution, the Monte-Carlo subset sampling — and picks the kernel that makes the resulting weights carry Shapley's fairness axioms. Not marketing, but not novel machinery either; the payoff is that the axiomatic guarantees come for free by choosing the kernel right.
 

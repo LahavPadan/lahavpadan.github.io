@@ -4,7 +4,7 @@ When a laptop screen turns off as you close it, it needs to detect a simple phys
 
 While an accelerometer detects motion, knowing whether the lid remains closed requires a different approach. Laptops use a two-part mechanism: a passive permanent magnet in the lid and a Hall-effect sensor in the base.
 
-## § 1. Why accelerometers aren't the ideal fit {#sec-1}
+## # 1. Why accelerometers aren't the ideal fit {#sec-1}
 
 "Lid closed" is a static state, whereas an accelerometer measures motion or orientation relative to gravity. Once the lid stops moving, a single accelerometer can only tell how the laptop is oriented in space—not the angle between the lid and the base.
 
@@ -15,7 +15,7 @@ An accelerometer setup introduces a few key trade-offs:
 
 > The constraint is: whatever sits in the lid should be passive—no power and no wiring. A permanent magnet satisfies that constraint.
 
-## § 2. Hall-Effect Detection Mechanism {#sec-2}
+## # 2. Hall-Effect Detection Mechanism {#sec-2}
 
 A passive permanent magnet is embedded in the display assembly. A Hall-effect sensor integrated circuit (IC) sits on a circuit board in the base, positioned to align with the magnet when the lid closes.
 
@@ -25,7 +25,7 @@ When the magnetic flux density at the sensor exceeds its operating threshold, th
 
 {% include visualization.html src="laptop-lid-magnet-sensor-placement.html" title="How the lid magnet approaches the Hall sensor in the laptop base" %}
 
-## § 3. The Hall effect {#sec-3}
+## # 3. The Hall effect {#sec-3}
 
 A magnetic field exerts a force on a moving charge. A charge $q$ with velocity $\mathbf{v}$ in a magnetic field $\mathbf{B}$ experiences the Lorentz force
 
@@ -77,17 +77,17 @@ Two consequences matter for a lid sensor:
 - **Semiconductors make the signal usable.** Because $V_H$ is inversely proportional to the carrier density $n$, a semiconductor can produce a much larger Hall voltage than a metal carrying the same current in the same geometry.
 
 
-## § 4. From millivolts to a bit {#sec-4}
+## # 4. From millivolts to a bit {#sec-4}
 
 The raw Hall voltage is small, so the sensor IC amplifies it and compares it with an internal threshold. Two practical problems must be handled before that comparison can serve as a reliable lid switch.
 
-### § 4.1. Cancelling plate offset {#sec-4-1}
+### # 4.1. Cancelling plate offset {#sec-4-1}
 
 A real Hall plate is not perfectly symmetric. The four contacts are never placed at exactly matching positions, and the slab itself has small variations in thickness and internal uniformity. Any of these can produce a nonzero output even when $B=0$, as though a constant false field were present.
 
 The sensor compensates by rapidly rotating which contact pair drives the current lengthwise and which pair measures the voltage across the plate. The genuine Hall contribution remains tied to the external magnetic field, while the false contribution from geometric asymmetry changes sign under the contact rotation and averages away. This high-speed swapping is commonly described as **chopping**.
 
-### § 4.2. Preventing chatter {#sec-4-2}
+### # 4.2. Preventing chatter {#sec-4-2}
 
 A single threshold would misbehave when the field at the sensor sits right near that threshold value. A small vibration would then push the field repeatedly above and below it, causing the output to flicker.
 
@@ -98,7 +98,7 @@ The solution is **hysteresis**: the sensor uses two different thresholds.
 
 Once the lid has triggered the sensor, small variations around the first threshold cannot immediately reverse the output. The resulting HIGH or LOW signal is sent on one digital line to the **embedded controller (EC)**, the always-on controller that handles lid events and power management.
 
-## § 5. Why the magnet polarity need not matter {#sec-5}
+## # 5. Why the magnet polarity need not matter {#sec-5}
 
 The sign of $V_H$ follows the sign of $B$, so reversing which magnet pole faces the sensor reverses the Hall voltage.
 
@@ -112,7 +112,7 @@ $$
 
 This makes the switch insensitive to which pole of the magnet faces the sensor.
 
-## § 6. Why the sensor barely uses power {#sec-6}
+## # 6. Why the sensor barely uses power {#sec-6}
 
 The lid sensor must remain available while the laptop sleeps. Holding a steady current through the Hall plate at all times would draw around a milliampere, and a circuit that runs even while the machine is off should draw far less than that.
 

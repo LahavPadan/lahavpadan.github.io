@@ -10,7 +10,7 @@ Once this relation is established, it can be used to connect Fourier uncertainty
 
 ---
 
-## § 1. What Fourier analysis gives us—and what it does not
+## # 1. What Fourier analysis gives us—and what it does not
 
 For every function $f(x) \in L^2(\mathbb{R})$—that is, every square-integrable function—its Fourier transform is defined by
 
@@ -56,7 +56,7 @@ When the wave represents a particle, the relevant quantity is momentum. The rela
 
 ---
 
-## § 2. The dispersion relation, and its two velocities
+## # 2. The dispersion relation, and its two velocities
 
 A single plane wave of the form
 
@@ -159,7 +159,7 @@ If the medium is non-dispersive, so that all frequencies have the same phase vel
 
 ---
 
-## § 3. Building a localized wave from plane waves
+## # 3. Building a localized wave from plane waves
 
 Consider a superposition of plane waves with weights $A(k)$:
 
@@ -237,7 +237,7 @@ It therefore does not depend on position and time separately: to first order, it
 
 ---
 
-## § 4. The same structure with only two waves
+## # 4. The same structure with only two waves
 
 As an elementary special case, take $A(k)$ to consist of two Dirac delta functions:
 
@@ -301,7 +301,7 @@ which is the group velocity obtained above.
 
 ---
 
-## § 5. Why the wave-packet velocity leads to $p = \hbar k$
+## # 5. Why the wave-packet velocity leads to $p = \hbar k$
 
 We now have three facts.
 
@@ -424,7 +424,7 @@ The phase of the wavefunction does not represent the position of the particle. I
 
 ---
 
-## § 6. From the dispersion relation to the Schrödinger equation
+## # 6. From the dispersion relation to the Schrödinger equation
 
 The dispersion relation
 
@@ -546,7 +546,7 @@ These are the momentum and energy operators used in the operator formulation of 
 
 ---
 
-## § 7. What Fourier analysis becomes after $p = \hbar k$
+## # 7. What Fourier analysis becomes after $p = \hbar k$
 
 Now that the relation $p=\hbar k$ has been established, we can return to the Fourier inequality
 
@@ -556,7 +556,7 @@ $$
 
 and translate it into physics.
 
-### § 7.1. The Heisenberg uncertainty relation
+### # 7.1. The Heisenberg uncertainty relation
 
 Multiplying by $\hbar$ gives immediately
 
@@ -568,7 +568,7 @@ $$
 
 This is Heisenberg's uncertainty principle. Here it follows directly from the Fourier inequality after using $k=p/\hbar$.
 
-### § 7.2. Why confinement leaves no zero-energy state
+### # 7.2. Why confinement leaves no zero-energy state
 
 An infinite potential well is the model
 
@@ -634,7 +634,7 @@ This gives the correct scale. The exact Schrödinger solution contains the addit
 
 **Confining a particle to a finite region therefore implies a positive ground-state energy**, because the Fourier transform of a function with finite support cannot be a delta function at $k=0$.
 
-### § 7.3. Tunneling without the “borrowed energy” story
+### # 7.3. Tunneling without the “borrowed energy” story
 
 For a rectangular potential barrier of height $V>E$, the time-independent Schrödinger equation inside the barrier is
 
@@ -694,7 +694,7 @@ The physical name for this phenomenon is **tunneling**. Its most basic example i
 
 ---
 
-## § 8. What the next Taylor term does to the packet
+## # 8. What the next Taylor term does to the packet
 
 Return to the second-order term in the Taylor expansion of $\omega(k)$:
 
@@ -849,7 +849,7 @@ The spreading of the packet corresponds to the spreading of heat. One can someti
 
 ---
 
-## § 9. The same argument with relativistic energy
+## # 9. The same argument with relativistic energy
 
 So far, we used the classical nonrelativistic energy
 
@@ -989,7 +989,7 @@ That difference is the source of interpretation problems: the probability densit
 
 ---
 
-## § 10. The chain of ideas
+## # 10. The chain of ideas
 
 The conceptual path is now complete.
 

@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # Weekly refresh so top-artists stay current without a git push.
+    # Sunday 04:00 UTC keeps traffic off peak hours.
+    - cron: "0 4 * * 0"
 
 permissions:
   contents: read
@@ -35,6 +39,16 @@ jobs:
 
       - name: Install build tooling
         run: npm ci
+
+      - name: Refresh Spotify top artists
+        # Runs before jekyll build so _data/spotify.yml is picked up. The script
+        # exits 0 on any failure and leaves the previous data file in place, so
+        # a Spotify outage or a missing secret cannot break the release.
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+        run: node scripts/fetch-spotify-top-artists.cjs
 
       - name: Configure GitHub Pages
         id: pages

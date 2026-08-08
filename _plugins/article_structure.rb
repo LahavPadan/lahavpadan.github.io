@@ -14,7 +14,7 @@ module LahavBlog
   # transformation is applied to its element tree. Nothing here re-parses HTML
   # or matches on prose.
   module ArticleStructure
-    CHAPTER_HEADING = /\A§\s*([^.\s]+(?:\.[^.\s]+)*)\.?\s*(.*)\z/m.freeze
+    CHAPTER_HEADING = /\A#\s*([^.\s]+(?:\.[^.\s]+)*)\.?\s*(.*)\z/m.freeze
     LINKED_LEVELS = [2, 3, 4].freeze
 
     class << self
@@ -214,7 +214,7 @@ module LahavBlog
         chapter.attr['data-chapter-number'] = number
         chapter.attr['data-chapter-title'] = plain
         heading.children.replace([
-          span('chapter-heading__number', "§ #{number}"),
+          span('chapter-heading__number', "# #{number}"),
           span('chapter-heading__title', title)
         ])
 

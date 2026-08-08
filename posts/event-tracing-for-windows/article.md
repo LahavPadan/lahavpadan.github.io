@@ -1,4 +1,4 @@
-## § 0. Introduction {#sec-0}
+## # 0. Introduction {#sec-0}
 
 <style>
 .etw-image-pair {
@@ -59,7 +59,7 @@ Providers first, since without them nothing else in the pipeline has anything to
 
 ---
 
-## § 1. Providers {#sec-1}
+## # 1. Providers {#sec-1}
 
 A Provider is code that has called `EtwEventRegister` (user mode) or `EtwRegister` (kernel mode) and then emits events with `EventWrite` / `EtwWrite`. On the first call, the kernel creates a per-Provider structure called `ETW_GUID_ENTRY` (one per Provider GUID on the system), and the caller receives back a per-registration handle backed by `ETW_REG_ENTRY` (one per emitter registration). The `ETW_GUID_ENTRY` is the shared object; `ETW_REG_ENTRY` is the per-emitter attachment to it. Both live in non-paged kernel pool — the emit path can run at DISPATCH_LEVEL from a driver and cannot fault.
 
@@ -97,7 +97,7 @@ The Sessions that pick up what these Providers emit are the next piece of the pi
 
 ---
 
-## § 2. Sessions {#sec-2}
+## # 2. Sessions {#sec-2}
 
 A Session subscribes to one or more Providers, buffers their events per CPU, and hands each buffered event onward — either to a Consumer over real-time delivery, or asynchronously flushed to disk as a `.etl` file, or both. The Session is the object the Logger Thread drains from.
 
@@ -119,11 +119,11 @@ A Session subscribes to one or more Providers, buffers their events per CPU, and
 *Source screenshot: [Ret2desync — Using MSBuild to bypass PowerShell Constrained Language Mode, AMSI and Script Block Logging](https://ret2desync.github.io/using-msbuild-bypass-powershell-clm-amsi-scriptlogging/).*
 
 
-### § 2.1. The Logger Thread and buffer memory {#sec-2-1}
+### # 2.1. The Logger Thread and buffer memory {#sec-2-1}
 
 Each Session gets a pair of per-CPU buffers (active + reserve) in non-paged kernel pool. The emitting thread — whichever thread that happens to be — writes into its own CPU's active buffer with an interlocked pointer bump; no lock, no fault path, no cross-CPU coherence traffic. A dedicated **Logger Thread** per Session, running as a system worker thread inside the System process (PID 4), is the only entity that drains those buffers. Its two paths are async flush to `.etl` and delivery to any real-time Consumer callback. That is why emit costs a few dozen cycles and system overhead stays negligible even at millions of events per second: emitters never wait on I/O, and the Logger Thread runs at a priority the scheduler can preempt.
 
-### § 2.2. User Sessions {#sec-2-2}
+### # 2.2. User Sessions {#sec-2-2}
 
 Created from user mode with `StartTrace`. Anything with the right on the Session SD can control them. Runtime state lives in kernel non-paged pool, but the Controller and (typically) Consumer are user-mode processes.
 
@@ -135,7 +135,7 @@ Prominent examples:
 - `DiagLog`, `Diagtrack-Listener` — Windows Diagnostic Data.
 - `WdiContextLog`, `WdiEventLog` — Windows Diagnostic Infrastructure.
 
-### § 2.3. Kernel (System) Sessions {#sec-2-3}
+### # 2.3. Kernel (System) Sessions {#sec-2-3}
 
 Started by the kernel itself, some very early in boot. Limited to a single instance each; extra Providers cannot be added dynamically; the ability to enable **System Providers** — those that expose ALPC, Hypervisor, Scheduler, Syscall etc. — is granted through the `EnableFlags` field of `EVENT_TRACE_PROPERTIES` at `StartTrace` time and mediated by the `TRACELOG_ACCESS_KERNEL_LOGGER (0x100)` right.
 
@@ -162,7 +162,7 @@ There is a system-wide cap on user-defined Sessions at `HKLM\System\CurrentContr
 
 <div class="guided-fold-end"></div>
 
-### § 2.4. Enabling a Provider inside a Session {#sec-2-4}
+### # 2.4. Enabling a Provider inside a Session {#sec-2-4}
 
 The emit path below assumes at least one Session in the subscriber list. Getting there is called **enabling** the Provider: a Controller (`logman`, `xperf`, `wevtsvc.dll`) calls `EnableTraceEx2(sessionHandle, providerGuid, ...)`; the kernel opens the Provider object by GUID, access-checks the caller against the Provider's SD (`TRACELOG_GUID_ENABLE (0x80)` required), and if the check passes appends the Session to the `ETW_GUID_ENTRY` subscriber list along with per-Session filter state (Level cap, keyword masks). Until at least one Session has been enabled, the emitter's `EventWrite` exits early when it finds no subscribers, so the write is a couple-of-nanoseconds no-op. This is the fast-path answer to why having thousands of unsubscribed Providers registered on the system costs nothing.
 
@@ -194,7 +194,7 @@ Notably, the access check does not run per emit. It ran once at handle acquisiti
 
 <div class="guided-fold-end"></div>
 
-### § 2.5. In-process (private) Sessions {#sec-2-5}
+### # 2.5. In-process (private) Sessions {#sec-2-5}
 
 Registered with `EventRegister` and a Consumer callback in the same process — no `svchost` involvement, no persistence, no global visibility. This is how the CLR (`Microsoft-Windows-DotNETRuntime`), AMSI, and many WinRT diagnostic events are consumed: the emitting process (or a same-user helper subscribing in-process) is both the Provider host and the Consumer. Because in-process Sessions do not appear in `logman query -ets`, the property cuts both ways — EDRs use them to be invisible to attackers, and attackers use them to be invisible to EDRs.
 
@@ -202,7 +202,7 @@ Everything so far has been about how events are produced and buffered. What actu
 
 ---
 
-## § 3. Consumers {#sec-3}
+## # 3. Consumers {#sec-3}
 
 A Consumer receives events from a Session, in one of two modes:
 
@@ -220,9 +220,9 @@ Unlike Sessions and Providers, a Consumer has no persistent registry entry and n
 
 Prominent examples:
 
-- **Windows Event Log Service (`wevtsvc.dll`)** — the biggest Consumer on the box. Runs inside `svchost.exe`. Owns one persistent real-time Session per channel-group. Its per-event work is: pull the `EVENT_RECORD` off the Session's real-time delivery, look up the Provider's `MessageFileName` DLL to render the description string, then serialize the whole record into an `.evtx` chunk. Details in [§ 9](#sec-9).
+- **Windows Event Log Service (`wevtsvc.dll`)** — the biggest Consumer on the box. Runs inside `svchost.exe`. Owns one persistent real-time Session per channel-group. Its per-event work is: pull the `EVENT_RECORD` off the Session's real-time delivery, look up the Provider's `MessageFileName` DLL to render the description string, then serialize the whole record into an `.evtx` chunk. Details in [# 9](#sec-9).
 - **`xperf.exe`, PerfView.exe, WPA.exe** — offline Consumers, invoked on saved `.etl` files.
-- **EDR agents** — real-time Consumers of behavioural Providers, including ETW-TI. The subscribing process must satisfy the Provider's PPL requirement (see [§ 5](#sec-5)).
+- **EDR agents** — real-time Consumers of behavioural Providers, including ETW-TI. The subscribing process must satisfy the Provider's PPL requirement (see [# 5](#sec-5)).
 - **In-process Consumer** — a same-process helper reading its own emissions (the CLR case above).
 
 ![Windows Performance Analyzer timeline view of events from an ETL trace](assets/04-wpa-etl-timeline-microsoft-learn.png)
@@ -232,7 +232,7 @@ Prominent examples:
 
 ---
 
-## § 4. Security Descriptors {#sec-4}
+## # 4. Security Descriptors {#sec-4}
 
 Every Provider and every Session carries an SD. What each gates is different, and each access mask bit lines up with a specific ETW API call. The SD is duplicated at runtime — one copy in the Registry (for defensive comparison), one in the live kernel object.
 
@@ -281,7 +281,7 @@ The SD is the general access mechanism. One Provider bends the rules further, an
 
 ---
 
-## § 5. ETW Threat Intelligence Provider (ETW-TI) {#sec-5}
+## # 5. ETW Threat Intelligence Provider (ETW-TI) {#sec-5}
 
 The single most important Provider for defensive purposes: `Microsoft-Windows-Threat-Intelligence` (GUID `{f4e1897c-bb5d-5668-f1d8-040f4d8dd344}`), introduced in Windows 10 1809. Fires kernel-mode events for suspicious API activity — remote thread creation, cross-process memory writes/allocations, driver load, image mapping into other processes, and more. This is the primary source most EDRs use for post-execution behavioural detection.
 
@@ -299,7 +299,7 @@ The single most important Provider for defensive purposes: `Microsoft-Windows-Th
 
 ---
 
-## § 6. Channels {#sec-6}
+## # 6. Channels {#sec-6}
 
 A Channel is a Provider-defined partition of its event stream, used by the Windows Event Log service to route events into named log files. A Provider declares its channels in its manifest.
 
@@ -335,7 +335,7 @@ The default-off state of Analytic/Debug matters defensively: valuable security-r
 
 ---
 
-## § 7. Events, manifests, and schemas {#sec-7}
+## # 7. Events, manifests, and schemas {#sec-7}
 
 An event is a structured record, represented at both kernel and user level as an `EVENT_RECORD`. Its header carries the Provider GUID, an Event ID, Level, Keyword, timestamp, process/thread IDs, and activity ID; its payload is variable-length, laid out according to the Provider's declared schema. Where that schema lives depends on the Provider type:
 
@@ -364,7 +364,7 @@ The event format is now in place. The remaining operational question is how ETW 
 
 ---
 
-## § 8. Performance and buffering {#sec-8}
+## # 8. Performance and buffering {#sec-8}
 
 ETW's write path is engineered for millions of events/sec on commodity hardware because of three architectural decisions:
 
@@ -417,7 +417,7 @@ How does this buffered ETW stream become the `.evtx` data shown in Event Viewer?
 
 ---
 
-## § 9. Windows Event Log (WinLog) — the layer above ETW {#sec-9}
+## # 9. Windows Event Log (WinLog) — the layer above ETW {#sec-9}
 
 Windows Event Log ("WinLog") is often conflated with ETW itself, but the two are distinct layers with a specific relationship:
 
@@ -442,7 +442,7 @@ This explains why:
 
 ---
 
-## § 10. Internals: WMI_LOGGER_CONTEXT, ETW_GUID_ENTRY, ETW_REG_ENTRY {#sec-10}
+## # 10. Internals: WMI_LOGGER_CONTEXT, ETW_GUID_ENTRY, ETW_REG_ENTRY {#sec-10}
 
 The DKOM (Direct Kernel Object Manipulation — writing to kernel structures from a privileged context to alter object state without going through the normal APIs) view of what has already been named:
 
@@ -500,7 +500,7 @@ At runtime, `WPP_INIT_TRACING` registers that control GUID as an ETW trace Provi
 
 ---
 
-## § 11. Ways log integrity can be undermined {#sec-11}
+## # 11. Ways log integrity can be undermined {#sec-11}
 
 The attacks below act on different parts of the logging path:
 
@@ -750,7 +750,7 @@ The **Message DLL** contains the resources used by `FormatMessage` to render an 
 
 ---
 
-## § 12. Detection Summary {#sec-12}
+## # 12. Detection Summary {#sec-12}
 
 Coverage sources against known tampering, in decreasing order of breadth:
 

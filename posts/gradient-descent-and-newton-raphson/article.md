@@ -29,7 +29,7 @@ Article contents
 
 ---
 
-## § 0 Why iterate at all? {#sec-0}
+## # 0 Why iterate at all? {#sec-0}
 
 We want a point $\mathbf{x}^\star$ where a smooth function $f : \mathbb{R}^n \to \mathbb{R}$ attains a local minimum. From calculus, any interior local minimum satisfies
 
@@ -47,7 +47,7 @@ Using only $\nabla f$ at the current point gives gradient descent. Using $\nabla
 
 ---
 
-## § 1 Deriving gradient descent from the linear approximation {#sec-1}
+## # 1 Deriving gradient descent from the linear approximation {#sec-1}
 
 Near a point $\mathbf{x}_k$, the first-order Taylor expansion is
 
@@ -90,7 +90,7 @@ Two things about \eqref{eq:1-3} matter for what comes next.
 
 ---
 
-## § 2 Successive steps and exact line search {#sec-2}
+## # 2 Successive steps and exact line search {#sec-2}
 
 One choice for the step size at iteration $k$ is the value that makes $f$ as small as possible along the current descent ray. Writing the step size at iteration $k$ as $\alpha_k$, **exact line search**{:#defn-exact-line-search} chooses $\alpha_k$ to minimise the one-dimensional function
 
@@ -154,7 +154,7 @@ $$\mathbf{x}_{k+1} - \mathbf{x}^\star = (I - \eta H)(\mathbf{x}_k - \mathbf{x}^\
 
 The error $\mathbf{e}_k = \mathbf{x}_k - \mathbf{x}^\star$ propagates by a single linear map $I - \eta H$, and the iteration decouples in the eigenbasis of $H$.
 
-Diagonalise $H = Q \Lambda Q^\top$ with eigenvalues $\lambda_1, \ldots, \lambda_n$ along the diagonal of $\Lambda$. Assume they are all positive — the standard condition for $\mathbf{x}^\star$ to be a strict local minimum, and the condition Newton's iteration itself will require ([§ 4](#sec-4)). In the rotated coordinates $\tilde{\mathbf{e}}_k = Q^\top \mathbf{e}_k$ — the *principal axes* of the Hessian — the update \eqref{eq:2-8} becomes $n$ independent scalar recurrences
+Diagonalise $H = Q \Lambda Q^\top$ with eigenvalues $\lambda_1, \ldots, \lambda_n$ along the diagonal of $\Lambda$. Assume they are all positive — the standard condition for $\mathbf{x}^\star$ to be a strict local minimum, and the condition Newton's iteration itself will require ([# 4](#sec-4)). In the rotated coordinates $\tilde{\mathbf{e}}_k = Q^\top \mathbf{e}_k$ — the *principal axes* of the Hessian — the update \eqref{eq:2-8} becomes $n$ independent scalar recurrences
 
 $$\tilde{e}_{k+1, \, i} = (1 - \eta \lambda_i) \, \tilde{e}_{k, \, i}, \qquad i = 1, \ldots, n. \tag{2.9}\label{eq:2-9}$$
 
@@ -194,13 +194,13 @@ a spherical bowl. Its Hessian is $I$, whose eigenvalues are all $1$, so $\lambda
 
 {% include visualization.html src="hessian-eigenbasis-gradient-descent.html" title="Gradient descent in the Hessian eigenbasis" %}
 
-Whitening is not an algorithm we can run directly: computing $H^{1/2}$ requires $H$. But it tells us the shape of an update rule that beats the condition-number problem. Gradient descent multiplies $\nabla f$ by a single scalar $\eta$, treating every axis alike. To take gradient descent's one-step trip in whitened coordinates, the update in the original coordinates has to divide each axis's component of $\nabla f$ by that axis's own curvature $\lambda_i$: it has to multiply $\nabla f$ by $H^{-1}$, whose eigenvalues on the principal axes are exactly $1/\lambda_i$. [§ 3](#sec-3) derives that update from scratch.
+Whitening is not an algorithm we can run directly: computing $H^{1/2}$ requires $H$. But it tells us the shape of an update rule that beats the condition-number problem. Gradient descent multiplies $\nabla f$ by a single scalar $\eta$, treating every axis alike. To take gradient descent's one-step trip in whitened coordinates, the update in the original coordinates has to divide each axis's component of $\nabla f$ by that axis's own curvature $\lambda_i$: it has to multiply $\nabla f$ by $H^{-1}$, whose eigenvalues on the principal axes are exactly $1/\lambda_i$. [# 3](#sec-3) derives that update from scratch.
 
 ---
 
-## § 3 Newton–Raphson: the second-order picture {#sec-3}
+## # 3 Newton–Raphson: the second-order picture {#sec-3}
 
-[§ 2](#sec-2) argued from the condition-number bottleneck that the update we want should multiply $\nabla f$ by $H^{-1}$ rather than by a scalar. Two derivations produce that update from starting points that need no change of coordinates.
+[# 2](#sec-2) argued from the condition-number bottleneck that the update we want should multiply $\nabla f$ by $H^{-1}$ rather than by a scalar. Two derivations produce that update from starting points that need no change of coordinates.
 
 ### Route 1 — minimise a local quadratic {#route-1-local-quadratic}
 
@@ -218,13 +218,13 @@ Adding this $\Delta \mathbf{x}$ to $\mathbf{x}_k$,
 
 $$\mathbf{x}_{k+1} = \mathbf{x}_k - H(\mathbf{x}_k)^{-1} \, \nabla f(\mathbf{x}_k). \tag{3.3}\label{eq:3-3}$$
 
-Compared with the gradient-descent update \eqref{eq:1-2}: gradient descent multiplied $\nabla f$ by the scalar $\eta$; Newton multiplies it by the matrix $H^{-1}$. In the eigenbasis of $H$, $H^{-1}$ acts by $1/\lambda_i$ on the $i$-th axis: the component of the update along that axis gets divided by $\lambda_i$, the curvature there ([§ 2](#sec-2)).
+Compared with the gradient-descent update \eqref{eq:1-2}: gradient descent multiplied $\nabla f$ by the scalar $\eta$; Newton multiplies it by the matrix $H^{-1}$. In the eigenbasis of $H$, $H^{-1}$ acts by $1/\lambda_i$ on the $i$-th axis: the component of the update along that axis gets divided by $\lambda_i$, the curvature there ([# 2](#sec-2)).
 
 {% include visualization.html src="newton-curvature-correction.html" title="Newton rescales the gradient by curvature" %}
 
-That is exactly the rescaling whitening carried out in [§ 2](#sec-2), now folded into the step itself.
+That is exactly the rescaling whitening carried out in [# 2](#sec-2), now folded into the step itself.
 
-Whether the critical point of the quadratic model is actually a minimum depends on $H$, and that is [§ 4](#sec-4).
+Whether the critical point of the quadratic model is actually a minimum depends on $H$, and that is [# 4](#sec-4).
 
 ### Route 2 — apply root-finding to $\nabla f = 0$ {#route-2-root-finding}
 
@@ -250,7 +250,7 @@ The name "Newton–Raphson" covers both root-finding and optimisation; the optim
 
 ---
 
-## § 4 Why the Hessian must be positive-definite {#sec-4}
+## # 4 Why the Hessian must be positive-definite {#sec-4}
 
 [Route 1](#route-1-local-quadratic) called $\Delta \mathbf{x} = -H^{-1} \nabla f$ the minimiser of the quadratic model \eqref{eq:3-1} without checking whether the stationary point of that model is a minimum at all. Whether it is turns entirely on $H$.
 
@@ -294,7 +294,7 @@ Both families exist because pure Newton, as written in \eqref{eq:3-3}, is a tool
 
 ---
 
-## § 5 Quadratic convergence, from scratch {#sec-5}
+## # 5 Quadratic convergence, from scratch {#sec-5}
 
 The reason to pay the cost of the Hessian is that Newton converges *fast* once it is near the answer.
 
@@ -320,7 +320,7 @@ Gradient descent on a strongly convex function with a well-chosen step size achi
 
 <div class="guided-fold-start" data-label="Full derivation" data-tone="derivation"></div>
 
-Let $g$ be twice continuously differentiable and let $x^\star$ be a root of $g$ with $g'(x^\star) \neq 0$. We show that Newton's iteration \eqref{eq:3-4} applied to $g$ converges quadratically once $x_k$ is near $x^\star$. [§ 3, Route 2](#route-2-root-finding) showed that Newton for optimisation is the same iteration \eqref{eq:3-4} applied to $g = \nabla f$, so this scalar root-finding case is what has to be proved.
+Let $g$ be twice continuously differentiable and let $x^\star$ be a root of $g$ with $g'(x^\star) \neq 0$. We show that Newton's iteration \eqref{eq:3-4} applied to $g$ converges quadratically once $x_k$ is near $x^\star$. [# 3, Route 2](#route-2-root-finding) showed that Newton for optimisation is the same iteration \eqref{eq:3-4} applied to $g = \nabla f$, so this scalar root-finding case is what has to be proved.
 
 Taylor expand $g$ around $x^\star$ to second order, with the second-order remainder evaluated at some point $\xi_k$ between $x_k$ and $x^\star$:
 
@@ -358,7 +358,7 @@ This is \eqref{eq:5-2}. Quadratic convergence.
 
 ### Specialising to the optimisation form {#specialising-to-the-optimisation-form}
 
-Taking $g = f'$ substitutes $|f''(x^\star)|$ for $|g'(x^\star)|$ (the Hessian at the minimum, positive-definite by [§ 4](#sec-4)) and $|f'''(\xi_k)|$ for $|g''(\xi_k)|$ in \eqref{eq:5-6}:
+Taking $g = f'$ substitutes $|f''(x^\star)|$ for $|g'(x^\star)|$ (the Hessian at the minimum, positive-definite by [# 4](#sec-4)) and $|f'''(\xi_k)|$ for $|g''(\xi_k)|$ in \eqref{eq:5-6}:
 
 $$|x_{k+1} - x^\star| \leq \frac{|f'''(\xi_k)|}{2 \, |f''(x^\star)|} \, |x_k - x^\star|^2. \tag{5.7}\label{eq:5-7}$$
 
@@ -373,18 +373,18 @@ Bound \eqref{eq:5-6} is conditional: it holds once $x_k$ is inside a neighbourho
 
 The largest such neighbourhood is the **basin of attraction** of $x^\star$: iterates that start inside it converge quadratically to $x^\star$, and iterates that start outside can end up at a different root or off to infinity, since the tangent line at $x_k$ knows nothing about which root we want.
 
-The modifications in [§ 4](#sec-4) exist partly to force iterates into the basin before switching to pure Newton.
+The modifications in [# 4](#sec-4) exist partly to force iterates into the basin before switching to pure Newton.
 
 ---
 
-## § 6 What Newton buys and what it costs {#sec-6}
+## # 6 What Newton buys and what it costs {#sec-6}
 
-Gradient descent uses only $\nabla f$, so each step costs the price of one gradient evaluation — for a problem with $n$ variables, that is $O(n)$ storage and, for typical objectives, $O(n)$ work per component. Its convergence is linear when it converges, meaning the number of iterations to reach accuracy $\varepsilon$ scales like $\log(1/\varepsilon)$ multiplied by a constant that depends on the condition number $\kappa$ of $H$ at the minimum ([§ 2](#sec-2)). On badly-conditioned problems that constant is enormous, and the zig-zag pattern from [§ 2](#sec-2) is what causes it.
+Gradient descent uses only $\nabla f$, so each step costs the price of one gradient evaluation — for a problem with $n$ variables, that is $O(n)$ storage and, for typical objectives, $O(n)$ work per component. Its convergence is linear when it converges, meaning the number of iterations to reach accuracy $\varepsilon$ scales like $\log(1/\varepsilon)$ multiplied by a constant that depends on the condition number $\kappa$ of $H$ at the minimum ([# 2](#sec-2)). On badly-conditioned problems that constant is enormous, and the zig-zag pattern from [# 2](#sec-2) is what causes it.
 
 Newton uses $\nabla f$ *and* $H$. Storing $H$ costs $O(n^2)$; solving the linear system $H \mathbf{d} = -\nabla f$ at each step costs $O(n^3)$ by direct methods. In return, the number of iterations near the minimum is not $\log(1/\varepsilon)$ but $\log\log(1/\varepsilon)$, a much smaller number in practice, because each iteration approximately doubles the number of correct digits.
 
 The break-even question is whether the smaller iteration count pays for the higher per-iteration cost. For small $n$, or for problems where $H$ has exploitable structure (sparse, block-diagonal, low-rank), Newton wins. For very large $n$ with no structure, the $O(n^2)$ storage alone is prohibitive, and the Newton step's inner linear solve is where the running time goes.
 
-That gap is where two families of intermediate methods live. *Quasi-Newton* methods maintain a running approximation to $H^{-1}$ that is updated cheaply from successive gradients; the best-known members are BFGS (Broyden–Fletcher–Goldfarb–Shanno) and its limited-memory variant L-BFGS, which stores only the last few gradient differences instead of the full inverse Hessian. *Conjugate gradient* methods pick descent directions that account for previous ones, so the zig-zag from [§ 2](#sec-2) does not happen, without ever forming $H$ explicitly.
+That gap is where two families of intermediate methods live. *Quasi-Newton* methods maintain a running approximation to $H^{-1}$ that is updated cheaply from successive gradients; the best-known members are BFGS (Broyden–Fletcher–Goldfarb–Shanno) and its limited-memory variant L-BFGS, which stores only the last few gradient differences instead of the full inverse Hessian. *Conjugate gradient* methods pick descent directions that account for previous ones, so the zig-zag from [# 2](#sec-2) does not happen, without ever forming $H$ explicitly.
 
 Both families sit between the two endpoints derived here — using more information than gradient descent but less than full Newton — and both are worth their own treatment.
